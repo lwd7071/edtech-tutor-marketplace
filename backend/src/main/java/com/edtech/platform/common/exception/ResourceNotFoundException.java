@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.exception;
+package com.edtech.platform.common.exception;
 
 public class ResourceNotFoundException extends BusinessException {
     public ResourceNotFoundException(Object... args) {

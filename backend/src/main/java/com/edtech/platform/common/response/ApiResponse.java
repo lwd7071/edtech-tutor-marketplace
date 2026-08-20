@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.response;
+package com.edtech.platform.common.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;

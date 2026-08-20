@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.auth.service;
+package com.edtech.platform.auth.service;
 
 import com.edtech.platform.auth.domain.RefreshToken;
 import com.edtech.platform.auth.domain.Role;

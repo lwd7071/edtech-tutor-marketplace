@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.auth.repository;
+package com.edtech.platform.auth.repository;
 
 import com.edtech.platform.auth.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;

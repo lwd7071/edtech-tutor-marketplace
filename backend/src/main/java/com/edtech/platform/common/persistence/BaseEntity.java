@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.persistence;
+package com.edtech.platform.common.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;

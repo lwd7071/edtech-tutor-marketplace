@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.config;
+package com.edtech.platform.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

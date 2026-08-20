@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.auth.domain;
+package com.edtech.platform.auth.domain;
 
 import com.edtech.platform.common.persistence.BaseEntity;
 import jakarta.persistence.Column;

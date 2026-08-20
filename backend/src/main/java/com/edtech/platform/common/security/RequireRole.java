@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.security;
+package com.edtech.platform.common.security;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

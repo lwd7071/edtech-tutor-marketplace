@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.exception;
+package com.edtech.platform.common.exception;
 
 public class DomainConcurrentModificationException extends BusinessException {
     public DomainConcurrentModificationException(Object... args) {

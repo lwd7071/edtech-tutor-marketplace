@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.exception;
+package com.edtech.platform.common.exception;
 
 import com.edtech.platform.common.response.ApiError;
 import com.edtech.platform.common.response.ApiErrorResponse;

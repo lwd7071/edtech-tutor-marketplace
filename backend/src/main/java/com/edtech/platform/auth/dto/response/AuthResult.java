@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.auth.dto.response;
+package com.edtech.platform.auth.dto.response;
 
 import com.edtech.platform.auth.domain.Role;
 import com.edtech.platform.auth.domain.UserStatus;

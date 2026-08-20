@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.auth.controller;
+package com.edtech.platform.auth.controller;
 
 import com.edtech.platform.auth.dto.request.LoginRequest;
 import com.edtech.platform.auth.dto.request.RefreshRequest;

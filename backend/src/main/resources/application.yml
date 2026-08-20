@@ -2,10 +2,11 @@ spring:
   application:
     name: edtech-api
 
+  # --- Database Configuration (Supabase PostgreSQL) ---
   datasource:
-    url: jdbc:postgresql://localhost:5432/edtech_db
-    username: edtech_user
-    password: edtech_password
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/postgres}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -16,11 +17,12 @@ spring:
       hibernate:
         format_sql: true
 
+  # --- Redis Configuration (Upstash Redis) ---
   data:
     redis:
-      host: localhost
-      port: 6379
+      url: ${REDIS_URL:redis://localhost:6379}
 
+  # --- Database Migration ---
   flyway:
     enabled: true
     baseline-on-migrate: true
@@ -29,6 +31,7 @@ spring:
 server:
   port: 8080
 
+# --- Custom App Configuration ---
 app:
   jwt:
     secret: ${APP_JWT_SECRET:local-dev-only-secret-change-me-minimum-256-bit}

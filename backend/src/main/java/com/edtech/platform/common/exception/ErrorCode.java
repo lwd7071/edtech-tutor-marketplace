@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.exception;
+package com.edtech.platform.common.exception;
 
 import org.springframework.http.HttpStatus;
 import lombok.Getter;

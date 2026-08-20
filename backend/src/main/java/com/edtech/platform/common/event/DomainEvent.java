@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.event;
+package com.edtech.platform.common.event;
 
 import java.time.Instant;
 import java.util.UUID;
