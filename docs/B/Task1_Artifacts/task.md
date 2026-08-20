@@ -1,0 +1,6 @@
+- `[x]` Read TDD skill
+- `[x]` Create `CODING_CONVENTION.md` (Already exists and contains strict Flyway rules)
+- `[x]` Implement TDD: Add tests for V16 constraints in `FlywayMigrationTest`
+- `[x]` Create `V16__fix_schema_bugs.sql` migration
+- `[x]` Log progress in `PROGRESS_BE_B.md`
+- `[x]` Create `walkthrough.md`
