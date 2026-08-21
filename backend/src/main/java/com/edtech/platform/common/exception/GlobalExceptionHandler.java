@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.exception;
+package com.edtech.platform.common.exception;
 
 import com.edtech.platform.common.response.ApiError;
 import com.edtech.platform.common.response.ApiErrorResponse;
@@ -77,6 +77,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({AuthenticationException.class, InsufficientAuthenticationException.class})
     public ResponseEntity<ApiErrorResponse> handleAuthenticationException(RuntimeException ex) {
         return buildResponse(ErrorCode.AUTH_TOKEN_MISSING, null, null);
+    }
+
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<ApiErrorResponse> handleResponseStatusException(org.springframework.web.server.ResponseStatusException ex) {
+        ErrorCode errorCode = ex.getStatusCode() == org.springframework.http.HttpStatus.NOT_FOUND ? ErrorCode.RESOURCE_NOT_FOUND : ErrorCode.INTERNAL_SERVER_ERROR;
+        return buildResponse(errorCode, ex.getReason(), null);
+    }
+
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleNoResourceFoundException(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+        return buildResponse(ErrorCode.RESOURCE_NOT_FOUND, null, null);
     }
 
     @ExceptionHandler(Exception.class)

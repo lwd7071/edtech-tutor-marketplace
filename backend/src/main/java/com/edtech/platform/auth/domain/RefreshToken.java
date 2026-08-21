@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.auth.domain;
+package com.edtech.platform.auth.domain;
 
 import com.edtech.platform.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
@@ -36,7 +36,8 @@ public class RefreshToken extends BaseEntity {
     @Column(name = "device_info")
     private String deviceInfo;
 
-    @Column(name = "ip_address")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.INET)
+    @Column(name = "ip_address", columnDefinition = "inet")
     private String ipAddress;
 
     @Builder

@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.auth.dto.request;
+package com.edtech.platform.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 

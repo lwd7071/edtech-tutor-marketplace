@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.auth.controller;
+package com.edtech.platform.auth.controller;
 
 import com.edtech.platform.auth.dto.request.LoginRequest;
 import com.edtech.platform.auth.dto.request.RefreshRequest;
@@ -51,5 +51,46 @@ public class AuthController {
     public ApiResponse<Void> logout(@Valid @RequestBody RefreshRequest request) {
         authService.logout(request.refreshToken());
         return ApiResponse.ok(null);
+    }
+
+    @PostMapping("/verify-email")
+    public ApiResponse<Void> verifyEmail(@Valid @RequestBody com.edtech.platform.auth.dto.request.VerifyEmailRequest request) {
+        authService.verifyEmail(request);
+        return ApiResponse.ok(null);
+    }
+
+    @PostMapping("/resend-verification")
+    public ApiResponse<Void> resendVerification(@Valid @RequestBody com.edtech.platform.auth.dto.request.ForgotPasswordRequest request, HttpServletRequest httpRequest) {
+        String ipAddress = httpRequest.getRemoteAddr();
+        authService.resendVerification(request, ipAddress);
+        return ApiResponse.ok(null);
+    }
+
+    @PostMapping("/forgot-password")
+    public ApiResponse<Void> forgotPassword(@Valid @RequestBody com.edtech.platform.auth.dto.request.ForgotPasswordRequest request, HttpServletRequest httpRequest) {
+        String ipAddress = httpRequest.getRemoteAddr();
+        authService.forgotPassword(request, ipAddress);
+        return ApiResponse.ok(null);
+    }
+
+    @PostMapping("/reset-password")
+    public ApiResponse<Void> resetPassword(@Valid @RequestBody com.edtech.platform.auth.dto.request.ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ApiResponse.ok(null);
+    }
+
+    @PostMapping("/oauth2/exchange")
+    public ApiResponse<AuthResult> exchangeOAuthToken(@Valid @RequestBody com.edtech.platform.auth.dto.request.OAuthExchangeRequest request, HttpServletRequest httpRequest) {
+        String ipAddress = httpRequest.getRemoteAddr();
+        AuthResult result = authService.exchangeOAuthToken(request, ipAddress);
+        return ApiResponse.ok(result);
+    }
+
+    @PostMapping("/oauth2/complete-registration")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<AuthResult> completeOAuthRegistration(@Valid @RequestBody com.edtech.platform.auth.dto.request.CompleteOAuthRegistrationRequest request, HttpServletRequest httpRequest) {
+        String ipAddress = httpRequest.getRemoteAddr();
+        AuthResult result = authService.completeOAuthRegistration(request, ipAddress);
+        return ApiResponse.created(result);
     }
 }

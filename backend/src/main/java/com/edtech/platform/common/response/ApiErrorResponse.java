@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.response;
+package com.edtech.platform.common.response;
 
 import java.time.Instant;
 

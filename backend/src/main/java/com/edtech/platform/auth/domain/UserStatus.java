@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.auth.domain;
+package com.edtech.platform.auth.domain;
 
 public enum UserStatus {
     PENDING_VERIFICATION,

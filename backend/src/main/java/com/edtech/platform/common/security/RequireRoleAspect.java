@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.security;
+package com.edtech.platform.common.security;
 
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;

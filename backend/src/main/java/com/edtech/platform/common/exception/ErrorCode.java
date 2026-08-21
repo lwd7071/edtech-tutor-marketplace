@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.exception;
+package com.edtech.platform.common.exception;
 
 import org.springframework.http.HttpStatus;
 import lombok.Getter;
@@ -28,6 +28,8 @@ public enum ErrorCode {
     AUTH_REFRESH_TOKEN_REVOKED(HttpStatus.UNAUTHORIZED, "Refresh token đã bị thu hồi"),
     AUTH_EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "Email này đã được đăng ký"),
     AUTH_EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "Vui lòng xác minh email trước khi thao tác"),
+    AUTH_VERIFY_TOKEN_INVALID(HttpStatus.BAD_REQUEST, "Token xác thực không hợp lệ"),
+    AUTH_VERIFY_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "Token xác thực đã hết hạn"),
     AUTH_PASSWORD_RESET_TOKEN_INVALID(HttpStatus.BAD_REQUEST, "Mã khôi phục không hợp lệ hoặc đã sử dụng"),
     AUTH_PASSWORD_RESET_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "Mã khôi phục đã hết hạn"),
     AUTH_OAUTH_ROLE_REQUIRED(HttpStatus.UNPROCESSABLE_ENTITY, "Vui lòng chọn vai trò Student hoặc Teacher"),
@@ -51,6 +53,7 @@ public enum ErrorCode {
     AVAILABILITY_INVALID_RANGE(HttpStatus.BAD_REQUEST, "Khoảng thời gian không hợp lệ"),
     PRICING_PACKAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "Không tìm thấy gói học"),
     PACKAGE_NOT_ACTIVE(HttpStatus.UNPROCESSABLE_ENTITY, "Gói học không ở trạng thái hoạt động"),
+    PACKAGE_INVALID_STATE(HttpStatus.BAD_REQUEST, "Trạng thái gói học không hợp lệ"),
     PACKAGE_IMMUTABLE_AFTER_PURCHASE(HttpStatus.UNPROCESSABLE_ENTITY, "Không thể thay đổi gói học đã có người mua"),
     PACKAGE_EXPIRED(HttpStatus.UNPROCESSABLE_ENTITY, "Gói học của học viên đã hết hạn"),
     PACKAGE_NO_REMAINING_SESSION(HttpStatus.UNPROCESSABLE_ENTITY, "Gói học đã hết số buổi"),

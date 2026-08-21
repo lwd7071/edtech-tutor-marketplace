@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.auth.dto.request;
+package com.edtech.platform.auth.dto.request;
 
 import com.edtech.platform.auth.domain.Role;
 import jakarta.validation.constraints.Email;

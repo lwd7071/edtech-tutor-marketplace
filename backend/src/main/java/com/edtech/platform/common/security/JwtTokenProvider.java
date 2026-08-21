@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.security;
+package com.edtech.platform.common.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

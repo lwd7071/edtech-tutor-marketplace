@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.security;
+package com.edtech.platform.common.security;
 
 import com.edtech.platform.common.exception.ErrorCode;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -16,6 +16,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
+import org.springframework.lang.NonNull;
+
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -26,21 +28,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
         try {
             String jwt = getJwtFromRequest(request);
             if (StringUtils.hasText(jwt)) {
                 AuthenticatedUser user = tokenProvider.getAuthenticatedUserFromToken(jwt);
                 
+                java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities = Collections.emptyList();
+                if (user.role() != null) {
+                    authorities = Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.role()));
+                }
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        user, null, Collections.emptyList()
+                        user, null, authorities
                 );
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-        } catch (ExpiredJwtException ex) {
+        } catch (ExpiredJwtException ignored) {
             request.setAttribute("jwt_error", ErrorCode.AUTH_TOKEN_EXPIRED);
-        } catch (JwtException | IllegalArgumentException ex) {
+        } catch (JwtException | IllegalArgumentException ignored) {
             request.setAttribute("jwt_error", ErrorCode.AUTH_TOKEN_INVALID);
         }
         

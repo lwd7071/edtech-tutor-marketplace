@@ -1,9 +1,12 @@
-﻿package com.edtech.platform.common.persistence;
+package com.edtech.platform.common.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import lombok.Getter;
+import lombok.Setter;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -19,6 +22,25 @@ public abstract class BaseEntity {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    @Column(nullable = false)
+    @Setter
+    @Column(name = "is_deleted", nullable = false)
     private boolean deleted;
+
+    @PrePersist
+    protected void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+        Instant now = Instant.now();
+        if (this.createdAt == null) {
+            this.createdAt = now;
+        }
+        this.updatedAt = now;
+        // deleted defaults to false (Java primitive boolean default)
+    }
+
+    @PreUpdate
+    protected void preUpdate() {
+        this.updatedAt = Instant.now();
+    }
 }

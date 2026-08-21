@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.auth.domain;
+package com.edtech.platform.auth.domain;
 
 import com.edtech.platform.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
@@ -66,7 +66,8 @@ public class User extends BaseEntity {
     @Builder
     public User(String email, String passwordHash, String fullName, String phone,
                 String parentFullName, String parentPhone, String parentEmail,
-                Boolean notifyParent, Role role, UserStatus status, Boolean emailVerified) {
+                Boolean notifyParent, Role role, UserStatus status, Boolean emailVerified,
+                String oauthProvider, String oauthSubject) {
         this.email = email;
         this.passwordHash = passwordHash;
         this.fullName = fullName;
@@ -78,9 +79,23 @@ public class User extends BaseEntity {
         this.role = role;
         this.status = status;
         this.emailVerified = emailVerified;
+        this.oauthProvider = oauthProvider;
+        this.oauthSubject = oauthSubject;
     }
 
     public void setLastLoginAt(Instant lastLoginAt) {
         this.lastLoginAt = lastLoginAt;
+    }
+        
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
     }
 }

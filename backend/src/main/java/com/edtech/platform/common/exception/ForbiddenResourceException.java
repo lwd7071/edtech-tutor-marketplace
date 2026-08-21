@@ -1,4 +1,4 @@
-﻿package com.edtech.platform.common.exception;
+package com.edtech.platform.common.exception;
 
 public class ForbiddenResourceException extends BusinessException {
     public ForbiddenResourceException(Object... args) {
