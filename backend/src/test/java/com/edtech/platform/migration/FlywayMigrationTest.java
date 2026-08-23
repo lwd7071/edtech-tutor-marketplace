@@ -23,13 +23,13 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    @DisplayName("Tất cả 16 file migration V1-V16 phải được apply thành công")
-    void flyway_shouldApplyAll16MigrationsSuccessfully() {
+    @DisplayName("Tất cả 17 file migration V1-V17 phải được apply thành công")
+    void flyway_shouldApplyAllMigrationsSuccessfully() {
         assertThat(flyway).isNotNull();
         MigrationInfo[] appliedMigrations = flyway.info().applied();
 
         assertThat(appliedMigrations)
-                .hasSize(16)
+                .hasSize(17)
                 .allSatisfy(info -> {
                     assertThat(info.getState().isApplied()).isTrue();
                     assertThat(info.getVersion()).isNotNull();
@@ -73,8 +73,8 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Database phải tạo đủ 29 bảng nghiệp vụ trong public schema")
-    void database_shouldContainAll29Tables() {
+    @DisplayName("Database phải tạo đủ 31 bảng nghiệp vụ trong public schema")
+    void database_shouldContainAllTables() {
         assertThat(jdbcTemplate).isNotNull();
         List<String> tables = jdbcTemplate.query(
                 "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name != 'flyway_schema_history'",
