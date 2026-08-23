@@ -1,44 +1,63 @@
-# Báo Cáo Tiến Độ - Thành Viên A (Identity & Experience)
+# Báo cáo tiến độ Backend — Thành viên A (Identity & Experience)
 
-Thành viên A chịu trách nhiệm phát triển các module thuộc phần Identity & Experience. Kiến trúc của A tuân thủ theo chuẩn Domain-Driven Design (DDD). Dưới đây là thống kê chi tiết các công việc A đã hoàn thiện dựa trên source code thực tế.
+> Cập nhật kiểm chứng: 2026-08-23
+> Nguồn chân lý: `docs/planning/PLANBE.md`, đặc tả kiến trúc và source code hiện tại.
 
-## Tóm tắt các Module đã hoàn thành (Code Foundation)
+## Trạng thái tổng quan
 
-### 1. Module `common` (Nền tảng hệ thống)
-- **Cơ sở hạ tầng**: Đã xây dựng `BaseEntity`, hệ thống `ResponseEnvelope` để chuẩn hóa response.
-- **Xử lý ngoại lệ**: Xây dựng `GlobalExceptionHandler` ánh xạ lỗi theo `ERROR_CODES.md`.
-- **Security & Validation**: Các tiện ích phân quyền `SecurityUtils`, `OwnershipValidator`.
-- **Event-Driven**: Đã setup Domain Event contract để giao tiếp giữa các module.
+A đã tạo code foundation và logic chính cho các module Identity & Experience. Implementation hiện tại **chưa đạt Definition of Done** vì còn dependency xuyên module, SQL vượt ownership, domain entity coupling và thiếu test nghiệp vụ.
 
-### 2. Module `auth` và `user` (Định danh & Người dùng)
-- Đầy đủ luồng đăng ký (Register), đăng nhập (Login JWT), Refresh Token, đăng xuất.
-- Xác minh email, reset password và luồng Google OAuth2.
-- Tổ chức thông tin User và Parent Contact.
+Trạng thái tổng thể: **Implemented / Not DoD-compliant / Needs remediation**.
 
-### 3. Module `teacher` và `subject` (Hồ sơ & Môn học)
-- Quản lý `TeacherProfile` (thông tin cá nhân, avatar, bio).
-- Quản lý upload và duyệt giấy tờ `TeacherDocument`.
-- Quản lý `TeacherAvailability` (Lịch rảnh) và cơ chế check trùng lặp thời gian.
-- Xây dựng danh mục `Subject` và quy trình đề xuất `SubjectProposal`.
+## Trạng thái theo module
 
-### 4. Module `catalog` (Marketplace)
-- Xây dựng public API: `PublicTeacherController`, `PublicReviewController`.
-- Cung cấp tính năng filter giáo viên (`TeacherSearchParams`).
-- Quản lý `PricingPackage` (Gói giá).
+| Module | Code foundation | Boundary compliance | Unit test | Integration test nghiệp vụ | Trạng thái |
+|---|---|---|---|---|---|
+| `common` | Implemented | Fail | Missing | Missing | Needs remediation |
+| `auth`, `user` | Implemented | Cần audit đầy đủ | Missing | 1 Auth register case | Not DoD-compliant |
+| `teacher`, `subject` | Implemented | Fail | Missing | Missing | Needs remediation |
+| `catalog` | Implemented | Fail | Missing | Missing | Needs remediation |
+| `communication` | Implemented | Fail | Missing | Missing | Needs remediation |
+| `learning` | Implemented | Fail | Missing | Missing | Needs remediation |
+| `ranking` | Implemented | Fail | Missing | Missing | Needs remediation |
 
-### 5. Module `communication` (Chat & Thông báo)
-- Setup WebSocket/STOMP cho chat real-time.
-- Xây dựng `Conversation` và `Message`.
-- Xây dựng hệ thống `Notification` bất đồng bộ và API đánh dấu đã đọc.
+## Những gì đã có
 
-### 6. Module `learning` (Học tập)
-- Xây dựng `Assignment` (Bài tập) và content blocks.
-- Tính năng `Submission` (Nộp bài) và `GradeSubmissionRequest` (Chấm điểm).
+- `common`: response/error/security/event/storage foundation và attachment flow.
+- `auth`, `user`: register/login/refresh, email/password recovery và OAuth foundation.
+- `teacher`, `subject`: profile, document, availability, subject và proposal flows.
+- `catalog`: pricing package và marketplace endpoints/query foundation.
+- `communication`: conversation, message, notification và WebSocket/STOMP foundation.
+- `learning`: assignment, submission và grading foundation.
+- `ranking`: review, teacher statistics và ranking foundation.
 
-### 7. Module `ranking` (Đánh giá & Xếp hạng)
-- Chức năng đánh giá `Review` kèm validation.
-- Xây dựng `TeacherStats` tự động tính sao trung bình, tổng giờ dạy qua sự kiện (Event Listener).
+Danh sách này chỉ xác nhận implementation hiện diện, không xác nhận feature đúng đặc tả hoặc đã nghiệm thu.
 
----
-**Đánh giá chung**: 
-Thành viên A đã triển khai **100% phần khung và logic chính** cho toàn bộ 7 module. Toàn bộ Controller, Service, DTO, Domain (Entity) và Repository đã được định nghĩa. Tuy nhiên, đi kèm với khối lượng lớn là một lượng nợ kỹ thuật (Technical Debt) nghiêm trọng (xem file `DIAGNOSE_BE_A.md`).
+## DoD dashboard
+
+| Tiêu chí | Trạng thái | Blocker hiện tại |
+|---|---|---|
+| Endpoint/DTO khớp API contract | Chưa xác minh đầy đủ | Thiếu contract/integration coverage |
+| Validation, error code, RBAC, ownership | Chưa xác minh đầy đủ | Thiếu test |
+| State transition/transaction boundary được test | Fail | Gần như chưa có test nghiệp vụ |
+| Không repository xuyên module | Fail | 12 class, 17 dependency đã xác nhận |
+| Không SQL/domain coupling vượt boundary | Fail | Có JdbcTemplate, JPQL/native query và entity reference xuyên module |
+| Unit/integration test phù hợp rủi ro | Fail | A có 1 test case nghiệp vụ |
+| Migration chạy từ database rỗng | Chưa xác nhận lần này | Testcontainers bị skip vì thiếu Docker |
+| Build và toàn bộ test thành công | Fail về nghiệm thu | Maven xanh nhưng 8/8 test bị skip |
+
+## Điều kiện chuyển sang Done
+
+1. Không còn dependency repository/SQL/domain entity ngoài public boundary, trừ ngoại lệ đã review.
+2. Facade chỉ trả scalar hoặc immutable DTO snapshot, không trả JPA entity.
+3. Có unit, integration và architecture test tương ứng rủi ro.
+4. `mvn test` chạy với Docker/Testcontainers: `0 failures`, `0 errors`, `0 skipped`.
+5. Endpoint/error/schema behavior được đối chiếu với tài liệu nguồn.
+
+## Tài liệu thực thi
+
+- Bằng chứng: `docs/A/DIAGNOSE_BE_A.md`.
+- Thiết kế remediation: `docs/A/REMEDIATION_PLAN_BE_A.md`.
+- Checklist nhận việc: `docs/A/TASKS_BE_A.md`.
+
+Không sửa `PLANBE.md`, API contract, ERD hoặc migration trong đợt cập nhật tài liệu này.

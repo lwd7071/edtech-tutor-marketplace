@@ -1,47 +1,99 @@
-# Diagnose Report - Codebase của Thành Viên A
+# Diagnose Report — Backend của Thành viên A
 
-Báo cáo phân tích tĩnh (Static Analysis) và kiểm thử (Test) trên toàn bộ các module do A thực hiện.
+> Trạng thái: **Đã kiểm chứng bằng static analysis, Git history và `mvn test` ngày 2026-08-23.**
+>
+> Phạm vi: các module A sở hữu theo `docs/planning/PLANBE.md`. Báo cáo không sửa code và không thay thế Definition of Done (DoD) trong kế hoạch gốc.
 
-Mặc dù A làm được khối lượng code khổng lồ, nhưng code này đang **vi phạm nghiêm trọng 2 quy tắc cốt lõi** trong `PLANBE.md`.
+## 1. Căn cứ và khả năng truy nguyên
 
-## 1. Vi Phạm Kiến Trúc (Cross-module Repository Access)
+`PLANBE.md` yêu cầu module chỉ giao tiếp qua public facade, DTO hoặc domain event; không gọi repository module khác; có unit/integration test phù hợp rủi ro và toàn bộ backend test thành công.
 
-> **Quy định trong PLANBE.md**: "Module chỉ giao tiếp qua public facade, DTO hoặc domain event; **không gọi repository của module khác**."
+Git history xác nhận phần lớn implementation được đưa vào bởi:
 
-Thực tế, A đã inject chéo Repository để truy vấn dữ liệu thay vì gọi qua Facade/Service, phá vỡ nguyên tắc Độc lập Module (Decoupling). Danh sách các vi phạm:
+```text
+e0ad25f — TLuon — feat: implement backend modules
+```
 
-- **Module `catalog`**
-  - `PricingPackageService`: Gọi trực tiếp `SubjectRepository`, `TeacherProfileRepository`, `TeacherSubjectRepository`.
-- **Module `common`**
-  - `AttachmentService`: Gọi trực tiếp `UserRepository`.
-- **Module `communication`**
-  - `ChatService`: Gọi trực tiếp `AttachmentRepository`.
-  - `NotificationEventListener`: Gọi trực tiếp `UserRepository`.
-- **Module `learning`**
-  - `StudentAssignmentService`: Gọi trực tiếp `UserRepository`, `AttachmentRepository`.
-  - `TeacherAssignmentService`: Gọi trực tiếp `UserRepository`, `AttachmentRepository`, `SubjectRepository`, `TeacherProfileRepository`.
-- **Module `ranking`**
-  - `ReviewService`: Gọi trực tiếp `UserRepository`.
-  - `TeacherStatsService`: Gọi trực tiếp `UserRepository`, `TeacherProfileRepository`.
-- **Module `subject`**
-  - `SubjectProposalService`: Gọi trực tiếp `TeacherProfileRepository`.
-- **Module `teacher`**
-  - `TeacherSubjectService`: Gọi trực tiếp `SubjectRepository`.
+Commit này thêm implementation thuộc `catalog`, `common`, `communication`, `learning`, `ranking`, `subject`, `teacher` và test Auth của A. Các thay đổi test infrastructure/migration sau đó thuộc commit/tác giả khác. Kết luận code được gắn với implementation của A; trạng thái test được đánh giá trên working tree hiện tại.
 
-**Hậu quả**: Vi phạm nguyên tắc đóng gói của DDD. Nếu thay đổi DB Schema ở một module (vd: `User`), các module khác sẽ lỗi theo do Coupling quá chặt.
+## 2. [CRITICAL] Repository access xuyên module
 
-## 2. Thiếu Trầm Trọng Unit/Integration Test
+Static analysis xác nhận **12 consumer class với 17 dependency repository xuyên module**:
 
-> **Quy định trong PLANBE.md (Definition of Done)**: "Có unit test và integration test phù hợp rủi ro."
+| Consumer module | Class | Repository ngoài module |
+|---|---|---|
+| `catalog` | `PricingPackageService` | `SubjectRepository`, `TeacherProfileRepository`, `TeacherSubjectRepository` |
+| `common` | `AttachmentService` | `UserRepository` |
+| `communication` | `ChatService` | `AttachmentRepository` |
+| `communication` | `NotificationEventListener` | `UserRepository` |
+| `learning` | `StudentAssignmentService` | `UserRepository`, `AttachmentRepository` |
+| `learning` | `TeacherAssignmentService` | `UserRepository`, `AttachmentRepository`, `SubjectRepository`, `TeacherProfileRepository` |
+| `ranking` | `ReviewService` | `UserRepository` |
+| `ranking` | `TeacherStatsService` | `UserRepository`, `TeacherProfileRepository` |
+| `subject` | `SubjectProposalService` | `TeacherProfileRepository` |
+| `teacher` | `TeacherSubjectService` | `SubjectRepository` |
 
-Khi chạy lệnh kiểm tra các file test (`mvn test`), kết quả cho thấy **gần như không có test nào** cho các module của A. A chỉ viết đúng một test duy nhất:
-- `AuthRegisterTest.java` (thuộc module Auth).
+Consumer biết repository API và thường biết cả JPA entity của provider. Thay đổi method signature, entity mapping, fetch behavior hoặc query contract có thể gây lỗi compile hay runtime ở nhiều module. Một thay đổi schema tương thích không nhất thiết làm mọi module hỏng ngay, nhưng boundary hiện tại không bảo vệ consumer khỏi implementation nội bộ.
 
-Các module khổng lồ và chứa nhiều business logic cốt lõi như `catalog` (Marketplace), `learning`, `teacher`, `ranking` hoàn toàn không có bất kỳ dòng Unit Test nào.
-Việc này rất nguy hiểm vì không có Feedback loop an toàn cho hệ thống.
+**Tiêu chí đóng:** không còn consumer inject/import repository ngoài module; mọi nhu cầu đi qua facade/query port, immutable DTO snapshot hoặc domain event; architecture test ngăn dependency quay lại.
 
----
-**Kết Luận Diagnose & Hướng Giải Quyết:**
-Trước khi phát triển tiếp, hệ thống CẦN BẮT BUỘC refactor code của A để:
-1. Xóa bỏ toàn bộ các cross-module repository imports (Thay bằng việc tạo các Facade service trung gian hoặc Public Interface).
-2. Viết Unit Test cho các business logic quan trọng nhất.
+## 3. [CRITICAL] SQL/JPQL vượt module boundary
+
+Repository import không phải đường vòng duy nhất:
+
+| Vị trí | Boundary bị vượt |
+|---|---|
+| `ReviewService` | Đọc bảng `bookings` của B để quyết định quyền review |
+| `TeacherStatsService` | Đọc `bookings` và `platform_settings` của B |
+| `StudentPackageChecker` | Đọc `student_packages` của B |
+| `LearningRelationshipChecker` | Đọc quan hệ học qua bảng thuộc B |
+| `TeacherMarketplaceService` | Join `users`, `teacher_profiles`, `teacher_subjects`, `subjects`, `teacher_availabilities`, `teacher_stats`, `pricing_packages` |
+| `ReviewRepository` | JPQL join `TeacherProfile` và `User` ngoài ranking |
+| `TeacherStatsRepository` | Native query join bảng teacher/auth/subject ngoài ranking |
+
+`FixDbController` trong `common` còn thực thi SQL sửa schema qua HTTP, vượt ownership migration của B và phải được review/xóa khỏi runtime production.
+
+**Tiêu chí đóng:** A không dùng SQL/JPQL để đọc bảng ngoài ownership; dữ liệu booking/enrollment/settings đi qua facade do B sở hữu; marketplace/ranking dùng contract hoặc read model được review; không còn runtime endpoint sửa schema.
+
+## 4. [HIGH] JPA domain entity coupling xuyên module
+
+Các ví dụ đã xác nhận:
+
+- `PricingPackage` tham chiếu `TeacherProfile`, `Subject`.
+- `Assignment` tham chiếu `User`, `TeacherProfile`, `Subject`; `Submission` tham chiếu `User`.
+- `Attachment`, `TeacherProfile`, `TeacherDocument`, `SubjectProposal`, `TeacherSubject` tham chiếu entity module khác.
+- Một số service/controller/DTO import enum hoặc entity ngoài module thay vì public contract.
+
+Không sửa cơ học tất cả quan hệ trong một lần vì có thể tác động mapping/schema. Mỗi quan hệ phải được inventory và phân loại: giữ có quyết định, thay bằng ID, hoặc thay public contract; mọi thay đổi schema chuyển cho B.
+
+**Tiêu chí đóng:** không facade nào trả JPA entity; không còn finding chưa có owner/quyết định; ngoại lệ boundary phải được review và ghi lại.
+
+## 5. [CRITICAL] Khoảng trống kiểm thử
+
+A có một test case nghiệp vụ: `AuthRegisterTest.registerStudentWithParentEmail_setsNotifyParentTrue()`.
+
+Không tìm thấy unit/integration test nghiệp vụ tương ứng cho `catalog`, `common`, `communication`, `learning`, `ranking`, `subject` hoặc `teacher`.
+
+Working tree có 8 test case Maven phát hiện: 1 context smoke test, 1 Auth register integration test của A và 6 Flyway migration tests. Kết quả `mvn test` ngày 2026-08-23:
+
+```text
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 8
+BUILD SUCCESS
+```
+
+Testcontainers không tìm thấy Docker nên toàn bộ test bị skip. Kết quả này chỉ chứng minh compile/test discovery, không chứng minh hành vi hoặc migration đúng.
+
+**Tiêu chí đóng:** có unit test cho state/ownership/validation/idempotency/mapping; integration/contract test cho các facade và luồng chính; chạy Docker/Testcontainers với `0 failures`, `0 errors`, `0 skipped`; không đánh dấu Done nếu test bắt buộc bị skip.
+
+## 6. [MEDIUM] Trạng thái tiến độ bị mô tả quá mức
+
+Thuật ngữ chuẩn từ nay:
+
+- `Implemented`: đã có implementation nền tảng.
+- `Not DoD-compliant`: chưa thỏa Definition of Done.
+- `Needs remediation`: phải xử lý boundary/test trước nghiệm thu.
+- `Done`: chỉ dùng sau khi toàn bộ DoD và verification thực sự đạt.
+
+## Kết luận
+
+Code của A chưa đủ điều kiện nghiệm thu hoặc dùng làm baseline an toàn. Thứ tự bắt buộc: architecture guard → provider facade/contract test → consumer migration → test nghiệp vụ → full regression. Xem `REMEDIATION_PLAN_BE_A.md` và `TASKS_BE_A.md`.
