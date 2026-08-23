@@ -45,7 +45,7 @@ public class TeacherProfile extends BaseEntity {
     private Integer yearsOfExperience;
 
     @Type(ListArrayType.class)
-    @Column(columnDefinition = "varchar(50)[]")
+    @Column(name = "languages", columnDefinition = "text[]")
     private List<String> languages = new ArrayList<>();
 
     @Column(name = "supports_online", nullable = false)

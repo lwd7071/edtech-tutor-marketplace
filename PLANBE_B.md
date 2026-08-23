@@ -22,9 +22,9 @@ Thành viên B sở hữu:
 
 ### Task 1.1: Docker Compose & Môi trường
 - [x] Docker Compose đã có `postgres:16-alpine` + `redis:7-alpine` (sẵn trong repo)
-- [ ] Verify `docker compose up` chạy thành công trên máy local
-- [ ] Kiểm tra kết nối PostgreSQL (`edtech_db` / `edtech_user` / `edtech_password`)
-- [ ] Kiểm tra kết nối Redis (`localhost:6379`)
+- [x] Verify `docker compose up` chạy thành công trên máy local (Đã kết nối thành công tới Supabase & Upstash)
+- [x] Kiểm tra kết nối PostgreSQL (`edtech_db` / `edtech_user` / `edtech_password`)
+- [x] Kiểm tra kết nối Redis (`localhost:6379`)
 
 ### Task 1.2: Flyway Baseline Migration
 > **B là người duy nhất tạo/sửa Flyway migration** (PLANBE.md quy tắc chống giẫm chân)
@@ -656,7 +656,7 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
 ```
 
 ### Task 1.3: Thiết lập Testcontainers
-- [ ] Thêm dependency Testcontainers PostgreSQL vào `pom.xml`:
+- [x] Thêm dependency Testcontainers PostgreSQL vào `pom.xml`:
   ```xml
   <dependency>
       <groupId>org.testcontainers</groupId>
@@ -669,7 +669,7 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
       <scope>test</scope>
   </dependency>
   ```
-- [ ] Tạo `application-test.yml` dùng Testcontainers:
+- [x] Tạo `application-test.yml` dùng Testcontainers:
   ```yaml
   spring:
     datasource:
@@ -681,18 +681,18 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
     flyway:
       enabled: true
   ```
-- [ ] Tạo context test smoke (`ApiApplicationTests`) xanh chạy trên Testcontainers
-- [ ] Tạo `@TestConfiguration` base cho integration test dùng PostgreSQL container
+- [x] Tạo context test smoke (`ApiApplicationTests`) xanh chạy trên Testcontainers
+- [x] Tạo `@TestConfiguration` base cho integration test dùng PostgreSQL container
 
 ### Task 1.4: Environment Variables
-- [ ] Chuyển secrets ra env vars trong `application.yml` (đã có sẵn, verify)
-- [ ] Tạo file `.env.example` liệt kê tất cả env vars cần thiết
-- [ ] Kiểm tra `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `REDIS_URL`, `APP_JWT_SECRET` đều có fallback dev
+- [x] Chuyển secrets ra env vars trong `application.yml` (đã có sẵn, verify)
+- [x] Tạo file `.env.example` liệt kê tất cả env vars cần thiết
+- [x] Kiểm tra `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `REDIS_URL`, `APP_JWT_SECRET` đều có fallback dev
 
 ### ✅ Checkpoint Tuần 1
-- `docker compose up` thành công
-- Migration chạy được trên database rỗng
-- Context test xanh
+- [x] `docker compose up` thành công (Chạy thực tế trên Supabase)
+- [x] Migration chạy được trên database rỗng
+- [x] Context test xanh
 
 ---
 
