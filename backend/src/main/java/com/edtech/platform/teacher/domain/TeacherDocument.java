@@ -1,6 +1,6 @@
 package com.edtech.platform.teacher.domain;
 
-import com.edtech.platform.auth.domain.User;
+
 import com.edtech.platform.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,9 +56,8 @@ public class TeacherDocument extends BaseEntity {
     @Column(name = "verification_status", nullable = false, length = 20)
     private VerificationStatus verificationStatus = VerificationStatus.PENDING;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "verified_by")
-    private User verifiedBy;
+    @Column(name = "verified_by")
+    private java.util.UUID verifiedById;
 
     @Column(name = "verified_at")
     private Instant verifiedAt;

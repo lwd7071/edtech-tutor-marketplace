@@ -8,12 +8,12 @@ import com.edtech.platform.catalog.dto.UpsertPricingPackageRequest;
 import com.edtech.platform.catalog.repository.PricingPackageRepository;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
-import com.edtech.platform.subject.domain.Subject;
-import com.edtech.platform.subject.repository.SubjectRepository;
-import com.edtech.platform.teacher.domain.ProfileStatus;
-import com.edtech.platform.teacher.domain.TeacherProfile;
-import com.edtech.platform.teacher.repository.TeacherProfileRepository;
-import com.edtech.platform.teacher.repository.TeacherSubjectRepository;
+import com.edtech.platform.teacher.facade.TeacherFacade;
+import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
+import com.edtech.platform.subject.facade.SubjectFacade;
+import com.edtech.platform.subject.facade.dto.SubjectSnapshot;
+import com.edtech.platform.enrollment.facade.EnrollmentFacade;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
@@ -21,39 +21,39 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PricingPackageService {
 
     private final PricingPackageRepository pricingPackageRepository;
-    private final TeacherProfileRepository teacherProfileRepository;
-    private final SubjectRepository subjectRepository;
-    private final TeacherSubjectRepository teacherSubjectRepository;
-    private final StudentPackageChecker studentPackageChecker;
+    private final TeacherFacade teacherFacade;
+    private final SubjectFacade subjectFacade;
+    private final EnrollmentFacade enrollmentFacade;
+    private final EntityManager entityManager;
     private final CacheManager cacheManager;
 
     @Transactional
     public PricingPackageView createPackage(UUID userId, UpsertPricingPackageRequest request) {
-        TeacherProfile profile = teacherProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TEACHER_PROFILE_NOT_FOUND));
+        TeacherSnapshot profile = teacherFacade.getTeacherByUserId(userId);
 
-        if (profile.getProfileStatus() != ProfileStatus.APPROVED) {
+        if (!"APPROVED".equals(profile.status())) {
             throw new BusinessException(ErrorCode.TEACHER_NOT_APPROVED);
         }
 
-        Subject subject = subjectRepository.findById(request.subjectId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.SUBJECT_NOT_FOUND));
+        SubjectSnapshot subject = subjectFacade.getSubject(request.subjectId());
 
-        boolean hasSubject = teacherSubjectRepository.findByTeacherId(profile.getId()).stream()
-                .anyMatch(ts -> ts.getSubject().getId().equals(subject.getId()) && ts.isActive());
+        boolean hasSubject = teacherFacade.hasAssignedSubject(profile.id(), subject.id());
 
         if (!hasSubject) {
             throw new BusinessException(ErrorCode.SUBJECT_NOT_ASSIGNED);
         }
-
+        
         PricingPackage pkg = PricingPackage.builder()
-                .teacher(profile)
-                .subject(subject)
+                .teacherId(profile.id())
+                .subjectId(subject.id())
                 .name(request.name())
                 .description(request.description())
                 .totalSessions(request.totalSessions())
@@ -64,37 +64,34 @@ public class PricingPackageService {
                 .build();
 
         PricingPackage saved = pricingPackageRepository.save(pkg);
-        evictTeacherProfileCache(profile.getId());
+        evictTeacherProfileCache(profile.id());
         return toView(saved);
     }
 
     @Transactional
     public PricingPackageView updatePackage(UUID userId, UUID packageId, UpsertPricingPackageRequest request) {
-        TeacherProfile profile = teacherProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TEACHER_PROFILE_NOT_FOUND));
+        TeacherSnapshot profile = teacherFacade.getTeacherByUserId(userId);
 
         PricingPackage pkg = pricingPackageRepository.findById(packageId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND));
 
-        if (!pkg.getTeacher().getId().equals(profile.getId())) {
+        if (!pkg.getTeacherId().equals(profile.id())) {
             throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE);
         }
 
-        if (studentPackageChecker.hasStudentPackage(packageId)) {
+        if (enrollmentFacade.hasStudentPackage(packageId)) {
             throw new BusinessException(ErrorCode.PACKAGE_IMMUTABLE_AFTER_PURCHASE);
         }
 
-        Subject subject = subjectRepository.findById(request.subjectId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.SUBJECT_NOT_FOUND));
+        SubjectSnapshot subject = subjectFacade.getSubject(request.subjectId());
 
-        boolean hasSubject = teacherSubjectRepository.findByTeacherId(profile.getId()).stream()
-                .anyMatch(ts -> ts.getSubject().getId().equals(subject.getId()) && ts.isActive());
+        boolean hasSubject = teacherFacade.hasAssignedSubject(profile.id(), subject.id());
 
         if (!hasSubject) {
             throw new BusinessException(ErrorCode.SUBJECT_NOT_ASSIGNED);
         }
 
-        pkg.setSubject(subject);
+        pkg.setSubjectId(subject.id());
         pkg.setName(request.name());
         pkg.setDescription(request.description());
         pkg.setTotalSessions(request.totalSessions());
@@ -104,23 +101,22 @@ public class PricingPackageService {
         pkg.setStatus(request.status());
 
         PricingPackage saved = pricingPackageRepository.save(pkg);
-        evictTeacherProfileCache(profile.getId());
+        evictTeacherProfileCache(profile.id());
         return toView(saved);
     }
 
     @Transactional
     public PricingPackageView changeStatus(UUID userId, UUID packageId, ChangePackageStatusRequest request) {
-        TeacherProfile profile = teacherProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TEACHER_PROFILE_NOT_FOUND));
+        TeacherSnapshot profile = teacherFacade.getTeacherByUserId(userId);
 
         PricingPackage pkg = pricingPackageRepository.findById(packageId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND));
 
-        if (!pkg.getTeacher().getId().equals(profile.getId())) {
+        if (!pkg.getTeacherId().equals(profile.id())) {
             throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE);
         }
 
-        if (studentPackageChecker.hasStudentPackage(packageId)) {
+        if (enrollmentFacade.hasStudentPackage(packageId)) {
             if (request.status() != PackageStatus.INACTIVE) {
                 throw new BusinessException(ErrorCode.PACKAGE_INVALID_STATE);
             }
@@ -129,15 +125,22 @@ public class PricingPackageService {
         pkg.setStatus(request.status());
 
         PricingPackage saved = pricingPackageRepository.save(pkg);
-        evictTeacherProfileCache(profile.getId());
+        evictTeacherProfileCache(profile.id());
         return toView(saved);
     }
 
     private PricingPackageView toView(PricingPackage pkg) {
+        String subjectName = "Unknown";
+        try {
+            subjectName = subjectFacade.getSubject(pkg.getSubjectId()).name();
+        } catch (Exception e) {
+            log.warn("Subject not found for package {}", pkg.getId());
+        }
+
         return new PricingPackageView(
                 pkg.getId(),
-                pkg.getSubject().getId(),
-                pkg.getSubject().getName(),
+                pkg.getSubjectId(),
+                subjectName,
                 pkg.getName(),
                 pkg.getDescription(),
                 pkg.getTotalSessions(),

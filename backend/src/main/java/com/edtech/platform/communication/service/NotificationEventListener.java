@@ -1,7 +1,6 @@
 package com.edtech.platform.communication.service;
 
-import com.edtech.platform.auth.domain.User;
-import com.edtech.platform.auth.repository.UserRepository;
+import com.edtech.platform.auth.facade.IdentityFacade;
 import com.edtech.platform.auth.service.EmailService;
 import com.edtech.platform.common.event.booking.BookingCompletedEvent;
 import com.edtech.platform.common.event.booking.BookingCreatedEvent;
@@ -20,7 +19,7 @@ public class NotificationEventListener {
 
     private final NotificationService notificationService;
     private final EmailService emailService;
-    private final UserRepository userRepository;
+    private final IdentityFacade identityFacade;
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -51,9 +50,9 @@ public class NotificationEventListener {
         );
 
         // Send Email to Parent if needed
-        userRepository.findById(event.getStudentId()).ifPresent(student -> {
-            if (Boolean.TRUE.equals(student.getNotifyParent()) && student.getParentEmail() != null) {
-                emailService.sendNotificationEmail(student.getParentEmail(), title, content);
+        identityFacade.getIdentity(event.getStudentId()).ifPresent(student -> {
+            if (Boolean.TRUE.equals(student.notifyParent()) && student.parentEmail() != null) {
+                emailService.sendNotificationEmail(student.parentEmail(), title, content);
             }
         });
     }
@@ -77,9 +76,9 @@ public class NotificationEventListener {
         );
 
         // Send Email to Student
-        userRepository.findById(event.getStudentId()).ifPresent(student -> {
-            if (student.getEmail() != null) {
-                emailService.sendNotificationEmail(student.getEmail(), title, content);
+        identityFacade.getIdentity(event.getStudentId()).ifPresent(student -> {
+            if (student.email() != null) {
+                emailService.sendNotificationEmail(student.email(), title, content);
             }
         });
     }
@@ -103,12 +102,12 @@ public class NotificationEventListener {
         );
 
         // Send Email to Student and Parent
-        userRepository.findById(event.getStudentId()).ifPresent(student -> {
-            if (student.getEmail() != null) {
-                emailService.sendNotificationEmail(student.getEmail(), title, content);
+        identityFacade.getIdentity(event.getStudentId()).ifPresent(student -> {
+            if (student.email() != null) {
+                emailService.sendNotificationEmail(student.email(), title, content);
             }
-            if (Boolean.TRUE.equals(student.getNotifyParent()) && student.getParentEmail() != null) {
-                emailService.sendNotificationEmail(student.getParentEmail(), title, content);
+            if (Boolean.TRUE.equals(student.notifyParent()) && student.parentEmail() != null) {
+                emailService.sendNotificationEmail(student.parentEmail(), title, content);
             }
         });
     }

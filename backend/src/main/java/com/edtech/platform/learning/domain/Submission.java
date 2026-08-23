@@ -1,6 +1,5 @@
 package com.edtech.platform.learning.domain;
 
-import com.edtech.platform.auth.domain.User;
 import com.edtech.platform.common.persistence.BaseEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
@@ -21,6 +20,7 @@ import org.hibernate.annotations.Type;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "submissions")
@@ -33,9 +33,8 @@ public class Submission extends BaseEntity {
     @JoinColumn(name = "assignment_id", nullable = false)
     private Assignment assignment;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "student_id", nullable = false)
-    private User student;
+    @Column(name = "student_id", nullable = false)
+    private UUID studentId;
 
     @Type(JsonType.class)
     @Column(name = "content_blocks", columnDefinition = "jsonb")
@@ -58,9 +57,9 @@ public class Submission extends BaseEntity {
     private Instant gradedAt;
 
     @Builder
-    public Submission(Assignment assignment, User student, JsonNode contentBlocks, Instant submittedAt, SubmissionStatus status, BigDecimal score, String feedbackText, Instant gradedAt) {
+    public Submission(Assignment assignment, UUID studentId, JsonNode contentBlocks, Instant submittedAt, SubmissionStatus status, BigDecimal score, String feedbackText, Instant gradedAt) {
         this.assignment = assignment;
-        this.student = student;
+        this.studentId = studentId;
         this.contentBlocks = contentBlocks;
         this.submittedAt = submittedAt;
         this.status = status;

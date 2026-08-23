@@ -34,10 +34,10 @@ public class ReviewController {
         return reviewService.createReview(authenticatedUser.id(), bookingId, request);
     }
 
-    // @GetMapping("/api/public/teachers/{id}/reviews")
-    // public Page<ReviewView> getPublicReviews(
-    //         @PathVariable("id") UUID teacherId,
-    //         Pageable pageable) {
-    //     return reviewService.getPublicReviews(teacherId, pageable);
-    // }
+    @GetMapping("/api/public/teachers/{id}/reviews")
+    public Page<ReviewView> getPublicReviews(
+            @PathVariable("id") UUID teacherId,
+            Pageable pageable) {
+        return reviewService.getPublicReviews(teacherId, pageable);
+    }
 }

@@ -1,15 +1,11 @@
 package com.edtech.platform.catalog.domain;
 
 import com.edtech.platform.common.persistence.BaseEntity;
-import com.edtech.platform.subject.domain.Subject;
-import com.edtech.platform.teacher.domain.TeacherProfile;
+import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
@@ -29,13 +25,11 @@ import org.hibernate.annotations.Where;
 @Where(clause = "is_deleted = false")
 public class PricingPackage extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "teacher_id", nullable = false)
-    private TeacherProfile teacher;
+    @Column(name = "teacher_id", nullable = false)
+    private UUID teacherId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subject_id", nullable = false)
-    private Subject subject;
+    @Column(name = "subject_id", nullable = false)
+    private UUID subjectId;
 
     @Column(nullable = false, length = 150)
     private String name;
@@ -64,9 +58,9 @@ public class PricingPackage extends BaseEntity {
     private long version;
 
     @Builder
-    public PricingPackage(TeacherProfile teacher, Subject subject, String name, String description, int totalSessions, int durationDays, long priceVnd, int sessionDurationMinutes, PackageStatus status) {
-        this.teacher = teacher;
-        this.subject = subject;
+    public PricingPackage(UUID teacherId, UUID subjectId, String name, String description, int totalSessions, int durationDays, long priceVnd, int sessionDurationMinutes, PackageStatus status) {
+        this.teacherId = teacherId;
+        this.subjectId = subjectId;
         this.name = name;
         this.description = description;
         this.totalSessions = totalSessions;

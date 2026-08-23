@@ -1,6 +1,6 @@
 package com.edtech.platform.common.domain;
 
-import com.edtech.platform.auth.domain.User;
+
 import com.edtech.platform.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,9 +25,8 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Attachment extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+    @Column(name = "owner_id", nullable = false)
+    private UUID ownerId;
 
     @Column(name = "attachable_type", nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
@@ -52,8 +51,8 @@ public class Attachment extends BaseEntity {
     private Long fileSize;
 
     @Builder
-    public Attachment(User owner, AttachableType attachableType, UUID attachableId, String cloudinaryPublicId, String secureUrl, String originalFilename, String mimeType, Long fileSize) {
-        this.owner = owner;
+    public Attachment(UUID ownerId, AttachableType attachableType, UUID attachableId, String cloudinaryPublicId, String secureUrl, String originalFilename, String mimeType, Long fileSize) {
+        this.ownerId = ownerId;
         this.attachableType = attachableType;
         this.attachableId = attachableId;
         this.cloudinaryPublicId = cloudinaryPublicId;

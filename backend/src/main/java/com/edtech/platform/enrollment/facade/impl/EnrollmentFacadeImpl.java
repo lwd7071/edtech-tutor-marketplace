@@ -1,5 +1,6 @@
-package com.edtech.platform.catalog.service;
+package com.edtech.platform.enrollment.facade.impl;
 
+import com.edtech.platform.enrollment.facade.EnrollmentFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,19 +11,11 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LearningRelationshipChecker {
+public class EnrollmentFacadeImpl implements EnrollmentFacade {
 
     private final JdbcTemplate jdbcTemplate;
 
-    /**
-     * Checks if a valid learning relationship exists between a student and a teacher.
-     * This relies on a direct query to the 'student_packages' table.
-     * TODO: Refactor to use a proper facade when Developer B implements the Enrollment/Booking module.
-     *
-     * @param teacherId the UUID of the teacher
-     * @param studentId the UUID of the student
-     * @return true if an ACTIVE or COMPLETED student package exists, false otherwise
-     */
+    @Override
     public boolean hasValidRelationship(UUID teacherId, UUID studentId) {
         String sql = """
                 SELECT EXISTS (
@@ -34,6 +27,13 @@ public class LearningRelationshipChecker {
                 """;
 
         Boolean exists = jdbcTemplate.queryForObject(sql, Boolean.class, teacherId, studentId);
+        return exists != null && exists;
+    }
+
+    @Override
+    public boolean hasStudentPackage(UUID pricingPackageId) {
+        String sql = "SELECT EXISTS (SELECT 1 FROM student_packages WHERE pricing_package_id = ? AND is_deleted = false)";
+        Boolean exists = jdbcTemplate.queryForObject(sql, Boolean.class, pricingPackageId);
         return exists != null && exists;
     }
 }

@@ -1,8 +1,8 @@
 package com.edtech.platform.subject.domain;
 
-import com.edtech.platform.auth.domain.User;
 import com.edtech.platform.common.persistence.BaseEntity;
-import com.edtech.platform.teacher.domain.TeacherProfile;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -30,9 +30,8 @@ import java.time.Instant;
 @Where(clause = "is_deleted = false")
 public class SubjectProposal extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "teacher_id", nullable = false)
-    private TeacherProfile teacher;
+    @Column(name = "teacher_id", nullable = false)
+    private UUID teacherId;
 
     @Column(name = "proposed_name", nullable = false, length = 150)
     private String proposedName;
@@ -51,9 +50,8 @@ public class SubjectProposal extends BaseEntity {
     @Column(name = "review_note", columnDefinition = "text")
     private String reviewNote;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reviewed_by")
-    private User reviewedBy;
+    @Column(name = "reviewed_by")
+    private UUID reviewedById;
 
     @Column(name = "reviewed_at")
     private Instant reviewedAt;
@@ -63,8 +61,8 @@ public class SubjectProposal extends BaseEntity {
     private Subject createdSubject;
 
     @Builder
-    public SubjectProposal(TeacherProfile teacher, String proposedName, EducationLevel educationLevel, String description) {
-        this.teacher = teacher;
+    public SubjectProposal(UUID teacherId, String proposedName, EducationLevel educationLevel, String description) {
+        this.teacherId = teacherId;
         this.proposedName = proposedName;
         this.educationLevel = educationLevel;
         this.description = description;

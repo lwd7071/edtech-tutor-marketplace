@@ -1,7 +1,7 @@
 package com.edtech.platform.teacher.domain;
 
-import com.edtech.platform.auth.domain.User;
 import com.edtech.platform.common.persistence.BaseEntity;
+import java.util.UUID;
 import io.hypersistence.utils.hibernate.type.array.ListArrayType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,7 +10,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -34,9 +33,8 @@ import java.util.List;
 @Where(clause = "is_deleted = false")
 public class TeacherProfile extends BaseEntity {
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;
+    @Column(name = "user_id", nullable = false, unique = true)
+    private UUID userId;
 
     @Column(columnDefinition = "text")
     private String bio;
@@ -76,13 +74,12 @@ public class TeacherProfile extends BaseEntity {
     @Column(name = "approved_at")
     private Instant approvedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "approved_by")
-    private User approvedBy;
+    @Column(name = "approved_by")
+    private UUID approvedById;
 
     @Builder
-    public TeacherProfile(User user) {
-        this.user = user;
+    public TeacherProfile(UUID userId) {
+        this.userId = userId;
         this.profileStatus = ProfileStatus.DRAFT;
         this.languages = new ArrayList<>();
     }

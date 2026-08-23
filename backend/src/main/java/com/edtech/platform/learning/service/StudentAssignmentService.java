@@ -1,12 +1,10 @@
 package com.edtech.platform.learning.service;
 
-import com.edtech.platform.auth.domain.User;
-import com.edtech.platform.auth.repository.UserRepository;
-import com.edtech.platform.common.domain.AttachableType;
-import com.edtech.platform.common.domain.Attachment;
+import com.edtech.platform.auth.facade.IdentityFacade;
+
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
-import com.edtech.platform.common.repository.AttachmentRepository;
+import com.edtech.platform.common.facade.AttachmentFacade;
 import com.edtech.platform.learning.domain.Assignment;
 import com.edtech.platform.learning.domain.AssignmentStatus;
 import com.edtech.platform.learning.domain.Submission;
@@ -38,8 +36,8 @@ public class StudentAssignmentService {
 
     private final AssignmentRepository assignmentRepository;
     private final SubmissionRepository submissionRepository;
-    private final UserRepository userRepository;
-    private final AttachmentRepository attachmentRepository;
+    private final IdentityFacade identityFacade;
+    private final AttachmentFacade attachmentFacade;
     private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
@@ -58,7 +56,7 @@ public class StudentAssignmentService {
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ASSIGNMENT_NOT_FOUND));
 
-        if (!assignment.getStudent().getId().equals(studentId)) {
+        if (!assignment.getStudentId().equals(studentId)) {
             throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE);
         }
 
@@ -70,8 +68,9 @@ public class StudentAssignmentService {
             throw new BusinessException(ErrorCode.ASSIGNMENT_DUE_DATE_PASSED);
         }
 
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+        if (!identityFacade.existsById(studentId)) {
+            throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
+        }
 
         Optional<Submission> existingSubmission = submissionRepository.findByAssignmentIdAndStudentId(assignmentId, studentId);
         Submission submission;
@@ -89,7 +88,7 @@ public class StudentAssignmentService {
         } else {
             submission = Submission.builder()
                     .assignment(assignment)
-                    .student(student)
+                    .studentId(studentId)
                     .contentBlocks(objectMapper.valueToTree(request.getContentBlocks()))
                     .status(request.getStatus())
                     .submittedAt(request.getStatus() == SubmissionStatus.SUBMITTED ? Instant.now() : null)
@@ -99,41 +98,20 @@ public class StudentAssignmentService {
         submission = submissionRepository.save(submission);
 
         if (request.getContentBlocks() != null) {
-            validateAndLinkAttachments(studentId, AttachableType.SUBMISSION, request.getContentBlocks(), submission.getId());
+            validateAndLinkAttachments(studentId, "SUBMISSION", request.getContentBlocks(), submission.getId());
         }
 
         return toSubmissionDetail(submission);
     }
 
-    private void validateAndLinkAttachments(UUID currentUserId, AttachableType attachableType, List<ContentBlock> contentBlocks, UUID attachableId) {
+    private void validateAndLinkAttachments(UUID currentUserId, String attachableType, List<ContentBlock> contentBlocks, UUID attachableId) {
         for (ContentBlock block : contentBlocks) {
             if ("IMAGE".equals(block.getType()) || "FILE".equals(block.getType())) {
                 if (block.getAttachmentId() == null) {
                     throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Missing attachmentId for IMAGE/FILE block");
                 }
 
-                Attachment attachment = attachmentRepository.findById(block.getAttachmentId())
-                        .orElseThrow(() -> new BusinessException(ErrorCode.ATTACHMENT_CONTEXT_INVALID, "Attachment not found"));
-
-                if (!attachment.getOwner().getId().equals(currentUserId)) {
-                    throw new BusinessException(ErrorCode.ATTACHMENT_CONTEXT_INVALID, "Attachment not owned by current user");
-                }
-
-                if (attachment.getAttachableType() != attachableType) {
-                    throw new BusinessException(ErrorCode.ATTACHMENT_CONTEXT_INVALID, "Attachment type mismatch");
-                }
-                
-                // If the attachment is already linked to this very entity, it's fine (overwrite update case)
-                if (attachment.getAttachableId().equals(attachableId)) {
-                    continue; 
-                }
-
-                if (!attachment.getAttachableId().equals(attachment.getId())) {
-                    throw new BusinessException(ErrorCode.ATTACHMENT_CONTEXT_INVALID, "Attachment is already linked");
-                }
-
-                attachment.setAttachableId(attachableId);
-                attachmentRepository.save(attachment);
+                attachmentFacade.validateAndBind(block.getAttachmentId(), currentUserId, attachableType, attachableId);
             }
         }
     }
@@ -145,9 +123,9 @@ public class StudentAssignmentService {
         }
         return new AssignmentDetail(
                 assignment.getId(),
-                assignment.getTeacher().getId(),
-                assignment.getStudent().getId(),
-                assignment.getSubject().getId(),
+                assignment.getTeacherId(),
+                assignment.getStudentId(),
+                assignment.getSubjectId(),
                 assignment.getTitle(),
                 assignment.getAssignmentType(),
                 blocks,
@@ -165,7 +143,7 @@ public class StudentAssignmentService {
         return new SubmissionDetail(
                 submission.getId(),
                 submission.getAssignment().getId(),
-                submission.getStudent().getId(),
+                submission.getStudentId(),
                 blocks,
                 submission.getSubmittedAt(),
                 submission.getStatus(),

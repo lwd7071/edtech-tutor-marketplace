@@ -1,7 +1,7 @@
 package com.edtech.platform.teacher.controller;
 
 import com.edtech.platform.common.response.ApiResponse;
-import com.edtech.platform.subject.domain.ProposalStatus;
+
 import com.edtech.platform.subject.dto.CreateSubjectProposalRequest;
 import com.edtech.platform.subject.dto.SubjectProposalView;
 import com.edtech.platform.subject.service.SubjectProposalService;
@@ -33,7 +33,7 @@ public class TeacherSubjectProposalController {
 
     @GetMapping
     public ApiResponse<Page<SubjectProposalView>> getProposals(
-            @RequestParam(required = false) ProposalStatus status,
+            @RequestParam(required = false) String status,
             Pageable pageable,
             Principal principal) {
         UUID userId = UUID.fromString(principal.getName());

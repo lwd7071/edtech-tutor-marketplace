@@ -54,8 +54,8 @@ public class PublicTeacherController {
         List<PricingPackageView> views = pkgs.stream()
                 .map(pkg -> new PricingPackageView(
                         pkg.getId(),
-                        pkg.getSubject().getId(),
-                        pkg.getSubject().getName(),
+                        pkg.getSubjectId(),
+                        "Unknown",
                         pkg.getName(),
                         pkg.getDescription(),
                         pkg.getTotalSessions(),

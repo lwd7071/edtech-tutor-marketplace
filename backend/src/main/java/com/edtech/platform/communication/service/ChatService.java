@@ -1,10 +1,8 @@
 package com.edtech.platform.communication.service;
 
-import com.edtech.platform.common.domain.AttachableType;
-import com.edtech.platform.common.domain.Attachment;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
-import com.edtech.platform.common.repository.AttachmentRepository;
+import com.edtech.platform.common.facade.AttachmentFacade;
 import com.edtech.platform.communication.domain.Conversation;
 import com.edtech.platform.communication.domain.Message;
 import com.edtech.platform.communication.domain.MessageType;
@@ -26,7 +24,7 @@ public class ChatService {
 
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
-    private final AttachmentRepository attachmentRepository;
+    private final AttachmentFacade attachmentFacade;
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificationService notificationService;
 
@@ -53,21 +51,7 @@ public class ChatService {
             throw new BusinessException(ErrorCode.MESSAGE_DUPLICATE);
         }
 
-        // Handle attachment
-        Attachment attachment = null;
-        if (request.getAttachmentId() != null) {
-            attachment = attachmentRepository.findById(request.getAttachmentId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.ATTACHMENT_NOT_FOUND));
-            if (!attachment.getOwner().getId().equals(senderId)) {
-                throw new BusinessException(ErrorCode.ATTACHMENT_CONTEXT_INVALID);
-            }
-            if (!attachment.getAttachableType().equals(AttachableType.MESSAGE.name())) {
-                throw new BusinessException(ErrorCode.ATTACHMENT_CONTEXT_INVALID);
-            }
-            if (!attachment.getAttachableId().equals(attachment.getId())) {
-                throw new BusinessException(ErrorCode.ATTACHMENT_CONTEXT_INVALID);
-            }
-        }
+        // Skip manual attachment validation here, will bind after saving message
 
         Message message = Message.builder()
                 .conversationId(conversation.getId())
@@ -75,14 +59,13 @@ public class ChatService {
                 .clientMessageId(request.getClientMessageId())
                 .messageType(request.getMessageType())
                 .content(request.getContent())
-                .attachmentId(attachment != null ? attachment.getId() : null)
+                .attachmentId(request.getAttachmentId())
                 .build();
 
         message = messageRepository.save(message);
 
-        if (attachment != null) {
-            attachment.setAttachableId(message.getId());
-            attachmentRepository.save(attachment);
+        if (request.getAttachmentId() != null) {
+            attachmentFacade.validateAndBind(request.getAttachmentId(), senderId, "MESSAGE", message.getId());
         }
 
         conversation.markLastMessageAt(message.getSentAt());
@@ -130,8 +113,7 @@ public class ChatService {
     public MessageView mapToView(Message m) {
         String attachmentUrl = null;
         if (m.getAttachmentId() != null) {
-            attachmentUrl = attachmentRepository.findById(m.getAttachmentId())
-                    .map(Attachment::getSecureUrl).orElse(null);
+            attachmentUrl = attachmentFacade.getAttachmentView(m.getAttachmentId()).getSecureUrl();
         }
         return MessageView.builder()
                 .id(m.getId())

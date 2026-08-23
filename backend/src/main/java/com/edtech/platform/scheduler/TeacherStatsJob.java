@@ -1,8 +1,7 @@
 package com.edtech.platform.scheduler;
 
 import com.edtech.platform.common.config.RedisCacheConfig;
-import com.edtech.platform.ranking.domain.TeacherStats;
-import com.edtech.platform.ranking.repository.TeacherStatsRepository;
+import com.edtech.platform.ranking.facade.TeacherStatsFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
 public class TeacherStatsJob {
 
     private final JdbcTemplate jdbcTemplate;
-    private final TeacherStatsRepository teacherStatsRepository;
+    private final TeacherStatsFacade teacherStatsFacade;
     private final CacheManager cacheManager;
     private final com.edtech.platform.ranking.service.TeacherStatsService teacherStatsService;
 
@@ -52,20 +51,7 @@ public class TeacherStatsJob {
             }
 
             // 4. Update global rank
-            List<TeacherStats> allStats = teacherStatsRepository.findAll();
-            allStats.sort((s1, s2) -> {
-                int cmp = s2.getBayesianRating().compareTo(s1.getBayesianRating());
-                if (cmp != 0) return cmp;
-                cmp = s2.getCompletedSessionCount().compareTo(s1.getCompletedSessionCount());
-                if (cmp != 0) return cmp;
-                return s2.getCompletionRate().compareTo(s1.getCompletionRate());
-            });
-
-            int rank = 1;
-            for (TeacherStats stat : allStats) {
-                stat.setGlobalRank(rank++);
-            }
-            teacherStatsRepository.saveAll(allStats);
+            teacherStatsFacade.updateAllGlobalRanks();
 
             log.info("TeacherStatsJob completed. Processed {} records, {} failed.", successCount, failCount);
 

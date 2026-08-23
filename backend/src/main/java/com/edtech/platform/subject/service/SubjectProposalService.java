@@ -7,8 +7,8 @@ import com.edtech.platform.subject.domain.SubjectProposal;
 import com.edtech.platform.subject.dto.CreateSubjectProposalRequest;
 import com.edtech.platform.subject.dto.SubjectProposalView;
 import com.edtech.platform.subject.repository.SubjectProposalRepository;
-import com.edtech.platform.teacher.domain.TeacherProfile;
-import com.edtech.platform.teacher.repository.TeacherProfileRepository;
+import com.edtech.platform.teacher.facade.TeacherFacade;
+import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,15 +22,14 @@ import java.util.UUID;
 public class SubjectProposalService {
 
     private final SubjectProposalRepository subjectProposalRepository;
-    private final TeacherProfileRepository teacherProfileRepository;
+    private final TeacherFacade teacherFacade;
 
     @Transactional
     public SubjectProposalView createProposal(UUID userId, CreateSubjectProposalRequest request) {
-        TeacherProfile profile = teacherProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TEACHER_PROFILE_NOT_FOUND));
+        TeacherSnapshot profile = teacherFacade.getTeacherByUserId(userId);
 
         SubjectProposal proposal = SubjectProposal.builder()
-                .teacher(profile)
+                .teacherId(profile.id())
                 .proposedName(request.proposedName())
                 .educationLevel(request.educationLevel())
                 .description(request.description())
@@ -41,17 +40,22 @@ public class SubjectProposalService {
 
     @Transactional(readOnly = true)
     public Page<SubjectProposalView> getProposals(UUID userId, ProposalStatus status, Pageable pageable) {
-        TeacherProfile profile = teacherProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TEACHER_PROFILE_NOT_FOUND));
+        TeacherSnapshot profile = teacherFacade.getTeacherByUserId(userId);
 
         Page<SubjectProposal> proposals;
         if (status != null) {
-            proposals = subjectProposalRepository.findByTeacherIdAndStatus(profile.getId(), status, pageable);
+            proposals = subjectProposalRepository.findByTeacherIdAndStatus(profile.id(), status, pageable);
         } else {
-            proposals = subjectProposalRepository.findByTeacherId(profile.getId(), pageable);
+            proposals = subjectProposalRepository.findByTeacherId(profile.id(), pageable);
         }
 
         return proposals.map(this::toView);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<SubjectProposalView> getProposals(UUID userId, String statusStr, Pageable pageable) {
+        ProposalStatus status = statusStr != null ? ProposalStatus.valueOf(statusStr) : null;
+        return getProposals(userId, status, pageable);
     }
 
     private SubjectProposalView toView(SubjectProposal proposal) {

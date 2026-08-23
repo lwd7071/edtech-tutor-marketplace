@@ -1,7 +1,7 @@
 package com.edtech.platform.ranking.service;
 
-import com.edtech.platform.auth.domain.User;
-import com.edtech.platform.auth.repository.UserRepository;
+import com.edtech.platform.auth.facade.IdentityFacade;
+import com.edtech.platform.booking.facade.BookingEligibilityFacade;
 import com.edtech.platform.ranking.domain.Review;
 import com.edtech.platform.ranking.dto.request.CreateReviewRequest;
 import com.edtech.platform.ranking.dto.response.ReviewView;
@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -29,8 +28,8 @@ import java.util.UUID;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final UserRepository userRepository;
-    private final JdbcTemplate jdbcTemplate;
+    private final IdentityFacade identityFacade;
+    private final BookingEligibilityFacade bookingEligibilityFacade;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -39,21 +38,11 @@ public class ReviewService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "REVIEW_ALREADY_EXISTS");
         }
 
-        String sql = "SELECT status, student_id, teacher_id FROM bookings WHERE id = ? AND is_deleted = false";
-        List<Map<String, Object>> bookings = jdbcTemplate.queryForList(sql, bookingId);
-
-        if (bookings.isEmpty()) {
+        var teacherIdOpt = bookingEligibilityFacade.getTeacherIdForReviewableBooking(studentId, bookingId);
+        if (teacherIdOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "REVIEW_NOT_ALLOWED");
         }
-
-        Map<String, Object> booking = bookings.get(0);
-        String status = (String) booking.get("status");
-        UUID bookingStudentId = (UUID) booking.get("student_id");
-        UUID teacherId = (UUID) booking.get("teacher_id");
-
-        if (!"COMPLETED".equals(status) || !studentId.equals(bookingStudentId)) {
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "REVIEW_NOT_ALLOWED");
-        }
+        UUID teacherId = teacherIdOpt.get();
 
         Review review = Review.builder()
                 .bookingId(bookingId)
@@ -82,14 +71,15 @@ public class ReviewService {
     }
 
     private ReviewView mapToView(Review review) {
-        User student = userRepository.findById(review.getStudentId()).orElse(null);
+        var studentSnapshotOpt = identityFacade.getIdentity(review.getStudentId());
         
         ReviewView.StudentDto studentDto = null;
-        if (student != null) {
+        if (studentSnapshotOpt.isPresent()) {
+            var studentSnapshot = studentSnapshotOpt.get();
             studentDto = ReviewView.StudentDto.builder()
-                    .id(student.getId())
-                    .fullName(student.getFullName())
-                    .avatarUrl(student.getAvatarUrl())
+                    .id(studentSnapshot.id())
+                    .fullName(studentSnapshot.fullName())
+                    .avatarUrl(studentSnapshot.avatarUrl())
                     .build();
         }
 

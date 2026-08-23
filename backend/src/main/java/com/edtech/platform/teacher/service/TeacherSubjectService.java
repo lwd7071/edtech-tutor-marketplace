@@ -3,7 +3,7 @@ package com.edtech.platform.teacher.service;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.subject.domain.Subject;
-import com.edtech.platform.subject.repository.SubjectRepository;
+import com.edtech.platform.subject.facade.SubjectFacade;
 import com.edtech.platform.teacher.domain.TeacherProfile;
 import com.edtech.platform.teacher.domain.TeacherSubject;
 import com.edtech.platform.teacher.dto.AssignSubjectRequest;
@@ -24,7 +24,7 @@ public class TeacherSubjectService {
 
     private final TeacherSubjectRepository teacherSubjectRepository;
     private final TeacherProfileRepository teacherProfileRepository;
-    private final SubjectRepository subjectRepository;
+    private final SubjectFacade subjectFacade;
 
     @Transactional(readOnly = true)
     public List<TeacherSubjectView> getSubjects(UUID userId) {
@@ -41,31 +41,35 @@ public class TeacherSubjectService {
         TeacherProfile profile = teacherProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TEACHER_PROFILE_NOT_FOUND));
 
-        Subject subject = subjectRepository.findByIdAndIsActiveTrue(subjectId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.SUBJECT_NOT_FOUND));
+
 
         Optional<TeacherSubject> existingOpt = teacherSubjectRepository.findByTeacherIdAndSubjectIdIncludingDeleted(profile.getId(), subjectId);
 
         TeacherSubject teacherSubject;
         if (existingOpt.isPresent()) {
-            teacherSubject = existingOpt.get();
-            if (!teacherSubject.isDeleted()) {
+            TeacherSubject ts = existingOpt.get();
+            if (!ts.isDeleted()) {
                 throw new BusinessException(ErrorCode.SUBJECT_ALREADY_ASSIGNED);
             }
-            teacherSubject.setDeleted(false);
-            teacherSubject.setActive(true);
-            teacherSubject.setLevelDescription(request.levelDescription());
-            teacherSubject.setExperienceDescription(request.experienceDescription());
-        } else {
-            teacherSubject = TeacherSubject.builder()
-                    .teacher(profile)
-                    .subject(subject)
-                    .levelDescription(request.levelDescription())
-                    .experienceDescription(request.experienceDescription())
-                    .build();
+            ts.setDeleted(false);
+            ts.setActive(true);
+            ts.setLevelDescription(request.levelDescription());
+            ts.setExperienceDescription(request.experienceDescription());
+            return toView(teacherSubjectRepository.save(ts));
         }
 
-        return toView(teacherSubjectRepository.save(teacherSubject));
+        if (!subjectFacade.isSubjectActive(subjectId)) {
+            throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "Subject not found or inactive");
+        }
+
+        TeacherSubject newTeacherSubject = TeacherSubject.builder()
+                .teacher(profile)
+                .subjectId(subjectId)
+                .levelDescription(request.levelDescription())
+                .experienceDescription(request.experienceDescription())
+                .build();
+
+        return toView(teacherSubjectRepository.save(newTeacherSubject));
     }
 
     @Transactional
@@ -75,7 +79,7 @@ public class TeacherSubjectService {
 
         // Finding active subjects only
         TeacherSubject teacherSubject = teacherSubjectRepository.findByTeacherId(profile.getId()).stream()
-                .filter(ts -> ts.getSubject().getId().equals(subjectId))
+                .filter(ts -> ts.getSubjectId().equals(subjectId))
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(ErrorCode.SUBJECT_NOT_ASSIGNED));
 
@@ -83,13 +87,14 @@ public class TeacherSubjectService {
     }
 
     private TeacherSubjectView toView(TeacherSubject teacherSubject) {
+        var subject = subjectFacade.getSubject(teacherSubject.getSubjectId());
         return new TeacherSubjectView(
                 teacherSubject.getId(),
                 new TeacherSubjectView.SubjectDto(
-                        teacherSubject.getSubject().getId(),
-                        teacherSubject.getSubject().getCode(),
-                        teacherSubject.getSubject().getName(),
-                        teacherSubject.getSubject().getEducationLevel()
+                        subject.id(),
+                        subject.code(),
+                        subject.name(),
+                        subject.educationLevel()
                 ),
                 teacherSubject.getLevelDescription(),
                 teacherSubject.getExperienceDescription(),

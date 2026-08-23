@@ -77,7 +77,7 @@ public class TeacherDocumentService {
         TeacherDocument document = teacherDocumentRepository.findById(documentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        if (!document.getTeacher().getUser().getId().equals(userId)) {
+        if (!document.getTeacher().getUserId().equals(userId)) {
             throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE);
         }
 

@@ -1,14 +1,15 @@
 package com.edtech.platform.ranking.service;
 
-import com.edtech.platform.auth.domain.User;
-import com.edtech.platform.auth.repository.UserRepository;
+import com.edtech.platform.teacher.facade.TeacherFacade;
+import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import com.edtech.platform.common.config.RedisCacheConfig;
 import com.edtech.platform.ranking.domain.TeacherStats;
 import com.edtech.platform.ranking.dto.response.TeacherRankingItem;
 import com.edtech.platform.ranking.dto.response.TeacherStatsView;
 import com.edtech.platform.ranking.repository.TeacherStatsRepository;
-import com.edtech.platform.teacher.domain.TeacherProfile;
-import com.edtech.platform.teacher.repository.TeacherProfileRepository;
+import com.edtech.platform.admin.facade.PlatformSettingsFacade;
+import com.edtech.platform.booking.facade.BookingEligibilityFacade;
+import com.edtech.platform.ranking.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -28,9 +29,11 @@ import java.util.UUID;
 public class TeacherStatsService {
 
     private final TeacherStatsRepository teacherStatsRepository;
-    private final TeacherProfileRepository teacherProfileRepository;
-    private final UserRepository userRepository;
-    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+    private final TeacherFacade teacherFacade;
+    private final PlatformSettingsFacade platformSettingsFacade;
+    private final BookingEligibilityFacade bookingEligibilityFacade;
+    private final ReviewRepository reviewRepository;
+    
     private final org.springframework.cache.CacheManager cacheManager;
 
     @Transactional(readOnly = true)
@@ -59,20 +62,18 @@ public class TeacherStatsService {
         Page<TeacherStats> statsPage = teacherStatsRepository.findGlobalRanking(subjectIdStr, pageable);
         
         return statsPage.map(stats -> {
-            TeacherProfile profile = teacherProfileRepository.findById(stats.getTeacherId()).orElse(null);
-            User user = null;
-            if (profile != null) {
-                user = profile.getUser();
+            TeacherSnapshot snapshot = null;
+            try {
+                snapshot = teacherFacade.getTeacher(stats.getTeacherId());
+            } catch (Exception e) {
+                log.warn("Teacher profile not found for {}", stats.getTeacherId());
             }
-
-            String bioExcerpt = profile != null && profile.getBio() != null ?
-                    (profile.getBio().length() > 100 ? profile.getBio().substring(0, 100) + "..." : profile.getBio()) : null;
 
             return TeacherRankingItem.builder()
                     .teacherId(stats.getTeacherId())
-                    .fullName(user != null ? user.getFullName() : null)
-                    .avatarUrl(user != null ? user.getAvatarUrl() : null)
-                    .bioExcerpt(bioExcerpt)
+                    .fullName(snapshot != null ? snapshot.fullName() : null)
+                    .avatarUrl(snapshot != null ? snapshot.avatarUrl() : null)
+                    .bioExcerpt(snapshot != null ? snapshot.bioExcerpt() : null)
                     .bayesianRating(stats.getBayesianRating())
                     .completedSessionCount(stats.getCompletedSessionCount())
                     .globalRank(stats.getGlobalRank())
@@ -85,36 +86,23 @@ public class TeacherStatsService {
         log.info("Recalculating TeacherStats for teacher {}", teacherId);
         try {
             // 1. Get configuration
-            Integer bayesianMinReviews = jdbcTemplate.queryForObject(
-                    "SELECT bayesian_minimum_reviews FROM platform_settings LIMIT 1", Integer.class);
-            if (bayesianMinReviews == null) bayesianMinReviews = 10;
-            
-            Double globalAverageRating = jdbcTemplate.queryForObject(
-                    "SELECT COALESCE(AVG(rating), 0) FROM reviews WHERE is_visible = true AND is_deleted = false", Double.class);
+            int bayesianMinReviews = platformSettingsFacade.getBayesianMinimumReviews();
+            Double globalAverageRating = reviewRepository.findGlobalAverageRating();
             if (globalAverageRating == null) globalAverageRating = 0.0;
             
             double m = bayesianMinReviews;
             double c = globalAverageRating;
 
-            Map<String, Object> reviewStats = jdbcTemplate.queryForMap(
-                    "SELECT COUNT(id) as review_count, COALESCE(AVG(rating), 0) as average_rating " +
-                    "FROM reviews WHERE teacher_id = ? AND is_visible = true AND is_deleted = false", teacherId);
-            
-            int v = ((Number) reviewStats.get("review_count")).intValue();
-            double r = ((Number) reviewStats.get("average_rating")).doubleValue();
+            int v = reviewRepository.countVisibleReviewsByTeacherId(teacherId);
+            Double rDouble = reviewRepository.findAverageRatingByTeacherId(teacherId);
+            double r = rDouble != null ? rDouble : 0.0;
 
             double bayesianRating = v == 0 ? 0.0 : ((v / (v + m)) * r) + ((m / (v + m)) * c);
 
-            Map<String, Object> bookingStats = jdbcTemplate.queryForMap(
-                    "SELECT " +
-                    "COUNT(CASE WHEN status = 'COMPLETED' THEN 1 END) as completed_sessions, " +
-                    "COUNT(CASE WHEN status IN ('COMPLETED', 'CANCELLED', 'SCHEDULED') THEN 1 END) as total_sessions, " +
-                    "COUNT(CASE WHEN is_trial = true AND status = 'COMPLETED' THEN 1 END) as trial_sessions " +
-                    "FROM bookings WHERE teacher_id = ? AND is_deleted = false", teacherId);
-            
-            int completedSessions = ((Number) bookingStats.get("completed_sessions")).intValue();
-            int totalSessions = ((Number) bookingStats.get("total_sessions")).intValue();
-            int trialSessions = ((Number) bookingStats.get("trial_sessions")).intValue();
+            var bookingStats = bookingEligibilityFacade.getTeacherBookingStats(teacherId);
+            int completedSessions = bookingStats.completedSessions();
+            int totalSessions = bookingStats.totalSessions();
+            int trialSessions = bookingStats.trialSessions();
             
             double completionRate = totalSessions > 0 ? (double) completedSessions / totalSessions : 0.0;
             double trialConversionRate = 0.0; 

@@ -11,15 +11,17 @@ import java.util.UUID;
 
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
-    @Query(value = "SELECT r FROM Review r " +
-            "JOIN com.edtech.platform.teacher.domain.TeacherProfile tp ON r.teacherId = tp.id " +
-            "JOIN com.edtech.platform.auth.domain.User u ON tp.user.id = u.id " +
-            "WHERE r.teacherId = :teacherId " +
-            "AND r.isVisible = true " +
-            "AND u.status = 'ACTIVE' " +
-            "AND tp.profileStatus = 'APPROVED' " +
-            "AND tp.isVisible = true")
+    @Query("SELECT r FROM Review r WHERE r.teacherId = :teacherId AND r.isVisible = true")
     Page<Review> findPublicReviewsByTeacherId(@Param("teacherId") UUID teacherId, Pageable pageable);
+
+    @Query("SELECT COALESCE(AVG(r.rating), 0) FROM Review r WHERE r.isVisible = true AND r.isDeleted = false")
+    Double findGlobalAverageRating();
+
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.teacherId = :teacherId AND r.isVisible = true AND r.isDeleted = false")
+    int countVisibleReviewsByTeacherId(@Param("teacherId") UUID teacherId);
+
+    @Query("SELECT COALESCE(AVG(r.rating), 0) FROM Review r WHERE r.teacherId = :teacherId AND r.isVisible = true AND r.isDeleted = false")
+    Double findAverageRatingByTeacherId(@Param("teacherId") UUID teacherId);
 
     boolean existsByBookingId(UUID bookingId);
 }

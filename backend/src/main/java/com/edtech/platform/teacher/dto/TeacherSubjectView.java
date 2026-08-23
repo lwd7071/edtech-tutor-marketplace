@@ -1,6 +1,6 @@
 package com.edtech.platform.teacher.dto;
 
-import com.edtech.platform.subject.domain.EducationLevel;
+
 
 import java.util.UUID;
 
@@ -15,6 +15,6 @@ public record TeacherSubjectView(
             UUID id,
             String code,
             String name,
-            EducationLevel educationLevel
+            String educationLevel
     ) {}
 }

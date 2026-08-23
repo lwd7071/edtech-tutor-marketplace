@@ -13,9 +13,9 @@ import java.util.UUID;
 @RequestMapping("/api/public/teachers")
 public class PublicReviewController {
 
-    @GetMapping("/{id}/reviews")
-    public ApiResponse<Page<Object>> getTeacherReviews(@PathVariable UUID id) {
-        // TODO: Implement in M7. Returning empty for now.
-        return ApiResponse.ok(Page.empty());
-    }
+//    @GetMapping("/{id}/reviews")
+//    public ApiResponse<Page<Object>> getTeacherReviews(@PathVariable UUID id) {
+//        // TODO: Implement in M7. Returning empty for now.
+//        return ApiResponse.ok(Page.empty());
+//    }
 }

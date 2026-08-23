@@ -1,7 +1,8 @@
 package com.edtech.platform.teacher.domain;
 
-import com.edtech.platform.subject.domain.Subject;
+
 import com.edtech.platform.common.persistence.BaseEntity;
+import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,9 +30,8 @@ public class TeacherSubject extends BaseEntity {
     @JoinColumn(name = "teacher_id", nullable = false)
     private TeacherProfile teacher;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subject_id", nullable = false)
-    private Subject subject;
+    @Column(name = "subject_id", nullable = false)
+    private UUID subjectId;
 
     @Column(name = "level_description", columnDefinition = "text")
     private String levelDescription;
@@ -43,9 +43,9 @@ public class TeacherSubject extends BaseEntity {
     private boolean isActive = true;
 
     @Builder
-    public TeacherSubject(TeacherProfile teacher, Subject subject, String levelDescription, String experienceDescription) {
+    public TeacherSubject(TeacherProfile teacher, UUID subjectId, String levelDescription, String experienceDescription) {
         this.teacher = teacher;
-        this.subject = subject;
+        this.subjectId = subjectId;
         this.levelDescription = levelDescription;
         this.experienceDescription = experienceDescription;
         this.isActive = true;

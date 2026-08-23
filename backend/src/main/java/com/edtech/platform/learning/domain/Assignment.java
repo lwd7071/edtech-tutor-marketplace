@@ -1,9 +1,6 @@
 package com.edtech.platform.learning.domain;
 
-import com.edtech.platform.auth.domain.User;
 import com.edtech.platform.common.persistence.BaseEntity;
-import com.edtech.platform.subject.domain.Subject;
-import com.edtech.platform.teacher.domain.TeacherProfile;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
@@ -22,6 +19,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "assignments")
@@ -30,17 +28,14 @@ import java.time.Instant;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Assignment extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "teacher_id", nullable = false)
-    private TeacherProfile teacher;
+    @Column(name = "teacher_id", nullable = false)
+    private UUID teacherId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "student_id", nullable = false)
-    private User student;
+    @Column(name = "student_id", nullable = false)
+    private UUID studentId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "subject_id", nullable = false)
-    private Subject subject;
+    @Column(name = "subject_id", nullable = false)
+    private UUID subjectId;
 
     @Column(nullable = false, length = 255)
     private String title;
@@ -65,10 +60,10 @@ public class Assignment extends BaseEntity {
     private AssignmentStatus status;
 
     @Builder
-    public Assignment(TeacherProfile teacher, User student, Subject subject, String title, AssignmentType assignmentType, JsonNode contentBlocks, JsonNode quizSchema, Instant dueAt, AssignmentStatus status) {
-        this.teacher = teacher;
-        this.student = student;
-        this.subject = subject;
+    public Assignment(UUID teacherId, UUID studentId, UUID subjectId, String title, AssignmentType assignmentType, JsonNode contentBlocks, JsonNode quizSchema, Instant dueAt, AssignmentStatus status) {
+        this.teacherId = teacherId;
+        this.studentId = studentId;
+        this.subjectId = subjectId;
         this.title = title;
         this.assignmentType = assignmentType;
         this.contentBlocks = contentBlocks;

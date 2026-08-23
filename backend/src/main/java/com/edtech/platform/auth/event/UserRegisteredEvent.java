@@ -16,8 +16,12 @@ public class UserRegisteredEvent extends AbstractDomainEvent {
     public UserRegisteredEvent(UUID userId, String email, Role role, String fullName) {
         super();
         this.userId = userId;
-        this.email = email;
         this.role = role;
+        this.email = email;
         this.fullName = fullName;
+    }
+
+    public String getRoleName() {
+        return role != null ? role.name() : null;
     }
 }

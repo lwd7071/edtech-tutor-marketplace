@@ -1,7 +1,6 @@
 package com.edtech.platform.common.service;
 
-import com.edtech.platform.auth.domain.User;
-import com.edtech.platform.auth.repository.UserRepository;
+import com.edtech.platform.auth.facade.IdentityFacade;
 import com.edtech.platform.common.domain.AttachableType;
 import com.edtech.platform.common.domain.Attachment;
 import com.edtech.platform.common.dto.response.AttachmentView;
@@ -26,7 +25,7 @@ import java.util.UUID;
 public class AttachmentService {
 
     private final AttachmentRepository attachmentRepository;
-    private final UserRepository userRepository;
+    private final IdentityFacade identityFacade;
     private final FileStoragePort fileStoragePort;
     private final Tika tika = new Tika();
 
@@ -59,13 +58,14 @@ public class AttachmentService {
                 throw new BusinessException(ErrorCode.FILE_TYPE_NOT_ALLOWED);
             }
 
-            User owner = userRepository.findById(ownerId)
-                    .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+            if (!identityFacade.existsById(ownerId)) {
+                throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
+            }
 
             FileStoragePort.UploadResult result = fileStoragePort.upload(file, "attachments/" + attachableType.name().toLowerCase() + "/" + ownerId);
 
             Attachment attachment = Attachment.builder()
-                    .owner(owner)
+                    .ownerId(ownerId)
                     .attachableType(attachableType)
                     .attachableId(UUID.randomUUID()) // Temporary value to satisfy NOT NULL constraint
                     .cloudinaryPublicId(result.publicId())
