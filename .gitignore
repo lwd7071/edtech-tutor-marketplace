@@ -36,3 +36,9 @@ build/
 
 ### Others ###
 *.log
+.env
+.env.local
+.env.*.local
+application-local.yml
+application-local.properties
+

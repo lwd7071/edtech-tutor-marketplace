@@ -50,12 +50,12 @@ Sở hữu các module:
 
 **B**
 
-- Hoàn thành Docker Desktop/WSL, PostgreSQL, Redis và Docker Compose v2.
-- Tạo baseline Flyway từ ERD, gồm constraint và index.
-- Thiết lập Testcontainers, seed profile và CI build/test.
-- Chuyển secret và cấu hình môi trường sang environment variables.
+- `[x]` Hoàn thành Docker Desktop/WSL, PostgreSQL, Redis và Docker Compose v2. (Chưa có Docker local nhưng setup cấu hình xong)
+- `[x]` Tạo baseline Flyway từ ERD, gồm constraint và index (Đã bao gồm V1-V16).
+- `[ ]` Thiết lập Testcontainers, seed profile và CI build/test.
+- `[x]` Chuyển secret và cấu hình môi trường sang environment variables.
 
-**Checkpoint:** `docker compose up` thành công; migration chạy được trên database rỗng; context test xanh.
+**Checkpoint:** `docker compose up` thành công; migration chạy được trên database rỗng; context test xanh. (Partially completed)
 
 ### Tuần 2 — Auth và Teacher Onboarding
 
