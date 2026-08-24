@@ -10,4 +10,7 @@ import java.util.UUID;
 @Repository
 public interface TeacherProfileRepository extends JpaRepository<TeacherProfile, UUID> {
     Optional<TeacherProfile> findByUserId(UUID userId);
+    
+    @org.springframework.data.jpa.repository.Query("SELECT t.id FROM TeacherProfile t WHERE t.profileStatus = 'APPROVED'")
+    java.util.List<UUID> findApprovedTeacherIds();
 }

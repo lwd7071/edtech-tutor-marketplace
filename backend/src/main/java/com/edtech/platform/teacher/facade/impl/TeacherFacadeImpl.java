@@ -42,6 +42,11 @@ public class TeacherFacadeImpl implements TeacherFacade {
                 .anyMatch(ts -> ts.getSubjectId().equals(subjectId) && ts.isActive());
     }
 
+    @Override
+    public java.util.List<UUID> getApprovedTeacherIds() {
+        return teacherProfileRepository.findApprovedTeacherIds();
+    }
+
     private TeacherSnapshot toSnapshot(TeacherProfile profile) {
         UUID userId = profile.getUserId();
         String fullName = null;

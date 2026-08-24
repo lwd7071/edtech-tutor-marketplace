@@ -2,7 +2,6 @@ package com.edtech.platform.teacher.service;
 
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
-import com.edtech.platform.subject.domain.Subject;
 import com.edtech.platform.subject.facade.SubjectFacade;
 import com.edtech.platform.teacher.domain.TeacherProfile;
 import com.edtech.platform.teacher.domain.TeacherSubject;

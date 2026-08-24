@@ -6,9 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.cache.CacheManager;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import com.edtech.platform.teacher.facade.TeacherFacade;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TeacherStatsJob {
 
-    private final JdbcTemplate jdbcTemplate;
     private final TeacherStatsFacade teacherStatsFacade;
     private final CacheManager cacheManager;
     private final com.edtech.platform.ranking.service.TeacherStatsService teacherStatsService;
+    private final TeacherFacade teacherFacade;
 
     @Scheduled(cron = "0 0 2 * * ?") // 02:00 every day
     @SchedulerLock(name = "TeacherStatsJob_calculateStats", lockAtLeastFor = "5m", lockAtMostFor = "30m")
@@ -33,8 +33,7 @@ public class TeacherStatsJob {
         log.info("Starting TeacherStatsJob");
         try {
             // 2. Fetch all approved teachers
-            List<UUID> teacherIds = jdbcTemplate.queryForList(
-                    "SELECT id FROM teacher_profiles WHERE profile_status = 'APPROVED' AND is_deleted = false", UUID.class);
+            List<UUID> teacherIds = teacherFacade.getApprovedTeacherIds();
 
             int successCount = 0;
             int failCount = 0;

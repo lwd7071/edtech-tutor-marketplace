@@ -8,4 +8,5 @@ public interface TeacherFacade {
     TeacherSnapshot getTeacher(UUID teacherId);
     TeacherSnapshot getTeacherByUserId(UUID userId);
     boolean hasAssignedSubject(UUID teacherId, UUID subjectId);
+    java.util.List<UUID> getApprovedTeacherIds();
 }
