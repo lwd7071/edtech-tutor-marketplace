@@ -3,6 +3,7 @@ package com.edtech.platform.ranking.facade.impl;
 import com.edtech.platform.ranking.domain.TeacherStats;
 import com.edtech.platform.ranking.facade.TeacherStatsFacade;
 import com.edtech.platform.ranking.repository.TeacherStatsRepository;
+import com.edtech.platform.ranking.service.TeacherStatsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,12 @@ import java.util.List;
 public class TeacherStatsFacadeImpl implements TeacherStatsFacade {
 
     private final TeacherStatsRepository teacherStatsRepository;
+    private final TeacherStatsService teacherStatsService;
+
+    @Override
+    public void recalculateTeacherStats(java.util.UUID teacherId) {
+        teacherStatsService.recalculateTeacherStats(teacherId);
+    }
 
     @Override
     @Transactional

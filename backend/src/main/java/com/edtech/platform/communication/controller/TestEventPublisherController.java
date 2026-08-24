@@ -5,6 +5,7 @@ import com.edtech.platform.common.event.booking.BookingCompletedEvent;
 import com.edtech.platform.common.event.booking.BookingCreatedEvent;
 import com.edtech.platform.common.event.payment.PaymentSucceededEvent;
 import com.edtech.platform.common.security.RequireRole;
+import com.edtech.platform.common.response.ApiResponse;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ public class TestEventPublisherController {
 
     @PostMapping("/publish")
     @RequireRole("ADMIN")
-    public void publishTestEvent(@RequestBody TestEventRequest request) {
+    public ApiResponse<Void> publishTestEvent(@RequestBody TestEventRequest request) {
         log.info("Publishing test event: {}", request.getEventType());
         
         switch (request.getEventType()) {
@@ -66,6 +67,7 @@ public class TestEventPublisherController {
             default:
                 throw new IllegalArgumentException("Unknown event type: " + request.getEventType());
         }
+        return ApiResponse.ok("Đã phát sự kiện kiểm thử", null);
     }
 
     @Data

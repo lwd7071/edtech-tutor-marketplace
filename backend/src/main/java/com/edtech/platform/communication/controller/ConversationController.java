@@ -3,6 +3,8 @@ package com.edtech.platform.communication.controller;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.common.security.AuthenticatedUser;
+import com.edtech.platform.common.response.ApiResponse;
+import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.communication.domain.Conversation;
 import com.edtech.platform.communication.dto.chat.ConversationView;
 import com.edtech.platform.communication.dto.chat.MessageView;
@@ -27,10 +29,10 @@ public class ConversationController {
     private final ChatService chatService;
 
     @GetMapping
-    public Page<ConversationView> getConversations(
+    public ApiResponse<java.util.List<ConversationView>> getConversations(
             @AuthenticationPrincipal AuthenticatedUser user,
             Pageable pageable) {
-        return conversationRepository.findByUserId(user.getId(), pageable)
+        Page<ConversationView> page = conversationRepository.findByUserId(user.getId(), pageable)
                 .map(c -> ConversationView.builder()
                         .id(c.getId())
                         .teacherId(c.getTeacherId())
@@ -38,10 +40,11 @@ public class ConversationController {
                         .lastMessageAt(c.getLastMessageAt())
                         .createdAt(c.getCreatedAt())
                         .build());
+        return ApiResponse.page(page.getContent(), PageMeta.from(page));
     }
 
     @GetMapping("/{id}/messages")
-    public Page<MessageView> getMessages(
+    public ApiResponse<java.util.List<MessageView>> getMessages(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,
             Pageable pageable) {
@@ -52,7 +55,8 @@ public class ConversationController {
             throw new BusinessException(ErrorCode.CONVERSATION_NOT_FOUND);
         }
 
-        return messageRepository.findByConversationId(id, pageable)
+        Page<MessageView> page = messageRepository.findByConversationId(id, pageable)
                 .map(chatService::mapToView);
+        return ApiResponse.page(page.getContent(), PageMeta.from(page));
     }
 }

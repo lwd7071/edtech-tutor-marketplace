@@ -1,6 +1,8 @@
 package com.edtech.platform.ranking.controller;
 
 import com.edtech.platform.common.security.AuthenticatedUser;
+import com.edtech.platform.common.response.ApiResponse;
+import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.ranking.dto.response.TeacherRankingItem;
 import com.edtech.platform.ranking.dto.response.TeacherStatsView;
 import com.edtech.platform.ranking.service.TeacherStatsService;
@@ -21,14 +23,15 @@ public class TeacherStatsController {
     private final TeacherStatsService teacherStatsService;
 
     @GetMapping("/api/teacher/stats")
-    public TeacherStatsView getTeacherStats(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        return teacherStatsService.getTeacherStats(authenticatedUser.id());
+    public ApiResponse<TeacherStatsView> getTeacherStats(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        return ApiResponse.ok(teacherStatsService.getTeacherStats(authenticatedUser.id()));
     }
 
     @GetMapping("/api/public/teachers/ranking")
-    public Page<TeacherRankingItem> getGlobalRanking(
+    public ApiResponse<java.util.List<TeacherRankingItem>> getGlobalRanking(
             @RequestParam(value = "subjectId", required = false) UUID subjectId,
             Pageable pageable) {
-        return teacherStatsService.getGlobalRanking(subjectId, pageable);
+        Page<TeacherRankingItem> page = teacherStatsService.getGlobalRanking(subjectId, pageable);
+        return ApiResponse.page(page.getContent(), PageMeta.from(page));
     }
 }

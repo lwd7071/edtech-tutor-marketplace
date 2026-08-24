@@ -5,7 +5,6 @@ import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -13,7 +12,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@EnabledIf("isDockerAvailable")
 public class FlywayMigrationTest extends AbstractIntegrationTest {
 
     @Autowired(required = false)
@@ -23,17 +21,18 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    @DisplayName("Tất cả 17 file migration V1-V17 phải được apply thành công")
+    @DisplayName("Tất cả 18 file migration V1-V18 phải được apply và validate thành công")
     void flyway_shouldApplyAllMigrationsSuccessfully() {
         assertThat(flyway).isNotNull();
         MigrationInfo[] appliedMigrations = flyway.info().applied();
 
         assertThat(appliedMigrations)
-                .hasSize(17)
+                .hasSize(18)
                 .allSatisfy(info -> {
                     assertThat(info.getState().isApplied()).isTrue();
                     assertThat(info.getVersion()).isNotNull();
                 });
+        assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
     }
 
     @Test
@@ -118,8 +117,8 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(tables).containsAll(expectedTables);
     }
     @Test
-    @DisplayName("V16 phải cập nhật đúng schema cho student_packages, bookings và platform_settings")
-    void v16_shouldFixSchemaBugs() {
+    @DisplayName("Metadata V16-V18 phải khớp entity, FK và business invariants")
+    void hardeningMigrationsShouldExposeExpectedMetadata() {
         assertThat(jdbcTemplate).isNotNull();
 
         // 1. Check student_packages.commission_rate is numeric(5,2)
@@ -147,5 +146,38 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
                 Integer.class
         );
         assertThat(checkConstraintCount).isGreaterThanOrEqualTo(1);
+
+        Integer refreshSoftDelete = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'public' " +
+                        "AND table_name = 'refresh_tokens' AND column_name = 'is_deleted'",
+                Integer.class);
+        Integer staleDeleted = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'public' " +
+                        "AND table_name = 'refresh_tokens' AND column_name = 'deleted'",
+                Integer.class);
+        assertThat(refreshSoftDelete).isEqualTo(1);
+        assertThat(staleDeleted).isZero();
+
+        List<java.util.Map<String, Object>> teacherForeignKeys = jdbcTemplate.queryForList("""
+                SELECT tc.table_name, ccu.table_name AS foreign_table, ccu.column_name AS foreign_column
+                FROM information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage kcu
+                  ON tc.constraint_name = kcu.constraint_name AND tc.constraint_schema = kcu.constraint_schema
+                JOIN information_schema.constraint_column_usage ccu
+                  ON ccu.constraint_name = tc.constraint_name AND ccu.constraint_schema = tc.constraint_schema
+                WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_schema = 'public'
+                  AND kcu.column_name = 'teacher_id'
+                """);
+        assertThat(teacherForeignKeys).isNotEmpty().allSatisfy(fk -> {
+            assertThat(fk.get("foreign_table")).isEqualTo("teacher_profiles");
+            assertThat(fk.get("foreign_column")).isEqualTo("id");
+        });
+
+        List<String> singletonConstraints = jdbcTemplate.queryForList(
+                "SELECT conname FROM pg_constraint WHERE conrelid = 'platform_settings'::regclass " +
+                        "AND conname IN ('uq_platform_settings_singleton','ck_platform_settings_singleton')",
+                String.class);
+        assertThat(singletonConstraints).containsExactlyInAnyOrder(
+                "uq_platform_settings_singleton", "ck_platform_settings_singleton");
     }
 }

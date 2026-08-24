@@ -1,6 +1,8 @@
 package com.edtech.platform.ranking.controller;
 
 import com.edtech.platform.common.security.AuthenticatedUser;
+import com.edtech.platform.common.response.ApiResponse;
+import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.ranking.dto.request.CreateReviewRequest;
 import com.edtech.platform.ranking.dto.response.ReviewView;
 import com.edtech.platform.ranking.service.ReviewService;
@@ -27,17 +29,18 @@ public class ReviewController {
 
     @PostMapping("/api/student/bookings/{id}/review")
     @ResponseStatus(HttpStatus.CREATED)
-    public ReviewView createReview(
+    public ApiResponse<ReviewView> createReview(
             @PathVariable("id") UUID bookingId,
             @Valid @RequestBody CreateReviewRequest request,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        return reviewService.createReview(authenticatedUser.id(), bookingId, request);
+        return ApiResponse.created(reviewService.createReview(authenticatedUser.id(), bookingId, request));
     }
 
     @GetMapping("/api/public/teachers/{id}/reviews")
-    public Page<ReviewView> getPublicReviews(
+    public ApiResponse<java.util.List<ReviewView>> getPublicReviews(
             @PathVariable("id") UUID teacherId,
             Pageable pageable) {
-        return reviewService.getPublicReviews(teacherId, pageable);
+        Page<ReviewView> page = reviewService.getPublicReviews(teacherId, pageable);
+        return ApiResponse.page(page.getContent(), PageMeta.from(page));
     }
 }

@@ -2,25 +2,26 @@ spring:
   application:
     name: edtech-api
 
-  # --- Database Configuration (Supabase PostgreSQL) ---
+  # Connection details are always injected by the active environment/profile.
+  # Do not add cloud credentials or production-safe-looking fallbacks here.
   datasource:
-    url: ${DB_URL:jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0}
-    username: ${DB_USERNAME:postgres.sxsaggdvlxdiuozfdfrh}
-    password: ${DB_PASSWORD:dongdeptrai111}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
     properties:
       hibernate:
         format_sql: true
 
-  # --- Redis Configuration (Upstash Redis) ---
   data:
     redis:
-      url: ${REDIS_URL:rediss://default:gQAAAAAAAloQAAIgcDFlYzc0NjgwNzNiZGQ0ZjVjYmY1MTBkNzA5ZjQzYmU4Ng@finer-octopus-154128.upstash.io:6379}
+      url: ${REDIS_URL}
 
   # --- Mail Configuration ---
   mail:
@@ -48,7 +49,7 @@ spring:
   # --- Database Migration ---
   flyway:
     enabled: true
-    baseline-on-migrate: true
+    baseline-on-migrate: false
     locations: classpath:db/migration
 
 server:
@@ -62,10 +63,12 @@ server:
 # --- Custom App Configuration ---
 app:
   jwt:
-    secret: ${APP_JWT_SECRET:local-dev-only-secret-change-me-minimum-256-bit}
+    secret: ${APP_JWT_SECRET}
     access-expiration-ms: 900000
     refresh-expiration-ms: 604800000
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:*}
   oauth2:
     frontend-redirect-uri: ${APP_OAUTH2_REDIRECT_URI:http://localhost:3000/oauth2/callback}
+  cloudinary:
+    url: ${CLOUDINARY_URL:cloudinary://dummy:dummy@dummy}

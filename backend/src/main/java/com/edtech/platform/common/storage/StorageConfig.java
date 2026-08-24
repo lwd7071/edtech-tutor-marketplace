@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class StorageConfig {
 
-    @Value("${app.cloudinary.url:cloudinary://dummy:dummy@dummy}")
+    @Value("${app.cloudinary.url}")
     private String cloudinaryUrl;
 
     @Bean

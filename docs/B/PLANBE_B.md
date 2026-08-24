@@ -22,16 +22,16 @@ Thành viên B sở hữu:
 
 ### Task 1.1: Docker Compose & Môi trường
 - [x] Docker Compose đã có `postgres:16-alpine` + `redis:7-alpine` (sẵn trong repo)
-- [ ] Cài Docker/đưa Docker CLI vào `PATH`; tại lần xác minh 2026-08-24, lệnh `docker` chưa tồn tại
-- [ ] Verify `docker compose up` chạy thành công trên máy local
-- [ ] Kiểm tra kết nối PostgreSQL (`edtech_db` / `edtech_user` / `edtech_password`)
-- [ ] Kiểm tra kết nối Redis (`localhost:6379`)
+- [x] Docker Desktop 4.87.0, Engine 29.7.2/API 1.55 và Compose 5.4.0 đã xác minh ngày 2026-08-25
+- [x] `docker compose up -d` chạy thành công trên máy local; PostgreSQL và Redis đều healthy
+- [x] PostgreSQL `edtech_db` nhận kết nối bằng `pg_isready`
+- [x] Redis local trả `PONG`
 - [x] Cấu hình `.env.example` với đầy đủ biến môi trường
 
 ### Task 1.2: Flyway Baseline Migration
 > **B là người duy nhất tạo/sửa Flyway migration** (PLANBE.md quy tắc chống giẫm chân)
 
-Các file V1–V17 tại `backend/src/main/resources/db/migration/` là baseline đã đóng băng theo quy ước nhóm, nhưng **chưa được runtime-verify** trên PostgreSQL từ database rỗng. Audit tĩnh không thay thế Testcontainers.
+Các file V1–V17 tại `backend/src/main/resources/db/migration/` là baseline đã đóng băng theo quy ước nhóm. Ngày 2026-08-25, baseline đã được runtime-verify từ database PostgreSQL 16 rỗng bằng Testcontainers; Flyway áp dụng đúng 17 versioned migration và validate thành công.
 
 > **Audit tĩnh 2026-08-24:** nội dung file hiện tại cho thấy tất cả `teacher_id` tham chiếu `teacher_profiles(id)` và V16 có singleton constraints cho `platform_settings`. Hai kết luận này vẫn phải được xác nhận bằng metadata runtime tại Task 1.9.
 
@@ -685,22 +685,28 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
     flyway:
       enabled: true
   ```
-- [x] Tạo context test smoke (`ApiApplicationTests`), nhưng chưa xác nhận chạy thật trên Testcontainers
+- [x] Tạo và chạy thật context smoke test (`ApiApplicationTests`) trên Testcontainers
 - [x] Tạo `@TestConfiguration` base cho integration test dùng PostgreSQL container
 
 ### Task 1.4: Environment Variables
-- [x] Chuyển secrets ra env vars trong `application.yml` (đã có sẵn, verify)
+- [x] Xóa credential thật khỏi fallback trong `application.yml`; default profile fail-fast, local profile chỉ dùng credential Docker local-safe
+- [x] Chủ sở hữu xác nhận đã rotate Supabase và Upstash credential từng lộ; giá trị mới chỉ lưu trong `.env.cloud` bị Git ignore
+- [x] Đổi Hibernate `ddl-auto` thành `validate`; schema chỉ thay đổi qua Flyway
+- [x] Tắt `show-sql` và `open-in-view` ở cấu hình mặc định/test/local
 - [x] Tạo file `.env.example` liệt kê tất cả env vars cần thiết
-- [x] Kiểm tra `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `REDIS_URL`, `APP_JWT_SECRET` đều có fallback dev
+- [x] `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `REDIS_URL`, `APP_JWT_SECRET` được inject từ môi trường; integration test không còn fallback local/cloud
+- [ ] Chạy secret scan trên working tree và Git history; ghi kết quả/credential đã rotate vào `PROGRESS_BE_B.md` mà không ghi giá trị secret
 
 ### ✅ Checkpoint Tuần 1
-- [ ] `docker version` và `docker compose version` thành công
-- [ ] Migration V1–V17 chạy được trên PostgreSQL Testcontainers từ database rỗng
-- [ ] Context test chạy thật, không bị skip
-- [ ] `FlywayMigrationTest`: tests run `6`, skipped `0`, failures `0`, errors `0`
-- [ ] Flyway báo đúng 17 migration applied và `validate` thành công
+- [ ] Không còn credential thật trong source/history; credential đã lộ được rotate
+- [ ] Runtime config dùng `ddl-auto=validate`; `show-sql` không bật mặc định/production
+- [x] `docker version` và `docker compose version` thành công
+- [x] Migration V1–V17 chạy được trên PostgreSQL Testcontainers từ database rỗng
+- [x] Context test chạy thật, không bị skip
+- [x] `FlywayMigrationTest`: tests run `6`, skipped `0`, failures `0`, errors `0`
+- [x] Baseline gate báo đúng 17 versioned migration applied và `validate` thành công; full gate V1–V18 cũng validate thành công
 
-> **Trạng thái xác minh 2026-08-24:** `mvn -Dtest=FlywayMigrationTest test` báo `BUILD SUCCESS` nhưng cả 6 test đều bị skip vì không tìm thấy Docker. Không được dùng kết quả này để đánh dấu migration/context test hoàn thành.
+> **Evidence 2026-08-25:** `mvn -Dtest=FlywayMigrationTest test` chạy đủ 6 test, failures/errors/skipped đều bằng 0. Full `mvn test` chạy 88 test, failures/errors/skipped đều bằng 0.
 
 ---
 
@@ -710,9 +716,9 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
 > ArchUnit guard của A có thể hoạt động đúng. Không nằm trong kế hoạch 8 tuần ban đầu.
 
 ### Task 1.5: Migration V17 — Fix BaseEntity compatibility
-- [x] Tạo `V17__add_deleted_to_refresh_tokens.sql`
+- [x] Tạo `V17__add_deleted_to_refresh_tokens.sql` (baseline đóng băng nhưng audit sau đó xác nhận tên cột chưa tương thích)
   - Thêm cột `deleted BOOLEAN NOT NULL DEFAULT false` vào bảng `refresh_tokens`
-  - Lý do: `RefreshToken` kế thừa `BaseEntity` (có field `isDeleted`) nên bảng phải có cột này
+  - V17 tạo `deleted`, trong khi `BaseEntity` map `is_deleted`; remediation forward-only nằm trong V18, không sửa checksum V17
   - Theo yêu cầu từ A-02 — Thành viên A phát hiện trong quá trình remediation
 
 ### Task 1.6: Facade contracts A ↔ B
@@ -737,11 +743,11 @@ các module `ranking`, `catalog`, `learning` mà không cần domain entity củ
 > **Ghi chú ArchUnit:** 3 impl này dùng `JdbcTemplate` trực tiếp và được inventory explicit
 > trong `archunit_ignore_patterns.txt`. Đây là approved exception (B module, đọc bảng B sở hữu).
 
-Dependency B cần từ module A, phải handshake trước Tuần 2:
+Dependency B cần từ module A đã được chốt bằng public facade:
 
-- [ ] A expose PricingPackage snapshot facade; B dùng để đọc package purchasable khi tạo Invoice/StudentPackage
-- [ ] A expose Teacher approval operations; B dùng để list/approve/reject TeacherProfile
-- [ ] Chốt DTO/interface bằng public facade; B không gọi repository của `catalog` hoặc `teacher`
+- [x] Catalog expose `PricingPackageFacade` + immutable snapshot để B đọc package purchasable
+- [x] Teacher expose `TeacherApprovalFacade` + snapshot/approval operations cho Admin B
+- [x] Chốt DTO/interface bằng public facade; B không gọi repository của `catalog` hoặc `teacher`
 
 ### Task 1.7: Module Skeletons
 - [x] Tạo đầy đủ `package-info.java` cho tất cả sub-packages của:
@@ -756,40 +762,42 @@ Dependency B cần từ module A, phải handshake trước Tuần 2:
 - [x] Implement `scheduler.TeacherStatsJob`
   - Chạy `@Scheduled(cron = "0 0 2 * * ?")` — 02:00 mỗi ngày
   - `@SchedulerLock` với ShedLock qua Redis (lockAtLeastFor=5m, lockAtMostFor=30m)
-  - Fetch tất cả teacher `APPROVED` → gọi `TeacherStatsService.recalculateTeacherStats()` (A)
-  - Sau đó gọi `TeacherStatsFacade.updateAllGlobalRanks()` (A)
+  - Fetch tất cả teacher `APPROVED` → gọi `TeacherStatsFacade.recalculateTeacherStats()`
+  - Sau đó gọi `TeacherStatsFacade.updateAllGlobalRanks()`; scheduler không gọi trực tiếp ranking service
   - Invalidate Redis cache `GLOBAL_RANKING`
 
 ### Task 1.9: Hard gate xác minh V1–V17
 
 > **Chặn cứng:** Không chốt nội dung hoặc tạo V18 trước khi toàn bộ checklist này xanh. `BUILD SUCCESS` không đủ nếu Surefire báo test bị skip.
 
-- [ ] Cài Docker và xác nhận `docker version`, `docker compose version` thành công
-- [ ] Chạy `mvn -Dtest=FlywayMigrationTest test` trên database PostgreSQL Testcontainers rỗng
-- [ ] Xác nhận Surefire: tests run `6`, skipped `0`, failures `0`, errors `0`
-- [ ] Xác nhận Flyway có đúng 17 migration applied và `validate` thành công
-- [ ] Audit metadata runtime, không chỉ đọc file SQL:
+- [x] Cài Docker và xác nhận `docker version`, `docker compose version` thành công
+- [x] Chạy `mvn -Dtest=FlywayMigrationTest test` trên database PostgreSQL Testcontainers rỗng
+- [x] Xác nhận Surefire: tests run `6`, skipped `0`, failures `0`, errors `0`
+- [x] Xác nhận Flyway có đúng 17 versioned migration applied và `validate` thành công
+- [x] Audit metadata runtime, không chỉ đọc file SQL:
   - Tất cả FK `teacher_id` của V1–V17 tham chiếu `teacher_profiles(id)`
   - V16 có `uq_platform_settings_singleton` và `ck_platform_settings_singleton`
   - `bookings.status` có CHECK đủ `SCHEDULED/COMPLETED/CANCELLED/EXPIRED`
   - `student_packages.commission_rate` có precision/scale `(5,2)`
-- [ ] Ghi số test run/skip/fail/error và Docker/PostgreSQL version vào `PROGRESS_BE_B.md`
+- [x] Ghi số test run/skip/fail/error và Docker/PostgreSQL version vào `PROGRESS_BE_B.md`
 
 Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm lỗi vào bảng remediation dưới đây, xử lý bằng V18 và bổ sung regression assertion.
 
 | Phát hiện | Query/Test tái hiện | Cách sửa trong V18 | Regression test | Trạng thái |
 |---|---|---|---|---|
-| Chưa có — chờ hard gate | — | — | — | Blocked bởi Docker |
+| V2 đã có `is_deleted`, V17 thêm cột `deleted` trùng nghĩa | Baseline metadata assertion xác nhận cả hai cột | OR hai cờ vào `is_deleted`, sau đó drop `deleted` | `FlywayV17BaselineTest` + full V18 metadata test | Đã sửa |
+| `teacher_profiles.languages` là `varchar(50)[]`, entity cũ kỳ vọng `text[]` qua custom type | Hibernate `ddl-auto=validate` fail | Widen lossless sang `text[]`; dùng Hibernate 6 native ARRAY mapping | Context/Flyway migration test | Đã sửa |
 
 ### Task 1.10: Migration V18 — Harden business invariants
 
-- [ ] Chỉ tạo `V18__harden_business_invariants.sql` sau khi Task 1.9 xanh
-- [ ] Commission và settings:
+- [x] Hoàn thành `V18__harden_business_invariants.sql`; Docker gate và V1–V18 test đều xanh
+- [x] Remediation V17: hợp nhất an toàn `refresh_tokens.deleted` vào `is_deleted`, sau đó bỏ cột trùng; fail nếu không tồn tại cột đích hợp lệ
+- [x] Commission và settings:
   - Đổi default `platform_settings.commission_rate` thành `5.00`
   - Seed đúng một settings row nếu bảng rỗng, tương thích singleton constraint của V16
   - Backfill `student_packages.commission_rate IS NULL` từ settings rồi đặt column `NOT NULL`
   - Không tự đổi snapshot khác `5.00`; nếu có, fail rõ ràng để xác minh đó là cấu hình hợp lệ hay dữ liệu do default sai
-- [ ] Thêm CHECK cho status/type còn thiếu theo enum trong SPEC/API contract; không tạo lại constraint booking đã có
+- [x] Thêm CHECK cho status/type còn thiếu theo enum trong SPEC/API contract; không tạo lại constraint booking đã có
 - [ ] Allow-list và default đích phải được khóa như sau:
 
   | Column | Allow-list | Default đích / xử lý legacy đã biết |
@@ -810,16 +818,55 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
   | `submissions.status` | `DRAFT, SUBMITTED, GRADED` | Default `DRAFT` |
   | `messages.message_type` | `TEXT, IMAGE, FILE` | Default `TEXT` |
 
-- [ ] Trước mỗi constraint, audit dữ liệu bằng query dạng:
+- [x] Trước mỗi constraint, audit dữ liệu bằng query dạng:
   ```sql
   SELECT <column>, count(*)
   FROM <table>
   WHERE <column> NOT IN (<allow_list>)
   GROUP BY <column>;
   ```
-- [ ] Chỉ sửa cơ học các legacy value đã có mapping được duyệt; dữ liệu không rõ nghĩa phải `RAISE EXCEPTION` kèm tên bảng, constraint và số row
-- [ ] Không xóa row hoặc ép về một trạng thái tùy ý để migration tiếp tục
-- [ ] Test V1–V18 từ database rỗng, fixture legacy hợp lệ và fixture legacy không hợp lệ
+- [x] Chỉ sửa cơ học các legacy value đã có mapping được duyệt; dữ liệu không rõ nghĩa phải `RAISE EXCEPTION` kèm tên bảng, constraint và số row
+- [x] Không xóa row hoặc ép về một trạng thái tùy ý để migration tiếp tục
+- [x] Test V1–V18 từ database rỗng, fixture legacy hợp lệ và fixture legacy không hợp lệ
+
+### Task 1.11: Shared API contract prerequisite
+
+> Thay đổi `common`/response contract phải nằm trong PR riêng và merge trước các controller feature của B. Phối hợp với A để không tồn tại hai response format song song.
+
+- [x] Chuẩn hóa mọi REST JSON response theo đúng năm field cấp cao nhất trong `API_CONTRACT.md`: `success`, `message`, `data`, `errors`, `meta`
+- [x] Success: `errors=null`; error: `data=null`; field không có giá trị vẫn trả `null`, không đổi kiểu hoặc tự ý bỏ field theo endpoint
+- [x] Chuẩn hóa `errors[]` thành `{ code, field, message }`; FE/backend xử lý theo `code`, không điều khiển luồng bằng nội dung message
+- [x] `@RestControllerAdvice` là nơi duy nhất map exception → `ErrorCode` → HTTP status/envelope; không trả raw `exception.getMessage()`
+- [x] Bao phủ input error còn thiếu: malformed JSON, sai enum/type, thiếu query/request part, constraint violation và multipart validation
+- [x] Giữ request/correlation ID trong log và response header; không đưa stack trace, SQL, provider payload hoặc secret vào response
+- [x] Ngoại lệ không dùng envelope chỉ gồm `204 No Content`, file/stream, WebSocket, OAuth redirect và webhook phải theo contract provider
+- [x] Contract/architecture test bao phủ success, pagination, validation, business error, auth/forbidden và unexpected `500`; full Docker suite đã xanh
+
+### Task 1.12: Chiến lược soft delete xuyên module
+
+> `is_deleted` trong schema chỉ là nền tảng lưu trữ, không tự làm cho JPA query/delete an toàn. Soft delete cũng không thay thế state machine nghiệp vụ và không đồng nghĩa mọi entity đều được phép expose API `DELETE`.
+
+> **Checkpoint nền tảng 2026-08-25 — hoàn thành:** policy, native-query guard và integration-test mẫu cho entity versioned đã được tạo và chạy xanh. Việc gắn annotation/test lên từng entity B được thực hiện tại task tạo entity ở Tuần 3–7; không kéo domain chưa tồn tại vào Tuần 1.
+
+- [x] Hoàn thành policy/test foundation của Task 1.12; các checkbox dưới đây là checklist bắt buộc gắn vào từng task entity tương ứng ở Tuần 3–7.
+
+- [ ] Với mỗi business entity mutable của B kế thừa `BaseEntity`, khai báo soft-delete mapping ngay trên entity:
+  - `@SQLDelete` đổi `is_deleted = true`, không phát sinh physical `DELETE`
+  - Theo convention hiện hữu của project, dùng `@Where(clause = "is_deleted = false")`; chỉ chuyển sang `@SQLRestriction` nếu toàn project thống nhất trong một thay đổi riêng, không trộn hai chiến lược tùy entity
+  - `@SQLDelete` phải dùng đúng tên bảng và đúng thứ tự parameter Hibernate yêu cầu; entity có `@Version` phải đưa cả `id` và `version` vào điều kiện optimistic locking, không copy mẫu chỉ có `id`
+  - Có integration test PostgreSQL chứng minh `repository.delete()` thực hiện `UPDATE`, row còn trong DB và query JPA thông thường không đọc lại row đã xóa
+- [ ] `BaseEntity` chỉ cung cấp field/audit chung; không coi việc kế thừa `BaseEntity` là đã hoàn tất soft delete vì SQL tùy thuộc từng bảng và version mapping
+- [ ] `payment_transactions`, `ledger_entries` và `audit_logs` tiếp tục append-only: không kế thừa `BaseEntity`, không có `is_deleted`, không expose repository/service delete hoặc update lịch sử
+- [ ] Mọi native SQL, JdbcTemplate, projection, aggregation và scheduled job phải thêm `is_deleted = false` cho từng bảng mutable tham gia query; Hibernate filter không áp dụng cho native query
+- [ ] Review riêng các join tới parent đã soft-delete: luồng lịch sử không được phụ thuộc vào việc dereference một association bị Hibernate filter ẩn; Invoice/StudentPackage/Booking dùng snapshot hoặc projection phù hợp để lịch sử vẫn đọc được
+- [ ] Phân biệt state transition và soft delete:
+  - Booking được người dùng hủy phải giữ `is_deleted = false`, chuyển `status = CANCELLED` và lưu lý do/thời điểm để hoàn lượt, thống kê và audit
+  - Invoice hủy/hết hạn dùng `CANCELLED`/`EXPIRED`; PricingPackage ngừng bán dùng `INACTIVE`; refund, payout, extension và trial dùng trạng thái nghiệp vụ tương ứng
+  - Không dùng soft delete để bỏ qua settlement, counter invariant, lịch sử tài chính hoặc điều kiện state machine
+- [ ] PricingPackage chưa có API delete trong `API_CONTRACT.md`: Teacher chỉ chuyển sang `INACTIVE`; chỉ bổ sung soft-delete operation khi có contract/authorization/audit/retention rule được duyệt
+- [ ] Message recall/delete và Admin/GDPR cleanup chưa thuộc MVP vì SPEC/API chưa chốt hành vi ẩn hay hiển thị placeholder, retention và quyền thực hiện; không tự thêm endpoint hoặc suy diễn `is_deleted` thành tính năng thu hồi message
+- [ ] Không tạo `find...IncludingDeleted` đại trà. Chỉ entity có use case restore được duyệt mới có custom/native repository query bỏ qua filter, kèm authorization, audit log và xử lý unique/partial-index trong cùng transaction
+- [ ] Không hard-delete hay tự restore row để né unique constraint. Nếu cần tái kích hoạt cấu hình/liên kết cũ, service phải xác định đúng row, kiểm tra ownership/trạng thái và thực hiện restore idempotent
 
 ---
 
@@ -905,10 +952,19 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 - [ ] B consume PricingPackage snapshot facade do A expose; không tạo facade ngược chiều trong `enrollment`
 - [ ] Snapshot tối thiểu phục vụ Invoice/StudentPackage: package ID, teacher profile ID, subject ID, name, total sessions, duration, price và trạng thái bán
 
+### Task 3.5: Repository query baseline
+- [ ] Mọi list/search repository nhận `Pageable` hoặc giới hạn rõ ràng; không load Message, Ledger, Booking, Invoice, AuditLog hoặc queue Admin không giới hạn
+- [ ] Dùng DTO projection/entity graph/fetch join phù hợp để mapper không phát sinh N+1
+- [ ] Filter/sort dùng allow-list theo `API_CONTRACT.md`; không filter collection đã load trong memory
+- [ ] Mọi native/JdbcTemplate query trên bảng mutable lọc `is_deleted = false` cho từng alias; test cả trường hợp parent hoặc child đã bị soft-delete
+- [ ] Với query lock/native/aggregation quan trọng, thêm integration test PostgreSQL và lưu `EXPLAIN ANALYZE` hoặc query-count evidence trong `PROGRESS_BE_B.md`
+- [ ] Index được thiết kế theo filter/join/sort thực tế; không hoãn toàn bộ kiểm tra hiệu năng đến Tuần 8
+
 ### ✅ Checkpoint Tuần 3
 - Domain classes compile thành công
 - Entity relationships đúng ERD
 - A có thể dùng catalog facade
+- Query list chính có pagination/projection và không có N+1 đáng kể
 
 ---
 
@@ -999,7 +1055,7 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
     1. Load Booking FOR UPDATE
     2. Check status = SCHEDULED
     3. Update StudentPackage: reserved--, remaining++
-    4. Set cancel reason, cancelledAt
+    4. Set `status = CANCELLED`, cancel reason, cancelledAt; giữ `is_deleted = false` để bảo toàn lịch sử, completion rate và audit
   - Mỗi cặp counter phải được đổi bằng một câu SQL update hoặc một entity mutation và đúng một lần flush; không flush trạng thái trung gian vi phạm CHECK tổng counter
 - [ ] Controller:
   - `TeacherBookingController`:
@@ -1062,8 +1118,15 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 - [ ] Controller: `GET /api/student/session-reports` — phân trang
 - [ ] DTO: `SessionReportView`
 
+### Task 6.3: Loại bỏ facade stub tạm thời
+- [ ] Khi domain/repository B tương ứng đã hoàn thiện, thay implementation `JdbcTemplate` stub bằng application service/repository của đúng module
+- [ ] Giữ nguyên public facade interface/DTO để không làm vỡ consumer của A
+- [ ] Gỡ từng ArchUnit ignore pattern ngay khi stub tương ứng được thay thế; không để exception tạm thời thành kiến trúc lâu dài
+- [ ] Integration test facade theo ownership, soft-delete và trạng thái hợp lệ
+
 ### ✅ Checkpoint Tuần 6
 - Module A có thể dùng facade để kiểm tra quyền chat/learning
+- Không còn facade B dùng `JdbcTemplate` trực tiếp nếu repository/domain tương ứng đã sẵn sàng
 
 ---
 
@@ -1177,6 +1240,12 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 - [ ] Test nhiều thứ tự completion/refund với giá không chia hết; tổng cuối bằng `purchase_price_vnd`
 - [ ] Test refund chuyển `REFUND_PENDING`, reject/partial phục hồi đúng trạng thái và full refund chuyển `REFUNDED`
 - [ ] Test extension từ chối `approvedExpiryDate <= now`
+- [ ] Test soft delete cho từng nhóm mapping: `repository.delete()` phát sinh UPDATE, row còn trong DB, query JPA mặc định không thấy row và versioned entity dùng đúng optimistic-lock condition
+- [ ] Test native/JdbcTemplate query, aggregation và facade không trả hoặc tính row đã soft-delete, kể cả khi parent/child trong join bị xóa mềm
+- [ ] Test Booking cancel chỉ đổi trạng thái và giữ `is_deleted = false`; slot được giải phóng bởi điều kiện exclusion nhưng lịch sử/counter vẫn truy xuất đúng
+- [ ] Test PricingPackage `INACTIVE` không bán mới nhưng StudentPackage đã mua vẫn đọc được snapshot và tiếp tục flow hợp lệ
+- [ ] Test append-only repository/service không cung cấp đường xóa hoặc sửa `PaymentTransaction`, `LedgerEntry`, `AuditLog`
+- [ ] Nếu có use case restore được duyệt, test restore idempotent, authorization/audit và xung đột unique/partial-index; nếu chưa có contract thì không tạo endpoint restore
 
 ### Task 8.2: Seed Data
 - [ ] Tạo migration `V19__seed_demo_data.sql` hoặc `data.sql` cho profile dev:
@@ -1189,7 +1258,7 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 > ⚠️ **Lưu ý version:** V16 (`fix_schema_bugs`) và V17 (`add_deleted_to_refresh_tokens`) là baseline đóng băng; V18 dành cho hardening business invariants. Migration seed data phải dùng từ V19 trở đi.
 
 ### Task 8.3: Optimization & Polish
-- [ ] Review query performance, thêm index nếu cần
+- [ ] Tổng hợp và re-check query-count/`EXPLAIN ANALYZE` evidence đã thu từ từng feature; thêm index còn thiếu nếu số liệu chứng minh cần thiết
 - [ ] Redis cache cho settings, dashboard aggregation
 - [ ] Docker hóa backend (Dockerfile cho Spring Boot)
 - [ ] Chạy acceptance test end-to-end cùng với A
@@ -1198,6 +1267,34 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 - Migration V1–V19 chạy clean từ database rỗng, không có integration test bị skip
 - Không race condition ở booking/payment/finance
 - Seed data chạy được cho demo
+
+---
+
+## Definition of Done bắt buộc cho mọi endpoint/task B
+
+Không đánh dấu `[x]` hoặc ghi `Done` nếu thiếu bất kỳ mục áp dụng nào dưới đây:
+
+- [ ] Endpoint, method, request/response DTO và HTTP status khớp `API_CONTRACT.md`; create dùng `201`, delete không body dùng `204`, không trả `200` với `success=false`
+- [ ] REST JSON dùng envelope `success/message/data/errors/meta`; chỉ dùng ngoại lệ đã liệt kê tại Task 1.11
+- [ ] Request DTO dùng Bean Validation; validation liên field đặt ở class-level validator hoặc Service
+- [ ] Business rule, state transition, role và ownership được enforce trong Service; Controller không chứa business logic hoặc gọi Repository
+- [ ] Mọi failure dùng `ErrorCode` có trong `ERROR_CODES.md`; validation field map thành `errors[]`, không lộ raw exception
+- [ ] Không trả JPA Entity hoặc field nhạy cảm; response dùng DTO/projection rõ ràng
+- [ ] Transaction đặt ở public application service; lock order, idempotency và atomic counter được review theo rủi ro
+- [ ] External call có timeout/recovery; chỉ retry operation an toàn/idempotent và không giữ DB lock/transaction trong lúc chờ network
+- [ ] List/search có pagination hoặc hard limit, sort allow-list, index phù hợp và không N+1; query rủi ro cao có query-count/`EXPLAIN ANALYZE` evidence
+- [ ] Entity mutable có `@SQLDelete` và Hibernate filter theo Task 1.12; native/JdbcTemplate query lọc `is_deleted = false`; entity versioned đã được test đúng SQL parameter/optimistic locking
+- [ ] State transition nghiệp vụ không bị thay bằng soft delete; append-only entity không có đường update/delete; restore/delete endpoint chỉ tồn tại khi đã có trong contract và có authorization/audit rõ ràng
+- [ ] Unit/integration/security test bao phủ happy path, validation, role, ownership, state conflict và concurrency/idempotency tương xứng
+- [ ] Log có request/correlation ID nhưng không chứa password, JWT, refresh token, API key, checksum key, account number đầy đủ hoặc raw payload nhạy cảm
+- [ ] Contract/schema/error code/OpenAPI/Markdown và `PROGRESS_BE_B.md` được cập nhật trong cùng PR
+
+### Evidence khi đánh dấu hoàn thành
+
+- Ghi lệnh test, số test run/skip/fail/error; test bị skip không được tính là pass
+- Ghi query plan/count đối với endpoint danh sách hoặc aggregation quan trọng
+- Ghi migration version/checksum và kết quả Flyway validate nếu task chạm schema
+- Ghi rõ exception/technical debt còn lại, owner và task loại bỏ; không dùng cụm “đã verify” nếu chỉ mới compile hoặc audit tĩnh
 
 ---
 

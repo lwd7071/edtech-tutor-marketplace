@@ -1,0 +1,17 @@
+spring:
+  config:
+    activate:
+      on-profile: cloud
+    import:
+      - optional:file:.env.cloud[.properties]
+      - optional:file:../.env.cloud[.properties]
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: false

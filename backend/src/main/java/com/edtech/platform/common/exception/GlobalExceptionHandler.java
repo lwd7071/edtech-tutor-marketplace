@@ -1,7 +1,8 @@
 package com.edtech.platform.common.exception;
 
-import com.edtech.platform.common.response.ApiError;
-import com.edtech.platform.common.response.ApiErrorResponse;
+import com.edtech.platform.common.response.ApiErrorDetail;
+import com.edtech.platform.common.response.ApiResponse;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -13,11 +14,15 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
-import java.time.Instant;
 import java.util.List;
 
 @RestControllerAdvice
@@ -29,70 +34,112 @@ public class GlobalExceptionHandler {
         return reqId != null ? reqId : "unknown";
     }
 
-    private ResponseEntity<ApiErrorResponse> buildResponse(ErrorCode errorCode, String customMessage, List<ApiError.FieldErrorDetail> fieldErrors) {
+    private ResponseEntity<ApiResponse<Void>> buildResponse(
+            ErrorCode errorCode, String customMessage, List<ApiErrorDetail> details) {
         String message = customMessage != null ? customMessage : errorCode.getDefaultMessage();
-        ApiError apiError = new ApiError(errorCode.name(), message, fieldErrors);
-        ApiErrorResponse response = new ApiErrorResponse(false, apiError, Instant.now(), getRequestId());
+        List<ApiErrorDetail> errors = details != null && !details.isEmpty()
+                ? details
+                : List.of(new ApiErrorDetail(errorCode.name(), null, message));
+        ApiResponse<Void> response = ApiResponse.error(message, errors);
         return new ResponseEntity<>(response, errorCode.getStatus());
     }
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiErrorResponse> handleBusinessException(BusinessException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException ex) {
         return buildResponse(ex.getErrorCode(), ex.getMessage(), null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
-        List<ApiError.FieldErrorDetail> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
-                .map(err -> new ApiError.FieldErrorDetail(err.getField(), err.getDefaultMessage()))
+    public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException ex) {
+        List<ApiErrorDetail> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
+                .map(err -> new ApiErrorDetail(ErrorCode.VALIDATION_ERROR.name(), err.getField(), err.getDefaultMessage()))
                 .toList();
         return buildResponse(ErrorCode.VALIDATION_ERROR, ErrorCode.VALIDATION_ERROR.getDefaultMessage(), fieldErrors);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         return buildResponse(ErrorCode.MALFORMED_JSON, null, null);
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-    public ResponseEntity<ApiErrorResponse> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
         return buildResponse(ErrorCode.UNSUPPORTED_MEDIA_TYPE, null, null);
     }
 
     @ExceptionHandler(OptimisticLockingFailureException.class)
-    public ResponseEntity<ApiErrorResponse> handleOptimisticLockingFailureException(OptimisticLockingFailureException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleOptimisticLockingFailureException(OptimisticLockingFailureException ex) {
         return buildResponse(ErrorCode.CONCURRENT_MODIFICATION, null, null);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         return buildResponse(ErrorCode.DUPLICATE_RESOURCE, null, null);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException ex) {
         return buildResponse(ErrorCode.FORBIDDEN_RESOURCE, null, null);
     }
 
     @ExceptionHandler({AuthenticationException.class, InsufficientAuthenticationException.class})
-    public ResponseEntity<ApiErrorResponse> handleAuthenticationException(RuntimeException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(RuntimeException ex) {
         return buildResponse(ErrorCode.AUTH_TOKEN_MISSING, null, null);
     }
 
     @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
-    public ResponseEntity<ApiErrorResponse> handleResponseStatusException(org.springframework.web.server.ResponseStatusException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleResponseStatusException(org.springframework.web.server.ResponseStatusException ex) {
         ErrorCode errorCode = ex.getStatusCode() == org.springframework.http.HttpStatus.NOT_FOUND ? ErrorCode.RESOURCE_NOT_FOUND : ErrorCode.INTERNAL_SERVER_ERROR;
-        return buildResponse(errorCode, ex.getReason(), null);
+        return buildResponse(errorCode, null, null);
     }
 
     @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleNoResourceFoundException(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleNoResourceFoundException(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
         return buildResponse(ErrorCode.RESOURCE_NOT_FOUND, null, null);
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleConstraintViolationException(ConstraintViolationException ex) {
+        List<ApiErrorDetail> errors = ex.getConstraintViolations().stream()
+                .map(violation -> new ApiErrorDetail(
+                        ErrorCode.VALIDATION_ERROR.name(),
+                        lastPathSegment(violation.getPropertyPath().toString()),
+                        violation.getMessage()))
+                .toList();
+        return buildResponse(ErrorCode.VALIDATION_ERROR, null, errors);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return buildResponse(ErrorCode.VALIDATION_ERROR, null,
+                List.of(new ApiErrorDetail(ErrorCode.VALIDATION_ERROR.name(), ex.getName(), "Kiểu dữ liệu không hợp lệ")));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingParameter(MissingServletRequestParameterException ex) {
+        return buildResponse(ErrorCode.VALIDATION_ERROR, null,
+                List.of(new ApiErrorDetail(ErrorCode.VALIDATION_ERROR.name(), ex.getParameterName(), "Thiếu tham số bắt buộc")));
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingPart(MissingServletRequestPartException ex) {
+        return buildResponse(ErrorCode.VALIDATION_ERROR, null,
+                List.of(new ApiErrorDetail(ErrorCode.VALIDATION_ERROR.name(), ex.getRequestPartName(), "Thiếu phần multipart bắt buộc")));
+    }
+
+    @ExceptionHandler({MultipartException.class, MaxUploadSizeExceededException.class})
+    public ResponseEntity<ApiResponse<Void>> handleMultipartException(Exception ex) {
+        return buildResponse(ErrorCode.VALIDATION_ERROR, "Dữ liệu tải lên không hợp lệ", null);
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleException(Exception ex) {
-        log.error("Unhandled exception: ", ex);
+    public ResponseEntity<ApiResponse<Void>> handleException(Exception ex) {
+        log.error("Unhandled exception type={}, requestId={}", ex.getClass().getName(), getRequestId());
         return buildResponse(ErrorCode.INTERNAL_SERVER_ERROR, null, null);
+    }
+
+    private String lastPathSegment(String path) {
+        int separator = path.lastIndexOf('.');
+        return separator >= 0 ? path.substring(separator + 1) : path;
     }
 }

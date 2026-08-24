@@ -8,6 +8,7 @@ import com.edtech.platform.catalog.dto.TeacherSearchParams;
 import com.edtech.platform.catalog.repository.PricingPackageRepository;
 import com.edtech.platform.catalog.service.TeacherMarketplaceService;
 import com.edtech.platform.common.response.ApiResponse;
+import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.teacher.dto.AvailabilityView;
 import com.edtech.platform.teacher.service.TeacherAvailabilityService;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +66,7 @@ public class PublicTeacherController {
                         pkg.getStatus(),
                         pkg.getVersion()
                 )).collect(Collectors.toList());
-        return ApiResponse.ok(views);
+        return ApiResponse.page(views, PageMeta.from(pkgs));
     }
 
     @GetMapping("/{id}/availability")

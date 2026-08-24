@@ -2,6 +2,7 @@ package com.edtech.platform.ranking.facade.impl;
 
 import com.edtech.platform.ranking.domain.TeacherStats;
 import com.edtech.platform.ranking.repository.TeacherStatsRepository;
+import com.edtech.platform.ranking.service.TeacherStatsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,9 @@ class TeacherStatsFacadeImplTest {
 
     @Mock
     private TeacherStatsRepository teacherStatsRepository;
+
+    @Mock
+    private TeacherStatsService teacherStatsService;
 
     @InjectMocks
     private TeacherStatsFacadeImpl teacherStatsFacade;
@@ -117,5 +121,14 @@ class TeacherStatsFacadeImplTest {
         List<TeacherStats> saved = captor.getValue();
         TeacherStats rank1 = saved.stream().filter(s -> s.getGlobalRank() != null && s.getGlobalRank() == 1).findFirst().orElseThrow();
         assertEquals(tie1.getTeacherId(), rank1.getTeacherId()); // More sessions → rank 1
+    }
+
+    @Test
+    void recalculateTeacherStatsDelegatesThroughFacadeBoundary() {
+        UUID teacherId = UUID.randomUUID();
+
+        teacherStatsFacade.recalculateTeacherStats(teacherId);
+
+        verify(teacherStatsService).recalculateTeacherStats(teacherId);
     }
 }

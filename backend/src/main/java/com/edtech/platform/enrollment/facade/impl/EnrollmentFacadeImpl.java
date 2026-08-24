@@ -23,6 +23,7 @@ public class EnrollmentFacadeImpl implements EnrollmentFacade {
                     WHERE teacher_id = ? 
                       AND student_id = ? 
                       AND status IN ('ACTIVE', 'COMPLETED')
+                      AND is_deleted = false
                 )
                 """;
 

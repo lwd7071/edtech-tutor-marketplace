@@ -37,8 +37,19 @@ build/
 ### Others ###
 *.log
 .env
+.env.cloud
 .env.local
 .env.*.local
+
+# Spring config committed to the repository must contain placeholders only.
+# Keep machine/provider credentials in ignored private overlays instead.
+**/application-secret.yml
+**/application-secrets.yml
+**/application-private.yml
+**/application-override.yml
+**/application-*.local.yml
+**/application-*.local.properties
 application-local.yml
 application-local.properties
+!backend/src/main/resources/application-local.yml
 

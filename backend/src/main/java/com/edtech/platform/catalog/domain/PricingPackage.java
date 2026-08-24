@@ -51,7 +51,7 @@ public class PricingPackage extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private PackageStatus status = PackageStatus.ACTIVE;
+    private PackageStatus status = PackageStatus.DRAFT;
 
     @Version
     @Column(nullable = false)

@@ -2,6 +2,8 @@ package com.edtech.platform.learning.controller;
 
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.common.security.RequireRole;
+import com.edtech.platform.common.response.ApiResponse;
+import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.learning.domain.AssignmentStatus;
 import com.edtech.platform.learning.dto.request.CreateSubmissionRequest;
 import com.edtech.platform.learning.dto.response.AssignmentDetail;
@@ -33,22 +35,23 @@ public class StudentAssignmentController {
 
     @GetMapping("/assignments")
     @RequireRole("STUDENT")
-    public Page<AssignmentDetail> getAssignments(
+    public ApiResponse<java.util.List<AssignmentDetail>> getAssignments(
             @AuthenticationPrincipal AuthenticatedUser userDetails,
             @RequestParam(required = false) AssignmentStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         
-        return studentAssignmentService.getAssignments(userDetails.id(), status, PageRequest.of(page, size));
+        Page<AssignmentDetail> result = studentAssignmentService.getAssignments(userDetails.id(), status, PageRequest.of(page, size));
+        return ApiResponse.page(result.getContent(), PageMeta.from(result));
     }
 
     @PostMapping("/assignments/{id}/submissions")
     @RequireRole("STUDENT")
-    public SubmissionDetail createSubmission(
+    public ApiResponse<SubmissionDetail> createSubmission(
             @AuthenticationPrincipal AuthenticatedUser userDetails,
             @PathVariable UUID id,
             @Valid @RequestBody CreateSubmissionRequest request) {
         
-        return studentAssignmentService.createOrUpdateSubmission(userDetails.id(), id, request);
+        return ApiResponse.ok(studentAssignmentService.createOrUpdateSubmission(userDetails.id(), id, request));
     }
 }

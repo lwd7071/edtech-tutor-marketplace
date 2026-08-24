@@ -1,6 +1,8 @@
 package com.edtech.platform.communication.controller;
 
 import com.edtech.platform.common.security.AuthenticatedUser;
+import com.edtech.platform.common.response.ApiResponse;
+import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.communication.dto.notification.NotificationReadAllResponse;
 import com.edtech.platform.communication.dto.notification.NotificationView;
 import com.edtech.platform.communication.service.NotificationService;
@@ -20,23 +22,24 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping
-    public Page<NotificationView> getNotifications(
+    public ApiResponse<java.util.List<NotificationView>> getNotifications(
             @AuthenticationPrincipal AuthenticatedUser user,
             @RequestParam(required = false) Boolean isRead,
             Pageable pageable) {
-        return notificationService.getNotifications(user.getId(), isRead, pageable);
+        Page<NotificationView> page = notificationService.getNotifications(user.getId(), isRead, pageable);
+        return ApiResponse.page(page.getContent(), PageMeta.from(page));
     }
 
     @PatchMapping("/{id}/read")
-    public NotificationView markAsRead(
+    public ApiResponse<NotificationView> markAsRead(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id) {
-        return notificationService.markAsRead(id, user.getId());
+        return ApiResponse.ok(notificationService.markAsRead(id, user.getId()));
     }
 
     @PostMapping("/read-all")
-    public NotificationReadAllResponse markAllAsRead(@AuthenticationPrincipal AuthenticatedUser user) {
+    public ApiResponse<NotificationReadAllResponse> markAllAsRead(@AuthenticationPrincipal AuthenticatedUser user) {
         int count = notificationService.markAllAsRead(user.getId());
-        return new NotificationReadAllResponse(count);
+        return ApiResponse.ok(new NotificationReadAllResponse(count));
     }
 }

@@ -2,7 +2,6 @@ package com.edtech.platform.teacher.domain;
 
 import com.edtech.platform.common.persistence.BaseEntity;
 import java.util.UUID;
-import io.hypersistence.utils.hibernate.type.array.ListArrayType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,8 +16,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Where;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class TeacherProfile extends BaseEntity {
     @Column(name = "years_of_experience")
     private Integer yearsOfExperience;
 
-    @Type(ListArrayType.class)
+    @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "languages", columnDefinition = "text[]")
     private List<String> languages = new ArrayList<>();
 
@@ -90,5 +90,25 @@ public class TeacherProfile extends BaseEntity {
         } else {
             throw new IllegalStateException("Cannot submit profile in state " + this.profileStatus);
         }
+    }
+
+    public void approve(UUID adminId) {
+        if (this.profileStatus != ProfileStatus.PENDING_APPROVAL) {
+            throw new IllegalStateException("Cannot approve profile in state " + this.profileStatus);
+        }
+        this.profileStatus = ProfileStatus.APPROVED;
+        this.approvedById = adminId;
+        this.approvedAt = Instant.now();
+        this.rejectionReason = null;
+        this.isVisible = true;
+    }
+
+    public void reject(String reason) {
+        if (this.profileStatus != ProfileStatus.PENDING_APPROVAL) {
+            throw new IllegalStateException("Cannot reject profile in state " + this.profileStatus);
+        }
+        this.profileStatus = ProfileStatus.REJECTED;
+        this.rejectionReason = reason;
+        this.isVisible = false;
     }
 }

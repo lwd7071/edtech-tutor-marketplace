@@ -2,6 +2,7 @@ package com.edtech.platform.learning.controller;
 
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.common.security.RequireRole;
+import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.learning.dto.request.CreateAssignmentRequest;
 import com.edtech.platform.learning.dto.request.GradeSubmissionRequest;
 import com.edtech.platform.learning.dto.response.AssignmentDetail;
@@ -29,20 +30,21 @@ public class TeacherAssignmentController {
 
     @PostMapping("/assignments")
     @RequireRole("TEACHER")
-    public AssignmentDetail createAssignment(
+    @org.springframework.web.bind.annotation.ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<AssignmentDetail> createAssignment(
             @AuthenticationPrincipal AuthenticatedUser userDetails,
             @Valid @RequestBody CreateAssignmentRequest request) {
         
-        return teacherAssignmentService.createAssignment(userDetails.id(), request);
+        return ApiResponse.created(teacherAssignmentService.createAssignment(userDetails.id(), request));
     }
 
     @PostMapping("/submissions/{id}/grade")
     @RequireRole("TEACHER")
-    public SubmissionDetail gradeSubmission(
+    public ApiResponse<SubmissionDetail> gradeSubmission(
             @AuthenticationPrincipal AuthenticatedUser userDetails,
             @PathVariable UUID id,
             @Valid @RequestBody GradeSubmissionRequest request) {
         
-        return teacherAssignmentService.gradeSubmission(userDetails.id(), id, request);
+        return ApiResponse.ok(teacherAssignmentService.gradeSubmission(userDetails.id(), id, request));
     }
 }

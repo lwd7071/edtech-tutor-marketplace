@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.security.Principal;
 import java.util.UUID;
@@ -26,11 +28,12 @@ public class TeacherPricingPackageController {
     private final PricingPackageService pricingPackageService;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<PricingPackageView> createPackage(
             @Valid @RequestBody UpsertPricingPackageRequest request,
             @org.springframework.security.core.annotation.AuthenticationPrincipal com.edtech.platform.common.security.AuthenticatedUser userDetails) {
         UUID userId = userDetails.id();
-        return ApiResponse.ok(pricingPackageService.createPackage(userId, request));
+        return ApiResponse.created(pricingPackageService.createPackage(userId, request));
     }
 
     @PutMapping("/{id}")

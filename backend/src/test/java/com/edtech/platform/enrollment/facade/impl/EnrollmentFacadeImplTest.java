@@ -17,6 +17,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import org.mockito.ArgumentCaptor;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class EnrollmentFacadeImplTest {
@@ -46,6 +49,9 @@ class EnrollmentFacadeImplTest {
         boolean result = enrollmentFacade.hasValidRelationship(teacherId, studentId);
 
         assertTrue(result);
+        ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+        verify(jdbcTemplate).queryForObject(sql.capture(), eq(Boolean.class), eq(teacherId), eq(studentId));
+        assertThat(sql.getValue()).contains("is_deleted = false");
     }
 
     @Test

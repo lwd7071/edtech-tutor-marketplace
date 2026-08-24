@@ -24,7 +24,6 @@ public class TeacherStatsJob {
 
     private final TeacherStatsFacade teacherStatsFacade;
     private final CacheManager cacheManager;
-    private final com.edtech.platform.ranking.service.TeacherStatsService teacherStatsService;
     private final TeacherFacade teacherFacade;
 
     @Scheduled(cron = "0 0 2 * * ?") // 02:00 every day
@@ -41,7 +40,7 @@ public class TeacherStatsJob {
             // 3. Process each teacher
             for (UUID teacherId : teacherIds) {
                 try {
-                    teacherStatsService.recalculateTeacherStats(teacherId);
+                    teacherStatsFacade.recalculateTeacherStats(teacherId);
                     successCount++;
                 } catch (Exception e) {
                     log.error("Failed to calculate stats for teacher {}", teacherId, e);

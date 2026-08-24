@@ -14,7 +14,7 @@ public class PlatformSettingsFacadeImpl implements PlatformSettingsFacade {
     @Override
     public int getBayesianMinimumReviews() {
         Integer bayesianMinReviews = jdbcTemplate.queryForObject(
-                "SELECT bayesian_minimum_reviews FROM platform_settings LIMIT 1", Integer.class);
+                "SELECT bayesian_minimum_reviews FROM platform_settings WHERE is_singleton = true", Integer.class);
         return bayesianMinReviews != null ? bayesianMinReviews : 10;
     }
 }

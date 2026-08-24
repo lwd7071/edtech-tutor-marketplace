@@ -1,6 +1,7 @@
 package com.edtech.platform.subject.controller;
 
 import com.edtech.platform.common.response.ApiResponse;
+import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.subject.domain.EducationLevel;
 import com.edtech.platform.subject.dto.SubjectSummary;
 import com.edtech.platform.subject.service.SubjectService;
@@ -20,10 +21,11 @@ public class PublicSubjectController {
     private final SubjectService subjectService;
 
     @GetMapping
-    public ApiResponse<Page<SubjectSummary>> getPublicSubjects(
+    public ApiResponse<java.util.List<SubjectSummary>> getPublicSubjects(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) EducationLevel educationLevel,
             Pageable pageable) {
-        return ApiResponse.ok(subjectService.getPublicSubjects(keyword, educationLevel, pageable));
+        Page<SubjectSummary> page = subjectService.getPublicSubjects(keyword, educationLevel, pageable);
+        return ApiResponse.page(page.getContent(), PageMeta.from(page));
     }
 }
