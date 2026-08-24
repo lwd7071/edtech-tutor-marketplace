@@ -76,6 +76,7 @@ com.edtech.platform
 ```
 
 - Tổ chức theo domain/module trước, layer sau; không đặt toàn bộ controller/service/repository của hệ thống vào package chung.
+- Backend là feature-first modular monolith: mỗi module áp dụng Controller → Service/Facade → Repository. Không gom toàn bộ layer vào các package MVC cấp hệ thống.
 - Module giao tiếp qua public service/facade hoặc event rõ ràng; không truy cập repository của module khác tùy tiện.
 - `common` chỉ chứa thành phần thật sự dùng chung; không biến thành nơi chứa mọi thứ.
 
@@ -171,28 +172,26 @@ public record CreateBookingRequest(
 
 ### 3.6. API response và exception
 
-Các DTO chung:
+`API_CONTRACT.md` là nguồn chuẩn duy nhất cho response envelope. REST API trả JSON dùng cấu trúc chung:
 
 ```java
 public record ApiResponse<T>(
     boolean success,
+    String message,
     T data,
-    PageMeta meta,
-    Instant timestamp
+    List<ApiErrorDetail> errors,
+    PageMeta meta
 ) {}
 
-public record ApiErrorResponse(
-    boolean success,
-    ApiError error,
-    Instant timestamp,
-    String requestId
-) {}
+public record ApiErrorDetail(String code, String field, String message) {}
 ```
 
 - Dùng factory `ApiResponse.ok(data)`, `ApiResponse.created(data)`, `ApiResponse.page(data, meta)`.
 - `@RestControllerAdvice` là nơi duy nhất map exception → `ErrorCode` → status/envelope.
-- Error registry tuân theo `ERROR_CODES.md`; không trả raw `exception.getMessage()` cho client.
+- Error registry tuân theo `ERROR_CODES.md`; không trả raw `exception.getMessage()` cho client. Mọi lỗi dùng mảng `errors`.
+- Field không có dữ liệu trả `null`; không tùy endpoint mà bỏ field hoặc đổi kiểu dữ liệu.
 - Controller trả `ResponseEntity<ApiResponse<...>>` khi cần status/header; giữ một phong cách nhất quán.
+- Ngoại lệ gồm `204 No Content`, file/stream, WebSocket, OAuth redirect và webhook theo contract bên ngoài.
 
 ### 3.7. Transaction, lock và state transition
 
@@ -213,6 +212,9 @@ public record ApiErrorResponse(
 - Public search phải dùng projection/pagination; không filter trên collection đã load trong memory.
 - Tránh N+1 bằng query test/log ở môi trường dev.
 - Native query PostgreSQL (GiST, `tstzrange`, JSONB) đặt ở repository chuyên biệt và có integration test Testcontainers.
+- Đo luồng quan trọng bằng query log/`EXPLAIN ANALYZE`, integration test hoặc load test; không kết luận API nhanh chỉ dựa trên cảm nhận.
+- Endpoint danh sách công khai phải có giới hạn hoặc pagination theo `API_CONTRACT.md`.
+- Action endpoint được phép khi biểu diễn business command rõ ràng hơn REST resource, nhưng phải giải thích trong contract.
 
 ### 3.9. Integration adapter
 
@@ -230,7 +232,7 @@ payment/integration/payos → PayOsPaymentGateway (adapter)
 
 - Dùng SLF4J parameterized logging: `log.info("Booking completed bookingId={}", bookingId)`.
 - Không nối chuỗi tốn chi phí trong log.
-- Log có `requestId/correlationId`; trả `requestId` trong error response.
+- Log có `requestId/correlationId`; giữ ID này trong log và response header để hỗ trợ truy vết.
 - Không log password, JWT, refresh token, OAuth token, account number đầy đủ, payOS checksum key hoặc raw webhook chứa dữ liệu nhạy cảm.
 - AuditLog là dữ liệu nghiệp vụ riêng, không thay bằng application log.
 
@@ -308,12 +310,12 @@ export type BookingStatus =
 - Query key chứa toàn bộ filter ảnh hưởng response.
 - Sau mutation invalidate theo resource hẹp nhất; không `invalidateQueries()` toàn app.
 - Component không gọi Axios trực tiếp; dùng feature API function/hook.
-- API error có type `ApiError` và switch theo `error.code`.
+- API error có type `ApiErrorDetail[]` và switch theo `errors[].code`.
 
 ### 4.5. Form, validation và UI state
 
 - React Hook Form quản lý form; schema/client validation phải tương thích backend, nhưng backend vẫn là nguồn xác thực cuối.
-- Server `fieldErrors` map về `setError(field, ...)`.
+- Từng phần tử `errors` có `field` map về `setError(field, ...)`.
 - Phân biệt loading ban đầu, background refetch, mutation pending, empty state và error state.
 - Disable nút submit khi mutation đang chạy; không dùng disable như lớp chống double-submit duy nhất.
 - Tiền hiển thị bằng `Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })`.
@@ -457,12 +459,13 @@ Không merge khi CI fail hoặc API behavior khác `API_CONTRACT.md`.
 ## 9. Definition of Done cho một endpoint
 
 - Endpoint và DTO khớp API contract.
+- Response dùng đúng năm field `success`, `message`, `data`, `errors`, `meta`, trừ ngoại lệ trong contract.
 - Authentication, role và ownership được test.
 - Bean Validation và business validation đầy đủ.
 - Error code có trong registry/`ERROR_CODES.md`.
 - Transaction/lock/idempotency được xem xét.
 - Không lộ Entity hoặc dữ liệu nhạy cảm.
-- Query phân trang và không có N+1 đáng kể.
+- Query danh sách có giới hạn/phân trang, không có N+1 đáng kể và được đo ở luồng có rủi ro hiệu năng.
 - Unit/integration/security test tương xứng rủi ro.
 - OpenAPI/Markdown contract được cập nhật cùng PR.
 - Log/audit đúng yêu cầu, không chứa secret.

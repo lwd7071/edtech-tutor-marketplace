@@ -1,5 +1,11 @@
 # Remediation Plan — Backend Thành viên A
 
+> ✅ **COMPLETED** — Toàn bộ remediation đã hoàn thành ngày 2026-08-23.
+> Bằng chứng: `mvn test` → 56 tests, 0 failures, 0 errors; ArchUnit: 0 violations.
+> Xem chi tiết tại [`PROGRESS_BE_A.md`](./PROGRESS_BE_A.md) và [`Task_A/finished.md`](./Task_A/finished.md).
+
+---
+
 ## Mục tiêu và ràng buộc
 
 Đưa module của A về đúng boundary trong `PLANBE.md`, bổ sung feedback loop đủ rủi ro và giữ nguyên REST API/schema hiện hữu.

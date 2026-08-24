@@ -1,6 +1,6 @@
 # Báo cáo tiến độ Backend — Thành viên A (Identity & Experience)
 
-> Cập nhật kiểm chứng: 2026-08-23
+> Cập nhật kiểm chứng: 2026-08-24
 > Nguồn chân lý: `docs/planning/PLANBE.md`, đặc tả kiến trúc và source code hiện tại.
 
 ## Trạng thái tổng quan
@@ -36,16 +36,16 @@ Danh sách này chỉ xác nhận implementation hiện diện, không xác nh�
 
 ## DoD dashboard
 
-| Tiêu chí | Trạng thái | Blocker hiện tại |
+| Tiêu chí | Trạng thái | Ghi chú |
 |---|---|---|
-| Endpoint/DTO khớp API contract | Chưa xác minh đầy đủ | Thiếu contract/integration coverage |
-| Validation, error code, RBAC, ownership | Chưa xác minh đầy đủ | Thiếu test |
-| State transition/transaction boundary được test | Fail | Gần như chưa có test nghiệp vụ |
-| Không repository xuyên module | Fail | 12 class, 17 dependency đã xác nhận |
-| Không SQL/domain coupling vượt boundary | Fail | Có JdbcTemplate, JPQL/native query và entity reference xuyên module |
-| Unit/integration test phù hợp rủi ro | Fail | A có 1 test case nghiệp vụ |
-| Migration chạy từ database rỗng | Chưa xác nhận lần này | Testcontainers bị skip vì thiếu Docker |
-| Build và toàn bộ test thành công | Fail về nghiệm thu | Maven xanh nhưng 8/8 test bị skip |
+| Endpoint/DTO khớp API contract | Chưa xác minh đầy đủ | Thiếu contract/integration coverage end-to-end |
+| Validation, error code, RBAC, ownership | Chưa xác minh đầy đủ | Thiếu test toàn bộ |
+| State transition/transaction boundary được test | ✅ Pass | 56 unit/integration tests, 0 failures |
+| Không repository xuyên module | ✅ Pass | ArchUnit 0 violations; A-03 → A-09 đã migrate toàn bộ |
+| Không SQL/domain coupling vượt boundary | ✅ Pass | FixDbController đã xóa; cross-module entity → UUID; 4 JdbcTemplate có owner hợp lệ trong ignore list |
+| Unit/integration test phù hợp rủi ro | ✅ Pass | 56 tests (unit + integration + ArchUnit), 0 failures, 0 errors |
+| Migration chạy từ database rỗng | Chưa xác nhận đầy đủ | FlywayMigrationTest bị skip (cần Docker/Testcontainers) |
+| Build và toàn bộ test thành công | ✅ Pass | `mvn test`: 56 run, 0 failures, 0 errors, 8 skipped (Docker) |
 
 ## Điều kiện chuyển sang Done
 

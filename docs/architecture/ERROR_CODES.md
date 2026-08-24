@@ -1,26 +1,27 @@
 # Error Codes — Nền tảng Quản lý Gia sư & Lớp học trực tuyến 1-1
 
 > Phiên bản: 1.0  
-> FE phải xử lý theo `error.code`; `error.message` chỉ phục vụ hiển thị và có thể được bản địa hóa.
+> Response envelope được định nghĩa duy nhất tại [API_CONTRACT.md](API_CONTRACT.md). FE xử lý theo `errors[].code`; message chỉ phục vụ hiển thị và có thể được bản địa hóa.
 
 ## 1. Cấu trúc lỗi chuẩn
 
 ```json
 {
   "success": false,
-  "error": {
-    "code": "BOOKING_TIME_CONFLICT",
-    "message": "Giáo viên đã có lịch trong khoảng thời gian này",
-    "fieldErrors": [
-      { "field": "startTime", "message": "Khoảng thời gian bị trùng lịch" }
-    ]
-  },
-  "timestamp": "2026-08-18T02:00:00Z",
-  "requestId": "01K30T7A7EBMKQGZJGF3Z92RWB"
+  "message": "Không thể đặt lịch học",
+  "data": null,
+  "errors": [
+    {
+      "code": "BOOKING_TIME_CONFLICT",
+      "field": "startTime",
+      "message": "Khoảng thời gian bị trùng lịch"
+    }
+  ],
+  "meta": null
 }
 ```
 
-Quy ước mã: `DOMAIN_REASON`, chữ in hoa và snake case. Không tạo mã chứa tên class, database constraint hoặc vendor exception.
+Mỗi lỗi luôn có `{ code, field, message }`. `field` dùng tên camelCase của API hoặc `null` với lỗi nghiệp vụ chung. Quy ước mã: `DOMAIN_REASON`, chữ in hoa và snake case. Không tạo mã chứa tên class, database constraint hoặc vendor exception.
 
 ## 2. HTTP mapping
 
@@ -43,7 +44,7 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 
 | Code | HTTP | Khi dùng | FE xử lý gợi ý |
 |---|---:|---|---|
-| `VALIDATION_ERROR` | 400 | Một hoặc nhiều field không hợp lệ; kèm `fieldErrors` | Hiển thị lỗi cạnh field |
+| `VALIDATION_ERROR` | 400 | Một hoặc nhiều field không hợp lệ; mỗi field là một phần tử trong `errors` | Hiển thị lỗi cạnh field |
 | `MALFORMED_JSON` | 400 | JSON sai cú pháp/kiểu dữ liệu | Báo request không hợp lệ |
 | `UNSUPPORTED_MEDIA_TYPE` | 415 | Content-Type không hỗ trợ | Báo định dạng không hỗ trợ |
 | `RESOURCE_NOT_FOUND` | 404 | Resource không tồn tại hoặc đã soft-delete | Điều hướng 404 |
@@ -53,7 +54,7 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | `IDEMPOTENCY_KEY_REQUIRED` | 400 | Action bắt buộc thiếu `Idempotency-Key` | Tạo key và gửi lại |
 | `IDEMPOTENCY_KEY_REUSED` | 409 | Cùng key nhưng payload khác | Tạo key mới hoặc dùng payload cũ |
 | `RATE_LIMIT_EXCEEDED` | 429 | Vượt rate limit login/reset/chat/webhook | Tôn trọng `Retry-After` |
-| `INTERNAL_SERVER_ERROR` | 500 | Lỗi hệ thống không dự kiến | Hiển thị lỗi chung và requestId |
+| `INTERNAL_SERVER_ERROR` | 500 | Lỗi hệ thống không dự kiến | Hiển thị lỗi chung; dùng request/correlation ID trong log khi cần hỗ trợ |
 | `EXTERNAL_SERVICE_UNAVAILABLE` | 503 | External integration/hạ tầng tạm ngừng | Cho phép thử lại có kiểm soát |
 
 ## 4. Auth và account
@@ -208,8 +209,8 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 
 1. Dùng một `ErrorCode` enum/registry chứa code, default message và HTTP status; không hard-code rải rác.
 2. `@RestControllerAdvice` chuyển exception thành response envelope chuẩn.
-3. Bean Validation gom toàn bộ lỗi field thành `fieldErrors`; tên field dùng camelCase như API.
-4. Không chuyển mọi exception thành `400`; exception không được nhận diện phải là `500` và có `requestId`.
+3. Bean Validation gom toàn bộ lỗi field thành `errors`; mỗi lỗi dùng `{ code: "VALIDATION_ERROR", field, message }`.
+4. Không chuyển mọi exception thành `400`; exception không được nhận diện phải là `500`. Server log request/correlation ID để truy vết nhưng không lộ chi tiết exception cho client.
 5. Constraint/lock exception phải map có chủ đích: booking exclusion → `BOOKING_TIME_CONFLICT`; optimistic lock → `CONCURRENT_MODIFICATION`.
 6. `404` có thể dùng thay `403` cho IDOR nhạy cảm để không tiết lộ resource tồn tại.
 7. Message trả client không chứa SQL, class name, stack trace, raw provider payload hoặc secret.
@@ -218,7 +219,7 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 
 1. Interceptor chỉ refresh một lần cho nhóm request gặp `AUTH_TOKEN_EXPIRED`; tránh refresh storm.
 2. Refresh thất bại/refresh token bị revoke thì xóa session và điều hướng login.
-3. `VALIDATION_ERROR` map theo `fieldErrors`; lỗi domain hiển thị thông báo form/toast phù hợp.
+3. `VALIDATION_ERROR` map từng phần tử `errors` có `field` về form; lỗi domain có `field=null` hiển thị thông báo form/toast phù hợp.
 4. `CONCURRENT_MODIFICATION` yêu cầu reload dữ liệu thay vì tự động gửi lại mutation.
 5. `429` tôn trọng header `Retry-After`.
 6. `502/503` chỉ retry tự động với request idempotent hoặc có `Idempotency-Key`.

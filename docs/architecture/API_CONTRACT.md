@@ -25,15 +25,19 @@ Authorization: Bearer <access-token>
 
 ### 1.2. Response envelope
 
+Mọi REST API trả JSON dùng cùng một envelope gồm đúng năm field cấp cao nhất: `success`, `message`, `data`, `errors` và `meta`. Field không có giá trị vẫn được trả về với giá trị `null` để client luôn nhận một cấu trúc ổn định.
+
 Thành công với một resource:
 
 ```json
 {
   "success": true,
+  "message": "Tạo booking thành công",
   "data": {
     "id": "b62a79c5-98f6-4bf0-80fd-37f598db97e6"
   },
-  "timestamp": "2026-08-18T02:00:00Z"
+  "errors": null,
+  "meta": null
 }
 ```
 
@@ -42,38 +46,67 @@ Thành công có phân trang:
 ```json
 {
   "success": true,
+  "message": "Lấy danh sách booking thành công",
   "data": [],
+  "errors": null,
   "meta": {
     "page": 0,
     "size": 20,
     "totalElements": 100,
     "totalPages": 5,
     "hasNext": true
-  },
-  "timestamp": "2026-08-18T02:00:00Z"
+  }
 }
 ```
 
-Thất bại:
+Thất bại do validation:
 
 ```json
 {
   "success": false,
-  "error": {
-    "code": "BOOKING_TIME_CONFLICT",
-    "message": "Giáo viên đã có lịch trong khoảng thời gian này",
-    "fieldErrors": [
-      { "field": "startTime", "message": "Khoảng thời gian bị trùng lịch" }
-    ]
-  },
-  "timestamp": "2026-08-18T02:00:00Z",
-  "requestId": "01K30T7A7EBMKQGZJGF3Z92RWB"
+  "message": "Dữ liệu đầu vào không hợp lệ",
+  "data": null,
+  "errors": [
+    {
+      "code": "VALIDATION_ERROR",
+      "field": "startTime",
+      "message": "Thời gian bắt đầu phải ở trong tương lai"
+    }
+  ],
+  "meta": null
 }
 ```
 
-- `data` không xuất hiện trong response lỗi; `error` không xuất hiện trong response thành công.
-- `meta` chỉ xuất hiện khi cần, chủ yếu với list phân trang.
-- `message` phục vụ hiển thị; FE dùng `error.code` cho logic, không so sánh message.
+Thất bại do nghiệp vụ:
+
+```json
+{
+  "success": false,
+  "message": "Không thể đặt lịch học",
+  "data": null,
+  "errors": [
+    {
+      "code": "BOOKING_TIME_CONFLICT",
+      "field": null,
+      "message": "Giáo viên đã có lịch trong khoảng thời gian này"
+    }
+  ],
+  "meta": null
+}
+```
+
+| Field | Quy ước |
+|---|---|
+| `success` | `true` khi thành công, `false` khi thất bại; không thay thế HTTP status. |
+| `message` | Thông báo có nghĩa cho người dùng; có thể `null` với API đọc dữ liệu. |
+| `data` | DTO, array hoặc giá trị thực tế khi thành công; bằng `null` khi lỗi. |
+| `errors` | Mảng `{ code, field, message }` khi lỗi; bằng `null` khi thành công. |
+| `meta` | Metadata như phân trang; bằng `null` khi không có. Không chứa dữ liệu nghiệp vụ. |
+
+- `field=null` với lỗi không gắn với input cụ thể.
+- FE xử lý logic theo `errors[].code`, không so sánh nội dung message.
+- Không trả HTTP `200` cùng `success=false`.
+- `204 No Content`, file/stream, WebSocket, OAuth redirect và webhook theo contract bên ngoài không bắt buộc dùng envelope này.
 - Không trả stack trace, secret, JWT, checksum key hay dữ liệu tài chính chưa mask.
 
 ### 1.3. HTTP status
@@ -774,7 +807,7 @@ Backend validate field theo `type`; không chấp nhận attachment không thu�
 2. UUID là string; tiền VND là integer int64.
 3. Không trả JPA Entity trực tiếp; mọi response qua DTO/envelope.
 4. FE không suy luận payment success từ return URL.
-5. FE dùng `error.code`, không dùng nội dung `message` để điều khiển luồng.
+5. FE dùng `errors[].code`, không dùng nội dung `message` để điều khiển luồng.
 6. List lớn luôn phân trang; không có endpoint “get all” cho booking/message/ledger.
 7. Mọi update/action trên entity có version phải gửi version hiện tại.
 8. Các endpoint bổ sung ở Auth, trial, mục 4.3 và mục 7 là quyết định contract v1 để lấp khoảng trống chức năng trong đặc tả gốc.

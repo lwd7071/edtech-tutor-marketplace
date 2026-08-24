@@ -22,14 +22,18 @@ Thành viên B sở hữu:
 
 ### Task 1.1: Docker Compose & Môi trường
 - [x] Docker Compose đã có `postgres:16-alpine` + `redis:7-alpine` (sẵn trong repo)
-- [x] Verify `docker compose up` chạy thành công trên máy local (Đã kết nối thành công tới Supabase & Upstash)
-- [x] Kiểm tra kết nối PostgreSQL (`edtech_db` / `edtech_user` / `edtech_password`)
-- [x] Kiểm tra kết nối Redis (`localhost:6379`)
+- [ ] Cài Docker/đưa Docker CLI vào `PATH`; tại lần xác minh 2026-08-24, lệnh `docker` chưa tồn tại
+- [ ] Verify `docker compose up` chạy thành công trên máy local
+- [ ] Kiểm tra kết nối PostgreSQL (`edtech_db` / `edtech_user` / `edtech_password`)
+- [ ] Kiểm tra kết nối Redis (`localhost:6379`)
+- [x] Cấu hình `.env.example` với đầy đủ biến môi trường
 
 ### Task 1.2: Flyway Baseline Migration
 > **B là người duy nhất tạo/sửa Flyway migration** (PLANBE.md quy tắc chống giẫm chân)
 
-Tạo các file migration tại `backend/src/main/resources/db/migration/`:
+Các file V1–V17 tại `backend/src/main/resources/db/migration/` là baseline đã đóng băng theo quy ước nhóm, nhưng **chưa được runtime-verify** trên PostgreSQL từ database rỗng. Audit tĩnh không thay thế Testcontainers.
+
+> **Audit tĩnh 2026-08-24:** nội dung file hiện tại cho thấy tất cả `teacher_id` tham chiếu `teacher_profiles(id)` và V16 có singleton constraints cho `platform_settings`. Hai kết luận này vẫn phải được xác nhận bằng metadata runtime tại Task 1.9.
 
 #### `V1__create_extension_and_users.sql`
 ```sql
@@ -220,7 +224,7 @@ CREATE TABLE invoices (
     id UUID PRIMARY KEY,
     invoice_number VARCHAR(50) NOT NULL UNIQUE,
     student_id UUID NOT NULL REFERENCES users(id),
-    teacher_id UUID NOT NULL REFERENCES users(id),
+    teacher_id UUID NOT NULL REFERENCES teacher_profiles(id),
     pricing_package_id UUID NOT NULL REFERENCES pricing_packages(id),
     amount_vnd BIGINT NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
@@ -261,7 +265,7 @@ CREATE TABLE payment_transactions (
 CREATE TABLE student_packages (
     id UUID PRIMARY KEY,
     student_id UUID NOT NULL REFERENCES users(id),
-    teacher_id UUID NOT NULL REFERENCES users(id),
+    teacher_id UUID NOT NULL REFERENCES teacher_profiles(id),
     subject_id UUID NOT NULL REFERENCES subjects(id),
     pricing_package_id UUID NOT NULL REFERENCES pricing_packages(id),
     invoice_id UUID NOT NULL UNIQUE REFERENCES invoices(id),
@@ -272,7 +276,7 @@ CREATE TABLE student_packages (
     completed_sessions INT NOT NULL DEFAULT 0,
     refunded_sessions INT NOT NULL DEFAULT 0,
     purchase_price_vnd BIGINT NOT NULL,
-    commission_rate NUMERIC(5,2) NOT NULL DEFAULT 10.00,
+    commission_rate NUMERIC(5,2) NOT NULL DEFAULT 5.00,
     starts_at TIMESTAMPTZ NOT NULL,
     expires_at TIMESTAMPTZ NOT NULL,
     status VARCHAR(30) NOT NULL DEFAULT 'PENDING_PAYMENT',
@@ -299,7 +303,7 @@ CREATE INDEX idx_student_packages_teacher_status ON student_packages (teacher_id
 ```sql
 CREATE TABLE bookings (
     id UUID PRIMARY KEY,
-    teacher_id UUID NOT NULL REFERENCES users(id),
+    teacher_id UUID NOT NULL REFERENCES teacher_profiles(id),
     student_id UUID NOT NULL REFERENCES users(id),
     student_package_id UUID REFERENCES student_packages(id),
     subject_id UUID NOT NULL REFERENCES subjects(id),
@@ -346,7 +350,7 @@ CREATE INDEX idx_bookings_status_end ON bookings (status, end_time);
 
 CREATE TABLE trial_requests (
     id UUID PRIMARY KEY,
-    teacher_id UUID NOT NULL REFERENCES users(id),
+    teacher_id UUID NOT NULL REFERENCES teacher_profiles(id),
     student_id UUID NOT NULL REFERENCES users(id),
     subject_id UUID NOT NULL REFERENCES subjects(id),
     preferred_start_time TIMESTAMPTZ,
@@ -386,7 +390,7 @@ CREATE TABLE reviews (
     id UUID PRIMARY KEY,
     booking_id UUID NOT NULL UNIQUE REFERENCES bookings(id),
     student_id UUID NOT NULL REFERENCES users(id),
-    teacher_id UUID NOT NULL REFERENCES users(id),
+    teacher_id UUID NOT NULL REFERENCES teacher_profiles(id),
     rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
     comment TEXT,
     is_visible BOOLEAN NOT NULL DEFAULT true,
@@ -539,7 +543,7 @@ CREATE TABLE package_extension_requests (
 ```sql
 CREATE TABLE assignments (
     id UUID PRIMARY KEY,
-    teacher_id UUID NOT NULL REFERENCES users(id),
+    teacher_id UUID NOT NULL REFERENCES teacher_profiles(id),
     student_id UUID NOT NULL REFERENCES users(id),
     subject_id UUID NOT NULL REFERENCES subjects(id),
     title VARCHAR(255) NOT NULL,
@@ -592,7 +596,7 @@ CREATE TABLE attachments (
 ```sql
 CREATE TABLE conversations (
     id UUID PRIMARY KEY,
-    teacher_id UUID NOT NULL REFERENCES users(id),
+    teacher_id UUID NOT NULL REFERENCES teacher_profiles(id),
     student_id UUID NOT NULL REFERENCES users(id),
     last_message_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -681,7 +685,7 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
     flyway:
       enabled: true
   ```
-- [x] Tạo context test smoke (`ApiApplicationTests`) xanh chạy trên Testcontainers
+- [x] Tạo context test smoke (`ApiApplicationTests`), nhưng chưa xác nhận chạy thật trên Testcontainers
 - [x] Tạo `@TestConfiguration` base cho integration test dùng PostgreSQL container
 
 ### Task 1.4: Environment Variables
@@ -690,9 +694,132 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
 - [x] Kiểm tra `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `REDIS_URL`, `APP_JWT_SECRET` đều có fallback dev
 
 ### ✅ Checkpoint Tuần 1
-- [x] `docker compose up` thành công (Chạy thực tế trên Supabase)
-- [x] Migration chạy được trên database rỗng
-- [x] Context test xanh
+- [ ] `docker version` và `docker compose version` thành công
+- [ ] Migration V1–V17 chạy được trên PostgreSQL Testcontainers từ database rỗng
+- [ ] Context test chạy thật, không bị skip
+- [ ] `FlywayMigrationTest`: tests run `6`, skipped `0`, failures `0`, errors `0`
+- [ ] Flyway báo đúng 17 migration applied và `validate` thành công
+
+> **Trạng thái xác minh 2026-08-24:** `mvn -Dtest=FlywayMigrationTest test` báo `BUILD SUCCESS` nhưng cả 6 test đều bị skip vì không tìm thấy Docker. Không được dùng kết quả này để đánh dấu migration/context test hoàn thành.
+
+---
+
+## TUẦN 1 — Các task thực hiện ngoài kế hoạch gốc
+
+> Các task bên dưới được thực hiện để hỗ trợ remediation của Thành viên A (A-02 → A-09) và đảm bảo
+> ArchUnit guard của A có thể hoạt động đúng. Không nằm trong kế hoạch 8 tuần ban đầu.
+
+### Task 1.5: Migration V17 — Fix BaseEntity compatibility
+- [x] Tạo `V17__add_deleted_to_refresh_tokens.sql`
+  - Thêm cột `deleted BOOLEAN NOT NULL DEFAULT false` vào bảng `refresh_tokens`
+  - Lý do: `RefreshToken` kế thừa `BaseEntity` (có field `isDeleted`) nên bảng phải có cột này
+  - Theo yêu cầu từ A-02 — Thành viên A phát hiện trong quá trình remediation
+
+### Task 1.6: Facade contracts A ↔ B
+
+Tạo 3 facade interface + implementation stub dùng `JdbcTemplate` để A có thể migrate
+các module `ranking`, `catalog`, `learning` mà không cần domain entity của B:
+
+- [x] **`enrollment.facade.EnrollmentFacade`** (interface + impl)
+  - `hasValidRelationship(teacherId, studentId)` — kiểm tra StudentPackage ACTIVE/COMPLETED
+  - `hasStudentPackage(pricingPackageId)` — kiểm tra PricingPackage đã được mua chưa
+  - Dùng: `PricingPackageService` (A) để check trước khi cho phép INACTIVE
+
+- [x] **`booking.facade.BookingEligibilityFacade`** (interface + impl + `BookingStatsSnapshot` DTO)
+  - `getTeacherIdForReviewableBooking(studentId, bookingId)` — kiểm tra booking COMPLETED, student khớp
+  - `getTeacherBookingStats(teacherId)` — trả về `BookingStatsSnapshot(completedSessions, totalSessions, trialSessions)`
+  - Dùng: `ranking.service.ReviewService` và `ranking.service.TeacherStatsService` (A)
+
+- [x] **`admin.facade.PlatformSettingsFacade`** (interface + impl)
+  - `getBayesianMinimumReviews()` — đọc từ bảng `platform_settings`
+  - Dùng: `ranking.service.TeacherStatsService` (A) cho Bayesian calculation
+
+> **Ghi chú ArchUnit:** 3 impl này dùng `JdbcTemplate` trực tiếp và được inventory explicit
+> trong `archunit_ignore_patterns.txt`. Đây là approved exception (B module, đọc bảng B sở hữu).
+
+Dependency B cần từ module A, phải handshake trước Tuần 2:
+
+- [ ] A expose PricingPackage snapshot facade; B dùng để đọc package purchasable khi tạo Invoice/StudentPackage
+- [ ] A expose Teacher approval operations; B dùng để list/approve/reject TeacherProfile
+- [ ] Chốt DTO/interface bằng public facade; B không gọi repository của `catalog` hoặc `teacher`
+
+### Task 1.7: Module Skeletons
+- [x] Tạo đầy đủ `package-info.java` cho tất cả sub-packages của:
+  - `booking`: controller, domain, dto.request, dto.response, repository, service
+  - `enrollment`: controller, domain, dto.request, dto.response, repository, service
+  - `payment`: controller, domain, dto.request, dto.response, repository, service
+  - `finance`: controller, domain, dto.request, dto.response, repository, service
+  - `admin`: controller, domain, dto.request, dto.response, repository, service
+  - `scheduler`: (TeacherStatsJob đã implement)
+
+### Task 1.8: TeacherStatsJob — Scheduled Job
+- [x] Implement `scheduler.TeacherStatsJob`
+  - Chạy `@Scheduled(cron = "0 0 2 * * ?")` — 02:00 mỗi ngày
+  - `@SchedulerLock` với ShedLock qua Redis (lockAtLeastFor=5m, lockAtMostFor=30m)
+  - Fetch tất cả teacher `APPROVED` → gọi `TeacherStatsService.recalculateTeacherStats()` (A)
+  - Sau đó gọi `TeacherStatsFacade.updateAllGlobalRanks()` (A)
+  - Invalidate Redis cache `GLOBAL_RANKING`
+
+### Task 1.9: Hard gate xác minh V1–V17
+
+> **Chặn cứng:** Không chốt nội dung hoặc tạo V18 trước khi toàn bộ checklist này xanh. `BUILD SUCCESS` không đủ nếu Surefire báo test bị skip.
+
+- [ ] Cài Docker và xác nhận `docker version`, `docker compose version` thành công
+- [ ] Chạy `mvn -Dtest=FlywayMigrationTest test` trên database PostgreSQL Testcontainers rỗng
+- [ ] Xác nhận Surefire: tests run `6`, skipped `0`, failures `0`, errors `0`
+- [ ] Xác nhận Flyway có đúng 17 migration applied và `validate` thành công
+- [ ] Audit metadata runtime, không chỉ đọc file SQL:
+  - Tất cả FK `teacher_id` của V1–V17 tham chiếu `teacher_profiles(id)`
+  - V16 có `uq_platform_settings_singleton` và `ck_platform_settings_singleton`
+  - `bookings.status` có CHECK đủ `SCHEDULED/COMPLETED/CANCELLED/EXPIRED`
+  - `student_packages.commission_rate` có precision/scale `(5,2)`
+- [ ] Ghi số test run/skip/fail/error và Docker/PostgreSQL version vào `PROGRESS_BE_B.md`
+
+Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm lỗi vào bảng remediation dưới đây, xử lý bằng V18 và bổ sung regression assertion.
+
+| Phát hiện | Query/Test tái hiện | Cách sửa trong V18 | Regression test | Trạng thái |
+|---|---|---|---|---|
+| Chưa có — chờ hard gate | — | — | — | Blocked bởi Docker |
+
+### Task 1.10: Migration V18 — Harden business invariants
+
+- [ ] Chỉ tạo `V18__harden_business_invariants.sql` sau khi Task 1.9 xanh
+- [ ] Commission và settings:
+  - Đổi default `platform_settings.commission_rate` thành `5.00`
+  - Seed đúng một settings row nếu bảng rỗng, tương thích singleton constraint của V16
+  - Backfill `student_packages.commission_rate IS NULL` từ settings rồi đặt column `NOT NULL`
+  - Không tự đổi snapshot khác `5.00`; nếu có, fail rõ ràng để xác minh đó là cấu hình hợp lệ hay dữ liệu do default sai
+- [ ] Thêm CHECK cho status/type còn thiếu theo enum trong SPEC/API contract; không tạo lại constraint booking đã có
+- [ ] Allow-list và default đích phải được khóa như sau:
+
+  | Column | Allow-list | Default đích / xử lý legacy đã biết |
+  |---|---|---|
+  | `users.status` | `PENDING_VERIFICATION, ACTIVE, LOCKED, DISABLED` | Default `PENDING_VERIFICATION` |
+  | `teacher_profiles.profile_status` | `DRAFT, PENDING_APPROVAL, APPROVED, REJECTED` | Default `DRAFT`; legacy `PENDING` chỉ map sang `PENDING_APPROVAL` sau khi audit xác nhận nguồn |
+  | `teacher_documents.verification_status` | `PENDING, VERIFIED, REJECTED` | Default `PENDING` |
+  | `subject_proposals.status` | `PENDING, APPROVED, REJECTED` | Default `PENDING` |
+  | `pricing_packages.status` | `DRAFT, ACTIVE, INACTIVE` | Default `DRAFT` |
+  | `invoices.status` | `PENDING, PAID, CANCELLED, EXPIRED` | Default `PENDING` |
+  | `student_packages.status` | `PENDING_PAYMENT, ACTIVE, COMPLETED, REFUND_PENDING, REFUNDED, LOCKED_EXPIRED` | Default `PENDING_PAYMENT` |
+  | `trial_requests.status` | `PENDING, ACCEPTED, REJECTED, CANCELLED` | Default `PENDING`; skip nếu metadata cho thấy CHECK tương đương đã có |
+  | `payout_requests.status` | `PENDING, PROCESSING, SUCCEEDED, REJECTED, FAILED` | Default `PENDING` |
+  | `refund_requests.status` | `PENDING, APPROVED, PROCESSING, REFUNDED, REJECTED, FAILED` | Default `PENDING` |
+  | `package_extension_requests.status` | `PENDING, APPROVED, REJECTED` | Default `PENDING` |
+  | `assignments.assignment_type` | `SYSTEM_QUIZ, FREEFORM` | Không đổi dữ liệu hợp lệ |
+  | `assignments.status` | `DRAFT, PUBLISHED, CLOSED` | Default `DRAFT`; `ASSIGNED` không tự map nếu chưa xác minh |
+  | `submissions.status` | `DRAFT, SUBMITTED, GRADED` | Default `DRAFT` |
+  | `messages.message_type` | `TEXT, IMAGE, FILE` | Default `TEXT` |
+
+- [ ] Trước mỗi constraint, audit dữ liệu bằng query dạng:
+  ```sql
+  SELECT <column>, count(*)
+  FROM <table>
+  WHERE <column> NOT IN (<allow_list>)
+  GROUP BY <column>;
+  ```
+- [ ] Chỉ sửa cơ học các legacy value đã có mapping được duyệt; dữ liệu không rõ nghĩa phải `RAISE EXCEPTION` kèm tên bảng, constraint và số row
+- [ ] Không xóa row hoặc ép về một trạng thái tùy ý để migration tiếp tục
+- [ ] Test V1–V18 từ database rỗng, fixture legacy hợp lệ và fixture legacy không hợp lệ
 
 ---
 
@@ -719,7 +846,7 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
   - `RejectRequest` (có field `reason`)
   - `TeacherApprovalView`
 - [ ] Service: `AdminTeacherApprovalService`
-  - Gọi facade TeacherProfile (module A) để đổi status
+  - Gọi Teacher approval facade do module A sở hữu để list/approve/reject profile
   - Tạo AuditLog cho mỗi action
   - **Chỉ giao tiếp qua public facade/DTO, không gọi repository module A**
 
@@ -774,9 +901,9 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
   - File: `finance/domain/LedgerEntry.java`
 - [ ] Repository: `WalletRepository`, `LedgerEntryRepository`
 
-### Task 3.4: Facade cho module A
-- [ ] Tạo facade interface để A có thể đọc snapshot PricingPackage:
-  - `enrollment/service/EnrollmentFacade.java` — expose thông tin cần thiết cho learning/chat authorization
+### Task 3.4: Tích hợp PricingPackage facade của module A
+- [ ] B consume PricingPackage snapshot facade do A expose; không tạo facade ngược chiều trong `enrollment`
+- [ ] Snapshot tối thiểu phục vụ Invoice/StudentPackage: package ID, teacher profile ID, subject ID, name, total sessions, duration, price và trạng thái bán
 
 ### ✅ Checkpoint Tuần 3
 - Domain classes compile thành công
@@ -789,7 +916,11 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
 
 ### Task 4.1: Invoice State Machine & payOS Integration
 - [ ] Service: `InvoiceService`
-  - `createInvoice(CreateInvoiceRequest)` → tạo Invoice PENDING → gọi payOS → lưu checkoutUrl, qrCode, orderCode
+  - `createInvoice(CreateInvoiceRequest)` tách thành 3 ranh giới: transaction lưu Invoice `PENDING` → gọi payOS ngoài transaction → transaction ngắn lưu checkoutUrl/qrCode/orderCode
+  - Nhận `Idempotency-Key`; retry cùng key phải dùng lại Invoice, không tạo Invoice mới
+  - Nếu Invoice chưa có link, trước khi gọi create lần nữa phải lookup theo `orderCode` và reconcile link hiện hữu khi payOS hỗ trợ
+  - Nếu lookup không khả dụng hoặc kết quả không xác định: không tự tạo link thứ hai; trả lỗi retryable, log reconciliation và để Admin xử lý hoặc expiry job đóng Invoice
+  - Đây là rủi ro provider đã biết của MVP; tuyệt đối không giữ DB transaction trong lúc chờ HTTP
   - Sinh `invoiceNumber` unique: `INV-{yyyyMMdd}-{sequence}`
   - Sinh `payosOrderCode` unique (int64)
 - [ ] payOS Integration:
@@ -810,15 +941,18 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
   - Check orderCode, amount khớp Invoice
   - Idempotency: nếu đã xử lý → trả 200 không effect
   - Tạo `PaymentTransaction`
-  - Kích hoạt `StudentPackage` → ACTIVE
-  - Tạo `Wallet/LedgerEntry` pending balance
-  - Commission snapshot từ platform settings
+  - Là orchestration transaction duy nhất: tạo PaymentTransaction → kích hoạt StudentPackage → gọi finance funding
+  - Tạo `Wallet/LedgerEntry` pending đúng một lần bằng idempotency key dẫn xuất từ Invoice/PaymentTransaction
+  - Commission snapshot từ settings row đã seed; default chuẩn là `5.00`
 
 ### Task 4.3: StudentPackage Activation
 - [ ] Service: `StudentPackageService`
   - `activateFromPayment(invoice)` — chạy đúng 1 lần
   - Set `remainingSessions = totalSessions`, `startsAt`, `expiresAt`
-  - Tạo Wallet entry: pending balance = price × (1 - commissionRate)
+  - Chỉ tạo/kích hoạt package và snapshot commission; không tạo Wallet/Ledger
+- [ ] Finance funding service:
+  - Credit pending balance và tạo LedgerEntry trong transaction do webhook orchestration mở
+  - Idempotent theo Invoice/PaymentTransaction để webhook lặp không double funding
 - [ ] Controller: `StudentPackageController`
   - `GET /api/student/packages` — list phân trang
   - `GET /api/student/packages/{id}` — chi tiết
@@ -846,13 +980,14 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
   - Query overlap (PostgreSQL exclusion sẽ bắt ở DB level)
 - [ ] Service: `BookingService`
   - **Create Booking**: Lock order theo CODING_CONVENTION 3.7:
-    1. Load Teacher/User
+    1. Load TeacherProfile
     2. Load Student/User
     3. Load StudentPackage FOR UPDATE
     4. Check package ACTIVE, remaining > 0, booking.endTime <= package.expiresAt
     5. Check overlap (exclusion constraint bắt)
-    6. Decrement remaining, increment reserved
-    7. Insert Booking
+    6. Kiểm tra availability; nếu nằm ngoài lịch rảnh thì set `outsideAvailabilityWarning=true` nhưng vẫn cho tạo
+    7. Decrement remaining, increment reserved
+    8. Insert Booking
   - **Complete Booking**: (Teacher only)
     1. Load Booking FOR UPDATE
     2. Check status = SCHEDULED, endTime <= now
@@ -865,6 +1000,7 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
     2. Check status = SCHEDULED
     3. Update StudentPackage: reserved--, remaining++
     4. Set cancel reason, cancelledAt
+  - Mỗi cặp counter phải được đổi bằng một câu SQL update hoặc một entity mutation và đúng một lần flush; không flush trạng thái trung gian vi phạm CHECK tổng counter
 - [ ] Controller:
   - `TeacherBookingController`:
     - `POST /api/teacher/bookings` → 201
@@ -895,6 +1031,7 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
   - Hoàn trả StudentPackage: reserved--, remaining++
 - [ ] `scheduler/PackageExpiryJob` — ACTIVE packages quá expiresAt → LOCKED_EXPIRED
   - **Không hủy Booking SCHEDULED đã tạo** (ERD bất biến 6)
+  - **Giới hạn MVP:** nếu Student không refund hoặc gia hạn thì không auto-sweep; lượt chưa dùng và tiền tương ứng tiếp tục nằm ở pending, chỉ xử lý qua refund/gia hạn hoặc vận hành Admin
 - [ ] `scheduler/BookingReminderJob` — gửi notification trước buổi học X giờ
   - Đọc setting `bookingReminderHours` từ platform settings
 
@@ -903,6 +1040,8 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
   - Tạo `LedgerEntry` chuyển pending → available
   - Idempotent: check `settlementProcessed`
   - Lock Wallet FOR UPDATE
+  - Phân bổ gross theo công thức tích lũy: `resolvedBefore = completedSessions + refundedSessions`; amount của một buổi là `floor((resolvedBefore + 1) × purchasePrice / totalSessions) - floor(resolvedBefore × purchasePrice / totalSessions)`
+  - Dùng integer arithmetic, không dùng `double`
 
 ### ✅ Checkpoint Tuần 5
 - Không double-booking (exclusion constraint)
@@ -914,10 +1053,10 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
 
 ## TUẦN 6 — Booking/StudentPackage Authorization Facade
 
-### Task 6.1: Facade cho Learning & Communication
-- [ ] `enrollment/service/EnrollmentFacade.java` — kiểm tra Student-Teacher có StudentPackage hợp lệ
-- [ ] `booking/service/BookingFacade.java` — kiểm tra có Booking/Trial hợp lệ cho cặp
-- [ ] Expose qua public interface, KHÔNG sửa implementation nội bộ `learning` hoặc `communication`
+### Task 6.1: Hoàn thiện facade B cung cấp cho Learning & Communication
+- [ ] Mở rộng `enrollment.facade.EnrollmentFacade` hiện có để kiểm tra Student–Teacher có StudentPackage hợp lệ
+- [ ] Mở rộng `booking.facade.BookingEligibilityFacade` hiện có để kiểm tra Booking/Trial hợp lệ cho cặp
+- [ ] Không tạo facade trùng trong package `service`; không sửa implementation nội bộ `learning` hoặc `communication`
 
 ### Task 6.2: Student Session Reports
 - [ ] Controller: `GET /api/student/session-reports` — phân trang
@@ -965,10 +1104,14 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
 - [ ] Entity: `finance/domain/RefundRequest.java`
   - Status: PENDING → APPROVED → PROCESSING → REFUNDED/REJECTED/FAILED
 - [ ] Service: `RefundService`
-  - Student tạo: check package ACTIVE, không có SCHEDULED booking, không có refund đang xử lý
-  - Admin approve: tính `refundAmountVnd = floor(approvedSessions × purchasePriceVnd / totalSessions)` (cộng dư vào lần cuối)
-  - Admin complete: upload chứng từ, mark REFUNDED, trừ StudentPackage counters, debit Wallet
-  - Admin reject
+  - Student tạo: lock package, check `ACTIVE | LOCKED_EXPIRED`, remaining > 0, không có SCHEDULED booking và không có refund đang xử lý
+  - Ngay khi tạo request, chuyển package sang `REFUND_PENDING` để chặn Booking mới
+  - Admin không được approve quá remaining sessions
+  - Tính tích lũy với `resolvedBefore = completedSessions + refundedSessions`: refund `n` buổi bằng `floor((resolvedBefore + n) × purchasePrice / totalSessions) - floor(resolvedBefore × purchasePrice / totalSessions)`
+  - Công thức trên là cách tổng quát hóa SPEC 6.10: vẫn thực hiện đúng công thức floor theo số buổi và bảo đảm khi mọi buổi đã resolved thì tổng gross + refund bằng chính xác `purchase_price_vnd`
+  - Refund cuối là lần làm `remainingSessions` về 0 trong khi `reservedSessions=0`; phần dư được dồn tự động bởi công thức tích lũy
+  - Admin complete: upload chứng từ, chuyển approved sessions từ remaining sang refunded, debit Wallet; full refund chuyển package `REFUNDED`, partial refund phục hồi `ACTIVE` hoặc `LOCKED_EXPIRED` theo `expiresAt`
+  - Admin reject: phục hồi `ACTIVE` hoặc `LOCKED_EXPIRED` theo `expiresAt`
 - [ ] Controller (Student): `StudentRefundController`
   - `POST /api/student/refund-requests` → 201
 - [ ] Controller (Admin): `AdminRefundController`
@@ -982,7 +1125,7 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
   - Status: PENDING → APPROVED/REJECTED
 - [ ] Service: `ExtensionService`
   - Student tạo: check package LOCKED_EXPIRED, không có extension PENDING
-  - Admin approve: update expiresAt, chuyển package về ACTIVE
+  - Admin approve: bắt buộc `approvedExpiryDate > now`, update expiresAt rồi chuyển package về ACTIVE
   - Admin reject
 - [ ] Controller (Student): `StudentExtensionController`
   - `POST /api/student/extension-requests` → 201
@@ -1002,17 +1145,7 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
 - [ ] `AdminSettingsController`
   - `GET /api/admin/settings` — PlatformSettingsView
   - `PUT /api/admin/settings` — UpdatePlatformSettingsRequest
-- [ ] Tạo table `platform_settings` (migration V15):
-  ```sql
-  CREATE TABLE platform_settings (
-      id UUID PRIMARY KEY,
-      commission_rate NUMERIC(5,2) NOT NULL DEFAULT 10.00,
-      bayesian_minimum_reviews INT NOT NULL DEFAULT 10,
-      booking_reminder_hours INT NOT NULL DEFAULT 11,
-      booking_expiration_hours INT NOT NULL DEFAULT 12,
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-  );
-  ```
+- [ ] Implement settings service/API trên bảng `platform_settings` đã được tạo ở V15, singleton constraint ở V16 và default/seed được harden ở V18
 - [ ] `AdminAuditLogController`
   - `GET /api/admin/audit-logs` — phân trang, filter
 
@@ -1030,21 +1163,30 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
 ## TUẦN 8 — Hardening & Testing
 
 ### Task 8.1: Integration Test
-- [ ] Test migration từ database rỗng (Testcontainers, toàn bộ V1-V15)
+- [ ] Test migration V1–V18 từ database rỗng; test không được skip
+- [ ] Test schema metadata: teacher FK, settings singleton/seed, booking CHECK, commission `(5,2)` và các CHECK mới
+- [ ] Test fixture legacy hợp lệ migrate thành công; fixture có enum/status không rõ nghĩa phải fail với thông báo chứa bảng/constraint/số row
 - [ ] Test booking locking & exclusion constraint (double-booking)
+- [ ] Test Booking ngoài availability vẫn tạo được và bật warning
 - [ ] Test webhook idempotency (gửi webhook 2 lần → chỉ 1 effect)
+- [ ] Test payOS timeout/reconciliation không giữ transaction và không tạo hai Invoice/payment link cục bộ
 - [ ] Test ledger integrity (balance = sum of ledger entries)
 - [ ] Test counter invariant (remaining + reserved + completed + refunded = total)
+- [ ] Test concurrent create/complete/cancel/expire không flush counter ở trạng thái trung gian
 - [ ] Test payout reserve/release
-- [ ] Test refund calculation (dư do làm tròn)
+- [ ] Test nhiều thứ tự completion/refund với giá không chia hết; tổng cuối bằng `purchase_price_vnd`
+- [ ] Test refund chuyển `REFUND_PENDING`, reject/partial phục hồi đúng trạng thái và full refund chuyển `REFUNDED`
+- [ ] Test extension từ chối `approvedExpiryDate <= now`
 
 ### Task 8.2: Seed Data
-- [ ] Tạo migration `V16__seed_demo_data.sql` hoặc `data.sql` cho profile dev:
+- [ ] Tạo migration `V19__seed_demo_data.sql` hoặc `data.sql` cho profile dev:
   - Admin user
   - 2-3 Teacher (APPROVED) với subjects, packages
   - 3-5 Student với packages, bookings
   - Sample invoices, wallet entries
   - Platform settings mặc định
+
+> ⚠️ **Lưu ý version:** V16 (`fix_schema_bugs`) và V17 (`add_deleted_to_refresh_tokens`) là baseline đóng băng; V18 dành cho hardening business invariants. Migration seed data phải dùng từ V19 trở đi.
 
 ### Task 8.3: Optimization & Polish
 - [ ] Review query performance, thêm index nếu cần
@@ -1053,7 +1195,7 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
 - [ ] Chạy acceptance test end-to-end cùng với A
 
 ### ✅ Checkpoint Tuần 8
-- Migration chạy clean từ database rỗng
+- Migration V1–V19 chạy clean từ database rỗng, không có integration test bị skip
 - Không race condition ở booking/payment/finance
 - Seed data chạy được cho demo
 
@@ -1089,7 +1231,7 @@ Sau MỖI task được giao, append entry mới vào file `PROGRESS_BE_B.md`:
 
 ## Tham chiếu: Thứ tự Lock (CODING_CONVENTION 3.7)
 
-- **Booking**: Teacher/User → Student/User → StudentPackage → conflict query → counters → insert Booking
+- **Booking**: TeacherProfile → Student/User → StudentPackage → conflict query → counters → insert Booking
 - **Finance**: StudentPackage → Wallet → idempotency check → LedgerEntry → balance
 - **KHÔNG đổi thứ tự** ở service khác để tránh deadlock
 

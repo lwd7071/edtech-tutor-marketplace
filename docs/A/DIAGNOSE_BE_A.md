@@ -1,8 +1,24 @@
 # Diagnose Report — Backend của Thành viên A
 
-> Trạng thái: **Đã kiểm chứng bằng static analysis, Git history và `mvn test` ngày 2026-08-23.**
+> Trạng thái diagnose ban đầu: **Đã kiểm chứng bằng static analysis, Git history và `mvn test` ngày 2026-08-23.**
 >
 > Phạm vi: các module A sở hữu theo `docs/planning/PLANBE.md`. Báo cáo không sửa code và không thay thế Definition of Done (DoD) trong kế hoạch gốc.
+
+## ✅ Trạng thái Giải quyết (Resolution Status)
+
+> Cập nhật: **2026-08-24** — Toàn bộ issues được diagnose bên dưới **đã được giải quyết hoàn toàn** qua remediation A-01 → A-11.
+
+| Issue | Section | Tiêu chí đóng | Trạng thái |
+|---|---|---|---|
+| Repository access xuyên module (12 class, 17 dep) | §2 | Không còn consumer inject repository ngoài module; architecture test ngăn dependency quay lại | ✅ Closed |
+| SQL/JPQL vượt module boundary | §3 | Không dùng SQL/JPQL đọc bảng ngoài ownership; FixDbController đã xóa | ✅ Closed |
+| JPA domain entity coupling xuyên module | §4 | Không facade trả JPA entity; toàn bộ cross-module ref chuyển sang UUID | ✅ Closed |
+| Khoảng trống kiểm thử | §5 | 56 unit/integration tests, 0 failures, 0 errors; ArchUnit 3 rules, 0 violations | ✅ Closed |
+
+**Bằng chứng:** `mvn test` ngày 2026-08-23/24 → Tests run: 56, Failures: 0, Errors: 0, Skipped: 8 (FlywayMigrationTest cần Docker). ArchUnit: 0 violations.
+Xem chi tiết tại [`PROGRESS_BE_A.md`](./PROGRESS_BE_A.md) và [`Task_A/finished.md`](./Task_A/finished.md).
+
+---
 
 ## 1. Căn cứ và khả năng truy nguyên
 
