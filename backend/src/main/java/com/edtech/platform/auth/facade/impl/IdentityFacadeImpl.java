@@ -45,4 +45,10 @@ public class IdentityFacadeImpl implements IdentityFacade {
                         user.getParentEmail()
                 ));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<String> getStatus(UUID id) {
+        return userRepository.findById(id).map(user -> user.getStatus().name());
+    }
 }

@@ -11,4 +11,6 @@ import java.util.UUID;
 @Repository
 public interface SubjectRepository extends JpaRepository<Subject, UUID>, JpaSpecificationExecutor<Subject> {
     Optional<Subject> findByIdAndIsActiveTrue(UUID id);
+    boolean existsByCodeIgnoreCase(String code);
+    boolean existsBySlugIgnoreCase(String slug);
 }

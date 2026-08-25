@@ -68,4 +68,27 @@ public class SubjectProposal extends BaseEntity {
         this.description = description;
         this.status = ProposalStatus.PENDING;
     }
+
+    public void approve(Subject subject, UUID adminId, String note) {
+        requirePending();
+        this.status = ProposalStatus.APPROVED;
+        this.createdSubject = subject;
+        this.reviewedById = adminId;
+        this.reviewNote = note;
+        this.reviewedAt = Instant.now();
+    }
+
+    public void reject(UUID adminId, String reason) {
+        requirePending();
+        this.status = ProposalStatus.REJECTED;
+        this.reviewedById = adminId;
+        this.reviewNote = reason;
+        this.reviewedAt = Instant.now();
+    }
+
+    private void requirePending() {
+        if (status != ProposalStatus.PENDING) {
+            throw new IllegalStateException("Proposal has already been reviewed");
+        }
+    }
 }

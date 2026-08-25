@@ -8,4 +8,5 @@ public interface IdentityFacade {
     boolean existsById(UUID id);
     boolean isActive(UUID id);
     Optional<IdentitySnapshot> getIdentity(UUID id);
+    Optional<String> getStatus(UUID id);
 }

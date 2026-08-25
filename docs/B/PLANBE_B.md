@@ -873,48 +873,55 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 ## TUẦN 2 — Admin Approval & Audit Log
 
 ### Task 2.1: Audit Log Module
-- [ ] Entity: `AuditLog` (append-only, không soft delete, không `BaseEntity`)
+- [x] Entity: `AuditLog` immutable (append-only, không soft delete, không `BaseEntity`)
   - File: `admin/domain/AuditLog.java`
-- [ ] Repository: `AuditLogRepository`
+- [x] Repository append-only: `AuditLogRepository` chỉ expose `append()` qua `EntityManager.persist()`; không có update/delete
   - File: `admin/repository/AuditLogRepository.java`
-- [ ] Service: `AuditLogService.log(actorId, action, targetType, targetId, before, after, ip, userAgent)`
+- [x] Service: `AuditLogService.append(actorId, action, targetType, targetId, before, after, context)`
   - File: `admin/service/AuditLogService.java`
   - Ghi mọi action thay đổi trạng thái
-- [ ] DTO: `AuditLogView`
-  - File: `admin/dto/response/AuditLogView.java`
+- [x] `AuditSnapshotMapper` tập trung whitelist snapshot Teacher/Subject Proposal/User; không serialize entity và không lưu email/token/password/credential
+- [x] Mapping `JSONB`/`INET` được kiểm tra bằng PostgreSQL Testcontainers insert thật
+- [ ] `AuditLogView` và API đọc audit được hoãn đúng Task 7.6; Task 2 không mở endpoint tra cứu AuditLog
 
 ### Task 2.2: Admin Teacher Approval
-- [ ] Controller: `AdminTeacherApprovalController`
-  - `GET /api/admin/teacher-approvals` — list pending approvals (phân trang)
-  - `POST /api/admin/teacher-approvals/{id}/approve`
-  - `POST /api/admin/teacher-approvals/{id}/reject`
-- [ ] DTO:
+- [x] Controller: `AdminApprovalController`
+  - `GET /api/admin/teachers/approvals` — list theo status, mặc định pending (phân trang)
+  - `POST /api/admin/teachers/{id}/approve`
+  - `POST /api/admin/teachers/{id}/reject`
+- [x] DTO:
   - `ApproveTeacherRequest` (chỉ cần body rỗng hoặc optional note)
   - `RejectRequest` (có field `reason`)
-  - `TeacherApprovalView`
-- [ ] Service: `AdminTeacherApprovalService`
+  - `TeacherApprovalSnapshot` kèm document snapshots; list dùng một bulk query, không N+1
+- [x] Service orchestration: `AdminApprovalService`
   - Gọi Teacher approval facade do module A sở hữu để list/approve/reject profile
   - Tạo AuditLog cho mỗi action
   - **Chỉ giao tiếp qua public facade/DTO, không gọi repository module A**
+  - Pessimistic lock bảo đảm double-click/race chỉ một request thành công; request sau trả `409 TEACHER_APPROVAL_ALREADY_PROCESSED`
 
 ### Task 2.3: Admin Subject Proposal
-- [ ] Controller: `AdminSubjectProposalController`
+- [x] Controller: `AdminApprovalController`
   - `GET /api/admin/subject-proposals`
   - `POST /api/admin/subject-proposals/{id}/approve` (resolution: CREATE_NEW | LINK_EXISTING)
   - `POST /api/admin/subject-proposals/{id}/reject`
-- [ ] DTO: `ApproveSubjectProposalRequest`, `RejectRequest`, `SubjectProposalView`
-- [ ] Service: `AdminSubjectProposalService`
+- [x] DTO: `ApproveSubjectProposalRequest`, `RejectRequest`, `SubjectProposalSnapshot`
+- [x] Service orchestration qua `SubjectApprovalFacade`
   - Tạo Subject mới hoặc link existing + tạo TeacherSubject
   - AuditLog
+  - Pessimistic lock; proposal đã xử lý trả `409 SUBJECT_PROPOSAL_ALREADY_PROCESSED`
 
 ### Task 2.4: User Moderation
-- [ ] Controller endpoint: `PATCH /api/admin/users/{id}/status`
-- [ ] DTO: `ChangeUserStatusRequest` (status + reason)
-- [ ] Service: kiểm tra transition hợp lệ, AuditLog
+- [x] Controller endpoint: `PATCH /api/admin/users/{id}/status`
+- [x] DTO: `ChangeUserStatusRequest` (chỉ `ACTIVE | LOCKED`, reason bắt buộc)
+- [x] `IdentityModerationFacade`: chỉ `ACTIVE ↔ LOCKED`, cấm tự moderation và cấm target ADMIN, revoke refresh token khi lock
+- [x] JWT filter kiểm tra current status qua Redis `auth:user-status:{userId}` TTL 30 giây; cache miss/failure fallback DB
+- [x] Lock/unlock và email verification cùng evict trước mutation, write-through sau commit; AuditLog nằm cùng transaction orchestration
 
 ### ✅ Checkpoint Tuần 2
-- Teacher đăng ký → gửi hồ sơ → Admin duyệt → Teacher được phép bán gói
-- AuditLog ghi đầy đủ
+- [x] Bảy endpoint Task 2 dùng envelope năm field, pagination meta và sort allow-list
+- [x] Teacher/Subject approve-reject và User moderation ghi AuditLog whitelist trong cùng transaction
+- [x] Double-click/race được khóa và trả `409`; JWT hiện hữu bị chặn theo current account status
+- [x] Full `mvn test` chạy bằng Docker/Testcontainers, không skip (evidence trong `PROGRESS_BE_B.md`)
 
 ---
 
@@ -1356,7 +1363,7 @@ Sau MỖI task được giao, append entry mới vào file `PROGRESS_BE_B.md`:
 | `/api/teacher/wallet/ledger` | GET | finance |
 | `/api/teacher/bank-accounts` | ALL | finance |
 | `/api/teacher/payout-requests` | POST, GET | finance |
-| `/api/admin/teacher-approvals` | ALL | admin |
+| `/api/admin/teachers/approvals` | ALL | admin |
 | `/api/admin/subject-proposals` | ALL | admin |
 | `/api/admin/subjects` | POST, PUT | admin |
 | `/api/admin/refund-requests` | ALL | admin |

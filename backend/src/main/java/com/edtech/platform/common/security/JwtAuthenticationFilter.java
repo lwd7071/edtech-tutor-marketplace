@@ -22,9 +22,11 @@ import org.springframework.lang.NonNull;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
+    private final UserStatusCacheService userStatusCache;
 
-    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider) {
+    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, UserStatusCacheService userStatusCache) {
         this.tokenProvider = tokenProvider;
+        this.userStatusCache = userStatusCache;
     }
 
     @Override
@@ -34,6 +36,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
             if (StringUtils.hasText(jwt)) {
                 AuthenticatedUser user = tokenProvider.getAuthenticatedUserFromToken(jwt);
+                String status = userStatusCache.resolve(user.id()).orElse(null);
+                if (!"ACTIVE".equals(status)) {
+                    request.setAttribute("jwt_error", statusError(status));
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 
                 java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities = Collections.emptyList();
                 if (user.role() != null) {
@@ -51,6 +59,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         
         filterChain.doFilter(request, response);
+    }
+
+    private ErrorCode statusError(String status) {
+        if ("LOCKED".equals(status)) return ErrorCode.ACCOUNT_LOCKED;
+        if ("DISABLED".equals(status)) return ErrorCode.ACCOUNT_DISABLED;
+        return ErrorCode.ACCOUNT_NOT_ACTIVE;
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {

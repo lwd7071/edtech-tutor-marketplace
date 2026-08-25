@@ -78,6 +78,11 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | `ACCOUNT_DISABLED` | 403 | User ở trạng thái `DISABLED` |
 | `ACCOUNT_NOT_ACTIVE` | 403 | User chưa ở trạng thái `ACTIVE` |
 | `ROLE_NOT_ALLOWED` | 403 | Role không được gọi endpoint |
+| `USER_NOT_FOUND` | 404 | User moderation target không tồn tại |
+| `USER_MODERATION_INVALID_STATE` | 400 | Status ngoài `ACTIVE/LOCKED` hoặc transition không phải `ACTIVE ↔ LOCKED` |
+| `USER_MODERATION_SELF_FORBIDDEN` | 403 | Admin cố tự khóa/mở khóa tài khoản của mình |
+| `USER_MODERATION_ADMIN_FORBIDDEN` | 403 | Admin cố moderation tài khoản ADMIN |
+| `USER_MODERATION_ALREADY_PROCESSED` | 409 | Target đã ở đúng trạng thái yêu cầu hoặc request thua race |
 
 ## 5. Teacher, subject và availability
 
@@ -86,6 +91,7 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | `TEACHER_PROFILE_NOT_FOUND` | 404 | Tài khoản Teacher chưa có profile hợp lệ |
 | `TEACHER_NOT_APPROVED` | 403 | Teacher chưa `APPROVED` nhưng gọi bán gói/booking/publication |
 | `TEACHER_PROFILE_INVALID_STATE` | 400 | Transition profile không hợp lệ, ví dụ submit khi đã pending |
+| `TEACHER_APPROVAL_ALREADY_PROCESSED` | 409 | Hồ sơ đã được approve/reject hoặc request thua race |
 | `TEACHER_DOCUMENT_NOT_DELETABLE` | 422 | Xóa chứng chỉ đã duyệt/không còn được phép xóa |
 | `SUBJECT_NOT_FOUND` | 404 | Subject không tồn tại/đã xóa |
 | `SUBJECT_INACTIVE` | 422 | Subject đã ngừng hoạt động |
@@ -94,6 +100,8 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | `SUBJECT_CODE_ALREADY_EXISTS` | 409 | `subjects.code` trùng |
 | `SUBJECT_SLUG_ALREADY_EXISTS` | 409 | `subjects.slug` trùng |
 | `SUBJECT_PROPOSAL_INVALID_STATE` | 400 | Duyệt/từ chối proposal không còn PENDING |
+| `SUBJECT_PROPOSAL_NOT_FOUND` | 404 | Subject proposal không tồn tại/đã xóa |
+| `SUBJECT_PROPOSAL_ALREADY_PROCESSED` | 409 | Proposal đã được approve/reject hoặc request thua race |
 | `AVAILABILITY_TIME_CONFLICT` | 409 | Hai khoảng active cùng teacher/ngày overlap |
 | `AVAILABILITY_INVALID_RANGE` | 400 | `startTime >= endTime` hoặc thiếu bộ filter thời gian |
 

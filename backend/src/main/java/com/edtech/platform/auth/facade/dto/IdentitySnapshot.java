@@ -14,4 +14,11 @@ public record IdentitySnapshot(
         Boolean notifyParent,
         String parentEmail
 ) {
+    public String roleName() {
+        return role == null ? null : role.name();
+    }
+
+    public String statusName() {
+        return status == null ? null : status.name();
+    }
 }

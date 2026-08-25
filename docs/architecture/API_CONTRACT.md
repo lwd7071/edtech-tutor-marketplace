@@ -22,6 +22,7 @@ Authorization: Bearer <access-token>
 - Refresh token: 7 ngày, rotate mỗi lần refresh; client phải thay token cũ bằng token mới.
 - Endpoint public và webhook không yêu cầu JWT.
 - Endpoint role-specific yêu cầu đúng role và kiểm tra ownership tại Service.
+- Mỗi request có JWT kiểm tra trạng thái tài khoản hiện tại. Backend cache `userId → status` trong Redis tối đa 30 giây; lock/unlock invalidate trước thay đổi và write-through sau commit. Redis lỗi phải fallback database, không được bỏ qua status check.
 
 ### 1.2. Response envelope
 
@@ -580,12 +581,12 @@ Tất cả endpoint yêu cầu role `ADMIN`. Mọi action thay đổi trạng th
 
 | Method | Endpoint | Request | Response `data` |
 |---|---|---|---|
-| GET | `/api/admin/teacher-approvals` | `status?`, pagination | `TeacherApprovalView[]` |
-| POST | `/api/admin/teacher-approvals/{id}/approve` | `ApproveTeacherRequest` | `TeacherApprovalView` |
-| POST | `/api/admin/teacher-approvals/{id}/reject` | `RejectRequest` | `TeacherApprovalView` |
-| GET | `/api/admin/subject-proposals` | `status?`, pagination | `SubjectProposalView[]` |
-| POST | `/api/admin/subject-proposals/{id}/approve` | `ApproveSubjectProposalRequest` | `SubjectProposalView` |
-| POST | `/api/admin/subject-proposals/{id}/reject` | `RejectRequest` | `SubjectProposalView` |
+| GET | `/api/admin/teachers/approvals` | `status?`, pagination | `TeacherApprovalSnapshot[]` |
+| POST | `/api/admin/teachers/{id}/approve` | `ApproveTeacherRequest` | `TeacherApprovalSnapshot` |
+| POST | `/api/admin/teachers/{id}/reject` | `RejectRequest` | `TeacherApprovalSnapshot` |
+| GET | `/api/admin/subject-proposals` | pagination | `SubjectProposalSnapshot[]` |
+| POST | `/api/admin/subject-proposals/{id}/approve` | `ApproveSubjectProposalRequest` | `SubjectProposalSnapshot` |
+| POST | `/api/admin/subject-proposals/{id}/reject` | `RejectRequest` | `SubjectProposalSnapshot` |
 | POST | `/api/admin/subjects` | `UpsertSubjectRequest` | `SubjectView` (`201`) |
 | PUT | `/api/admin/subjects/{id}` | `UpsertSubjectRequest` | `SubjectView` |
 | GET | `/api/admin/refund-requests` | `status?`, pagination | `RefundRequestView[]` |
@@ -599,7 +600,7 @@ Tất cả endpoint yêu cầu role `ADMIN`. Mọi action thay đổi trạng th
 | POST | `/api/admin/payout-requests/{id}/process` | `{ "version": n }` | `PayoutRequestView` |
 | POST | `/api/admin/payout-requests/{id}/complete` | `CompleteTransferRequest` | `PayoutRequestView` |
 | POST | `/api/admin/payout-requests/{id}/reject` | `RejectRequest` | `PayoutRequestView` |
-| PATCH | `/api/admin/users/{id}/status` | `ChangeUserStatusRequest` | `AdminUserView` |
+| PATCH | `/api/admin/users/{id}/status` | `ChangeUserStatusRequest` | `IdentitySnapshot` |
 | GET | `/api/admin/dashboard` | `from?`, `to?` | `AdminDashboardView` |
 | GET | `/api/admin/audit-logs` | filters, pagination | `AuditLogView[]` |
 | GET | `/api/admin/settings` | — | `PlatformSettingsView` |
@@ -610,15 +611,25 @@ Tất cả endpoint yêu cầu role `ADMIN`. Mọi action thay đổi trạng th
 {
   "resolution": "CREATE_NEW",
   "existingSubjectId": null,
-  "newSubject": {
-    "code": "PHY11",
-    "name": "Vật lý 11",
-    "slug": "vat-ly-11",
-    "educationLevel": "GRADE_11",
-    "description": "Chương trình Vật lý lớp 11"
-  }
+  "code": "PHY11",
+  "name": "Vật lý 11",
+  "educationLevel": "HIGH_SCHOOL",
+  "description": "Chương trình Vật lý lớp 11",
+  "note": "Nội dung phù hợp"
 }
 ```
+
+Với `LINK_EXISTING`, `existingSubjectId` bắt buộc và không gửi `code/name`. Với `CREATE_NEW`, `code` bắt buộc, `existingSubjectId` phải `null`; slug được Backend sinh từ tên. Request approve/reject đã xử lý hoặc thua race trả `409`, không trả `400/500`.
+
+```json
+// ChangeUserStatusRequest
+{
+  "status": "LOCKED",
+  "reason": "Vi phạm điều khoản sử dụng"
+}
+```
+
+`status` chỉ nhận `ACTIVE | LOCKED`. Admin không được tự đổi trạng thái hoặc moderation tài khoản ADMIN khác.
 
 `resolution` nhận `LINK_EXISTING | CREATE_NEW`. Hai nhánh bắt buộc field tương ứng và tự tạo TeacherSubject.
 

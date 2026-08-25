@@ -3,6 +3,7 @@ package com.edtech.platform.teacher.facade.impl;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.teacher.domain.TeacherProfile;
+import com.edtech.platform.teacher.domain.TeacherSubject;
 import com.edtech.platform.teacher.facade.TeacherFacade;
 import com.edtech.platform.auth.facade.IdentityFacade;
 import com.edtech.platform.auth.facade.dto.IdentitySnapshot;
@@ -20,6 +21,22 @@ public class TeacherFacadeImpl implements TeacherFacade {
 
     private final TeacherProfileRepository teacherProfileRepository;
     private final TeacherSubjectRepository teacherSubjectRepository;
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void ensureSubjectAssigned(UUID teacherId, UUID subjectId) {
+        TeacherProfile profile = teacherProfileRepository.findById(teacherId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.TEACHER_PROFILE_NOT_FOUND));
+        var existing = teacherSubjectRepository.findByTeacherIdAndSubjectIdIncludingDeleted(teacherId, subjectId);
+        if (existing.isPresent()) {
+            TeacherSubject assignment = existing.get();
+            assignment.setDeleted(false);
+            assignment.setActive(true);
+            teacherSubjectRepository.save(assignment);
+            return;
+        }
+        teacherSubjectRepository.save(TeacherSubject.builder().teacher(profile).subjectId(subjectId).build());
+    }
     private final IdentityFacade identityFacade;
 
     @Override

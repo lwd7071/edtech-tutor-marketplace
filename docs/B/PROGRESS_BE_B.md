@@ -1,5 +1,31 @@
 # Tiến độ Backend — Thành viên B
 
+## 2026-08-25 02:28 +07:00 — Tuần 2 Admin Approval & Audit Log
+
+### Đã thực hiện
+
+- Hoàn thành bảy endpoint Admin cho Teacher approval, Subject Proposal approval và User moderation.
+- AuditLog immutable/append-only; snapshot whitelist được gom tại `AuditSnapshotMapper`, ghi `JSONB`/`INET` trong cùng transaction với mutation.
+- Teacher/Subject/User facade dùng pessimistic lock; double-click/race trả mã `409` riêng và không tạo effect/audit lần hai.
+- Subject Proposal hỗ trợ `CREATE_NEW` hoặc `LINK_EXISTING`, đồng thời tạo/restore TeacherSubject qua public facade.
+- User moderation chỉ cho `ACTIVE ↔ LOCKED`, cấm self/ADMIN moderation và revoke refresh token khi lock.
+- JWT filter kiểm tra current user status qua Redis TTL 30 giây; cache miss/Redis failure fallback DB; status change evict trước mutation và write-through sau commit.
+- Đồng bộ endpoint, DTO và HTTP/ErrorCode trong `API_CONTRACT.md` và `ERROR_CODES.md` cùng thay đổi code.
+
+### Evidence
+
+| Kiểm tra | Run | Failure | Error | Skipped | Kết quả |
+|---|---:|---:|---:|---:|---|
+| TDD focused: mapper/facade/orchestration/cache/HTTP contract | 9 | 0 | 0 | 0 | Pass |
+| AuditLog PostgreSQL persistence (`jsonb`, `inet`) | 1 | 0 | 0 | 0 | Pass |
+| Final full Maven suite | 98 | 0 | 0 | 0 | Pass; Docker/Testcontainers chạy thật |
+
+### Diagnose
+
+- Repro full suite ban đầu phát hiện một ArchUnit violation: Admin mapper gọi trực tiếp enum domain Auth qua facade DTO.
+- Nguyên nhân được sửa bằng string accessor trên facade DTO; ArchUnit regression và full suite đều xanh.
+- Lần chạy trong sandbox không truy cập được Docker named pipe; chạy cùng feedback loop ngoài sandbox xác nhận Docker/Testcontainers hoạt động bình thường.
+
 ## 2026-08-25 01:25 +07:00 — Tuần 1 Foundation runtime verification
 
 ### Đã thực hiện

@@ -14,6 +14,7 @@ import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.common.security.JwtTokenProvider;
 import com.edtech.platform.common.security.RateLimiterService;
 import com.edtech.platform.auth.event.UserRegisteredEvent;
+import com.edtech.platform.common.security.UserStatusCacheService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,6 +43,7 @@ public class AuthService {
     private final RedisTokenService redisTokenService;
     private final RateLimiterService rateLimiterService;
     private final EmailService emailService;
+    private final UserStatusCacheService userStatusCache;
     private final long accessTokenExpirationMs;
     private final long refreshTokenExpirationMs;
 
@@ -53,6 +55,7 @@ public class AuthService {
                        RedisTokenService redisTokenService,
                        RateLimiterService rateLimiterService,
                        EmailService emailService,
+                       UserStatusCacheService userStatusCache,
                        @Value("${app.jwt.access-expiration-ms:900000}") long accessTokenExpirationMs,
                        @Value("${app.jwt.refresh-expiration-ms:604800000}") long refreshTokenExpirationMs) {
         this.userRepository = userRepository;
@@ -63,6 +66,7 @@ public class AuthService {
         this.redisTokenService = redisTokenService;
         this.rateLimiterService = rateLimiterService;
         this.emailService = emailService;
+        this.userStatusCache = userStatusCache;
         this.accessTokenExpirationMs = accessTokenExpirationMs;
         this.refreshTokenExpirationMs = refreshTokenExpirationMs;
     }
@@ -182,7 +186,9 @@ public class AuthService {
 
         user.setEmailVerified(true);
         if (user.getStatus() == UserStatus.PENDING_VERIFICATION) {
+            userStatusCache.beforeStatusChange(user.getId());
             user.setStatus(UserStatus.ACTIVE);
+            userStatusCache.afterStatusChange(user.getId(), UserStatus.ACTIVE.name());
         }
         userRepository.save(user);
     }
