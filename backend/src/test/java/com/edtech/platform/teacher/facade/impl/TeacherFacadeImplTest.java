@@ -41,6 +41,9 @@ public class TeacherFacadeImplTest {
     private UUID testSubjectId;
     private TeacherProfile testProfile;
 
+    @Mock
+    private com.edtech.platform.auth.facade.IdentityFacade identityFacade;
+
     @BeforeEach
     void setUp() {
         testTeacherId = UUID.randomUUID();
@@ -52,10 +55,11 @@ public class TeacherFacadeImplTest {
                 .build();
         ReflectionTestUtils.setField(testProfile, "id", testTeacherId);
         ReflectionTestUtils.setField(testProfile, "profileStatus", ProfileStatus.APPROVED);
-        ReflectionTestUtils.setField(testProfile, "verifiedBadge", true);
         ReflectionTestUtils.setField(testProfile, "isVisible", true);
         
-
+        lenient().when(identityFacade.getIdentity(any())).thenReturn(
+                java.util.Optional.of(new com.edtech.platform.auth.facade.dto.IdentitySnapshot(testUserId, "Teacher Name", "test@test.com", "TEACHER", null, null))
+        );
     }
 
     @Test

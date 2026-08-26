@@ -84,49 +84,45 @@ public class TeacherStatsService {
     @Transactional
     public void recalculateTeacherStats(UUID teacherId) {
         log.info("Recalculating TeacherStats for teacher {}", teacherId);
-        try {
-            // 1. Get configuration
-            int bayesianMinReviews = platformSettingsFacade.getBayesianMinimumReviews();
-            Double globalAverageRating = reviewRepository.findGlobalAverageRating();
-            if (globalAverageRating == null) globalAverageRating = 0.0;
-            
-            double m = bayesianMinReviews;
-            double c = globalAverageRating;
+        // 1. Get configuration
+        int bayesianMinReviews = platformSettingsFacade.getBayesianMinimumReviews();
+        Double globalAverageRating = reviewRepository.findGlobalAverageRating();
+        if (globalAverageRating == null) globalAverageRating = 0.0;
+        
+        double m = bayesianMinReviews;
+        double c = globalAverageRating;
 
-            int v = reviewRepository.countVisibleReviewsByTeacherId(teacherId);
-            Double rDouble = reviewRepository.findAverageRatingByTeacherId(teacherId);
-            double r = rDouble != null ? rDouble : 0.0;
+        int v = reviewRepository.countVisibleReviewsByTeacherId(teacherId);
+        Double rDouble = reviewRepository.findAverageRatingByTeacherId(teacherId);
+        double r = rDouble != null ? rDouble : 0.0;
 
-            double bayesianRating = v == 0 ? 0.0 : ((v / (v + m)) * r) + ((m / (v + m)) * c);
+        double bayesianRating = v == 0 ? 0.0 : ((v / (v + m)) * r) + ((m / (v + m)) * c);
 
-            var bookingStats = bookingEligibilityFacade.getTeacherBookingStats(teacherId);
-            int completedSessions = bookingStats.completedSessions();
-            int totalSessions = bookingStats.totalSessions();
-            int trialSessions = bookingStats.trialSessions();
-            
-            double completionRate = totalSessions > 0 ? (double) completedSessions / totalSessions : 0.0;
-            double trialConversionRate = 0.0; 
+        var bookingStats = bookingEligibilityFacade.getTeacherBookingStats(teacherId);
+        int completedSessions = bookingStats.completedSessions();
+        int totalSessions = bookingStats.totalSessions();
+        int trialSessions = bookingStats.trialSessions();
+        
+        double completionRate = totalSessions > 0 ? (double) completedSessions / totalSessions : 0.0;
+        double trialConversionRate = 0.0; 
 
-            TeacherStats stats = teacherStatsRepository.findById(teacherId).orElse(TeacherStats.builder().teacherId(teacherId).build());
-            stats.setAverageRating(java.math.BigDecimal.valueOf(r).setScale(2, java.math.RoundingMode.HALF_UP));
-            stats.setBayesianRating(java.math.BigDecimal.valueOf(bayesianRating).setScale(2, java.math.RoundingMode.HALF_UP));
-            stats.setReviewCount(v);
-            stats.setCompletedSessionCount(completedSessions);
-            stats.setCompletionRate(java.math.BigDecimal.valueOf(completionRate).setScale(4, java.math.RoundingMode.HALF_UP));
-            stats.setTrialSessionCount(trialSessions);
-            stats.setTrialConversionRate(java.math.BigDecimal.valueOf(trialConversionRate).setScale(4, java.math.RoundingMode.HALF_UP));
-            
-            teacherStatsRepository.save(stats);
+        TeacherStats stats = teacherStatsRepository.findByTeacherId(teacherId).orElse(TeacherStats.builder().teacherId(teacherId).build());
+        stats.setAverageRating(java.math.BigDecimal.valueOf(r).setScale(2, java.math.RoundingMode.HALF_UP));
+        stats.setBayesianRating(java.math.BigDecimal.valueOf(bayesianRating).setScale(2, java.math.RoundingMode.HALF_UP));
+        stats.setReviewCount(v);
+        stats.setCompletedSessionCount(completedSessions);
+        stats.setCompletionRate(java.math.BigDecimal.valueOf(completionRate).setScale(4, java.math.RoundingMode.HALF_UP));
+        stats.setTrialSessionCount(trialSessions);
+        stats.setTrialConversionRate(java.math.BigDecimal.valueOf(trialConversionRate).setScale(4, java.math.RoundingMode.HALF_UP));
+        
+        teacherStatsRepository.save(stats);
 
-            if (cacheManager.getCache(RedisCacheConfig.GLOBAL_RANKING) != null) {
-                cacheManager.getCache(RedisCacheConfig.GLOBAL_RANKING).clear();
-            }
-            if (cacheManager.getCache(RedisCacheConfig.TEACHER_PUBLIC_PROFILE) != null) {
-                cacheManager.getCache(RedisCacheConfig.TEACHER_PUBLIC_PROFILE).evict(teacherId);
-            }
-            log.info("Recalculation successful for teacher {}", teacherId);
-        } catch (Exception e) {
-            log.error("Failed to recalculate stats for teacher {}", teacherId, e);
+        if (cacheManager.getCache(RedisCacheConfig.GLOBAL_RANKING) != null) {
+            cacheManager.getCache(RedisCacheConfig.GLOBAL_RANKING).clear();
         }
+        if (cacheManager.getCache(RedisCacheConfig.TEACHER_PUBLIC_PROFILE) != null) {
+            cacheManager.getCache(RedisCacheConfig.TEACHER_PUBLIC_PROFILE).evict(teacherId);
+        }
+        log.info("Recalculation successful for teacher {}", teacherId);
     }
 }

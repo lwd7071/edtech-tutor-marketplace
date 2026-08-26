@@ -19,6 +19,9 @@ import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
@@ -129,13 +132,14 @@ public class PricingPackageService {
         return toView(saved);
     }
 
+    @Transactional(readOnly = true)
+    public Page<PricingPackageView> getTeacherPackages(UUID teacherId, Pageable pageable) {
+        return pricingPackageRepository.findByTeacherIdAndStatus(teacherId, PackageStatus.ACTIVE, pageable)
+                .map(this::toView);
+    }
+
     private PricingPackageView toView(PricingPackage pkg) {
-        String subjectName = "Unknown";
-        try {
-            subjectName = subjectFacade.getSubject(pkg.getSubjectId()).name();
-        } catch (Exception e) {
-            log.warn("Subject not found for package {}", pkg.getId());
-        }
+        String subjectName = subjectFacade.getSubject(pkg.getSubjectId()).name();
 
         return new PricingPackageView(
                 pkg.getId(),
@@ -156,5 +160,19 @@ public class PricingPackageService {
         if (cacheManager.getCache("TEACHER_PUBLIC_PROFILE") != null) {
             cacheManager.getCache("TEACHER_PUBLIC_PROFILE").evict(teacherId);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.Set<UUID> searchTeacherIdsByPrice(Long minPrice, Long maxPrice) {
+        return pricingPackageRepository.searchTeacherIdsByPrice(minPrice, maxPrice);
+    }
+
+    @Transactional(readOnly = true)
+    public Long getMinPriceForTeacher(UUID teacherId) {
+        return pricingPackageRepository.findByTeacherIdAndStatus(teacherId, PackageStatus.ACTIVE, PageRequest.of(0, 1, org.springframework.data.domain.Sort.by("priceVnd").ascending()))
+                .stream()
+                .findFirst()
+                .map(PricingPackage::getPriceVnd)
+                .orElse(0L);
     }
 }

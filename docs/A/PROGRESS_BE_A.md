@@ -38,8 +38,8 @@ Danh sách này chỉ xác nhận implementation hiện diện, không xác nh�
 
 | Tiêu chí | Trạng thái | Ghi chú |
 |---|---|---|
-| Endpoint/DTO khớp API contract | Chưa xác minh đầy đủ | Thiếu contract/integration coverage end-to-end |
-| Validation, error code, RBAC, ownership | Chưa xác minh đầy đủ | Thiếu test toàn bộ |
+| Endpoint/DTO khớp API contract | ❌ Failed | DTO TeacherCard và nhiều chỗ khác thiếu/sai trường |
+| Validation, error code, RBAC, ownership | ❌ Failed | Thiếu test Controller cho 5 module |
 | State transition/transaction boundary được test | ✅ Pass | 56 unit/integration tests, 0 failures |
 | Không repository xuyên module | ✅ Pass | ArchUnit 0 violations; A-03 → A-09 đã migrate toàn bộ |
 | Không SQL/domain coupling vượt boundary | ✅ Pass | FixDbController đã xóa; cross-module entity → UUID; 4 JdbcTemplate có owner hợp lệ trong ignore list |

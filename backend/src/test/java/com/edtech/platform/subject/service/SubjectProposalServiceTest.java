@@ -45,7 +45,7 @@ public class SubjectProposalServiceTest {
     void setUp() {
         userId = UUID.randomUUID();
         teacherId = UUID.randomUUID();
-        teacherSnapshot = new TeacherSnapshot(teacherId, userId, "APPROVED", true, true, null, null, null);
+        teacherSnapshot = new TeacherSnapshot(teacherId, userId, "APPROVED", true, true, null, null, null, 0, true, false, java.util.List.of(), null, null);
     }
 
     @Test

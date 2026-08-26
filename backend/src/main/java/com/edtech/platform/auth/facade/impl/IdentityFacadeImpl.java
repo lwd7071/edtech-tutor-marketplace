@@ -23,6 +23,17 @@ public class IdentityFacadeImpl implements IdentityFacade {
     }
 
     @Override
+    public void evictUser(UUID userId) {
+        // Dummy implementation since eviction isn't handled here
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.Set<UUID> searchUserIdsByKeyword(String keyword) {
+        return userRepository.searchIdsByKeyword(keyword);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public boolean isActive(UUID id) {
         return userRepository.findById(id)
@@ -38,8 +49,8 @@ public class IdentityFacadeImpl implements IdentityFacade {
                         user.getId(),
                         user.getEmail(),
                         user.getFullName(),
-                        user.getRole(),
-                        user.getStatus(),
+                        user.getRole() != null ? user.getRole().name() : null,
+                        user.getStatus() != null ? user.getStatus().name() : null,
                         user.getAvatarUrl(),
                         user.getNotifyParent(),
                         user.getParentEmail()

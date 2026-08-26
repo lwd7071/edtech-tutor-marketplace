@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
+import com.edtech.platform.common.exception.BusinessException;
+import com.edtech.platform.common.exception.ErrorCode;
 
 import org.springframework.context.ApplicationEventPublisher;
 import com.edtech.platform.ranking.domain.event.ReviewCreatedEvent;
@@ -35,12 +37,12 @@ public class ReviewService {
     @Transactional
     public ReviewView createReview(UUID studentId, UUID bookingId, CreateReviewRequest request) {
         if (reviewRepository.existsByBookingId(bookingId)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "REVIEW_ALREADY_EXISTS");
+            throw new BusinessException(ErrorCode.REVIEW_ALREADY_EXISTS);
         }
 
         var teacherIdOpt = bookingEligibilityFacade.getTeacherIdForReviewableBooking(studentId, bookingId);
         if (teacherIdOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "REVIEW_NOT_ALLOWED");
+            throw new BusinessException(ErrorCode.REVIEW_NOT_ALLOWED);
         }
         UUID teacherId = teacherIdOpt.get();
 
@@ -87,7 +89,7 @@ public class ReviewService {
                 .id(review.getId())
                 .rating(review.getRating())
                 .comment(review.getComment())
-                .createdAt(review.getCreatedAt())
+                .createdAt(review.getCreatedAt() != null ? review.getCreatedAt().atZone(java.time.ZoneId.of("UTC")) : null)
                 .student(studentDto)
                 .build();
     }

@@ -11,6 +11,8 @@ import java.util.UUID;
 
 public interface TeacherStatsRepository extends JpaRepository<TeacherStats, UUID> {
 
+    java.util.Optional<TeacherStats> findByTeacherId(UUID teacherId);
+
     @Query(value = "SELECT ts.* FROM teacher_stats ts " +
             "JOIN teacher_profiles tp ON ts.teacher_id = tp.id " +
             "JOIN users u ON tp.user_id = u.id " +

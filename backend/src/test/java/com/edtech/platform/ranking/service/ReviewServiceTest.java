@@ -15,6 +15,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
+import com.edtech.platform.common.exception.BusinessException;
+import com.edtech.platform.common.exception.ErrorCode;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -54,10 +56,10 @@ class ReviewServiceTest {
         CreateReviewRequest request = new CreateReviewRequest();
         request.setRating((short) 5);
 
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+        BusinessException ex = assertThrows(BusinessException.class,
                 () -> reviewService.createReview(studentId, bookingId, request));
 
-        assertEquals(409, ex.getStatusCode().value());
+        assertEquals(ErrorCode.REVIEW_ALREADY_EXISTS, ex.getErrorCode());
     }
 
     // ── Slice 2: booking not eligible → UNPROCESSABLE ────────────────────────
@@ -71,10 +73,10 @@ class ReviewServiceTest {
         CreateReviewRequest request = new CreateReviewRequest();
         request.setRating((short) 4);
 
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+        BusinessException ex = assertThrows(BusinessException.class,
                 () -> reviewService.createReview(studentId, bookingId, request));
 
-        assertEquals(422, ex.getStatusCode().value());
+        assertEquals(ErrorCode.REVIEW_NOT_ALLOWED, ex.getErrorCode());
     }
 
     // ── Slice 3: happy path — review is saved and event published ────────────

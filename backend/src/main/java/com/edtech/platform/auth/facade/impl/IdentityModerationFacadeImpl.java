@@ -52,7 +52,7 @@ public class IdentityModerationFacadeImpl implements IdentityModerationFacade {
     }
 
     private IdentitySnapshot snapshot(User user) {
-        return new IdentitySnapshot(user.getId(), user.getEmail(), user.getFullName(), user.getRole(),
-                user.getStatus(), user.getAvatarUrl(), user.getNotifyParent(), user.getParentEmail());
+        return new IdentitySnapshot(user.getId(), user.getEmail(), user.getFullName(), user.getRole() != null ? user.getRole().name() : null,
+                user.getStatus() != null ? user.getStatus().name() : null, user.getAvatarUrl(), user.getNotifyParent(), user.getParentEmail());
     }
 }

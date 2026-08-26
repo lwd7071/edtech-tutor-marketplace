@@ -32,11 +32,12 @@ public class TeacherSubjectProposalController {
     }
 
     @GetMapping
-    public ApiResponse<Page<SubjectProposalView>> getProposals(
+    public ApiResponse<java.util.List<SubjectProposalView>> getProposals(
             @RequestParam(required = false) String status,
             Pageable pageable,
             Principal principal) {
         UUID userId = UUID.fromString(principal.getName());
-        return ApiResponse.ok(subjectProposalService.getProposals(userId, status, pageable));
+        Page<SubjectProposalView> page = subjectProposalService.getProposals(userId, status, pageable);
+        return ApiResponse.page(page.getContent(), com.edtech.platform.common.response.PageMeta.from(page));
     }
 }

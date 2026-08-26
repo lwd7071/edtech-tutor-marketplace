@@ -5,7 +5,7 @@ import com.edtech.platform.catalog.dto.PricingPackageView;
 import com.edtech.platform.catalog.dto.TeacherCard;
 import com.edtech.platform.catalog.dto.TeacherPublicDetail;
 import com.edtech.platform.catalog.dto.TeacherSearchParams;
-import com.edtech.platform.catalog.repository.PricingPackageRepository;
+import com.edtech.platform.catalog.service.PricingPackageService;
 import com.edtech.platform.catalog.service.TeacherMarketplaceService;
 import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.common.response.PageMeta;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/public/teachers")
@@ -31,12 +31,13 @@ import java.util.stream.Collectors;
 public class PublicTeacherController {
 
     private final TeacherMarketplaceService teacherMarketplaceService;
-    private final PricingPackageRepository pricingPackageRepository;
+    private final PricingPackageService pricingPackageService;
     private final TeacherAvailabilityService teacherAvailabilityService;
 
     @GetMapping
     public ApiResponse<List<TeacherCard>> searchTeachers(@ModelAttribute TeacherSearchParams params) {
-        return ApiResponse.ok(teacherMarketplaceService.searchTeachers(params));
+        Page<TeacherCard> page = teacherMarketplaceService.searchTeachers(params);
+        return ApiResponse.page(page.getContent(), PageMeta.from(page));
     }
 
     @GetMapping("/{id}")
@@ -49,24 +50,8 @@ public class PublicTeacherController {
             @PathVariable UUID id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        
-        Page<com.edtech.platform.catalog.domain.PricingPackage> pkgs = pricingPackageRepository.findByTeacherIdAndStatus(id, PackageStatus.ACTIVE, PageRequest.of(page, size));
-        
-        List<PricingPackageView> views = pkgs.stream()
-                .map(pkg -> new PricingPackageView(
-                        pkg.getId(),
-                        pkg.getSubjectId(),
-                        "Unknown",
-                        pkg.getName(),
-                        pkg.getDescription(),
-                        pkg.getTotalSessions(),
-                        pkg.getDurationDays(),
-                        pkg.getPriceVnd(),
-                        pkg.getSessionDurationMinutes(),
-                        pkg.getStatus(),
-                        pkg.getVersion()
-                )).collect(Collectors.toList());
-        return ApiResponse.page(views, PageMeta.from(pkgs));
+        Page<PricingPackageView> pkgs = pricingPackageService.getTeacherPackages(id, PageRequest.of(page, size));
+        return ApiResponse.page(pkgs.getContent(), PageMeta.from(pkgs));
     }
 
     @GetMapping("/{id}/availability")

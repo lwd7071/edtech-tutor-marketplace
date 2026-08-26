@@ -98,4 +98,20 @@ public class User extends BaseEntity {
     public void setStatus(UserStatus status) {
         this.status = status;
     }
+
+    public void setParentFullName(String parentFullName) {
+        this.parentFullName = parentFullName;
+    }
+
+    public void setParentPhone(String parentPhone) {
+        this.parentPhone = parentPhone;
+    }
+
+    public void setParentEmail(String parentEmail) {
+        this.parentEmail = parentEmail;
+    }
+
+    public void setNotifyParent(Boolean notifyParent) {
+        this.notifyParent = notifyParent;
+    }
 }

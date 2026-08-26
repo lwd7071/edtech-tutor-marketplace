@@ -280,6 +280,38 @@ public class AuthService {
         return createAuthResult(user, null, ipAddress);
     }
 
+    @Transactional
+    public com.edtech.platform.auth.dto.response.ParentContactResponse updateParentContact(UUID userId, com.edtech.platform.auth.dto.request.UpdateParentContactRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+        
+        if (user.getRole() != Role.STUDENT) {
+            throw new BusinessException(ErrorCode.ROLE_NOT_ALLOWED);
+        }
+
+        user.setParentFullName(request.parentFullName());
+        user.setParentPhone(request.parentPhone());
+        user.setParentEmail(request.parentEmail());
+        
+        if (!StringUtils.hasText(request.parentFullName()) &&
+            !StringUtils.hasText(request.parentPhone()) &&
+            !StringUtils.hasText(request.parentEmail())) {
+            user.setNotifyParent(false);
+        } else {
+            user.setNotifyParent(Boolean.TRUE.equals(request.notifyParent()));
+        }
+
+        user = userRepository.save(user);
+
+        return new com.edtech.platform.auth.dto.response.ParentContactResponse(
+                user.getParentFullName(),
+                user.getParentPhone(),
+                user.getParentEmail(),
+                user.getNotifyParent(),
+                user.getUpdatedAt()
+        );
+    }
+
     private void checkUserStatus(User user) {
         if (user.getStatus() == UserStatus.LOCKED) {
             throw new BusinessException(ErrorCode.ACCOUNT_LOCKED);

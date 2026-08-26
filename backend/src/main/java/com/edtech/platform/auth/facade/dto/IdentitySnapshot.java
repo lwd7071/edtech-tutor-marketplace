@@ -8,17 +8,17 @@ public record IdentitySnapshot(
         UUID id,
         String email,
         String fullName,
-        Role role,
-        UserStatus status,
+        String roleName,
+        String statusName,
         String avatarUrl,
         Boolean notifyParent,
         String parentEmail
 ) {
     public String roleName() {
-        return role == null ? null : role.name();
+        return roleName;
     }
 
     public String statusName() {
-        return status == null ? null : status.name();
+        return statusName;
     }
 }

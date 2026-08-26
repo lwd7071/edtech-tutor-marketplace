@@ -10,4 +10,6 @@ public interface TeacherFacade {
     boolean hasAssignedSubject(UUID teacherId, UUID subjectId);
     java.util.List<UUID> getApprovedTeacherIds();
     void ensureSubjectAssigned(UUID teacherId, UUID subjectId);
+    java.util.Set<UUID> searchTeacherIds(UUID subjectId, String dayOfWeek, java.time.LocalTime startTime, java.time.LocalTime endTime);
+    java.util.List<UUID> getSubjectIdsForTeacher(UUID teacherId);
 }

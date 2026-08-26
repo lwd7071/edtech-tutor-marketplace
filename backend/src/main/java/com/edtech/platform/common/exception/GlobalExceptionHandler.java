@@ -51,10 +51,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException ex) {
-        List<ApiErrorDetail> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
-                .map(err -> new ApiErrorDetail(ErrorCode.VALIDATION_ERROR.name(), err.getField(), err.getDefaultMessage()))
-                .toList();
-        return buildResponse(ErrorCode.VALIDATION_ERROR, ErrorCode.VALIDATION_ERROR.getDefaultMessage(), fieldErrors);
+        List<ApiErrorDetail> errors = new java.util.ArrayList<>();
+        
+        ex.getBindingResult().getGlobalErrors().forEach(err -> 
+                errors.add(new ApiErrorDetail(ErrorCode.VALIDATION_ERROR.name(), null, err.getDefaultMessage())));
+        
+        ex.getBindingResult().getFieldErrors().forEach(err -> 
+                errors.add(new ApiErrorDetail(ErrorCode.VALIDATION_ERROR.name(), err.getField(), err.getDefaultMessage())));
+                
+        return buildResponse(ErrorCode.VALIDATION_ERROR, ErrorCode.VALIDATION_ERROR.getDefaultMessage(), errors);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -89,8 +94,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
     public ResponseEntity<ApiResponse<Void>> handleResponseStatusException(org.springframework.web.server.ResponseStatusException ex) {
-        ErrorCode errorCode = ex.getStatusCode() == org.springframework.http.HttpStatus.NOT_FOUND ? ErrorCode.RESOURCE_NOT_FOUND : ErrorCode.INTERNAL_SERVER_ERROR;
-        return buildResponse(errorCode, null, null);
+        String message = ex.getReason() != null ? ex.getReason() : "HTTP Error " + ex.getStatusCode().value();
+        List<ApiErrorDetail> errors = List.of(new ApiErrorDetail("HTTP_" + ex.getStatusCode().value(), null, message));
+        ApiResponse<Void> response = ApiResponse.error(message, errors);
+        return new ResponseEntity<>(response, ex.getStatusCode());
     }
 
     @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
@@ -127,14 +134,19 @@ public class GlobalExceptionHandler {
                 List.of(new ApiErrorDetail(ErrorCode.VALIDATION_ERROR.name(), ex.getRequestPartName(), "Thiếu phần multipart bắt buộc")));
     }
 
-    @ExceptionHandler({MultipartException.class, MaxUploadSizeExceededException.class})
-    public ResponseEntity<ApiResponse<Void>> handleMultipartException(Exception ex) {
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException ex) {
+        return buildResponse(ErrorCode.FILE_TOO_LARGE, null, null);
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMultipartException(MultipartException ex) {
         return buildResponse(ErrorCode.VALIDATION_ERROR, "Dữ liệu tải lên không hợp lệ", null);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception ex) {
-        log.error("Unhandled exception type={}, requestId={}", ex.getClass().getName(), getRequestId());
+        log.error("Unhandled exception type={}, requestId={}", ex.getClass().getName(), getRequestId(), ex);
         return buildResponse(ErrorCode.INTERNAL_SERVER_ERROR, null, null);
     }
 

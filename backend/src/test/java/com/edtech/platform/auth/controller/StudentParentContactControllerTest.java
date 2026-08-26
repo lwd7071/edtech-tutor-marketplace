@@ -1,0 +1,58 @@
+package com.edtech.platform.auth.controller;
+
+import com.edtech.platform.auth.domain.Role;
+import com.edtech.platform.auth.dto.request.UpdateParentContactRequest;
+import com.edtech.platform.auth.dto.response.ParentContactResponse;
+import com.edtech.platform.auth.service.AuthService;
+import com.edtech.platform.common.response.ApiResponse;
+import com.edtech.platform.common.security.AuthenticatedUser;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.time.Instant;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+public class StudentParentContactControllerTest {
+
+    @Mock
+    private AuthService authService;
+
+    @InjectMocks
+    private StudentParentContactController controller;
+
+    private AuthenticatedUser mockUser;
+
+    @BeforeEach
+    void setUp() {
+        mockUser = new AuthenticatedUser(UUID.randomUUID(), "student@test.com", "STUDENT");
+    }
+
+    @Test
+    void shouldUpdateParentContactSuccessfully() {
+        UpdateParentContactRequest request = new UpdateParentContactRequest(
+                "Parent Name", "0123456789", "parent@test.com", true
+        );
+        ParentContactResponse expectedResponse = new ParentContactResponse(
+                "Parent Name", "0123456789", "parent@test.com", true, Instant.now()
+        );
+
+        when(authService.updateParentContact(eq(mockUser.id()), any())).thenReturn(expectedResponse);
+
+        ApiResponse<ParentContactResponse> response = controller.updateParentContact(mockUser, request);
+
+        org.junit.jupiter.api.Assertions.assertTrue(response.success());
+        assertEquals(expectedResponse, response.data());
+    }
+}

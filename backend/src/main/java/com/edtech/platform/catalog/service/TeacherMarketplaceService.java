@@ -3,151 +3,144 @@ package com.edtech.platform.catalog.service;
 import com.edtech.platform.catalog.dto.TeacherCard;
 import com.edtech.platform.catalog.dto.TeacherPublicDetail;
 import com.edtech.platform.catalog.dto.TeacherSearchParams;
+import com.edtech.platform.common.exception.BusinessException;
+import com.edtech.platform.common.exception.ErrorCode;
+import com.edtech.platform.teacher.facade.TeacherFacade;
+import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
+import com.edtech.platform.auth.facade.IdentityFacade;
+import com.edtech.platform.ranking.facade.TeacherStatsFacade;
+import com.edtech.platform.ranking.facade.dto.TeacherStatsSnapshot;
+import com.edtech.platform.subject.facade.SubjectFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class TeacherMarketplaceService {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final TeacherFacade teacherFacade;
+    private final IdentityFacade identityFacade;
+    private final TeacherStatsFacade teacherStatsFacade;
+    private final SubjectFacade subjectFacade;
+    private final PricingPackageService pricingPackageService;
 
-    @Transactional(readOnly = true)
-    public List<TeacherCard> searchTeachers(TeacherSearchParams params) {
-        StringBuilder sql = new StringBuilder("""
-            SELECT tp.id, u.full_name, u.avatar_url, tp.bio, tp.years_of_experience,
-                   (
-                       SELECT string_agg(s.name, ',')
-                       FROM teacher_subjects ts
-                       JOIN subjects s ON ts.subject_id = s.id
-                       WHERE ts.teacher_id = tp.id AND ts.is_active = true AND ts.is_deleted = false
-                   ) as subjects_csv,
-                   (
-                       SELECT COALESCE(MIN(pp.price_vnd), 0)
-                       FROM pricing_packages pp
-                       WHERE pp.teacher_id = tp.id AND pp.status = 'ACTIVE' AND pp.is_deleted = false
-                   ) as min_price,
-                   COALESCE(ts.average_rating, 0.0) as avg_rating, 
-                   COALESCE(ts.bayesian_rating, 0.0) as bayesian_rating, 
-                   COALESCE(ts.review_count, 0) as review_count, 
-                   ts.global_rank as global_rank
-            FROM teacher_profiles tp
-            JOIN users u ON tp.user_id = u.id
-            LEFT JOIN teacher_stats ts ON ts.teacher_id = tp.id
-            WHERE u.status = 'ACTIVE' AND u.is_deleted = false
-              AND tp.profile_status = 'APPROVED' AND tp.is_visible = true AND tp.is_deleted = false
-        """);
+    public org.springframework.data.domain.Page<TeacherCard> searchTeachers(TeacherSearchParams params) {
+        // Find all approved teacher IDs
+        List<UUID> teacherIds = new ArrayList<>(teacherFacade.getApprovedTeacherIds());
 
-        List<Object> args = new ArrayList<>();
-
+        // 1. Filter by keyword
         if (params.keyword() != null && !params.keyword().isBlank()) {
-            sql.append(" AND (u.full_name ILIKE ? OR tp.bio ILIKE ?) ");
-            args.add("%" + params.keyword() + "%");
-            args.add("%" + params.keyword() + "%");
+            Set<UUID> matchedUserIds = identityFacade.searchUserIdsByKeyword(params.keyword());
+            teacherIds = teacherIds.stream()
+                .filter(tid -> {
+                    TeacherSnapshot ts = teacherFacade.getTeacher(tid);
+                    return ts.userId() != null && matchedUserIds.contains(ts.userId());
+                }).collect(Collectors.toList());
         }
 
-        if (params.subjectId() != null) {
-            sql.append(" AND EXISTS (SELECT 1 FROM teacher_subjects ts WHERE ts.teacher_id = tp.id AND ts.subject_id = ? AND ts.is_active = true AND ts.is_deleted = false) ");
-            args.add(params.subjectId());
+        // 2. Filter by subject, dayOfWeek, time
+        if (params.subjectId() != null || (params.dayOfWeek() != null && params.startTime() != null && params.endTime() != null)) {
+            Set<UUID> matchedTeacherIds = teacherFacade.searchTeacherIds(
+                params.subjectId(), 
+                params.dayOfWeek() != null ? params.dayOfWeek().name() : null, 
+                params.startTime(), 
+                params.endTime()
+            );
+            teacherIds.retainAll(matchedTeacherIds);
         }
 
-        if (params.dayOfWeek() != null && params.startTime() != null && params.endTime() != null) {
-            sql.append(" AND EXISTS (SELECT 1 FROM teacher_availabilities ta WHERE ta.teacher_id = tp.id AND ta.day_of_week = ? AND ta.start_time <= ? AND ta.end_time >= ? AND ta.is_active = true AND ta.is_deleted = false) ");
-            args.add(params.dayOfWeek().name());
-            args.add(params.startTime());
-            args.add(params.endTime());
+        // 3. Filter by price
+        if (params.minPrice() != null || params.maxPrice() != null) {
+            Set<UUID> priceMatchedIds = pricingPackageService.searchTeacherIdsByPrice(params.minPrice(), params.maxPrice());
+            teacherIds.retainAll(priceMatchedIds);
         }
 
-        if (params.minPrice() != null) {
-            sql.append(" AND EXISTS (SELECT 1 FROM pricing_packages pp WHERE pp.teacher_id = tp.id AND pp.price_vnd >= ? AND pp.status = 'ACTIVE' AND pp.is_deleted = false) ");
-            args.add(params.minPrice());
+        // 4. Map to cards and sort
+        List<TeacherCard> cards = new ArrayList<>();
+        for (UUID tid : teacherIds) {
+            TeacherSnapshot ts = teacherFacade.getTeacher(tid);
+            TeacherStatsSnapshot stats = teacherStatsFacade.getTeacherStats(tid);
+            
+            List<com.edtech.platform.catalog.dto.SubjectDto> subjectDtos = teacherFacade.getSubjectIdsForTeacher(tid).stream()
+                .map(sid -> {
+                    try {
+                        return new com.edtech.platform.catalog.dto.SubjectDto(sid, subjectFacade.getSubject(sid).name());
+                    } catch (Exception e) {
+                        return new com.edtech.platform.catalog.dto.SubjectDto(sid, "Unknown");
+                    }
+                })
+                .collect(Collectors.toList());
+
+            long minPrice = pricingPackageService.getMinPriceForTeacher(tid);
+
+            cards.add(new TeacherCard(
+                ts.id(),
+                ts.fullName(),
+                ts.avatarUrl(),
+                ts.bioExcerpt(),
+                ts.yearsOfExperience() != null ? ts.yearsOfExperience() : 0,
+                ts.isVerified(),
+                ts.supportsOnline(),
+                ts.supportsOffline(),
+                subjectDtos,
+                minPrice,
+                stats != null ? stats.averageRating() : 0.0,
+                stats != null ? stats.bayesianRating() : 0.0,
+                stats != null ? stats.reviewCount() : 0,
+                stats != null ? stats.globalRank() : 999999
+            ));
         }
 
-        if (params.maxPrice() != null) {
-            sql.append(" AND EXISTS (SELECT 1 FROM pricing_packages pp WHERE pp.teacher_id = tp.id AND pp.price_vnd <= ? AND pp.status = 'ACTIVE' AND pp.is_deleted = false) ");
-            args.add(params.maxPrice());
-        }
+        // Sort by rank
+        cards.sort(Comparator.comparing(TeacherCard::globalRank, Comparator.nullsLast(Comparator.naturalOrder())));
 
-        int size = params.size() != null ? params.size() : 20;
+        // Paginate
         int page = params.page() != null ? params.page() : 0;
-        
-        sql.append(" ORDER BY COALESCE(ts.global_rank, 999999) ASC ");
-        sql.append(" LIMIT ? OFFSET ? ");
-        args.add(size);
-        args.add(page * size);
+        int size = params.size() != null ? params.size() : 20;
+        int start = Math.min(page * size, cards.size());
+        int end = Math.min((page + 1) * size, cards.size());
 
-        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> new TeacherCard(
-                UUID.fromString(rs.getString("id")),
-                rs.getString("full_name"),
-                rs.getString("avatar_url"),
-                rs.getString("bio"),
-                rs.getInt("years_of_experience"),
-                rs.getString("subjects_csv") != null ? Arrays.asList(rs.getString("subjects_csv").split(",")) : List.of(),
-                rs.getLong("min_price"),
-                rs.getDouble("avg_rating"),
-                rs.getDouble("bayesian_rating"),
-                rs.getInt("review_count"),
-                (Integer) rs.getObject("global_rank")
-        ), args.toArray());
+        return new org.springframework.data.domain.PageImpl<>(cards.subList(start, end), org.springframework.data.domain.PageRequest.of(page, size), cards.size());
     }
 
-    @Transactional(readOnly = true)
     @Cacheable(value = "TEACHER_PUBLIC_PROFILE", key = "#teacherId")
     public TeacherPublicDetail getTeacherDetail(UUID teacherId) {
-        String sql = """
-            SELECT tp.id, u.full_name, u.avatar_url, tp.bio, tp.years_of_experience,
-                   tp.languages, tp.supports_online, tp.supports_offline, tp.location_address, tp.introduction_video_url,
-                   (
-                       SELECT string_agg(s.name, ',')
-                       FROM teacher_subjects ts
-                       JOIN subjects s ON ts.subject_id = s.id
-                       WHERE ts.teacher_id = tp.id AND ts.is_active = true AND ts.is_deleted = false
-                   ) as subjects_csv,
-                   COALESCE(ts.average_rating, 0.0) as avg_rating, 
-                   COALESCE(ts.bayesian_rating, 0.0) as bayesian_rating, 
-                   COALESCE(ts.review_count, 0) as review_count, 
-                   ts.global_rank as global_rank
-            FROM teacher_profiles tp
-            JOIN users u ON tp.user_id = u.id
-            LEFT JOIN teacher_stats ts ON ts.teacher_id = tp.id
-            WHERE tp.id = ? AND u.status = 'ACTIVE' AND u.is_deleted = false
-              AND tp.profile_status = 'APPROVED' AND tp.is_visible = true AND tp.is_deleted = false
-        """;
-
-        List<TeacherPublicDetail> result = jdbcTemplate.query(sql, (rs, rowNum) -> {
-            java.sql.Array arr = rs.getArray("languages");
-            List<String> langs = arr != null ? Arrays.asList((String[]) arr.getArray()) : List.of();
-            
-            return new TeacherPublicDetail(
-                UUID.fromString(rs.getString("id")),
-                rs.getString("full_name"),
-                rs.getString("avatar_url"),
-                rs.getString("bio"),
-                rs.getInt("years_of_experience"),
-                langs,
-                rs.getBoolean("supports_online"),
-                rs.getBoolean("supports_offline"),
-                rs.getString("location_address"),
-                rs.getString("introduction_video_url"),
-                rs.getString("subjects_csv") != null ? Arrays.asList(rs.getString("subjects_csv").split(",")) : List.of(),
-                rs.getDouble("avg_rating"),
-                rs.getDouble("bayesian_rating"),
-                rs.getInt("review_count"),
-                (Integer) rs.getObject("global_rank")
-            );
-        }, teacherId);
-
-        if (result.isEmpty()) {
-            throw new com.edtech.platform.common.exception.BusinessException(com.edtech.platform.common.exception.ErrorCode.RESOURCE_NOT_FOUND);
+        TeacherSnapshot ts = teacherFacade.getTeacher(teacherId);
+        if (ts == null) {
+            throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
         }
-        return result.get(0);
+        
+        TeacherStatsSnapshot stats = teacherStatsFacade.getTeacherStats(teacherId);
+        List<String> subjectNames = teacherFacade.getSubjectIdsForTeacher(teacherId).stream()
+                .map(sid -> {
+                    try {
+                        return subjectFacade.getSubject(sid).name();
+                    } catch (Exception e) {
+                        return "Unknown";
+                    }
+                })
+                .collect(Collectors.toList());
+
+        return new TeacherPublicDetail(
+            ts.id(),
+            ts.fullName(),
+            ts.avatarUrl(),
+            ts.bioExcerpt(),
+            ts.yearsOfExperience() != null ? ts.yearsOfExperience() : 0,
+            ts.languages() != null ? ts.languages() : List.of(),
+            ts.supportsOnline(),
+            ts.supportsOffline(),
+            ts.locationAddress(),
+            ts.introductionVideoUrl(),
+            subjectNames,
+            stats != null ? stats.averageRating() : 0.0,
+            stats != null ? stats.bayesianRating() : 0.0,
+            stats != null ? stats.reviewCount() : 0,
+            stats != null ? stats.globalRank() : 999999
+        );
     }
 }

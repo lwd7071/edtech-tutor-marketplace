@@ -64,17 +64,36 @@ public class TeacherFacadeImpl implements TeacherFacade {
         return teacherProfileRepository.findApprovedTeacherIds();
     }
 
+    @Override
+    public java.util.Set<UUID> searchTeacherIds(UUID subjectId, String dayOfWeek, java.time.LocalTime startTime, java.time.LocalTime endTime) {
+        java.time.DayOfWeek day = null;
+        if (dayOfWeek != null) {
+            try {
+                day = java.time.DayOfWeek.valueOf(dayOfWeek.toUpperCase());
+            } catch (Exception e) {
+                // Invalid day, ignore filter or log
+            }
+        }
+        return teacherProfileRepository.searchTeacherIds(subjectId, day, startTime, endTime);
+    }
+
+    @Override
+    public java.util.List<UUID> getSubjectIdsForTeacher(UUID teacherId) {
+        return teacherSubjectRepository.findByTeacherId(teacherId).stream()
+                .filter(ts -> ts.isActive() && !ts.isDeleted())
+                .map(com.edtech.platform.teacher.domain.TeacherSubject::getSubjectId)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     private TeacherSnapshot toSnapshot(TeacherProfile profile) {
         UUID userId = profile.getUserId();
         String fullName = null;
         String avatarUrl = null;
         if (userId != null) {
-            try {
-                IdentitySnapshot identity = identityFacade.getIdentity(userId).orElseThrow();
-                fullName = identity.fullName();
-                avatarUrl = identity.avatarUrl();
-            } catch (Exception e) {
-                // Ignore missing user in snapshot
+            java.util.Optional<IdentitySnapshot> identityOpt = identityFacade.getIdentity(userId);
+            if (identityOpt.isPresent()) {
+                fullName = identityOpt.get().fullName();
+                avatarUrl = identityOpt.get().avatarUrl();
             }
         }
         String bioExcerpt = profile.getBio() != null ? 
@@ -88,7 +107,13 @@ public class TeacherFacadeImpl implements TeacherFacade {
                 profile.isVisible(),
                 fullName,
                 avatarUrl,
-                bioExcerpt
+                bioExcerpt,
+                profile.getYearsOfExperience(),
+                profile.isSupportsOnline(),
+                profile.isSupportsOffline(),
+                profile.getLanguages() != null ? profile.getLanguages() : java.util.List.of(),
+                profile.getLocationAddress(),
+                profile.getIntroductionVideoUrl()
         );
     }
 }

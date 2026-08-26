@@ -47,11 +47,12 @@ public class StudentAssignmentController {
 
     @PostMapping("/assignments/{id}/submissions")
     @RequireRole("STUDENT")
+    @org.springframework.web.bind.annotation.ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<SubmissionDetail> createSubmission(
             @AuthenticationPrincipal AuthenticatedUser userDetails,
             @PathVariable UUID id,
             @Valid @RequestBody CreateSubmissionRequest request) {
         
-        return ApiResponse.ok(studentAssignmentService.createOrUpdateSubmission(userDetails.id(), id, request));
+        return ApiResponse.created(studentAssignmentService.createOrUpdateSubmission(userDetails.id(), id, request));
     }
 }

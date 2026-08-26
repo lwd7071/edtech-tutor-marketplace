@@ -30,36 +30,26 @@ public class TeacherStatsJob {
     @SchedulerLock(name = "TeacherStatsJob_calculateStats", lockAtLeastFor = "5m", lockAtMostFor = "30m")
     public void calculateTeacherStats() {
         log.info("Starting TeacherStatsJob");
-        try {
-            // 2. Fetch all approved teachers
-            List<UUID> teacherIds = teacherFacade.getApprovedTeacherIds();
+        // 2. Fetch all approved teachers
+        List<UUID> teacherIds = teacherFacade.getApprovedTeacherIds();
 
-            int successCount = 0;
-            int failCount = 0;
+        int successCount = 0;
+        int failCount = 0;
 
-            // 3. Process each teacher
-            for (UUID teacherId : teacherIds) {
-                try {
-                    teacherStatsFacade.recalculateTeacherStats(teacherId);
-                    successCount++;
-                } catch (Exception e) {
-                    log.error("Failed to calculate stats for teacher {}", teacherId, e);
-                    failCount++;
-                }
-            }
+        // 3. Process each teacher
+        for (UUID teacherId : teacherIds) {
+            teacherStatsFacade.recalculateTeacherStats(teacherId);
+            successCount++;
+        }
 
-            // 4. Update global rank
-            teacherStatsFacade.updateAllGlobalRanks();
+        // 4. Update global rank
+        teacherStatsFacade.updateAllGlobalRanks();
 
-            log.info("TeacherStatsJob completed. Processed {} records, {} failed.", successCount, failCount);
+        log.info("TeacherStatsJob completed. Processed {} records.", successCount);
 
-            // 5. Invalidate Cache
-            if (cacheManager.getCache(RedisCacheConfig.GLOBAL_RANKING) != null) {
-                cacheManager.getCache(RedisCacheConfig.GLOBAL_RANKING).clear();
-            }
-
-        } catch (Exception ex) {
-            log.error("TeacherStatsJob failed", ex);
+        // 5. Invalidate Cache
+        if (cacheManager.getCache(RedisCacheConfig.GLOBAL_RANKING) != null) {
+            cacheManager.getCache(RedisCacheConfig.GLOBAL_RANKING).clear();
         }
     }
 }

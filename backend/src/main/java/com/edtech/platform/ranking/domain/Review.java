@@ -17,6 +17,7 @@ import org.hibernate.annotations.Where;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import com.edtech.platform.common.persistence.BaseEntity;
 
 @Entity
 @Table(name = "reviews")
@@ -27,11 +28,8 @@ import java.util.UUID;
 @Builder
 @SQLDelete(sql = "UPDATE reviews SET is_deleted = true WHERE id = ?")
 @Where(clause = "is_deleted = false")
-public class Review {
+public class Review extends BaseEntity {
 
-    @Id
-    @GeneratedValue
-    private UUID id;
 
     @Column(name = "booking_id", nullable = false)
     private UUID bookingId;
@@ -54,15 +52,4 @@ public class Review {
     @Column(name = "moderated_by")
     private UUID moderatedBy;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private ZonedDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private ZonedDateTime updatedAt;
-
-    @Column(name = "is_deleted", nullable = false)
-    @Builder.Default
-    private Boolean isDeleted = false;
 }

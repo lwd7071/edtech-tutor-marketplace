@@ -8,8 +8,11 @@ import com.edtech.platform.communication.domain.Message;
 import com.edtech.platform.communication.domain.MessageType;
 import com.edtech.platform.communication.dto.chat.ChatMessageRequest;
 import com.edtech.platform.communication.dto.chat.MessageView;
+import com.edtech.platform.communication.dto.chat.ConversationView;
 import com.edtech.platform.communication.repository.ConversationRepository;
 import com.edtech.platform.communication.repository.MessageRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -108,6 +111,31 @@ public class ChatService {
                     conversationId
             );
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ConversationView> getConversations(UUID userId, Pageable pageable) {
+        return conversationRepository.findByUserId(userId, pageable)
+                .map(c -> ConversationView.builder()
+                        .id(c.getId())
+                        .teacherId(c.getTeacherId())
+                        .studentId(c.getStudentId())
+                        .lastMessageAt(c.getLastMessageAt())
+                        .createdAt(c.getCreatedAt())
+                        .build());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MessageView> getMessages(UUID conversationId, UUID userId, Pageable pageable) {
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CONVERSATION_NOT_FOUND));
+
+        if (!conversation.getTeacherId().equals(userId) && !conversation.getStudentId().equals(userId)) {
+            throw new BusinessException(ErrorCode.CONVERSATION_NOT_FOUND);
+        }
+
+        return messageRepository.findByConversationId(conversationId, pageable)
+                .map(this::mapToView);
     }
 
     public MessageView mapToView(Message m) {

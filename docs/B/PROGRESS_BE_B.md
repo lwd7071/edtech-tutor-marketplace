@@ -48,9 +48,9 @@
 | Contract/architecture/facade focused tests | 19 | 0 | 0 | 0 | Pass |
 | Toàn bộ test không phụ thuộc Docker | 62 | 0 | 0 | 0 | Pass |
 | Docker Compose health | — | 0 | 0 | — | PostgreSQL accepting connections; Redis `PONG` |
-| `FlywayMigrationTest` | 6 | 0 | 0 | 0 | Pass; V1–V18 applied, Flyway validate thành công |
-| V17 baseline + V18 legacy/constraint tests | 17 | 0 | 0 | 0 | Pass |
-| Full Maven test suite | 88 | 0 | 0 | 0 | Pass |
+| `FlywayMigrationTest` | 6 | 0 | 0 | 6 | Skipped (No Docker) |
+| V17 baseline + V18 legacy/constraint tests | 17 | 0 | 0 | 2 | Pass (2 skipped) |
+| Full Maven test suite | 88 | 0 | 0 | 8 | Pass but with 8 skipped |
 | Working-tree scan theo các credential cũ đã biết | — | — | — | — | Không còn match trong file tracked |
 
 ### Việc còn lại ngoài runtime gate

@@ -11,6 +11,12 @@ public record TeacherSnapshot(
         boolean isVisible,
         String fullName,
         String avatarUrl,
-        String bioExcerpt
+        String bioExcerpt,
+        Integer yearsOfExperience,
+        boolean supportsOnline,
+        boolean supportsOffline,
+        java.util.List<String> languages,
+        String locationAddress,
+        String introductionVideoUrl
 ) {
 }

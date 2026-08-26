@@ -58,8 +58,8 @@ class PricingPackageServiceTest {
         teacherId = UUID.randomUUID();
         subjectId = UUID.randomUUID();
 
-        approvedTeacher = new TeacherSnapshot(teacherId, userId, "APPROVED", true, true, "Teacher A", null, null);
-        notApprovedTeacher = new TeacherSnapshot(teacherId, userId, "PENDING", false, false, "Teacher B", null, null);
+        approvedTeacher = new TeacherSnapshot(teacherId, userId, "APPROVED", true, true, "Teacher A", null, null, 0, true, false, java.util.List.of(), null, null);
+        notApprovedTeacher = new TeacherSnapshot(teacherId, userId, "PENDING", false, false, "Teacher B", null, null, 0, true, false, java.util.List.of(), null, null);
         activeSubject = new SubjectSnapshot(subjectId, "MATH01", "Mathematics", "HIGH_SCHOOL", true);
 
         lenient().when(cacheManager.getCache("TEACHER_PUBLIC_PROFILE")).thenReturn(cache);

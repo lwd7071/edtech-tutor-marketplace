@@ -14,6 +14,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import com.edtech.platform.common.persistence.BaseEntity;
 
 @Entity
 @Table(name = "teacher_stats")
@@ -22,10 +23,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TeacherStats {
+public class TeacherStats extends BaseEntity {
 
-    @Id
-    @Column(name = "teacher_id")
+    @Column(name = "teacher_id", nullable = false, unique = true)
     private UUID teacherId;
 
     @Column(name = "average_rating", nullable = false)

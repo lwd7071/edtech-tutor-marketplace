@@ -44,4 +44,21 @@ public class TeacherStatsFacadeImpl implements TeacherStatsFacade {
         
         log.info("Successfully updated global ranks for {} teachers", allStats.size());
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.edtech.platform.ranking.facade.dto.TeacherStatsSnapshot getTeacherStats(java.util.UUID teacherId) {
+        return teacherStatsRepository.findByTeacherId(teacherId)
+                .map(stats -> new com.edtech.platform.ranking.facade.dto.TeacherStatsSnapshot(
+                        stats.getTeacherId(),
+                        stats.getAverageRating() != null ? stats.getAverageRating().doubleValue() : 0.0,
+                        stats.getBayesianRating() != null ? stats.getBayesianRating().doubleValue() : 0.0,
+                        stats.getReviewCount(),
+                        stats.getCompletedSessionCount(),
+                        stats.getCompletionRate() != null ? stats.getCompletionRate().doubleValue() : 0.0,
+                        stats.getTrialSessionCount(),
+                        stats.getTrialConversionRate() != null ? stats.getTrialConversionRate().doubleValue() : 0.0,
+                        stats.getGlobalRank()
+                )).orElse(null);
+    }
 }
