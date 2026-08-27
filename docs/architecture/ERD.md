@@ -231,7 +231,8 @@ erDiagram
         uuid moderated_by FK
     }
     TEACHER_STATS {
-        uuid teacher_id PK,FK
+        uuid id PK
+        uuid teacher_id FK,UK
         numeric average_rating
         numeric bayesian_rating
         int review_count
@@ -241,6 +242,9 @@ erDiagram
         numeric trial_conversion_rate
         int global_rank
         timestamptz calculated_at
+        timestamptz created_at
+        timestamptz updated_at
+        boolean is_deleted
     }
     WALLETS {
         uuid id PK

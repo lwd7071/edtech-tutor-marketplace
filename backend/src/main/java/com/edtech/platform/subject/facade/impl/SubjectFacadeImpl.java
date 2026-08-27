@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +23,7 @@ public class SubjectFacadeImpl implements SubjectFacade {
     @Override
     public SubjectSnapshot getSubject(UUID subjectId) {
         Subject subject = subjectRepository.findById(subjectId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "Subject not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.SUBJECT_NOT_FOUND));
         return new SubjectSnapshot(
                 subject.getId(),
                 subject.getCode(),
@@ -28,6 +31,18 @@ public class SubjectFacadeImpl implements SubjectFacade {
                 subject.getEducationLevel() != null ? subject.getEducationLevel().name() : null,
                 subject.isActive()
         );
+    }
+
+    @Override
+    public Map<UUID, SubjectSnapshot> getSubjects(Collection<UUID> subjectIds) {
+        return subjectRepository.findAllById(subjectIds).stream()
+                .collect(Collectors.toMap(Subject::getId, this::toSnapshot));
+    }
+
+    private SubjectSnapshot toSnapshot(Subject subject) {
+        return new SubjectSnapshot(subject.getId(), subject.getCode(), subject.getName(),
+                subject.getEducationLevel() != null ? subject.getEducationLevel().name() : null,
+                subject.isActive());
     }
 
     @Override

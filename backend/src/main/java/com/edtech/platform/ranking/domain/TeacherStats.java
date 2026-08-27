@@ -2,22 +2,25 @@ package com.edtech.platform.ranking.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.UUID;
 import com.edtech.platform.common.persistence.BaseEntity;
 
 @Entity
 @Table(name = "teacher_stats")
+@SQLDelete(sql = "UPDATE teacher_stats SET is_deleted = true WHERE id=?")
+@SQLRestriction("is_deleted = false")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -61,5 +64,5 @@ public class TeacherStats extends BaseEntity {
 
     @UpdateTimestamp
     @Column(name = "calculated_at", nullable = false)
-    private ZonedDateTime calculatedAt;
+    private Instant calculatedAt;
 }

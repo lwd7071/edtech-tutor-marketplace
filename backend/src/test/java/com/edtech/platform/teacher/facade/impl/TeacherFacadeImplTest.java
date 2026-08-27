@@ -9,6 +9,7 @@ import com.edtech.platform.teacher.domain.TeacherSubject;
 import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import com.edtech.platform.teacher.repository.TeacherProfileRepository;
 import com.edtech.platform.teacher.repository.TeacherSubjectRepository;
+import com.edtech.platform.teacher.repository.TeacherAvailabilityRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +33,9 @@ public class TeacherFacadeImplTest {
 
     @Mock
     private TeacherSubjectRepository teacherSubjectRepository;
+
+    @Mock
+    private TeacherAvailabilityRepository teacherAvailabilityRepository;
 
     @InjectMocks
     private TeacherFacadeImpl teacherFacade;
@@ -58,7 +62,7 @@ public class TeacherFacadeImplTest {
         ReflectionTestUtils.setField(testProfile, "isVisible", true);
         
         lenient().when(identityFacade.getIdentity(any())).thenReturn(
-                java.util.Optional.of(new com.edtech.platform.auth.facade.dto.IdentitySnapshot(testUserId, "Teacher Name", "test@test.com", "TEACHER", null, null))
+                java.util.Optional.of(new com.edtech.platform.auth.facade.dto.IdentitySnapshot(testUserId, "test@test.com", "Teacher Name", "TEACHER", "ACTIVE", null, false, null))
         );
     }
 

@@ -1,12 +1,12 @@
 package com.edtech.platform.ranking.dto.response;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@Data
+@Value
 @Builder
 public class TeacherRankingItem {
     private UUID teacherId;

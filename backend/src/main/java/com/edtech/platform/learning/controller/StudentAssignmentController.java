@@ -23,11 +23,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/student")
+@Validated
 @RequiredArgsConstructor
 public class StudentAssignmentController {
 
@@ -38,8 +42,8 @@ public class StudentAssignmentController {
     public ApiResponse<java.util.List<AssignmentDetail>> getAssignments(
             @AuthenticationPrincipal AuthenticatedUser userDetails,
             @RequestParam(required = false) AssignmentStatus status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "0") @Min(value = 0, message = "Trang phải lớn hơn hoặc bằng 0") int page,
+            @RequestParam(defaultValue = "20") @Min(value = 1, message = "Kích thước trang phải lớn hơn 0") @Max(value = 100, message = "Kích thước tối đa là 100") int size) {
         
         Page<AssignmentDetail> result = studentAssignmentService.getAssignments(userDetails.id(), status, PageRequest.of(page, size));
         return ApiResponse.page(result.getContent(), PageMeta.from(result));

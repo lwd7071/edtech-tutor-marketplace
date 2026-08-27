@@ -1,11 +1,8 @@
 package com.edtech.platform.communication.controller;
 
-import com.edtech.platform.common.exception.BusinessException;
-import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.common.response.PageMeta;
-import com.edtech.platform.communication.domain.Conversation;
 import com.edtech.platform.communication.dto.chat.ConversationView;
 import com.edtech.platform.communication.dto.chat.MessageView;
 import com.edtech.platform.communication.service.ChatService;
@@ -25,6 +22,7 @@ public class ConversationController {
     private final ChatService chatService;
 
     @GetMapping
+    @com.edtech.platform.common.security.RequireRole({"STUDENT", "TEACHER"})
     public ApiResponse<java.util.List<ConversationView>> getConversations(
             @AuthenticationPrincipal AuthenticatedUser user,
             Pageable pageable) {
@@ -33,6 +31,7 @@ public class ConversationController {
     }
 
     @GetMapping("/{id}/messages")
+    @com.edtech.platform.common.security.RequireRole({"STUDENT", "TEACHER"})
     public ApiResponse<java.util.List<MessageView>> getMessages(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,

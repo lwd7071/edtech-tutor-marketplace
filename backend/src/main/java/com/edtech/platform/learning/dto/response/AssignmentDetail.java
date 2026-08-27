@@ -3,17 +3,13 @@ package com.edtech.platform.learning.dto.response;
 import com.edtech.platform.learning.domain.AssignmentStatus;
 import com.edtech.platform.learning.domain.AssignmentType;
 import com.fasterxml.jackson.databind.JsonNode;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Value;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Value
 public class AssignmentDetail {
     private UUID id;
     private UUID teacherId;

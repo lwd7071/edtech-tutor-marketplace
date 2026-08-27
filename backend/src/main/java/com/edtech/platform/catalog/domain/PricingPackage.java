@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "pricing_packages")
@@ -22,7 +22,7 @@ import org.hibernate.annotations.Where;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE pricing_packages SET is_deleted = true WHERE id = ? and version = ?")
-@Where(clause = "is_deleted = false")
+@SQLRestriction("is_deleted = false")
 public class PricingPackage extends BaseEntity {
 
     @Column(name = "teacher_id", nullable = false)

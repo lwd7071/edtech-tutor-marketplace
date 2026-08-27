@@ -89,6 +89,7 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | Code | HTTP | Khi dùng |
 |---|---:|---|
 | `TEACHER_PROFILE_NOT_FOUND` | 404 | Tài khoản Teacher chưa có profile hợp lệ |
+| `TEACHER_STATS_NOT_FOUND` | 404 | Không tìm thấy thống kê giáo viên |
 | `TEACHER_NOT_APPROVED` | 403 | Teacher chưa `APPROVED` nhưng gọi bán gói/booking/publication |
 | `TEACHER_PROFILE_INVALID_STATE` | 400 | Transition profile không hợp lệ, ví dụ submit khi đã pending |
 | `TEACHER_APPROVAL_ALREADY_PROCESSED` | 409 | Hồ sơ đã được approve/reject hoặc request thua race |
@@ -197,6 +198,8 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | Code | HTTP | Khi dùng |
 |---|---:|---|
 | `ASSIGNMENT_NOT_FOUND` | 404 | Assignment không tồn tại/không thuộc quan hệ học tập |
+| `STUDENT_NOT_FOUND` | 404 | Không tìm thấy học viên |
+| `LEARNING_RELATIONSHIP_NOT_FOUND` | 403 | Không tồn tại quan hệ học tập hợp lệ |
 | `ASSIGNMENT_INVALID_STATE` | 400 | Publish/submit/close sai trạng thái |
 | `ASSIGNMENT_DUE_DATE_PASSED` | 422 | Nộp sau hạn khi policy không cho phép |
 | `SUBMISSION_NOT_FOUND` | 404 | Submission không tồn tại |

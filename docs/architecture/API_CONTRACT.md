@@ -169,6 +169,7 @@ Page<T>     data: T[], meta: PageMeta
 | POST | `/api/auth/resend-verification` | Public | `ForgotPasswordRequest` | `null` |
 | POST | `/api/auth/forgot-password` | Public | `ForgotPasswordRequest` | `null` |
 | POST | `/api/auth/reset-password` | Public | `ResetPasswordRequest` | `null` |
+| POST | `/api/auth/oauth2/exchange` | Public | `OAuthExchangeRequest` | `AuthResult` |
 | POST | `/api/auth/oauth2/complete-registration` | Public | `CompleteOAuthRegistrationRequest` | `AuthResult` |
 | GET | `/oauth2/authorization/google` | Public | — | Redirect Google |
 

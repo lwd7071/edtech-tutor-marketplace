@@ -1,13 +1,13 @@
 package com.edtech.platform.ranking.dto.response;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
-@Data
+@Value
 @Builder
 public class TeacherStatsView {
     private UUID teacherId;
@@ -19,5 +19,5 @@ public class TeacherStatsView {
     private Integer trialSessionCount;
     private BigDecimal trialConversionRate;
     private Integer globalRank;
-    private ZonedDateTime calculatedAt;
+    private Instant calculatedAt;
 }

@@ -79,6 +79,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        String msg = ex.getMessage();
+        if (msg != null) {
+            if (msg.contains("ux_users_email")) return buildResponse(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS, null, null);
+            if (msg.contains("uq_subjects_code")) return buildResponse(ErrorCode.SUBJECT_CODE_ALREADY_EXISTS, null, null);
+            if (msg.contains("uq_subjects_slug")) return buildResponse(ErrorCode.SUBJECT_SLUG_ALREADY_EXISTS, null, null);
+            if (msg.contains("ex_booking_teacher_overlap") || msg.contains("ex_booking_student_overlap")) return buildResponse(ErrorCode.BOOKING_TIME_CONFLICT, null, null);
+            if (msg.contains("availability_time_conflict")) return buildResponse(ErrorCode.AVAILABILITY_TIME_CONFLICT, null, null);
+            if (msg.contains("uq_messages_sender_client")) return buildResponse(ErrorCode.MESSAGE_DUPLICATE, null, null);
+        }
         return buildResponse(ErrorCode.DUPLICATE_RESOURCE, null, null);
     }
 
@@ -94,9 +103,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
     public ResponseEntity<ApiResponse<Void>> handleResponseStatusException(org.springframework.web.server.ResponseStatusException ex) {
-        String message = ex.getReason() != null ? ex.getReason() : "HTTP Error " + ex.getStatusCode().value();
-        List<ApiErrorDetail> errors = List.of(new ApiErrorDetail("HTTP_" + ex.getStatusCode().value(), null, message));
-        ApiResponse<Void> response = ApiResponse.error(message, errors);
+        ErrorCode code = switch (ex.getStatusCode().value()) {
+            case 400 -> ErrorCode.VALIDATION_ERROR;
+            case 401 -> ErrorCode.AUTH_TOKEN_MISSING;
+            case 403 -> ErrorCode.FORBIDDEN_RESOURCE;
+            case 404 -> ErrorCode.RESOURCE_NOT_FOUND;
+            case 409 -> ErrorCode.DUPLICATE_RESOURCE;
+            default -> ErrorCode.INTERNAL_SERVER_ERROR;
+        };
+        String message = ex.getReason() != null ? ex.getReason() : code.getDefaultMessage();
+        ApiResponse<Void> response = ApiResponse.error(message, List.of(new ApiErrorDetail(code.name(), null, message)));
         return new ResponseEntity<>(response, ex.getStatusCode());
     }
 

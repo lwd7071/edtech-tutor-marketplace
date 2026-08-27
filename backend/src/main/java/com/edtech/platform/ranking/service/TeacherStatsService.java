@@ -1,5 +1,7 @@
 package com.edtech.platform.ranking.service;
 
+import org.springframework.stereotype.Service;
+
 import com.edtech.platform.teacher.facade.TeacherFacade;
 import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import com.edtech.platform.common.config.RedisCacheConfig;
@@ -15,13 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+import com.edtech.platform.common.exception.BusinessException;
+import com.edtech.platform.common.exception.ErrorCode;
 
-import java.util.Map;
 import java.util.UUID;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -38,8 +39,8 @@ public class TeacherStatsService {
 
     @Transactional(readOnly = true)
     public TeacherStatsView getTeacherStats(UUID teacherId) {
-        TeacherStats stats = teacherStatsRepository.findById(teacherId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TEACHER_STATS_NOT_FOUND"));
+        TeacherStats stats = teacherStatsRepository.findByTeacherId(teacherId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.TEACHER_STATS_NOT_FOUND));
 
         return TeacherStatsView.builder()
                 .teacherId(stats.getTeacherId())
@@ -61,13 +62,9 @@ public class TeacherStatsService {
         String subjectIdStr = subjectId != null ? subjectId.toString() : null;
         Page<TeacherStats> statsPage = teacherStatsRepository.findGlobalRanking(subjectIdStr, pageable);
         
+        Map<UUID, TeacherSnapshot> snapshots = teacherFacade.getTeachers(statsPage.getContent().stream().map(TeacherStats::getTeacherId).toList());
         return statsPage.map(stats -> {
-            TeacherSnapshot snapshot = null;
-            try {
-                snapshot = teacherFacade.getTeacher(stats.getTeacherId());
-            } catch (Exception e) {
-                log.warn("Teacher profile not found for {}", stats.getTeacherId());
-            }
+            TeacherSnapshot snapshot = snapshots.get(stats.getTeacherId());
 
             return TeacherRankingItem.builder()
                     .teacherId(stats.getTeacherId())

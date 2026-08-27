@@ -2,12 +2,12 @@ package com.edtech.platform.communication.dto.chat;
 
 import com.edtech.platform.communication.domain.MessageType;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
+@Value
 @Builder
 public class MessageView {
     private UUID id;

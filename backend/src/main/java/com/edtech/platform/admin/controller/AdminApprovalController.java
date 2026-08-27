@@ -30,12 +30,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 
 import java.util.Set;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin")
+@Validated
 @RequiredArgsConstructor
 public class AdminApprovalController {
     private static final Set<String> TEACHER_SORT = Set.of("createdAt", "updatedAt", "profileStatus");
@@ -45,7 +49,8 @@ public class AdminApprovalController {
     @GetMapping("/teachers/approvals")
     public ApiResponse<java.util.List<TeacherApprovalSnapshot>> teachers(
             @RequestParam(defaultValue = "PENDING_APPROVAL") String status,
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "0") @Min(value = 0, message = "Trang phải lớn hơn hoặc bằng 0") int page, 
+            @RequestParam(defaultValue = "20") @Min(value = 1, message = "Kích thước trang phải lớn hơn 0") @Max(value = 100, message = "Kích thước tối đa là 100") int size,
             @RequestParam(defaultValue = "createdAt,asc") String sort) {
         Page<TeacherApprovalSnapshot> result = service.teacherApprovals(status, pageable(page, size, sort, TEACHER_SORT));
         return ApiResponse.page("Lấy danh sách hồ sơ thành công", result.getContent(), PageMeta.from(result));
@@ -69,7 +74,8 @@ public class AdminApprovalController {
 
     @GetMapping("/subject-proposals")
     public ApiResponse<java.util.List<SubjectProposalSnapshot>> subjects(
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "0") @Min(value = 0, message = "Trang phải lớn hơn hoặc bằng 0") int page, 
+            @RequestParam(defaultValue = "20") @Min(value = 1, message = "Kích thước trang phải lớn hơn 0") @Max(value = 100, message = "Kích thước tối đa là 100") int size,
             @RequestParam(defaultValue = "createdAt,asc") String sort) {
         Page<SubjectProposalSnapshot> result = service.subjectProposals(pageable(page, size, sort, SUBJECT_SORT));
         return ApiResponse.page("Lấy danh sách đề xuất thành công", result.getContent(), PageMeta.from(result));
@@ -100,14 +106,12 @@ public class AdminApprovalController {
     }
 
     private Pageable pageable(int page, int size, String rawSort, Set<String> allowed) {
-        int safePage = Math.max(0, page);
-        int safeSize = Math.max(1, Math.min(size, 100));
         String[] parts = rawSort.split(",", 2);
         if (!allowed.contains(parts[0])) throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         String property = parts[0];
         Sort.Direction direction = parts.length == 2 && "desc".equalsIgnoreCase(parts[1])
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
-        return PageRequest.of(safePage, safeSize, Sort.by(direction, property));
+        return PageRequest.of(page, size, Sort.by(direction, property));
     }
 
     private AuditContext context(HttpServletRequest request) {

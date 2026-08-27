@@ -48,13 +48,13 @@ public class TeacherAssignmentService {
         var teacher = teacherFacade.getTeacherByUserId(teacherUserId);
 
         if (!identityFacade.existsById(request.getStudentId())) {
-            throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
+            throw new BusinessException(ErrorCode.STUDENT_NOT_FOUND);
         }
 
         var subject = subjectFacade.getSubject(request.getSubjectId());
 
         if (!enrollmentFacade.hasValidRelationship(teacher.id(), request.getStudentId())) {
-            throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE, "No active learning relationship found.");
+            throw new BusinessException(ErrorCode.LEARNING_RELATIONSHIP_NOT_FOUND);
         }
 
         Assignment assignment = Assignment.builder()
@@ -108,7 +108,7 @@ public class TeacherAssignmentService {
         for (ContentBlock block : contentBlocks) {
             if ("IMAGE".equals(block.getType()) || "FILE".equals(block.getType())) {
                 if (block.getAttachmentId() == null) {
-                    throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Missing attachmentId for IMAGE/FILE block");
+                    throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Thiếu attachmentId cho khối nội dung IMAGE/FILE");
                 }
 
                 attachmentFacade.validateAndBind(block.getAttachmentId(), currentUserId, attachableType, attachableId);

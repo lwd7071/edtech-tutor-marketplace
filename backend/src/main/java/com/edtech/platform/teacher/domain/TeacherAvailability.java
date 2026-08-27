@@ -14,12 +14,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 @Entity
 @Table(name = "teacher_availabilities")
+@SQLDelete(sql = "UPDATE teacher_availabilities SET is_deleted = true WHERE id=?")
+@SQLRestriction("is_deleted = false")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

@@ -1,12 +1,12 @@
 package com.edtech.platform.communication.dto.chat;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
+@Value
 @Builder
 public class ConversationView {
     private UUID id;

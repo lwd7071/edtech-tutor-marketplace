@@ -58,7 +58,7 @@ Thông tin cấu hình mặc định (xem trong `docker-compose.yml`):
   - Đảm bảo bật **Enable annotation processing** trong `Settings` -> `Build, Execution, Deployment` -> `Compiler` -> `Annotation Processors`.
 
 ### 4.3. Chạy và Debug Backend
-- File chạy chính của Backend nằm ở: `src/main/java/com/edtech/api/ApiApplication.java`.
+- File chạy chính của Backend nằm ở: `src/main/java/com/edtech/platform/ApiApplication.java`.
 - Bấm nút **Run** (mũi tên xanh) hoặc **Debug** (hình con bọ) bên cạnh class này để khởi động.
 - Backend sẽ chạy ở cổng **8080** (`http://localhost:8080`). 
 - *Lưu ý:* Khi chạy lần đầu, Flyway sẽ tự động chạy các file migration (nếu có) để tạo bảng trong Database PostgreSQL.

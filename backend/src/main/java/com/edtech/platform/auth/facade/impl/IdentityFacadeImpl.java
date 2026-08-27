@@ -9,6 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +58,17 @@ public class IdentityFacadeImpl implements IdentityFacade {
                         user.getNotifyParent(),
                         user.getParentEmail()
                 ));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<UUID, IdentitySnapshot> getIdentities(Collection<UUID> ids) {
+        return userRepository.findAllById(ids).stream().collect(Collectors.toMap(
+                user -> user.getId(),
+                user -> new IdentitySnapshot(user.getId(), user.getEmail(), user.getFullName(),
+                        user.getRole() != null ? user.getRole().name() : null,
+                        user.getStatus() != null ? user.getStatus().name() : null,
+                        user.getAvatarUrl(), user.getNotifyParent(), user.getParentEmail())));
     }
 
     @Override

@@ -8,16 +8,20 @@ import com.edtech.platform.ranking.dto.response.TeacherStatsView;
 import com.edtech.platform.ranking.service.TeacherStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class TeacherStatsController {
 
     private final TeacherStatsService teacherStatsService;
@@ -30,8 +34,10 @@ public class TeacherStatsController {
     @GetMapping("/api/public/teachers/ranking")
     public ApiResponse<java.util.List<TeacherRankingItem>> getGlobalRanking(
             @RequestParam(value = "subjectId", required = false) UUID subjectId,
-            Pageable pageable) {
-        Page<TeacherRankingItem> page = teacherStatsService.getGlobalRanking(subjectId, pageable);
-        return ApiResponse.page(page.getContent(), PageMeta.from(page));
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<TeacherRankingItem> resultPage = teacherStatsService.getGlobalRanking(subjectId, pageRequest);
+        return ApiResponse.page(resultPage.getContent(), PageMeta.from(resultPage));
     }
 }

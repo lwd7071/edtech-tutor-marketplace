@@ -24,7 +24,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/internal/test-events")
 @RequiredArgsConstructor
-@Profile("!prod")
+@Profile("test")
 public class TestEventPublisherController {
 
     private final ApplicationEventPublisher eventPublisher;

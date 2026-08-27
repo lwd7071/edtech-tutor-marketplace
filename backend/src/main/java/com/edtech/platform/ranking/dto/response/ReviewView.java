@@ -1,12 +1,12 @@
 package com.edtech.platform.ranking.dto.response;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-@Data
+@Value
 @Builder
 public class ReviewView {
     
@@ -16,7 +16,7 @@ public class ReviewView {
     private ZonedDateTime createdAt;
     private StudentDto student;
 
-    @Data
+    @Value
     @Builder
     public static class StudentDto {
         private UUID id;

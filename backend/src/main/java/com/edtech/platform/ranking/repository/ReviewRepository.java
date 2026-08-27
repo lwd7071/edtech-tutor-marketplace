@@ -14,13 +14,13 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     @Query("SELECT r FROM Review r WHERE r.teacherId = :teacherId AND r.isVisible = true")
     Page<Review> findPublicReviewsByTeacherId(@Param("teacherId") UUID teacherId, Pageable pageable);
 
-    @Query("SELECT COALESCE(AVG(r.rating), 0) FROM Review r WHERE r.isVisible = true AND r.isDeleted = false")
+    @Query("SELECT COALESCE(AVG(r.rating), 0) FROM Review r WHERE r.isVisible = true")
     Double findGlobalAverageRating();
 
-    @Query("SELECT COUNT(r) FROM Review r WHERE r.teacherId = :teacherId AND r.isVisible = true AND r.isDeleted = false")
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.teacherId = :teacherId AND r.isVisible = true")
     int countVisibleReviewsByTeacherId(@Param("teacherId") UUID teacherId);
 
-    @Query("SELECT COALESCE(AVG(r.rating), 0) FROM Review r WHERE r.teacherId = :teacherId AND r.isVisible = true AND r.isDeleted = false")
+    @Query("SELECT COALESCE(AVG(r.rating), 0) FROM Review r WHERE r.teacherId = :teacherId AND r.isVisible = true")
     Double findAverageRatingByTeacherId(@Param("teacherId") UUID teacherId);
 
     boolean existsByBookingId(UUID bookingId);

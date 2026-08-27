@@ -4,15 +4,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import com.edtech.platform.common.persistence.BaseEntity;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -23,12 +23,9 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-public class Message {
-
-    @Id
-    @Column(name = "id", nullable = false, updatable = false)
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+@SQLDelete(sql = "UPDATE messages SET is_deleted = true WHERE id=?")
+@SQLRestriction("is_deleted = false")
+public class Message extends BaseEntity {
 
     @Column(name = "conversation_id", nullable = false)
     private UUID conversationId;
@@ -57,18 +54,6 @@ public class Message {
     @Column(name = "read_at")
     private Instant readAt;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
-
-    @Column(name = "is_deleted", nullable = false)
-    @Builder.Default
-    private boolean isDeleted = false;
-    
     public void markAsRead() {
         if (this.readAt == null) {
             this.readAt = Instant.now();

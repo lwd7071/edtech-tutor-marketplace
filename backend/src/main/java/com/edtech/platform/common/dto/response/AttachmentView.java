@@ -1,14 +1,10 @@
 package com.edtech.platform.common.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Value;
 
 import java.util.UUID;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Value
 public class AttachmentView {
     private UUID id;
     private String secureUrl;

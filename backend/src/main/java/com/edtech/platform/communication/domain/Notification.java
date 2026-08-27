@@ -2,16 +2,16 @@ package com.edtech.platform.communication.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import com.edtech.platform.common.persistence.BaseEntity;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -20,12 +20,9 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-public class Notification {
-
-    @Id
-    @Column(name = "id", nullable = false, updatable = false)
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+@SQLDelete(sql = "UPDATE notifications SET is_deleted = true WHERE id=?")
+@SQLRestriction("is_deleted = false")
+public class Notification extends BaseEntity {
 
     @Column(name = "user_id", nullable = false)
     private UUID userId;
@@ -48,10 +45,6 @@ public class Notification {
     @Column(name = "is_read", nullable = false)
     @Builder.Default
     private boolean isRead = false;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
 
     public void markAsRead() {
         this.isRead = true;

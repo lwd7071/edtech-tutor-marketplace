@@ -29,7 +29,7 @@ class PublicTeacherControllerTest {
     void searchTeachers_ShouldReturnListOfTeacherCards() {
         // Arrange
         TeacherSearchParams params = new TeacherSearchParams(
-                "keyword", null, null, null, null, null, null, 0, 10
+                "keyword", null, null, null, null, null, null, null, null, null, 0, 10
         );
         TeacherCard card = new TeacherCard(
                 java.util.UUID.randomUUID(), "FullName", "url", "bio", 5, true, true, false, 

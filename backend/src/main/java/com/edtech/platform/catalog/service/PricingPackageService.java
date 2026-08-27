@@ -13,7 +13,6 @@ import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import com.edtech.platform.subject.facade.SubjectFacade;
 import com.edtech.platform.subject.facade.dto.SubjectSnapshot;
 import com.edtech.platform.enrollment.facade.EnrollmentFacade;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
@@ -35,7 +34,6 @@ public class PricingPackageService {
     private final TeacherFacade teacherFacade;
     private final SubjectFacade subjectFacade;
     private final EnrollmentFacade enrollmentFacade;
-    private final EntityManager entityManager;
     private final CacheManager cacheManager;
 
     @Transactional
