@@ -927,51 +927,71 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 
 ## TUẦN 3 — Invoice & StudentPackage Schema Prep
 
+> Task 3 giữ payOS sau port `PaymentGateway`; không có controller, SDK hoặc network call provider trong tuần này. Local mặc định `disabled`, fake stateful chỉ nằm trong test.
+
+### Task 3.0: Migration V20 — Payment-ready foundation
+- [x] Tạo forward-only `V20__prepare_payment_domain.sql`; không sửa checksum V1–V19
+- [x] Invoice có `idempotency_key`, canonical `request_fingerprint`, unique `(student_id, idempotency_key)` không phụ thuộc soft delete
+- [x] Legacy fingerprint dùng SHA-256 chính xác của `id|amount_vnd|created_at_utc`; legacy order code null được backfill bằng sequence
+- [x] Tạo `invoice_number_seq`, `payos_order_code_seq`, `pgcrypto` và audit dữ liệu trước các CHECK payment/package/ledger
+- [ ] Runtime gate V1–V20 từ database rỗng + fixture legacy (không được skip). Ngày 2026-08-27 Docker daemon đang stopped/không mở named pipe nên test fail cứng; không ghi nhận là pass
+
 ### Task 3.1: Enrollment Module — Domain & Repository
-- [ ] Entity: `StudentPackage`
+- [x] Entity: `StudentPackage`
   - File: `enrollment/domain/StudentPackage.java`
   - Enum: `StudentPackageStatus` (PENDING_PAYMENT, ACTIVE, COMPLETED, REFUND_PENDING, REFUNDED, LOCKED_EXPIRED)
   - `@Version` field
   - Counter invariant method: `validateCounterTotal()`
-- [ ] Repository: `StudentPackageRepository`
+- [x] `PENDING_PAYMENT` là legacy-only: Invoice đại diện giai đoạn chờ; factory public chỉ tạo `ACTIVE` sau payment thành công
+- [x] Snapshot/scalar ID, counter/date/price/commission invariants và soft delete `id + version` có unit/integration test
+- [x] Repository: `StudentPackageRepository`
   - `findByIdForUpdate` (PESSIMISTIC_WRITE)
   - `findByStudentIdAndStatus(studentId, status, Pageable)`
 
 ### Task 3.2: Payment Module — Domain & Repository
-- [ ] Entity: `Invoice`
+- [x] Entity: `Invoice`
   - File: `payment/domain/Invoice.java`
   - Enum: `InvoiceStatus` (PENDING, PAID, CANCELLED, EXPIRED)
-  - State transition methods: `markPaid()`, `markExpired()`, `markCancelled()`
-- [ ] Entity: `PaymentTransaction` (append-only, không soft delete)
+  - State transition methods: `markPaid()`, `expire()`, `cancel()`; link chỉ attach khi `PENDING` và không được overwrite khác dữ liệu
+- [x] Entity: `PaymentTransaction` (append-only, không soft delete)
   - File: `payment/domain/PaymentTransaction.java`
-- [ ] Repository: `InvoiceRepository`, `PaymentTransactionRepository`
+- [x] Tách `InvoiceCommandRepository`/`InvoiceQueryRepository`; không extends Spring Data CRUD, không expose `save/update/delete`, command mutation bắt buộc lock
+- [x] `PaymentTransactionRepository` custom chỉ append/read theo provider reference
+- [x] Canonical fingerprint tự build byte sequence UTF-8 cố định, không dùng Jackson/Map; golden string/bytes/digest tests
+- [x] `PaymentGateway` trung lập provider và fake stateful bao phủ create/reconcile/timeout/reject/signature/replay/mismatch
+- [x] Configuration payOS fail-fast khi bật provider mà thiếu credential; Git chỉ chứa placeholder
 
 ### Task 3.3: Finance Module — Domain Skeleton
-- [ ] Entity: `Wallet`
+- [x] Entity: `Wallet`
   - File: `finance/domain/Wallet.java`
   - Balance check methods
   - `@Version` field
-- [ ] Entity: `LedgerEntry` (append-only)
+- [x] Entity: `LedgerEntry` (append-only)
   - File: `finance/domain/LedgerEntry.java`
-- [ ] Repository: `WalletRepository`, `LedgerEntryRepository`
+- [x] Repository: `WalletRepository`, `LedgerEntryRepository`; Wallet lock/versioned soft delete, Ledger custom append-only
 
 ### Task 3.4: Tích hợp PricingPackage facade của module A
-- [ ] B consume PricingPackage snapshot facade do A expose; không tạo facade ngược chiều trong `enrollment`
-- [ ] Snapshot tối thiểu phục vụ Invoice/StudentPackage: package ID, teacher profile ID, subject ID, name, total sessions, duration, price và trạng thái bán
+- [x] B consume PricingPackage snapshot facade do A expose; không tạo facade ngược chiều trong `enrollment`
+- [x] Snapshot phục vụ Invoice/StudentPackage gồm package ID, teacher profile ID, subject ID, name, total sessions, duration, price, session duration và status string
 
 ### Task 3.5: Repository query baseline
-- [ ] Mọi list/search repository nhận `Pageable` hoặc giới hạn rõ ràng; không load Message, Ledger, Booking, Invoice, AuditLog hoặc queue Admin không giới hạn
+- [x] Invoice/StudentPackage/Ledger list nhận `Pageable`; expiry query bị giới hạn; không filter collection trong memory
 - [ ] Dùng DTO projection/entity graph/fetch join phù hợp để mapper không phát sinh N+1
 - [ ] Filter/sort dùng allow-list theo `API_CONTRACT.md`; không filter collection đã load trong memory
-- [ ] Mọi native/JdbcTemplate query trên bảng mutable lọc `is_deleted = false` cho từng alias; test cả trường hợp parent hoặc child đã bị soft-delete
-- [ ] Với query lock/native/aggregation quan trọng, thêm integration test PostgreSQL và lưu `EXPLAIN ANALYZE` hoặc query-count evidence trong `PROGRESS_BE_B.md`
-- [ ] Index được thiết kế theo filter/join/sort thực tế; không hoãn toàn bộ kiểm tra hiệu năng đến Tuần 8
+- [x] Mutable entity query dùng Hibernate `@Where`; native sequence query không đọc bảng mutable; lịch sử giữ scalar ID/snapshot
+- [ ] Chạy PostgreSQL integration + lưu `EXPLAIN ANALYZE` cho invoice list/expiry/ledger sau khi Docker daemon hoạt động
+- [x] Query shape bám các index hiện có; planner trên fixture nhỏ không được dùng làm bằng chứng kết luận index sai, re-check dataset lớn ở Task 8
+
+### Task 3.6: Architecture guard
+- [x] Maven chạy rule thật: Invoice repository không extends `Repository`/`CrudRepository`/`JpaRepository`, cấm generic mutation method
+- [x] Payment service không dùng `EntityManager`; command/query repository dependency bị tách theo package; chỉ payment repository được dùng `EntityManager`
+- [x] Negative fixtures cố ý vi phạm CRUD, method name, EntityManager và command/query boundary để chứng minh rule bắt lỗi
 
 ### ✅ Checkpoint Tuần 3
-- Domain classes compile thành công
-- Entity relationships đúng ERD
-- A có thể dùng catalog facade
-- Query list chính có pagination/projection và không có N+1 đáng kể
+- [x] Domain classes compile; focused unit/architecture tests: 23 run, 0 failure/error/skip
+- [x] Entity dùng scalar ID/snapshot đúng boundary và PricingPackage facade có sale status
+- [x] Không có payment REST endpoint, payOS SDK/network call hoặc credential thật
+- [ ] V1–V20 migration, mapping/lock/soft-delete integration và performance evidence chạy thật với Docker; chỉ khi gate này xanh mới đóng Task 3
 
 ---
 
@@ -1255,14 +1275,14 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 - [ ] Nếu có use case restore được duyệt, test restore idempotent, authorization/audit và xung đột unique/partial-index; nếu chưa có contract thì không tạo endpoint restore
 
 ### Task 8.2: Seed Data
-- [ ] Tạo migration `V19__seed_demo_data.sql` hoặc `data.sql` cho profile dev:
+- [ ] Tạo migration `V21__seed_demo_data.sql` hoặc `data.sql` cho profile dev:
   - Admin user
   - 2-3 Teacher (APPROVED) với subjects, packages
   - 3-5 Student với packages, bookings
   - Sample invoices, wallet entries
   - Platform settings mặc định
 
-> ⚠️ **Lưu ý version:** V16 (`fix_schema_bugs`) và V17 (`add_deleted_to_refresh_tokens`) là baseline đóng băng; V18 dành cho hardening business invariants. Migration seed data phải dùng từ V19 trở đi.
+> ⚠️ **Lưu ý version:** V1–V19 là baseline đóng băng; V20 dành cho payment-ready invariants. Migration seed data tiếp theo phải dùng từ V21 trở đi.
 
 ### Task 8.3: Optimization & Polish
 - [ ] Tổng hợp và re-check query-count/`EXPLAIN ANALYZE` evidence đã thu từ từng feature; thêm index còn thiếu nếu số liệu chứng minh cần thiết
@@ -1271,7 +1291,7 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 - [ ] Chạy acceptance test end-to-end cùng với A
 
 ### ✅ Checkpoint Tuần 8
-- Migration V1–V19 chạy clean từ database rỗng, không có integration test bị skip
+- Migration V1–V20 và các migration tiếp theo chạy clean từ database rỗng, không có integration test bị skip
 - Không race condition ở booking/payment/finance
 - Seed data chạy được cho demo
 

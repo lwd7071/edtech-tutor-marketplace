@@ -21,13 +21,13 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    @DisplayName("Tất cả 18 file migration V1-V18 phải được apply và validate thành công")
+    @DisplayName("Tất cả 20 file migration V1-V20 phải được apply và validate thành công")
     void flyway_shouldApplyAllMigrationsSuccessfully() {
         assertThat(flyway).isNotNull();
         MigrationInfo[] appliedMigrations = flyway.info().applied();
 
         assertThat(appliedMigrations)
-                .hasSize(18)
+                .hasSize(20)
                 .allSatisfy(info -> {
                     assertThat(info.getState().isApplied()).isTrue();
                     assertThat(info.getVersion()).isNotNull();
@@ -179,5 +179,37 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
                 String.class);
         assertThat(singletonConstraints).containsExactlyInAnyOrder(
                 "uq_platform_settings_singleton", "ck_platform_settings_singleton");
+    }
+
+    @Test
+    @DisplayName("V20 phải khóa idempotency, sequence và payment constraints")
+    void paymentDomainMigrationShouldExposeExpectedMetadata() {
+        assertThat(jdbcTemplate).isNotNull();
+
+        List<String> invoiceColumns = jdbcTemplate.queryForList("""
+                SELECT column_name FROM information_schema.columns
+                WHERE table_schema = 'public' AND table_name = 'invoices'
+                  AND column_name IN ('idempotency_key', 'request_fingerprint')
+                  AND is_nullable = 'NO'
+                """, String.class);
+        assertThat(invoiceColumns).containsExactlyInAnyOrder("idempotency_key", "request_fingerprint");
+
+        List<String> sequences = jdbcTemplate.queryForList("""
+                SELECT sequence_name FROM information_schema.sequences
+                WHERE sequence_schema = 'public'
+                  AND sequence_name IN ('invoice_number_seq', 'payos_order_code_seq')
+                """, String.class);
+        assertThat(sequences).containsExactlyInAnyOrder("invoice_number_seq", "payos_order_code_seq");
+
+        List<String> constraints = jdbcTemplate.queryForList("""
+                SELECT conname FROM pg_constraint
+                WHERE conname IN (
+                  'uq_invoices_student_idempotency', 'ck_invoices_amount_positive',
+                  'ck_payment_transactions_amount_positive', 'ck_student_packages_total_positive',
+                  'ck_student_packages_price_positive', 'ck_student_packages_commission_range',
+                  'ck_ledger_entries_balance_bucket', 'ck_ledger_entries_entry_type'
+                )
+                """, String.class);
+        assertThat(constraints).hasSize(8);
     }
 }

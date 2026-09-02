@@ -72,3 +72,11 @@ app:
     frontend-redirect-uri: ${APP_OAUTH2_REDIRECT_URI:http://localhost:3000/oauth2/callback}
   cloudinary:
     url: ${CLOUDINARY_URL:cloudinary://dummy:dummy@dummy}
+  payment:
+    provider: ${APP_PAYMENT_PROVIDER:disabled}
+    client-id: ${PAYOS_CLIENT_ID:}
+    api-key: ${PAYOS_API_KEY:}
+    checksum-key: ${PAYOS_CHECKSUM_KEY:}
+    base-url: ${PAYOS_BASE_URL:https://api-merchant.payos.vn}
+    connect-timeout: ${PAYOS_CONNECT_TIMEOUT:3s}
+    read-timeout: ${PAYOS_READ_TIMEOUT:10s}

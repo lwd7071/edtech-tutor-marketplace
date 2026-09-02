@@ -29,6 +29,7 @@ public class PricingPackageFacadeImpl implements PricingPackageFacade {
         return new PricingPackageSnapshot(
                 pricingPackage.getId(), pricingPackage.getTeacherId(), pricingPackage.getSubjectId(),
                 pricingPackage.getName(), pricingPackage.getTotalSessions(), pricingPackage.getDurationDays(),
-                pricingPackage.getPriceVnd(), pricingPackage.getSessionDurationMinutes());
+                pricingPackage.getPriceVnd(), pricingPackage.getSessionDurationMinutes(),
+                pricingPackage.getStatus().name());
     }
 }

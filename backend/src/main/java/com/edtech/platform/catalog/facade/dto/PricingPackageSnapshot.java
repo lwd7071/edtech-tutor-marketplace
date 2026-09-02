@@ -10,6 +10,7 @@ public record PricingPackageSnapshot(
         int totalSessions,
         int durationDays,
         long priceVnd,
-        int sessionDurationMinutes
+        int sessionDurationMinutes,
+        String status
 ) {
 }

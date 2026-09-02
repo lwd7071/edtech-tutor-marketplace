@@ -1,5 +1,34 @@
 # Tiến độ Backend — Thành viên B
 
+## 2026-08-27 — Task 3 Payment-ready Domain Foundation
+
+### Đã thực hiện
+
+- Thêm V20 forward-only: `pgcrypto`, deterministic legacy fingerprint, Invoice idempotency, hai sequence và payment/package/ledger constraints có pre-audit rõ ngữ cảnh.
+- Xây `StudentPackage`, `Invoice`, `PaymentTransaction`, `Wallet`, `LedgerEntry` theo scalar ID/snapshot, soft-delete/version hoặc append-only đúng loại dữ liệu.
+- Tách Invoice command/query repository custom; mutation Invoice chỉ qua lock + Hibernate dirty checking, không có CRUD `save/update/delete`.
+- Thêm canonical UTF-8 fingerprint có amount và URL byte length; golden string/byte/digest tests.
+- Mở rộng PricingPackage snapshot với status; thêm `PaymentGateway` port và fake stateful cho reconciliation/timeout/signature/replay/mismatch.
+- Cấu hình payment mặc định `disabled`; provider `payos` fail-fast nếu thiếu một trong ba credential. `.env.example` chỉ có placeholder.
+- Thêm architecture rules và negative fixtures chặn CRUD Invoice repository, generic mutation, EntityManager trong service và sai command/query boundary.
+
+### Evidence hiện tại
+
+| Kiểm tra | Run | Failure | Error | Skipped | Kết quả |
+|---|---:|---:|---:|---:|---|
+| Fingerprint + domain + fake gateway + architecture | 18 | 0 | 0 | 0 | Pass |
+| Invoice number + provider config + PricingPackage facade | 5 | 0 | 0 | 0 | Pass |
+| Main compile | — | 0 | 0 | — | `BUILD SUCCESS` |
+| Full suite không phụ thuộc Docker | 94 | 0 | 0 | 0 | Pass |
+| V20/Testcontainers runtime gate | 1 | 0 | 1 | 0 | Fail-fast: Docker named pipe không tồn tại |
+
+### Runtime gate còn mở
+
+- `docker version` hiện báo Docker Desktop daemon chưa chạy; `com.docker.service` ở trạng thái `Stopped` và phiên làm việc không có quyền start Windows service.
+- Không chuyển integration test thành skip và không ghi nhận migration/schema mapping đã pass.
+- Khi daemon hoạt động phải chạy V1–V20 database rỗng, legacy V20 exact fingerprint, persistence/lock/soft-delete, full `mvn test`, rồi thu `EXPLAIN ANALYZE` cho Invoice list/expiry và Ledger list.
+- Fixture hiện nhỏ nên PostgreSQL có thể chọn sequential scan; cần ghi query shape/index/row count/planner choice, chưa kết luận index sai trước Task 8.
+
 ## 2026-08-25 02:28 +07:00 — Tuần 2 Admin Approval & Audit Log
 
 ### Đã thực hiện

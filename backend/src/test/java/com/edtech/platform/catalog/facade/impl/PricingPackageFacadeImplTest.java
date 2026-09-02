@@ -35,6 +35,7 @@ class PricingPackageFacadeImplTest {
 
         assertThat(snapshot.teacherId()).isEqualTo(pricingPackage.getTeacherId());
         assertThat(snapshot.priceVnd()).isEqualTo(500_000L);
+        assertThat(snapshot.status()).isEqualTo("ACTIVE");
     }
 
     @Test
@@ -45,6 +46,16 @@ class PricingPackageFacadeImplTest {
         assertThatThrownBy(() -> facade.getPurchasablePackage(id))
                 .isInstanceOfSatisfying(BusinessException.class,
                         ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PACKAGE_NOT_ACTIVE));
+    }
+
+    @Test
+    void rejectsNotFoundOrSoftDeletedPackage() {
+        UUID id = UUID.randomUUID();
+        // @Where makes a soft-deleted package indistinguishable from not-found at this facade boundary.
+        when(repository.findById(id)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> facade.getPurchasablePackage(id))
+                .isInstanceOfSatisfying(BusinessException.class,
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PRICING_PACKAGE_NOT_FOUND));
     }
 
     private PricingPackage packageWithStatus(PackageStatus status) {

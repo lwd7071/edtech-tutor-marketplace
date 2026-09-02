@@ -65,8 +65,7 @@ public class SubjectFacadeImplTest {
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             subjectFacade.getSubject(testSubjectId);
         });
-
-        assertEquals(ErrorCode.RESOURCE_NOT_FOUND, exception.getErrorCode());
+        assertEquals(ErrorCode.SUBJECT_NOT_FOUND, exception.getErrorCode());
     }
 
     @Test

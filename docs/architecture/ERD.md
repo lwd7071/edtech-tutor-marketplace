@@ -142,6 +142,8 @@ erDiagram
         text qr_code
         timestamptz payment_expired_at
         timestamptz paid_at
+        uuid idempotency_key
+        varchar request_fingerprint
     }
     PAYMENT_TRANSACTIONS {
         uuid id PK
@@ -472,15 +474,15 @@ erDiagram
 | `teacher_availabilities` | `CHECK(start_time < end_time)`; không overlap các khoảng active của cùng teacher/ngày |
 | `teacher_subjects` | `UNIQUE(teacher_id, subject_id)` |
 | `pricing_packages` | `CHECK(total_sessions > 0 AND duration_days > 0 AND price_vnd > 0 AND session_duration_minutes > 0)` |
-| `invoices` | unique `invoice_number`, `payos_order_code`, `payos_payment_link_id` (partial khi khác null) |
-| `payment_transactions` | `UNIQUE(provider_reference)`; append-only |
-| `student_packages` | `UNIQUE(invoice_id)`; mọi counter `>= 0`; tổng counter bằng `total_sessions`; `starts_at < expires_at` |
+| `invoices` | unique `invoice_number`, `payos_order_code`, `payos_payment_link_id` (partial khi khác null), `(student_id, idempotency_key)`; `amount_vnd > 0`; fingerprint SHA-256 64 ký tự |
+| `payment_transactions` | `UNIQUE(provider_reference)`; `amount_vnd > 0`; append-only |
+| `student_packages` | `UNIQUE(invoice_id)`; `total_sessions/purchase_price_vnd > 0`; commission `0..100`; mọi counter `>= 0`; tổng counter bằng `total_sessions`; `starts_at < expires_at` |
 | `bookings` | `CHECK(start_time < end_time)`; trial có `student_package_id IS NULL`; booking thường có package; exclusion constraint chống overlap |
 | `trial_requests` | status `PENDING/ACCEPTED/REJECTED/CANCELLED`; `booking_id` unique khi accepted; tối đa một request pending cho mỗi cặp Student–Teacher |
 | `session_reports` | `UNIQUE(booking_id)` |
 | `reviews` | `UNIQUE(booking_id)`; `CHECK(rating BETWEEN 1 AND 5)` |
 | `wallets` | `UNIQUE(teacher_id)`; các balance `>= 0` |
-| `ledger_entries` | `UNIQUE(idempotency_key)`; `amount_vnd > 0`; append-only |
+| `ledger_entries` | `UNIQUE(idempotency_key)`; `amount_vnd > 0`; bucket `PENDING/AVAILABLE/RESERVED`; entry type theo allow-list V20; append-only |
 | `teacher_bank_accounts` | tối đa một tài khoản default cho mỗi teacher bằng partial unique index |
 | `refund_requests` | `requested_sessions > 0`; `approved_sessions >= 0`; tối đa một request đang xử lý cho mỗi package; `refund_amount_vnd = floor(approved_sessions × purchase_price_vnd / total_sessions)`, dồn phần dư vào lần duyệt cuối của cùng package |
 | `package_extension_requests` | tối đa một request `PENDING` cho mỗi package |
@@ -517,7 +519,7 @@ Availability cũng phải được kiểm tra overlap trong transaction. Có th�
 - `teacher_profiles(profile_status, is_visible)` và GIN cho `languages` nếu có filter.
 - `teacher_subjects(subject_id, is_active, teacher_id)`.
 - `pricing_packages(teacher_id, status)`, `(subject_id, status, price_vnd)`.
-- `invoices(student_id, created_at DESC)`, `(status, payment_expired_at)`.
+- `invoices(student_id, created_at DESC)`, `(status, payment_expired_at)`, unique `(student_id, idempotency_key)`.
 - `student_packages(student_id, status, expires_at)`, `(teacher_id, status)`.
 - `bookings(teacher_id, start_time)`, `(student_id, start_time)`, `(status, end_time)`.
 - `trial_requests(teacher_id, status, created_at)`, `(student_id, status, created_at)`.

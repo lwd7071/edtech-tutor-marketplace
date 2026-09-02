@@ -63,7 +63,7 @@ public class IdentityFacadeImplTest {
         assertTrue(snapshot.isPresent());
         assertEquals("test@example.com", snapshot.get().email());
         assertEquals("Test User", snapshot.get().fullName());
-        assertEquals(Role.STUDENT, snapshot.get().role());
-        assertEquals(UserStatus.ACTIVE, snapshot.get().status());
+        assertEquals("STUDENT", snapshot.get().roleName());
+        assertEquals("ACTIVE", snapshot.get().statusName());
     }
 }
