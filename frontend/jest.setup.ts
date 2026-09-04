@@ -20,3 +20,12 @@ if (typeof MessageChannel === 'undefined') {
   const { MessageChannel } = require('worker_threads');
   (global as any).MessageChannel = MessageChannel;
 }
+
+// Polyfill ResizeObserver for Ant Design Table / Tabs in JSDOM
+if (typeof ResizeObserver === 'undefined') {
+  (global as any).ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
