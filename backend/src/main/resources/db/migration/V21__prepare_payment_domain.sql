@@ -1,11 +1,20 @@
 -- =====================================================================
--- V20: Payment-ready domain, deterministic idempotency and constraints.
+-- V21: Payment-ready domain, deterministic idempotency and constraints.
 -- V1-V19 remain immutable; all changes are forward-only.
 -- Pre-deploy gate: the target PostgreSQL role must be allowed to install
 -- (or already have) pgcrypto.
 -- =====================================================================
 
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+DO $$
+BEGIN
+    CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+    IF EXISTS (
+        SELECT 1 FROM pg_extension
+        WHERE extname = 'pgcrypto' AND extnamespace != 'public'::regnamespace
+    ) THEN
+        ALTER EXTENSION pgcrypto SET SCHEMA public;
+    END IF;
+END $$;
 
 CREATE SEQUENCE invoice_number_seq AS bigint START WITH 1 INCREMENT BY 1 NO CYCLE;
 CREATE SEQUENCE payos_order_code_seq AS bigint START WITH 1 INCREMENT BY 1 NO CYCLE;
@@ -23,16 +32,16 @@ UPDATE invoices
 SET idempotency_key = id,
     payos_order_code = COALESCE(payos_order_code, nextval('payos_order_code_seq')),
     request_fingerprint = encode(
-        digest(
-            id::text
+        public.digest(
+            (id::text
             || '|'
             || amount_vnd::text
             || '|'
             || to_char(
                 created_at AT TIME ZONE 'UTC',
                 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'
-            ),
-            'sha256'
+            ))::bytea,
+            'sha256'::text
         ),
         'hex'
     );

@@ -1,0 +1,3 @@
+package com.edtech.platform.booking.dto.response;
+import com.edtech.platform.booking.domain.*; import java.time.Instant; import java.util.UUID;
+public record BookingDetail(UUID id,UUID teacherId,UUID studentId,UUID subjectId,UUID studentPackageId,Instant startTime,Instant endTime,DeliveryMode deliveryMode,BookingStatus status,boolean trial,boolean outsideAvailabilityWarning,String cancelReason,long version){ public static BookingDetail from(Booking b){return new BookingDetail(b.getId(),b.getTeacherId(),b.getStudentId(),b.getSubjectId(),b.getStudentPackageId(),b.getStartTime(),b.getEndTime(),b.getDeliveryMode(),b.getStatus(),b.isTrial(),b.isOutsideAvailabilityWarning(),b.getCancelReason(),b.getVersion());} }

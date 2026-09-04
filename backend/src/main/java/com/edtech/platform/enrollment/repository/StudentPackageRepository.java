@@ -19,4 +19,11 @@ public interface StudentPackageRepository extends JpaRepository<StudentPackage, 
     Optional<StudentPackage> findByInvoiceId(UUID invoiceId);
     Page<StudentPackage> findByStudentIdAndStatus(UUID studentId, StudentPackageStatus status, Pageable pageable);
     Optional<StudentPackage> findByIdAndStudentId(UUID id, UUID studentId);
+    Page<StudentPackage> findByStudentId(UUID studentId, Pageable pageable);
+    @Query("select p from StudentPackage p where p.status = com.edtech.platform.enrollment.domain.StudentPackageStatus.ACTIVE and p.expiresAt <= :now")
+    Page<StudentPackage> findExpired(java.time.Instant now, Pageable pageable);
+
+    boolean existsByTeacherIdAndStudentIdAndStatusInAndDeletedFalse(UUID teacherId, UUID studentId, java.util.Collection<StudentPackageStatus> statuses);
+
+    boolean existsByPricingPackageIdAndDeletedFalse(UUID pricingPackageId);
 }

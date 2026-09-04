@@ -76,4 +76,52 @@ public class StudentPackage extends BaseEntity {
         }
         if (!startsAt.isBefore(expiresAt)) throw new IllegalArgumentException("package dates are invalid");
     }
+
+    public void reserveSession() { if (status != StudentPackageStatus.ACTIVE || remainingSessions <= 0) throw new IllegalStateException("package cannot reserve"); remainingSessions--; reservedSessions++; }
+    public void releaseReservedSession() { if (reservedSessions <= 0) return; reservedSessions--; remainingSessions++; }
+    public void completeReservedSession() { if (reservedSessions <= 0) throw new IllegalStateException("no reserved session"); reservedSessions--; completedSessions++; if (completedSessions + refundedSessions == totalSessions) status = StudentPackageStatus.COMPLETED; }
+    public void lockExpired() { if (status == StudentPackageStatus.ACTIVE && expiresAt != null && !expiresAt.isAfter(Instant.now())) { status = StudentPackageStatus.LOCKED_EXPIRED; lockedReason = "SYSTEM_EXPIRY"; } }
+
+    public void markRefundPending() {
+        if (status != StudentPackageStatus.ACTIVE && status != StudentPackageStatus.LOCKED_EXPIRED) {
+            throw new IllegalStateException("package cannot request refund in status " + status);
+        }
+        if (remainingSessions <= 0) {
+            throw new IllegalStateException("no remaining sessions to refund");
+        }
+        this.status = StudentPackageStatus.REFUND_PENDING;
+    }
+
+    public void restoreFromRefundPending() {
+        if (status == StudentPackageStatus.REFUND_PENDING) {
+            this.status = (expiresAt != null && expiresAt.isAfter(Instant.now()))
+                    ? StudentPackageStatus.ACTIVE
+                    : StudentPackageStatus.LOCKED_EXPIRED;
+        }
+    }
+
+    public void applyRefund(int approvedSessions) {
+        if (approvedSessions <= 0 || approvedSessions > remainingSessions) {
+            throw new IllegalArgumentException("invalid approved sessions: " + approvedSessions);
+        }
+        this.remainingSessions -= approvedSessions;
+        this.refundedSessions += approvedSessions;
+        if (this.remainingSessions == 0 && this.reservedSessions == 0) {
+            this.status = (this.completedSessions == 0) ? StudentPackageStatus.REFUNDED : StudentPackageStatus.COMPLETED;
+        } else {
+            this.status = (expiresAt != null && expiresAt.isAfter(Instant.now()))
+                    ? StudentPackageStatus.ACTIVE
+                    : StudentPackageStatus.LOCKED_EXPIRED;
+        }
+        validateCounterTotal();
+    }
+
+    public void extendExpiry(Instant newExpiryDate) {
+        if (newExpiryDate == null || !newExpiryDate.isAfter(Instant.now())) {
+            throw new IllegalArgumentException("new expiry date must be in the future");
+        }
+        this.expiresAt = newExpiryDate;
+        this.status = StudentPackageStatus.ACTIVE;
+        this.lockedReason = null;
+    }
 }

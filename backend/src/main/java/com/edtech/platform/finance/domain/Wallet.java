@@ -26,6 +26,7 @@ public class Wallet extends BaseEntity {
     public void debitAvailable(long amount) { availableBalanceVnd = subtract(availableBalanceVnd, amount); }
     public void reserveAvailable(long amount) { long available = subtract(availableBalanceVnd, amount); long reserved = add(reservedBalanceVnd, amount); availableBalanceVnd = available; reservedBalanceVnd = reserved; }
     public void releaseReserved(long amount) { long reserved = subtract(reservedBalanceVnd, amount); long available = add(availableBalanceVnd, amount); reservedBalanceVnd = reserved; availableBalanceVnd = available; }
+    public void debitReserved(long amount) { reservedBalanceVnd = subtract(reservedBalanceVnd, amount); }
     private long add(long balance,long amount){ positive(amount); return Math.addExact(balance,amount); }
     private long subtract(long balance,long amount){ positive(amount); long result=Math.subtractExact(balance,amount); if(result<0) throw new IllegalStateException("wallet balance cannot be negative"); return result; }
     private void positive(long amount){ if(amount<=0) throw new IllegalArgumentException("amount must be positive"); }

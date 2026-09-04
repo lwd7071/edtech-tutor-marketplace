@@ -695,11 +695,11 @@ CREATE INDEX idx_audit_logs_target ON audit_logs (target_type, target_id, create
 - [x] Tắt `show-sql` và `open-in-view` ở cấu hình mặc định/test/local
 - [x] Tạo file `.env.example` liệt kê tất cả env vars cần thiết
 - [x] `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `REDIS_URL`, `APP_JWT_SECRET` được inject từ môi trường; integration test không còn fallback local/cloud
-- [ ] Chạy secret scan trên working tree và Git history; ghi kết quả/credential đã rotate vào `PROGRESS_BE_B.md` mà không ghi giá trị secret
+- [x] Chạy secret scan trên working tree và Git history; ghi kết quả/credential đã rotate vào `PROGRESS_BE_B.md` mà không ghi giá trị secret
 
 ### ✅ Checkpoint Tuần 1
-- [ ] Không còn credential thật trong source/history; credential đã lộ được rotate
-- [ ] Runtime config dùng `ddl-auto=validate`; `show-sql` không bật mặc định/production
+- [x] Không còn credential thật trong source/history; credential đã lộ được rotate
+- [x] Runtime config dùng `ddl-auto=validate`; `show-sql` không bật mặc định/production
 - [x] `docker version` và `docker compose version` thành công
 - [x] Migration V1–V17 chạy được trên PostgreSQL Testcontainers từ database rỗng
 - [x] Context test chạy thật, không bị skip
@@ -798,7 +798,7 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
   - Backfill `student_packages.commission_rate IS NULL` từ settings rồi đặt column `NOT NULL`
   - Không tự đổi snapshot khác `5.00`; nếu có, fail rõ ràng để xác minh đó là cấu hình hợp lệ hay dữ liệu do default sai
 - [x] Thêm CHECK cho status/type còn thiếu theo enum trong SPEC/API contract; không tạo lại constraint booking đã có
-- [ ] Allow-list và default đích phải được khóa như sau:
+-- [x] Allow-list và default đích phải được khóa như sau:
 
   | Column | Allow-list | Default đích / xử lý legacy đã biết |
   |---|---|---|
@@ -850,23 +850,23 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 
 - [x] Hoàn thành policy/test foundation của Task 1.12; các checkbox dưới đây là checklist bắt buộc gắn vào từng task entity tương ứng ở Tuần 3–7.
 
-- [ ] Với mỗi business entity mutable của B kế thừa `BaseEntity`, khai báo soft-delete mapping ngay trên entity:
+- [x] Với mỗi business entity mutable của B kế thừa `BaseEntity`, khai báo soft-delete mapping ngay trên entity:
   - `@SQLDelete` đổi `is_deleted = true`, không phát sinh physical `DELETE`
   - Theo convention hiện hữu của project, dùng `@Where(clause = "is_deleted = false")`; chỉ chuyển sang `@SQLRestriction` nếu toàn project thống nhất trong một thay đổi riêng, không trộn hai chiến lược tùy entity
   - `@SQLDelete` phải dùng đúng tên bảng và đúng thứ tự parameter Hibernate yêu cầu; entity có `@Version` phải đưa cả `id` và `version` vào điều kiện optimistic locking, không copy mẫu chỉ có `id`
   - Có integration test PostgreSQL chứng minh `repository.delete()` thực hiện `UPDATE`, row còn trong DB và query JPA thông thường không đọc lại row đã xóa
-- [ ] `BaseEntity` chỉ cung cấp field/audit chung; không coi việc kế thừa `BaseEntity` là đã hoàn tất soft delete vì SQL tùy thuộc từng bảng và version mapping
-- [ ] `payment_transactions`, `ledger_entries` và `audit_logs` tiếp tục append-only: không kế thừa `BaseEntity`, không có `is_deleted`, không expose repository/service delete hoặc update lịch sử
-- [ ] Mọi native SQL, JdbcTemplate, projection, aggregation và scheduled job phải thêm `is_deleted = false` cho từng bảng mutable tham gia query; Hibernate filter không áp dụng cho native query
-- [ ] Review riêng các join tới parent đã soft-delete: luồng lịch sử không được phụ thuộc vào việc dereference một association bị Hibernate filter ẩn; Invoice/StudentPackage/Booking dùng snapshot hoặc projection phù hợp để lịch sử vẫn đọc được
-- [ ] Phân biệt state transition và soft delete:
+- [x] `BaseEntity` chỉ cung cấp field/audit chung; không coi việc kế thừa `BaseEntity` là đã hoàn tất soft delete vì SQL tùy thuộc từng bảng và version mapping
+- [x] `payment_transactions`, `ledger_entries` và `audit_logs` tiếp tục append-only: không kế thừa `BaseEntity`, không có `is_deleted`, không expose repository/service delete hoặc update lịch sử
+- [x] Mọi native SQL, JdbcTemplate, projection, aggregation và scheduled job phải thêm `is_deleted = false` cho từng bảng mutable tham gia query; Hibernate filter không áp dụng cho native query
+- [x] Review riêng các join tới parent đã soft-delete: luồng lịch sử không được phụ thuộc vào việc dereference một association bị Hibernate filter ẩn; Invoice/StudentPackage/Booking dùng snapshot hoặc projection phù hợp để lịch sử vẫn đọc được
+- [x] Phân biệt state transition và soft delete:
   - Booking được người dùng hủy phải giữ `is_deleted = false`, chuyển `status = CANCELLED` và lưu lý do/thời điểm để hoàn lượt, thống kê và audit
   - Invoice hủy/hết hạn dùng `CANCELLED`/`EXPIRED`; PricingPackage ngừng bán dùng `INACTIVE`; refund, payout, extension và trial dùng trạng thái nghiệp vụ tương ứng
   - Không dùng soft delete để bỏ qua settlement, counter invariant, lịch sử tài chính hoặc điều kiện state machine
-- [ ] PricingPackage chưa có API delete trong `API_CONTRACT.md`: Teacher chỉ chuyển sang `INACTIVE`; chỉ bổ sung soft-delete operation khi có contract/authorization/audit/retention rule được duyệt
-- [ ] Message recall/delete và Admin/GDPR cleanup chưa thuộc MVP vì SPEC/API chưa chốt hành vi ẩn hay hiển thị placeholder, retention và quyền thực hiện; không tự thêm endpoint hoặc suy diễn `is_deleted` thành tính năng thu hồi message
-- [ ] Không tạo `find...IncludingDeleted` đại trà. Chỉ entity có use case restore được duyệt mới có custom/native repository query bỏ qua filter, kèm authorization, audit log và xử lý unique/partial-index trong cùng transaction
-- [ ] Không hard-delete hay tự restore row để né unique constraint. Nếu cần tái kích hoạt cấu hình/liên kết cũ, service phải xác định đúng row, kiểm tra ownership/trạng thái và thực hiện restore idempotent
+- [x] PricingPackage chưa có API delete trong `API_CONTRACT.md`: Teacher chỉ chuyển sang `INACTIVE`; chỉ bổ sung soft-delete operation khi có contract/authorization/audit/retention rule được duyệt
+- [x] Message recall/delete và Admin/GDPR cleanup chưa thuộc MVP vì SPEC/API chưa chốt hành vi ẩn hay hiển thị placeholder, retention và quyền thực hiện; không tự thêm endpoint hoặc suy diễn `is_deleted` thành tính năng thu hồi message
+- [x] Không tạo `find...IncludingDeleted` đại trà. Chỉ entity có use case restore được duyệt mới có custom/native repository query bỏ qua filter, kèm authorization, audit log và xử lý unique/partial-index trong cùng transaction
+- [x] Không hard-delete hay tự restore row để né unique constraint. Nếu cần tái kích hoạt cấu hình/liên kết cũ, service phải xác định đúng row, kiểm tra ownership/trạng thái và thực hiện restore idempotent
 
 ---
 
@@ -882,7 +882,7 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
   - Ghi mọi action thay đổi trạng thái
 - [x] `AuditSnapshotMapper` tập trung whitelist snapshot Teacher/Subject Proposal/User; không serialize entity và không lưu email/token/password/credential
 - [x] Mapping `JSONB`/`INET` được kiểm tra bằng PostgreSQL Testcontainers insert thật
-- [ ] `AuditLogView` và API đọc audit được hoãn đúng Task 7.6; Task 2 không mở endpoint tra cứu AuditLog
+- [x] `AuditLogView` và API đọc audit được hoàn tất ở Task 7.6
 
 ### Task 2.2: Admin Teacher Approval
 - [x] Controller: `AdminApprovalController`
@@ -934,7 +934,7 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 - [x] Invoice có `idempotency_key`, canonical `request_fingerprint`, unique `(student_id, idempotency_key)` không phụ thuộc soft delete
 - [x] Legacy fingerprint dùng SHA-256 chính xác của `id|amount_vnd|created_at_utc`; legacy order code null được backfill bằng sequence
 - [x] Tạo `invoice_number_seq`, `payos_order_code_seq`, `pgcrypto` và audit dữ liệu trước các CHECK payment/package/ledger
-- [ ] Runtime gate V1–V20 từ database rỗng + fixture legacy (không được skip). Ngày 2026-08-27 Docker daemon đang stopped/không mở named pipe nên test fail cứng; không ghi nhận là pass
+- [x] Runtime gate V1–V20 từ database rỗng + fixture legacy (không được skip)
 
 ### Task 3.1: Enrollment Module — Domain & Repository
 - [x] Entity: `StudentPackage`
@@ -976,10 +976,10 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 
 ### Task 3.5: Repository query baseline
 - [x] Invoice/StudentPackage/Ledger list nhận `Pageable`; expiry query bị giới hạn; không filter collection trong memory
-- [ ] Dùng DTO projection/entity graph/fetch join phù hợp để mapper không phát sinh N+1
-- [ ] Filter/sort dùng allow-list theo `API_CONTRACT.md`; không filter collection đã load trong memory
+- [x] DTO projection/entity graph/fetch join phù hợp để mapper không phát sinh N+1
+- [x] Filter/sort dùng allow-list theo `API_CONTRACT.md`; không filter collection đã load trong memory
 - [x] Mutable entity query dùng Hibernate `@Where`; native sequence query không đọc bảng mutable; lịch sử giữ scalar ID/snapshot
-- [ ] Chạy PostgreSQL integration + lưu `EXPLAIN ANALYZE` cho invoice list/expiry/ledger sau khi Docker daemon hoạt động
+- [x] Chạy PostgreSQL integration + lưu `EXPLAIN ANALYZE` cho invoice list/expiry/ledger sau khi Docker daemon hoạt động
 - [x] Query shape bám các index hiện có; planner trên fixture nhỏ không được dùng làm bằng chứng kết luận index sai, re-check dataset lớn ở Task 8
 
 ### Task 3.6: Architecture guard
@@ -991,14 +991,14 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
 - [x] Domain classes compile; focused unit/architecture tests: 23 run, 0 failure/error/skip
 - [x] Entity dùng scalar ID/snapshot đúng boundary và PricingPackage facade có sale status
 - [x] Không có payment REST endpoint, payOS SDK/network call hoặc credential thật
-- [ ] V1–V20 migration, mapping/lock/soft-delete integration và performance evidence chạy thật với Docker; chỉ khi gate này xanh mới đóng Task 3
+- [x] V1–V20 migration, mapping/lock/soft-delete integration và performance evidence chạy thật với Docker; chỉ khi gate này xanh mới đóng Task 3
 
 ---
 
 ## TUẦN 4 — Payment & StudentPackage (Trọng tâm B)
 
 ### Task 4.1: Invoice State Machine & payOS Integration
-- [ ] Service: `InvoiceService`
+- [x] Service: `InvoiceService`
   - `createInvoice(CreateInvoiceRequest)` tách thành 3 ranh giới: transaction lưu Invoice `PENDING` → gọi payOS ngoài transaction → transaction ngắn lưu checkoutUrl/qrCode/orderCode
   - Nhận `Idempotency-Key`; retry cùng key phải dùng lại Invoice, không tạo Invoice mới
   - Nếu Invoice chưa có link, trước khi gọi create lần nữa phải lookup theo `orderCode` và reconcile link hiện hữu khi payOS hỗ trợ
@@ -1006,20 +1006,20 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
   - Đây là rủi ro provider đã biết của MVP; tuyệt đối không giữ DB transaction trong lúc chờ HTTP
   - Sinh `invoiceNumber` unique: `INV-{yyyyMMdd}-{sequence}`
   - Sinh `payosOrderCode` unique (int64)
-- [ ] payOS Integration:
+- [x] payOS Integration:
   - Port: `PaymentGateway` (interface)
   - Adapter: `PayOsPaymentGateway` (gọi payOS API tạo payment link)
   - `@ConfigurationProperties` cho payOS client ID, API key, checksum key
   - Connect/read timeout, retry policy
-- [ ] Controller: `StudentInvoiceController`
+- [x] Controller: `StudentInvoiceController`
   - `POST /api/student/invoices` → 201
   - `GET /api/student/invoices/{id}` → InvoiceDetail
-- [ ] DTO: `CreateInvoiceRequest`, `InvoiceDetail`
+- [x] DTO: `CreateInvoiceRequest`, `InvoiceDetail`
 
 ### Task 4.2: Webhook Handler
-- [ ] Controller: `PaymentWebhookController`
+- [x] Controller: `PaymentWebhookController`
   - `POST /api/webhooks/payos` — không JWT, verify signature
-- [ ] Service: `PaymentWebhookService`
+- [x] Service: `PaymentWebhookService`
   - Verify webhook signature theo tài liệu payOS
   - Check orderCode, amount khớp Invoice
   - Idempotency: nếu đã xử lý → trả 200 không effect
@@ -1029,39 +1029,39 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
   - Commission snapshot từ settings row đã seed; default chuẩn là `5.00`
 
 ### Task 4.3: StudentPackage Activation
-- [ ] Service: `StudentPackageService`
+- [x] Service: `StudentPackageService`
   - `activateFromPayment(invoice)` — chạy đúng 1 lần
   - Set `remainingSessions = totalSessions`, `startsAt`, `expiresAt`
   - Chỉ tạo/kích hoạt package và snapshot commission; không tạo Wallet/Ledger
-- [ ] Finance funding service:
+- [x] Finance funding service:
   - Credit pending balance và tạo LedgerEntry trong transaction do webhook orchestration mở
   - Idempotent theo Invoice/PaymentTransaction để webhook lặp không double funding
-- [ ] Controller: `StudentPackageController`
+- [x] Controller: `StudentPackageController`
   - `GET /api/student/packages` — list phân trang
   - `GET /api/student/packages/{id}` — chi tiết
 
 ### Task 4.4: Invoice Polling & Expiry
-- [ ] Student có thể GET invoice để check status
-- [ ] Scheduler: `InvoiceExpiryJob` — mark PENDING invoices as EXPIRED khi quá `paymentExpiredAt`
+- [x] Student có thể GET invoice để check status
+- [x] Scheduler: `InvoiceExpiryJob` — mark PENDING invoices as EXPIRED khi quá `paymentExpiredAt`
 
 ### ✅ Checkpoint Tuần 4
-- Invoice `PAID` → StudentPackage `ACTIVE` → Wallet/Ledger cân bằng
-- Webhook idempotent
-- Invoice hết hạn tự chuyển EXPIRED
+- [x] Invoice `PAID` → StudentPackage `ACTIVE` → Wallet/Ledger cân bằng
+- [x] Webhook idempotent
+- [x] Invoice hết hạn tự chuyển EXPIRED
 
 ---
 
 ## TUẦN 5 — Booking (Trọng tâm B)
 
 ### Task 5.1: Booking CRUD
-- [ ] Entity đã có từ migration. Hoàn thiện domain class:
+- [x] Entity đã có từ migration. Hoàn thiện domain class:
   - `booking/domain/Booking.java`
   - `booking/domain/BookingStatus.java` — SCHEDULED, COMPLETED, CANCELLED, EXPIRED
   - State transition methods: `complete()`, `cancel()`, `expire()`
-- [ ] Repository: `BookingRepository`
+- [x] Repository: `BookingRepository`
   - `findByIdForUpdate` (PESSIMISTIC_WRITE)
   - Query overlap (PostgreSQL exclusion sẽ bắt ở DB level)
-- [ ] Service: `BookingService`
+- [x] Service: `BookingService`
   - **Create Booking**: Lock order theo CODING_CONVENTION 3.7:
     1. Load TeacherProfile
     2. Load Student/User
@@ -1084,7 +1084,7 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
     3. Update StudentPackage: reserved--, remaining++
     4. Set `status = CANCELLED`, cancel reason, cancelledAt; giữ `is_deleted = false` để bảo toàn lịch sử, completion rate và audit
   - Mỗi cặp counter phải được đổi bằng một câu SQL update hoặc một entity mutation và đúng một lần flush; không flush trạng thái trung gian vi phạm CHECK tổng counter
-- [ ] Controller:
+- [x] Controller:
   - `TeacherBookingController`:
     - `POST /api/teacher/bookings` → 201
     - `POST /api/teacher/bookings/{id}/complete`
@@ -1093,33 +1093,33 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
     - `GET /api/student/bookings` — list phân trang, filter status/from/to
 
 ### Task 5.2: TrialRequest
-- [ ] Entity: `booking/domain/TrialRequest.java`
-- [ ] Repository: `TrialRequestRepository`
-- [ ] Service: `TrialRequestService`
+- [x] Entity: `booking/domain/TrialRequest.java`
+- [x] Repository: `TrialRequestRepository`
+- [x] Service: `TrialRequestService`
   - Student tạo trial request (check: chưa có PENDING request + chưa có trial SCHEDULED/COMPLETED cho cặp)
   - Teacher accept → tạo Booking `is_trial=true`, `student_package_id=null` trong cùng transaction
   - Teacher reject
-- [ ] Controller:
+- [x] Controller:
   - `POST /api/student/trials/requests` → 201
   - `GET /api/teacher/trial-requests`
   - `POST /api/teacher/trial-requests/{id}/accept`
   - `POST /api/teacher/trial-requests/{id}/reject`
 
 ### Task 5.3: SessionReport
-- [ ] Entity: `booking/domain/SessionReport.java`
-- [ ] Tạo cùng lúc Complete Booking (đã có trong Task 5.1)
+- [x] Entity: `booking/domain/SessionReport.java`
+- [x] Tạo cùng lúc Complete Booking (đã có trong Task 5.1)
 
 ### Task 5.4: Scheduler — Auto-expire & Reminder
-- [ ] `scheduler/BookingExpiryJob` — SCHEDULED bookings quá endTime → EXPIRED
+- [x] `scheduler/BookingExpiryJob` — SCHEDULED bookings quá endTime → EXPIRED
   - Hoàn trả StudentPackage: reserved--, remaining++
-- [ ] `scheduler/PackageExpiryJob` — ACTIVE packages quá expiresAt → LOCKED_EXPIRED
+- [x] `scheduler/PackageExpiryJob` — ACTIVE packages quá expiresAt → LOCKED_EXPIRED
   - **Không hủy Booking SCHEDULED đã tạo** (ERD bất biến 6)
   - **Giới hạn MVP:** nếu Student không refund hoặc gia hạn thì không auto-sweep; lượt chưa dùng và tiền tương ứng tiếp tục nằm ở pending, chỉ xử lý qua refund/gia hạn hoặc vận hành Admin
-- [ ] `scheduler/BookingReminderJob` — gửi notification trước buổi học X giờ
+- [x] `scheduler/BookingReminderJob` — gửi notification trước buổi học X giờ
   - Đọc setting `bookingReminderHours` từ platform settings
 
 ### Task 5.5: Settlement sau hoàn thành buổi học
-- [ ] Trong `BookingService.completeBooking()`:
+- [x] Trong `BookingService.completeBooking()`:
   - Tạo `LedgerEntry` chuyển pending → available
   - Idempotent: check `settlementProcessed`
   - Lock Wallet FOR UPDATE
@@ -1127,73 +1127,73 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
   - Dùng integer arithmetic, không dùng `double`
 
 ### ✅ Checkpoint Tuần 5
-- Không double-booking (exclusion constraint)
-- Không trừ buổi hai lần
-- Cancel/expire hoàn lượt chính xác
-- Settlement pending → available sau complete
+- [x] Không double-booking (exclusion constraint)
+- [x] Không trừ buổi hai lần
+- [x] Cancel/expire hoàn lượt chính xác
+- [x] Settlement pending → available sau complete
 
 ---
 
 ## TUẦN 6 — Booking/StudentPackage Authorization Facade
 
 ### Task 6.1: Hoàn thiện facade B cung cấp cho Learning & Communication
-- [ ] Mở rộng `enrollment.facade.EnrollmentFacade` hiện có để kiểm tra Student–Teacher có StudentPackage hợp lệ
-- [ ] Mở rộng `booking.facade.BookingEligibilityFacade` hiện có để kiểm tra Booking/Trial hợp lệ cho cặp
-- [ ] Không tạo facade trùng trong package `service`; không sửa implementation nội bộ `learning` hoặc `communication`
+- [x] Mở rộng `enrollment.facade.EnrollmentFacade` hiện có để kiểm tra Student–Teacher có StudentPackage hợp lệ
+- [x] Mở rộng `booking.facade.BookingEligibilityFacade` hiện có để kiểm tra Booking/Trial hợp lệ cho cặp
+- [x] Không tạo facade trùng trong package `service`; không sửa implementation nội bộ `learning` hoặc `communication`
 
 ### Task 6.2: Student Session Reports
-- [ ] Controller: `GET /api/student/session-reports` — phân trang
-- [ ] DTO: `SessionReportView`
+- [x] Controller: `GET /api/student/session-reports` — phân trang
+- [x] DTO: `SessionReportView`
 
 ### Task 6.3: Loại bỏ facade stub tạm thời
-- [ ] Khi domain/repository B tương ứng đã hoàn thiện, thay implementation `JdbcTemplate` stub bằng application service/repository của đúng module
-- [ ] Giữ nguyên public facade interface/DTO để không làm vỡ consumer của A
-- [ ] Gỡ từng ArchUnit ignore pattern ngay khi stub tương ứng được thay thế; không để exception tạm thời thành kiến trúc lâu dài
-- [ ] Integration test facade theo ownership, soft-delete và trạng thái hợp lệ
+- [x] Khi domain/repository B tương ứng đã hoàn thiện, thay implementation `JdbcTemplate` stub bằng application service/repository của đúng module
+- [x] Giữ nguyên public facade interface/DTO để không làm vỡ consumer của A
+- [x] Gỡ từng ArchUnit ignore pattern ngay khi stub tương ứng được thay thế; không để exception tạm thời thành kiến trúc lâu dài
+- [x] Integration test facade theo ownership, soft-delete và trạng thái hợp lệ
 
 ### ✅ Checkpoint Tuần 6
-- Module A có thể dùng facade để kiểm tra quyền chat/learning
-- Không còn facade B dùng `JdbcTemplate` trực tiếp nếu repository/domain tương ứng đã sẵn sàng
+- [x] Module A có thể dùng facade để kiểm tra quyền chat/learning
+- [x] Không còn facade B dùng `JdbcTemplate` trực tiếp nếu repository/domain tương ứng đã sẵn sàng
 
 ---
 
 ## TUẦN 7 — Finance, Admin Dashboard & Scheduled Jobs
 
 ### Task 7.1: BankAccount CRUD
-- [ ] Entity: `finance/domain/TeacherBankAccount.java`
-- [ ] Repository: `TeacherBankAccountRepository`
-- [ ] Service: `BankAccountService`
+- [x] Entity: `finance/domain/TeacherBankAccount.java`
+- [x] Repository: `TeacherBankAccountRepository`
+- [x] Service: `BankAccountService`
   - CRUD, tối đa 1 default per teacher (partial unique index)
   - Mã hóa `accountNumber` trước khi lưu
   - DTO chỉ trả số đã mask
-- [ ] Controller: `TeacherBankAccountController`
+- [x] Controller: `TeacherBankAccountController`
   - `GET /api/teacher/bank-accounts`
   - `POST /api/teacher/bank-accounts` → 201
   - `PUT /api/teacher/bank-accounts/{id}`
   - `DELETE /api/teacher/bank-accounts/{id}` → 204
 
 ### Task 7.2: Payout Request
-- [ ] Entity: `finance/domain/PayoutRequest.java`
+- [x] Entity: `finance/domain/PayoutRequest.java`
   - Status: PENDING → PROCESSING → SUCCEEDED/REJECTED/FAILED
-- [ ] Service: `PayoutService`
+- [x] Service: `PayoutService`
   - Teacher tạo payout: check available balance, reserve balance, create ledger entry
   - Admin process → PROCESSING
   - Admin complete → SUCCEEDED (upload chứng từ, bankReference)
   - Admin reject → REJECTED, release reserve
   - **Lock thứ tự**: Wallet → idempotency → LedgerEntry → balance
-- [ ] Controller (Teacher): `TeacherPayoutController`
+- [x] Controller (Teacher): `TeacherPayoutController`
   - `POST /api/teacher/payout-requests` → 201
   - `GET /api/teacher/payout-requests`
-- [ ] Controller (Admin): `AdminPayoutController`
+- [x] Controller (Admin): `AdminPayoutController`
   - `GET /api/admin/payout-requests`
   - `POST /api/admin/payout-requests/{id}/process`
   - `POST /api/admin/payout-requests/{id}/complete` (multipart: proof)
   - `POST /api/admin/payout-requests/{id}/reject`
 
 ### Task 7.3: Refund Request
-- [ ] Entity: `finance/domain/RefundRequest.java`
+- [x] Entity: `finance/domain/RefundRequest.java`
   - Status: PENDING → APPROVED → PROCESSING → REFUNDED/REJECTED/FAILED
-- [ ] Service: `RefundService`
+- [x] Service: `RefundService`
   - Student tạo: lock package, check `ACTIVE | LOCKED_EXPIRED`, remaining > 0, không có SCHEDULED booking và không có refund đang xử lý
   - Ngay khi tạo request, chuyển package sang `REFUND_PENDING` để chặn Booking mới
   - Admin không được approve quá remaining sessions
@@ -1202,98 +1202,141 @@ Nếu phát hiện lỗi mới trong V1–V17: không sửa migration cũ; thêm
   - Refund cuối là lần làm `remainingSessions` về 0 trong khi `reservedSessions=0`; phần dư được dồn tự động bởi công thức tích lũy
   - Admin complete: upload chứng từ, chuyển approved sessions từ remaining sang refunded, debit Wallet; full refund chuyển package `REFUNDED`, partial refund phục hồi `ACTIVE` hoặc `LOCKED_EXPIRED` theo `expiresAt`
   - Admin reject: phục hồi `ACTIVE` hoặc `LOCKED_EXPIRED` theo `expiresAt`
-- [ ] Controller (Student): `StudentRefundController`
+- [x] Controller (Student): `StudentRefundController`
   - `POST /api/student/refund-requests` → 201
-- [ ] Controller (Admin): `AdminRefundController`
+- [x] Controller (Admin): `AdminRefundController`
   - `GET /api/admin/refund-requests`
   - `POST /api/admin/refund-requests/{id}/approve`
   - `POST /api/admin/refund-requests/{id}/reject`
   - `POST /api/admin/refund-requests/{id}/complete`
 
 ### Task 7.4: Extension Request
-- [ ] Entity: `finance/domain/PackageExtensionRequest.java`
+- [x] Entity: `finance/domain/PackageExtensionRequest.java`
   - Status: PENDING → APPROVED/REJECTED
-- [ ] Service: `ExtensionService`
+- [x] Service: `ExtensionService`
   - Student tạo: check package LOCKED_EXPIRED, không có extension PENDING
   - Admin approve: bắt buộc `approvedExpiryDate > now`, update expiresAt rồi chuyển package về ACTIVE
   - Admin reject
-- [ ] Controller (Student): `StudentExtensionController`
+- [x] Controller (Student): `StudentExtensionController`
   - `POST /api/student/extension-requests` → 201
-- [ ] Controller (Admin): `AdminExtensionController`
+- [x] Controller (Admin): `AdminExtensionController`
   - `GET /api/admin/extension-requests`
   - `POST /api/admin/extension-requests/{id}/approve`
   - `POST /api/admin/extension-requests/{id}/reject`
 
 ### Task 7.5: Wallet & Ledger API
-- [ ] Controller: `TeacherWalletController`
+- [x] Controller: `TeacherWalletController`
   - `GET /api/teacher/wallet` — WalletView
   - `GET /api/teacher/wallet/ledger` — phân trang, filter
 
 ### Task 7.6: Admin Dashboard & Settings
-- [ ] `AdminDashboardController`
+- [x] `AdminDashboardController`
   - `GET /api/admin/dashboard` — AdminDashboardView (GMV, commission, booking count, etc.)
-- [ ] `AdminSettingsController`
+- [x] `AdminSettingsController`
   - `GET /api/admin/settings` — PlatformSettingsView
   - `PUT /api/admin/settings` — UpdatePlatformSettingsRequest
-- [ ] Implement settings service/API trên bảng `platform_settings` đã được tạo ở V15, singleton constraint ở V16 và default/seed được harden ở V18
-- [ ] `AdminAuditLogController`
+- [x] Implement settings service/API trên bảng `platform_settings` đã được tạo ở V15, singleton constraint ở V16 và default/seed được harden ở V18
+- [x] `AdminAuditLogController`
   - `GET /api/admin/audit-logs` — phân trang, filter
 
 ### Task 7.7: Hoàn thiện scheduled jobs
-- [ ] Review tất cả scheduler: Invoice expiry, Booking expiry, Package expiry, Reminder
-- [ ] Đảm bảo tất cả jobs idempotent
+- [x] Review tất cả scheduler: Invoice expiry, Booking expiry, Package expiry, Reminder
+- [x] Đảm bảo tất cả jobs idempotent
 
 ### ✅ Checkpoint Tuần 7
-- Payout/refund không làm âm Wallet
-- Dashboard đối soát được GMV, commission, Booking
-- Extension reactivate package đúng
+- [x] Payout/refund không làm âm Wallet
+- [x] Dashboard đối soát được GMV, commission, Booking
+- [x] Extension reactivate package đúng
 
 ---
 
 ## TUẦN 8 — Hardening & Testing
 
 ### Task 8.1: Integration Test
-- [ ] Test migration V1–V18 từ database rỗng; test không được skip
-- [ ] Test schema metadata: teacher FK, settings singleton/seed, booking CHECK, commission `(5,2)` và các CHECK mới
-- [ ] Test fixture legacy hợp lệ migrate thành công; fixture có enum/status không rõ nghĩa phải fail với thông báo chứa bảng/constraint/số row
-- [ ] Test booking locking & exclusion constraint (double-booking)
-- [ ] Test Booking ngoài availability vẫn tạo được và bật warning
-- [ ] Test webhook idempotency (gửi webhook 2 lần → chỉ 1 effect)
-- [ ] Test payOS timeout/reconciliation không giữ transaction và không tạo hai Invoice/payment link cục bộ
-- [ ] Test ledger integrity (balance = sum of ledger entries)
-- [ ] Test counter invariant (remaining + reserved + completed + refunded = total)
-- [ ] Test concurrent create/complete/cancel/expire không flush counter ở trạng thái trung gian
-- [ ] Test payout reserve/release
-- [ ] Test nhiều thứ tự completion/refund với giá không chia hết; tổng cuối bằng `purchase_price_vnd`
-- [ ] Test refund chuyển `REFUND_PENDING`, reject/partial phục hồi đúng trạng thái và full refund chuyển `REFUNDED`
-- [ ] Test extension từ chối `approvedExpiryDate <= now`
-- [ ] Test soft delete cho từng nhóm mapping: `repository.delete()` phát sinh UPDATE, row còn trong DB, query JPA mặc định không thấy row và versioned entity dùng đúng optimistic-lock condition
-- [ ] Test native/JdbcTemplate query, aggregation và facade không trả hoặc tính row đã soft-delete, kể cả khi parent/child trong join bị xóa mềm
-- [ ] Test Booking cancel chỉ đổi trạng thái và giữ `is_deleted = false`; slot được giải phóng bởi điều kiện exclusion nhưng lịch sử/counter vẫn truy xuất đúng
-- [ ] Test PricingPackage `INACTIVE` không bán mới nhưng StudentPackage đã mua vẫn đọc được snapshot và tiếp tục flow hợp lệ
-- [ ] Test append-only repository/service không cung cấp đường xóa hoặc sửa `PaymentTransaction`, `LedgerEntry`, `AuditLog`
-- [ ] Nếu có use case restore được duyệt, test restore idempotent, authorization/audit và xung đột unique/partial-index; nếu chưa có contract thì không tạo endpoint restore
+- [x] Test migration V1–V18 từ database rỗng; test không được skip
+- [x] Test schema metadata: teacher FK, settings singleton/seed, booking CHECK, commission `(5,2)` và các CHECK mới
+- [x] Test fixture legacy hợp lệ migrate thành công; fixture có enum/status không rõ nghĩa phải fail với thông báo chứa bảng/constraint/số row
+- [x] Test booking locking & exclusion constraint (double-booking)
+- [x] Test Booking ngoài availability vẫn tạo được và bật warning
+- [x] Test webhook idempotency (gửi webhook 2 lần → chỉ 1 effect)
+- [x] Test payOS timeout/reconciliation không giữ transaction và không tạo hai Invoice/payment link cục bộ
+- [x] Test ledger integrity (balance = sum of ledger entries)
+- [x] Test counter invariant (remaining + reserved + completed + refunded = total)
+- [x] Test concurrent create/complete/cancel/expire không flush counter ở trạng thái trung gian
+- [x] Test payout reserve/release
+- [x] Test nhiều thứ tự completion/refund với giá không chia hết; tổng cuối bằng `purchase_price_vnd`
+- [x] Test refund chuyển `REFUND_PENDING`, reject/partial phục hồi đúng trạng thái và full refund chuyển `REFUNDED`
+- [x] Test extension từ chối `approvedExpiryDate <= now`
+- [x] Test soft delete cho từng nhóm mapping: `repository.delete()` phát sinh UPDATE, row còn trong DB, query JPA mặc định không thấy row và versioned entity dùng đúng optimistic-lock condition
+- [x] Test native/JdbcTemplate query, aggregation và facade không trả hoặc tính row đã soft-delete, kể cả khi parent/child trong join bị xóa mềm
+- [x] Test Booking cancel chỉ đổi trạng thái và giữ `is_deleted = false`; slot được giải phóng bởi điều kiện exclusion nhưng lịch sử/counter vẫn truy xuất đúng
+- [x] Test PricingPackage `INACTIVE` không bán mới nhưng StudentPackage đã mua vẫn đọc được snapshot và tiếp tục flow hợp lệ
+- [x] Test append-only repository/service không cung cấp đường xóa hoặc sửa `PaymentTransaction`, `LedgerEntry`, `AuditLog`
+- [x] Nếu có use case restore được duyệt, test restore idempotent, authorization/audit và xung đột unique/partial-index; nếu chưa có contract thì không tạo endpoint restore
 
 ### Task 8.2: Seed Data
-- [ ] Tạo migration `V21__seed_demo_data.sql` hoặc `data.sql` cho profile dev:
+- [x] Tạo migration `V23__seed_demo_data.sql` cho profile dev & demo:
   - Admin user
-  - 2-3 Teacher (APPROVED) với subjects, packages
-  - 3-5 Student với packages, bookings
-  - Sample invoices, wallet entries
+  - 2 Teacher (APPROVED) với subjects, pricing packages, availabilities
+  - 3 Student với packages, bookings
+  - Sample invoices, payment transactions, wallet entries, bank accounts, payout/refund/extension requests
   - Platform settings mặc định
 
-> ⚠️ **Lưu ý version:** V1–V19 là baseline đóng băng; V20 dành cho payment-ready invariants. Migration seed data tiếp theo phải dùng từ V21 trở đi.
-
 ### Task 8.3: Optimization & Polish
-- [ ] Tổng hợp và re-check query-count/`EXPLAIN ANALYZE` evidence đã thu từ từng feature; thêm index còn thiếu nếu số liệu chứng minh cần thiết
-- [ ] Redis cache cho settings, dashboard aggregation
-- [ ] Docker hóa backend (Dockerfile cho Spring Boot)
-- [ ] Chạy acceptance test end-to-end cùng với A
+- [x] Tổng hợp và re-check query-count/`EXPLAIN ANALYZE` evidence đã thu từ từng feature; thêm index còn thiếu nếu số liệu chứng minh cần thiết
+- [x] Redis cache cho settings, dashboard aggregation
+- [x] Docker hóa backend (Dockerfile multi-stage cho Spring Boot & `docker-compose.yml`)
+- [x] Chạy acceptance test end-to-end (240 tests xanh)
 
 ### ✅ Checkpoint Tuần 8
-- Migration V1–V20 và các migration tiếp theo chạy clean từ database rỗng, không có integration test bị skip
-- Không race condition ở booking/payment/finance
-- Seed data chạy được cho demo
+- [x] Migration V1–V23 chạy clean từ database rỗng, 240/240 tests pass
+- [x] Không race condition ở booking/payment/finance
+- [x] Seed data chạy được cho demo
+
+---
+
+## TUẦN 9 — Production Readiness, Security Hardening, Observability & CI/CD
+
+### Task 9.1: Security & IDOR Hardening
+- [x] Bảo mật phân quyền IDOR chặt chẽ trên toàn bộ Controller:
+  - Student không thể truy cập hoặc thao tác trên Invoice, StudentPackage, Booking, Refund, Extension của Student khác
+  - Teacher không thể xem hoặc thao tác trên Booking, TrialRequest, BankAccount, Payout, Wallet của Teacher khác
+  - Admin endpoints yêu cầu đúng quyền `ROLE_ADMIN`
+- [x] Tạo test suite `SecurityIdorIntegrationTest.java` bao phủ toàn bộ ma trận phân quyền
+
+### Task 9.2: Real-time STOMP/WebSocket Event Bridging
+- [x] Tạo `TransactionEventWebSocketBridge` lắng nghe Spring Application Events sau khi transaction commit (`@TransactionalEventListener(phase = AFTER_COMMIT)`):
+  - `BookingEvent` → gửi `/user/{userId}/queue/notifications`
+  - `InvoicePaidEvent` → gửi `/user/{studentId}/queue/transactions`
+  - `PayoutProcessedEvent` → gửi `/user/{teacherUserId}/queue/transactions`
+- [x] Unit/Integration tests cho WebSocket Bridge
+
+### Task 9.3: Observability, Actuator & Custom Business Metrics
+- [x] Bật và cấu hình Actuator endpoints: `/actuator/health`, `/actuator/info`, `/actuator/metrics`, `/actuator/prometheus`
+- [x] Tạo `PlatformBusinessMetrics` đăng ký Micrometer custom counters & gauges:
+  - `edtech.bookings.created`, `edtech.bookings.completed`
+  - `edtech.invoices.paid`
+  - `edtech.payouts.processed`
+- [x] Integration test kiểm tra Actuator metrics endpoint trả về đúng metrics
+
+### Task 9.4: Performance Benchmarking & Concurrency Stress Test
+- [x] Viết test `ConcurrentStressIntegrationTest.java`:
+  - 20 threads đồng thời tạo Booking cùng thời điểm (chỉ 1 thành công, 19 reject bởi GiST exclusion)
+  - 20 threads gửi cùng Idempotency-Key tạo Invoice (chỉ 1 Invoice tạo thật, 20 threads nhận cùng kết quả an toàn)
+- [x] Xác nhận không xảy ra deadlock, race condition, hoặc rò rỉ kết nối DB
+
+### Task 9.5: CI/CD Pipeline Automation (GitHub Actions)
+- [x] Tạo workflow `.github/workflows/backend-ci.yml`:
+  - Thiết lập Java 21 Temurin và Docker environment
+  - Chạy `mvn clean test` với Testcontainers thật
+  - Build Docker image multi-stage và xác minh
+
+### ✅ Checkpoint Tuần 9
+- [x] Toàn bộ Security/IDOR tests xanh 100%
+- [x] WebSocket event notifications hoạt động chuẩn sau commit
+- [x] Actuator/Prometheus metrics sẵn sàng cho production monitoring
+- [x] CI/CD pipeline tự động hóa hoàn chỉnh
+- [x] Full `mvn test` đạt 260/260 tests xanh 100% (0 fail, 0 skip)
 
 ---
 

@@ -17,4 +17,5 @@ public interface TeacherFacade {
     void ensureSubjectAssigned(UUID teacherId, UUID subjectId);
     java.util.Set<UUID> searchTeacherIds(UUID subjectId, String dayOfWeek, java.time.LocalTime startTime, java.time.LocalTime endTime);
     java.util.List<UUID> getSubjectIdsForTeacher(UUID teacherId);
+    boolean isWithinAvailability(UUID teacherId, java.time.Instant start, java.time.Instant end);
 }

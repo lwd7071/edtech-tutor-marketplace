@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class FlywayV20PaymentDomainTest extends AbstractPostgresContainerTest {
+class FlywayV21PaymentDomainTest extends AbstractPostgresContainerTest {
 
     @Test
     void legacyInvoiceGetsExactDeterministicFingerprint() {
@@ -21,7 +21,7 @@ class FlywayV20PaymentDomainTest extends AbstractPostgresContainerTest {
                 POSTGRES_CONTAINER.getJdbcUrl() + separator + "currentSchema=" + schema,
                 POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword());
         JdbcTemplate jdbc = new JdbcTemplate(dataSource);
-        Flyway baseline = configure(dataSource, schema, "19");
+        Flyway baseline = configure(dataSource, schema, "20");
         baseline.migrate();
 
         UUID studentId = UUID.randomUUID();
@@ -48,9 +48,9 @@ class FlywayV20PaymentDomainTest extends AbstractPostgresContainerTest {
         configure(dataSource, schema, null).migrate();
 
         String expected = jdbc.queryForObject("""
-                SELECT encode(digest(id::text || '|' || amount_vnd::text || '|' ||
-                    to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
-                    'sha256'), 'hex') FROM invoices WHERE id = ?
+                SELECT encode(public.digest((id::text || '|' || amount_vnd::text || '|' ||
+                    to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'))::bytea,
+                    'sha256'::text), 'hex') FROM invoices WHERE id = ?
                 """, String.class, invoiceId);
         assertThat(jdbc.queryForObject(
                 "SELECT request_fingerprint FROM invoices WHERE id = ?", String.class, invoiceId))

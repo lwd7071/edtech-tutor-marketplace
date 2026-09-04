@@ -17,9 +17,12 @@ class JpaInvoiceQueryRepository implements InvoiceQueryRepository {
     public Optional<Invoice> findByIdAndStudentId(UUID id, UUID studentId) { return findOwned(id, studentId); }
     public Optional<Invoice> findByStudentIdAndIdempotencyKey(UUID studentId, UUID key) {
         return entityManager.createQuery("select i from Invoice i where i.studentId=:student and i.idempotencyKey=:key", Invoice.class)
-                .setParameter("student", studentId).setParameter("key", key).getResultStream().findFirst();
+                .setParameter("student", studentId).setParameter("key", key).getResultList().stream().findFirst();
     }
-    public Optional<Invoice> findByPayosOrderCode(long code) { return entityManager.createQuery("select i from Invoice i where i.payosOrderCode=:code", Invoice.class).setParameter("code", code).getResultStream().findFirst(); }
+    public Optional<Invoice> findByPayosOrderCode(long code) {
+        return entityManager.createQuery("select i from Invoice i where i.payosOrderCode=:code", Invoice.class)
+                .setParameter("code", code).getResultList().stream().findFirst();
+    }
     public Page<Invoice> findByStudentId(UUID studentId, Pageable p) {
         List<Invoice> rows = entityManager.createQuery("select i from Invoice i where i.studentId=:student order by i.createdAt desc", Invoice.class)
                 .setParameter("student", studentId).setFirstResult((int)p.getOffset()).setMaxResults(p.getPageSize()).getResultList();
@@ -33,6 +36,6 @@ class JpaInvoiceQueryRepository implements InvoiceQueryRepository {
     }
     private Optional<Invoice> findOwned(UUID id, UUID studentId) {
         return entityManager.createQuery("select i from Invoice i where i.id=:id and i.studentId=:student", Invoice.class)
-                .setParameter("id", id).setParameter("student", studentId).getResultStream().findFirst();
+                .setParameter("id", id).setParameter("student", studentId).getResultList().stream().findFirst();
     }
 }

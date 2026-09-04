@@ -10,11 +10,12 @@ import java.util.UUID;
 class JpaInvoiceCommandRepository implements InvoiceCommandRepository {
     private final EntityManager entityManager;
     public Invoice insert(Invoice invoice) { entityManager.persist(invoice); return invoice; }
+
     public Optional<Invoice> findByIdForUpdate(UUID id) {
         return Optional.ofNullable(entityManager.find(Invoice.class, id, LockModeType.PESSIMISTIC_WRITE));
     }
     public Optional<Invoice> findByPayosOrderCodeForUpdate(long orderCode) {
         return entityManager.createQuery("select i from Invoice i where i.payosOrderCode=:code", Invoice.class)
-                .setParameter("code", orderCode).setLockMode(LockModeType.PESSIMISTIC_WRITE).getResultStream().findFirst();
+                .setParameter("code", orderCode).setLockMode(LockModeType.PESSIMISTIC_WRITE).getResultList().stream().findFirst();
     }
 }

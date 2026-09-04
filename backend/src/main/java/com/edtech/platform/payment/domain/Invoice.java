@@ -55,17 +55,29 @@ public class Invoice extends BaseEntity {
 
     public void attachPaymentLink(String linkId, String url, String qrCode, Instant expiresAt) {
         requirePending();
+        Instant safeExpiresAt = expiresAt != null ? expiresAt : Instant.now().plus(java.time.Duration.ofMinutes(15));
         if (payosPaymentLinkId != null) {
             if (Objects.equals(payosPaymentLinkId, linkId) && Objects.equals(checkoutUrl, url)
-                    && Objects.equals(this.qrCode, qrCode) && Objects.equals(paymentExpiredAt, expiresAt)) return;
+                    && Objects.equals(this.qrCode, qrCode)) return;
             throw invalidState();
         }
         this.payosPaymentLinkId = Objects.requireNonNull(linkId);
         this.checkoutUrl = Objects.requireNonNull(url);
         this.qrCode = qrCode;
-        this.paymentExpiredAt = Objects.requireNonNull(expiresAt);
+        this.paymentExpiredAt = safeExpiresAt;
     }
-    public void markPaid(Instant paidAt) { requirePending(); this.status = InvoiceStatus.PAID; this.paidAt = Objects.requireNonNull(paidAt); }
+    public void markPaid(Instant paidAt) {
+        if (status != InvoiceStatus.PENDING) {
+            throw invalidState();
+        }
+        this.status = InvoiceStatus.PAID;
+        this.paidAt = Objects.requireNonNull(paidAt);
+    }
+    public void markPaidFromVerifiedProvider(Instant paidAt) {
+        if (status != InvoiceStatus.PENDING && status != InvoiceStatus.EXPIRED) throw invalidState();
+        this.status = InvoiceStatus.PAID;
+        this.paidAt = Objects.requireNonNull(paidAt);
+    }
     public void expire() { requirePending(); this.status = InvoiceStatus.EXPIRED; }
     public void cancel() { requirePending(); this.status = InvoiceStatus.CANCELLED; }
     private void requirePending() { if (status != InvoiceStatus.PENDING) throw invalidState(); }

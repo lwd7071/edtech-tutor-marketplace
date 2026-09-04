@@ -80,3 +80,46 @@ app:
     base-url: ${PAYOS_BASE_URL:https://api-merchant.payos.vn}
     connect-timeout: ${PAYOS_CONNECT_TIMEOUT:3s}
     read-timeout: ${PAYOS_READ_TIMEOUT:10s}
+
+# --- Resilience4j Configuration ---
+resilience4j.circuitbreaker:
+  instances:
+    payosGateway:
+      registerHealthIndicator: true
+      slidingWindowSize: 10
+      minimumNumberOfCalls: 5
+      permittedNumberOfCallsInHalfOpenState: 3
+      waitDurationInOpenState: 30s
+      failureRateThreshold: 50
+      recordExceptions:
+        - com.edtech.platform.payment.gateway.PaymentGatewayUnavailableException
+      ignoreExceptions:
+        - com.edtech.platform.payment.gateway.PaymentGatewayRejectedException
+
+# --- Actuator & Observability ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
