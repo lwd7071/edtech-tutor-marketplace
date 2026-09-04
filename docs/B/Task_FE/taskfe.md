@@ -93,16 +93,44 @@ Danh sách các task chi tiết theo tuần cho **Thành viên B (Transaction & 
 
 ---
 
-## B3: Student Dashboard Shell
-- [ ] Student Dashboard Layout & Navigation
-- [ ] Package summary card & Integration với Marketplace CTA
+## B3: Gói học sinh & Thanh toán payOS (Student Packages & Payments - ĐÃ HOÀN THÀNH 100%)
 
----
+### B3.1: Student Packages & Payments Types, API Clients & Query Hooks (TDD)
+- [x] Tạo `src/features/student-packages/types/index.ts` & `src/features/payments/types/index.ts` khớp API Contract & SPEC-FE
+- [x] Tạo API Clients:
+  - [x] `src/features/student-packages/api/studentPackageApi.ts` (`GET /api/student/packages`, `GET /api/student/packages/{id}`)
+  - [x] `src/features/payments/api/paymentApi.ts` (`POST /api/student/invoices`, `GET /api/student/invoices/{id}`)
+- [x] Tạo TanStack Query hooks:
+  - [x] `useStudentPackages`, `useStudentPackageDetail`
+  - [x] `useCreateInvoice`, `useInvoiceDetail` (tự động polling 3s/lần đến khi hóa đơn đạt trạng thái cuối: `PAID`, `EXPIRED`, `CANCELLED`)
+- [x] Viết unit tests: `useStudentPackages.test.tsx` (2 tests pass), `usePayments.test.tsx` (2 tests pass)
 
-## B4: Checkout & Student Package
-- [ ] PayOS Checkout flow & Redirect
-- [ ] Màn hình Payment Success & Cancel kèm Invoice Polling
-- [ ] Danh sách và chi tiết Student Package (bộ 4 chỉ số `SessionCounter`)
+### B3.2: Bộ chỉ số Buổi học SessionCounter & Thẻ Gói học (TDD)
+- [x] Tạo `src/features/student-packages/components/SessionCounter.tsx` (bộ 4 chỉ số theo SPEC-FE: Còn lại / Đang giữ / Đã học / Đã hoàn)
+- [x] Tạo `src/features/student-packages/components/StudentPackageCard.tsx` (card hiển thị gói, giáo viên, môn, hạn dùng, giá VND `tabular-nums`, status tag theo bảng màu spec)
+- [x] Viết unit tests: `SessionCounter.test.tsx` (pass), `StudentPackageCard.test.tsx` (pass)
+
+### B3.3: Giao diện Danh sách & Chi tiết Gói học (TDD)
+- [x] Tạo `src/features/student-packages/components/StudentPackageList.tsx` (tabs lọc trạng thái, grid cards, pagination)
+- [x] Tạo `src/features/student-packages/components/StudentPackageDetailView.tsx` (chi tiết gói học, thanh tiến độ, banner cảnh báo `LOCKED_EXPIRED` và `REFUND_PENDING`)
+- [x] Tạo containers: `StudentPackagesPage.tsx`, `StudentPackageDetailPage.tsx`
+- [x] Viết unit test: `StudentPackageDetailView.test.tsx` (3 tests pass)
+
+### B3.4: Luồng Thanh toán payOS / VietQR & Polling Hóa đơn (TDD)
+- [x] Tạo `src/features/payments/components/CheckoutQRView.tsx` (màn hình quét mã QR VietQR, link cổng payOS, đếm ngược, polling auto-redirect khi PAID)
+- [x] Tạo `src/features/payments/components/PaymentResultView.tsx` (kết quả thanh toán `PAID`, `EXPIRED`, `CANCELLED`)
+- [x] Tạo containers: `CheckoutPage.tsx`, `PaymentResultPage.tsx`
+- [x] Viết unit tests: `CheckoutQRView.test.tsx` (pass), `PaymentResultView.test.tsx` (pass)
+
+### B3.5: Student App Shell Layout & Route Protection (RoleGuard STUDENT)
+- [x] Tạo `src/shared/components/layout/StudentAppLayout.tsx` (sidebar cố định 248px, header 64px, breadcrumbs, responsive drawer)
+- [x] Tạo `src/app/student/layout.tsx` bọc trong `RoleGuard allowedRoles={['STUDENT']}`
+- [x] Tạo các App Router pages:
+  - [x] `src/app/student/packages/page.tsx`
+  - [x] `src/app/student/packages/[id]/page.tsx`
+  - [x] `src/app/student/checkout/[invoiceId]/page.tsx`
+  - [x] `src/app/student/payment-result/[invoiceId]/page.tsx`
+- [x] Export toàn bộ public interfaces qua `features/student-packages/index.ts` và `features/payments/index.ts`
 
 ---
 

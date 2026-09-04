@@ -95,8 +95,55 @@ Toàn bộ quy trình phát triển được triển khai theo chuẩn mực **T
 
 ---
 
+## B3: Gói học sinh & Thanh toán payOS (Student Packages & Payments - ĐÃ HOÀN THÀNH 100%)
+
+### 1. B3.1: Student Packages & Payments Types, API Clients & Query Hooks
+- DTOs chuẩn xác theo API Contract: `StudentPackageSummary`, `StudentPackageDetail`, `StudentPackageStatus`, `InvoiceDetail`, `CreateInvoiceRequest`, `InvoiceStatus`.
+- API Client `studentPackageApi.ts` & `paymentApi.ts`:
+  - `GET /api/student/packages` (lấy danh sách gói học, phân trang & lọc theo status)
+  - `GET /api/student/packages/{id}` (lấy chi tiết gói học)
+  - `POST /api/student/invoices` (tạo hóa đơn thanh toán payOS)
+  - `GET /api/student/invoices/{id}` (lấy chi tiết hóa đơn & trạng thái thanh toán)
+- Hooks `useStudentPackages.ts` & `usePayments.ts`:
+  - `useStudentPackages`, `useStudentPackageDetail`
+  - `useCreateInvoice`
+  - `useInvoiceDetail`: hỗ trợ polling 3s/lần (theo `SPEC-FE:E.5`), tự động dừng khi invoice đạt trạng thái terminal (`PAID`, `EXPIRED`, `CANCELLED`) hoặc component unmount.
+- **TDD:** `useStudentPackages.test.tsx` (2/2 tests pass), `usePayments.test.tsx` (2/2 tests pass).
+
+### 2. B3.2: Bộ chỉ số Buổi học SessionCounter & Thẻ Gói học StudentPackageCard
+- `SessionCounter.tsx`: Hiển thị bộ 4 chỉ số buổi học (`Còn lại / Đang giữ / Đã học / Đã hoàn`) với màu sắc và tooltip trực quan.
+- `StudentPackageCard.tsx`: Thẻ hiển thị gói học với tên gói, môn học, giáo viên, giá VND (`1.000.000 ₫` tabular-nums), tag trạng thái theo đúng bảng màu `SPEC-FE:6.5`, hạn dùng và nút điều hướng xem chi tiết.
+- **TDD:** `SessionCounter.test.tsx` (pass), `StudentPackageCard.test.tsx` (pass).
+
+### 3. B3.3: Giao diện Danh sách & Chi tiết Gói học
+- `StudentPackageList.tsx`: Tabs chuyển trạng thái (`Tất cả`, `ACTIVE`, `COMPLETED`, `LOCKED_EXPIRED`), Grid thẻ gói học responsive (3 cột desktop, 2 cột tablet, 1 cột mobile), phân trang và Empty state.
+- `StudentPackageDetailView.tsx`: Trang chi tiết gói học đầy đủ thông tin, thanh tiến độ học tập `Progress`, xử lý cảnh báo nghiệp vụ:
+  - `LOCKED_EXPIRED`: Banner cảnh báo hết hạn kèm nút "Yêu cầu gia hạn" và "Yêu cầu hoàn tiền" (theo `SPEC-FE:3.4.3`).
+  - `REFUND_PENDING`: Banner cảnh báo gói đang trong tiến trình xử lý hoàn tiền (theo `SPEC-FE:3.4.4`).
+- Containers: `StudentPackagesPage.tsx`, `StudentPackageDetailPage.tsx`.
+- **TDD:** `StudentPackageDetailView.test.tsx` (3/3 tests pass).
+
+### 4. B3.4: Luồng Thanh toán payOS / VietQR & Polling Hóa đơn
+- `CheckoutQRView.tsx`: Màn hình `/student/checkout/[invoiceId]` hiển thị mã QR VietQR từ payOS, liên kết thanh toán trực tiếp qua cổng payOS, đếm ngược hạn thanh toán, polling hóa đơn tự động 3 giây/lần và chuyển trang khi thanh toán thành công.
+- `PaymentResultView.tsx`: Màn hình `/student/payment-result/[invoiceId]` xử lý giao diện kết quả theo trạng thái hóa đơn: `PAID` (thành công, nút dẫn tới gói học), `EXPIRED` (hết hạn, nút thử lại), `CANCELLED`.
+- Containers: `CheckoutPage.tsx`, `PaymentResultPage.tsx`.
+- **TDD:** `CheckoutQRView.test.tsx` (pass), `PaymentResultView.test.tsx` (pass).
+
+### 5. B3.5: Student App Shell Layout & Route Protection (RoleGuard STUDENT)
+- `StudentAppLayout.tsx`: Sidebar cố định 248px (`SPEC-FE:4.1 & 9.3`), top header 64px, breadcrumbs, menu icon trực quan (Tổng quan, Gói học của tôi, Lịch học, Bài tập, Tin nhắn, Hồ sơ), responsive drawer trên thiết bị di động.
+- App Router Pages:
+  - `src/app/student/layout.tsx` bọc trong `RoleGuard allowedRoles={['STUDENT']}`
+  - `src/app/student/packages/page.tsx`
+  - `src/app/student/packages/[id]/page.tsx`
+  - `src/app/student/checkout/[invoiceId]/page.tsx`
+  - `src/app/student/payment-result/[invoiceId]/page.tsx`
+- Re-export sạch qua `src/features/student-packages/index.ts` và `src/features/payments/index.ts`.
+
+---
+
 ## Kết quả Kiểm thử & Chẩn đoán Toàn diện
-- **Unit Tests:** **20/20 test suites pass, 43/43 unit tests pass 100%**.
-- **Next.js Production Build:** **Compiled & static generation 7/7 pages thành công** (bao gồm `/admin/teachers`, `/admin/subjects`).
+- **Unit Tests:** **28/28 test suites pass, 56/56 unit tests pass 100%**.
+- **Next.js Production Build:** **Compiled & static generation 8/8 routes thành công** (bao gồm `/student/packages`, `/student/packages/[id]`, `/student/checkout/[invoiceId]`, `/student/payment-result/[invoiceId]`).
 - **TypeScript:** Type check sạch 100%, không phát sinh bất kỳ lỗi compile nào.
+
 
