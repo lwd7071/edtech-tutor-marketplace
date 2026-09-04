@@ -141,9 +141,54 @@ Toàn bộ quy trình phát triển được triển khai theo chuẩn mực **T
 
 ---
 
+## B4: Quản lý Lịch học & Báo cáo Buổi học (Bookings & Session Report - ĐÃ HOÀN THÀNH 100%)
+
+### 1. B4.1: Booking Types, API Clients & Query Hooks
+- DTOs chuẩn xác theo API Contract & SPEC-FE: `BookingDetail`, `BookingStatus`, `DeliveryMode`, `SessionReport`, `CreateBookingRequest`, `CompleteBookingRequest`, `CancelBookingRequest`, `TrialRequestView`.
+- API Client `bookingApi.ts` với 8 endpoints:
+  - `GET /api/student/bookings` (danh sách lịch học học sinh)
+  - `POST /api/student/bookings` (tạo booking mới)
+  - `POST /api/student/bookings/{id}/cancel` (hủy lịch học)
+  - `POST /api/teacher/bookings/{id}/complete` (hoàn thành buổi học kèm SessionReport)
+  - `GET /api/teacher/trial-requests` (danh sách yêu cầu học thử)
+  - `POST /api/teacher/trial-requests/{id}/accept` (chấp nhận học thử)
+  - `POST /api/teacher/trial-requests/{id}/reject` (từ chối học thử)
+  - `POST /api/student/trial-requests` (học sinh gửi yêu cầu học thử)
+- TanStack Query hooks: `useStudentBookings`, `useCreateBooking`, `useCompleteBooking`, `useCancelBooking`, `useTeacherTrialRequests`, `useAcceptTrialRequest`, `useRejectTrialRequest`, `useCreateTrialRequest`. Tự động invalidate queries liên quan khi mutate.
+- **TDD:** `useBookings.test.tsx` pass 4/4 tests.
+
+### 2. B4.2: Lịch học Tương tác & Chi tiết Buổi học
+- `BookingStatusTag.tsx`: Tag trạng thái trực quan chuẩn màu `SPEC-FE:6.5` (`CONFIRMED`, `COMPLETED`, `CANCELLED_BY_STUDENT`, `CANCELLED_BY_TEACHER`, `SYSTEM_CANCELLED`, `NO_SHOW`).
+- `BookingCard.tsx`: Hiển thị buổi học với định dạng thời gian Việt Nam `HH:mm – HH:mm · Thứ X, dd/MM/yyyy` (theo `SPEC-FE:1.4`), thông tin môn học, hình thức học (`ONLINE` / `OFFLINE`), link phòng học trực tuyến, nút xem chi tiết và hủy lịch.
+- `BookingDetailDrawer.tsx`: Drawer xem chi tiết buổi học và thông tin `SessionReport` (nội dung bài dạy, nhận xét, đánh giá sao, link record, bài tập).
+- `BookingCalendarView.tsx`: Giao diện danh sách lịch học với Tabs phân loại trạng thái (`Tất cả`, `Sắp tới`, `Đã học`, `Đã hủy`), responsive layout, nút "Đặt lịch học mới" và Empty state.
+- **TDD:** `BookingCalendarView.test.tsx` pass.
+
+### 3. B4.3: Hoàn thành Buổi học & Nộp SessionReport
+- `SessionReportModal.tsx`: Form hoàn thành buổi học dành cho giáo viên nộp SessionReport theo `SPEC-FE:5.3.3`:
+  - `lessonTopic` (bắt buộc): Chủ đề / nội dung giảng dạy
+  - `studentFeedback` (bắt buộc): Đánh giá, nhận xét về học sinh
+  - `studentRating`: Đánh giá 1–5 sao
+  - `recordingUrl`: Đường dẫn xem lại video buổi học (tùy chọn)
+  - `homeworkAssigned`: Nội dung bài tập về nhà giao cho học viên
+- **TDD:** `SessionReportModal.test.tsx` pass.
+
+### 4. B4.4: Hủy lịch & Đặt lịch Mới
+- `CancelBookingModal.tsx`: Form hủy lịch học theo `SPEC-FE:5.3.2`, bắt buộc chọn lý do hủy theo người khởi tạo (`STUDENT_REQUEST` / `TEACHER_EMERGENCY`) kèm cảnh báo về chính sách hoàn giờ học.
+- `CreateBookingModal.tsx`: Form đặt lịch học mới, chọn gói học, ngày giờ học, hình thức học (`ONLINE` / `OFFLINE`), phòng học/địa chỉ, tự động bắt lỗi xung đột lịch 409 `BOOKING_TIME_CONFLICT`.
+- **TDD:** `CancelBookingModal.test.tsx` pass, `CreateBookingModal.test.tsx` pass.
+
+### 5. B4.5: Student Booking Page & App Router
+- `StudentBookingsPage.tsx`: Container trang quản lý lịch học của học sinh.
+- App Router Page: `src/app/student/bookings/page.tsx` bọc trong `StudentAppLayout` với tiêu đề và breadcrumb rõ ràng.
+- Export public interfaces qua `src/features/bookings/index.ts`.
+
+---
+
 ## Kết quả Kiểm thử & Chẩn đoán Toàn diện
-- **Unit Tests:** **28/28 test suites pass, 56/56 unit tests pass 100%**.
-- **Next.js Production Build:** **Compiled & static generation 8/8 routes thành công** (bao gồm `/student/packages`, `/student/packages/[id]`, `/student/checkout/[invoiceId]`, `/student/payment-result/[invoiceId]`).
+- **Unit Tests:** **33/33 test suites pass, 64/64 unit tests pass 100%**.
+- **Next.js Production Build:** **Compiled & static generation 9/9 routes thành công** (bao gồm route mới `/student/bookings`).
 - **TypeScript:** Type check sạch 100%, không phát sinh bất kỳ lỗi compile nào.
+
 
 

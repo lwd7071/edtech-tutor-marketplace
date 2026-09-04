@@ -134,11 +134,38 @@ Danh sách các task chi tiết theo tuần cho **Thành viên B (Transaction & 
 
 ---
 
-## B5: Booking & Session Report
-- [ ] Calendar view (Lịch học tương tác Student / Teacher)
-- [ ] Đặt lịch, hủy lịch và hoàn thành Booking
-- [ ] Biểu mẫu Session Report & xem chi tiết
-- [ ] Quản lý Trial Request
+## B4: Quản lý Lịch học & Báo cáo Buổi học (Bookings & Session Report - ĐÃ HOÀN THÀNH 100%)
+
+### B4.1: Booking Types, API Clients & TanStack Query Hooks (TDD)
+- [x] Tạo `src/features/bookings/types/index.ts` định nghĩa DTOs khớp Backend API Contract & SPEC-FE:
+  - [x] `BookingDetail`, `BookingStatus`, `DeliveryMode`, `SessionReport`
+  - [x] `CreateBookingRequest`, `CompleteBookingRequest`, `CancelBookingRequest`, `TrialRequestView`
+- [x] Tạo API Client `src/features/bookings/api/bookingApi.ts` (8 endpoints lịch học và học thử)
+- [x] Tạo TanStack Query hooks `src/features/bookings/hooks/useBookings.ts`:
+  - [x] `useStudentBookings`, `useCreateBooking`, `useCompleteBooking`, `useCancelBooking`
+  - [x] `useTeacherTrialRequests`, `useAcceptTrialRequest`, `useRejectTrialRequest`, `useCreateTrialRequest`
+- [x] Viết unit tests: `useBookings.test.tsx` (TDD: 4/4 tests pass)
+
+### B4.2: Lịch học Tương tác & Chi tiết Buổi học (TDD)
+- [x] Tạo `src/features/bookings/components/BookingStatusTag.tsx` (bảng màu chuẩn `SPEC-FE:6.5`)
+- [x] Tạo `src/features/bookings/components/BookingCard.tsx` (định dạng `HH:mm – HH:mm · Thứ X, dd/MM/yyyy`, link phòng học online, modal chi tiết)
+- [x] Tạo `src/features/bookings/components/BookingDetailDrawer.tsx` (thông tin buổi học, trạng thái, và chi tiết SessionReport khi hoàn thành)
+- [x] Tạo `src/features/bookings/components/BookingCalendarView.tsx` (tabs lọc trạng thái, agenda list responsive)
+- [x] Viết unit tests: `BookingCalendarView.test.tsx` (TDD: pass)
+
+### B4.3: Hoàn thành Buổi học & Nộp SessionReport (TDD)
+- [x] Tạo `src/features/bookings/components/SessionReportModal.tsx` (nội dung bài dạy, nhận xét học sinh, đánh giá 1-5 sao, link recording, bài tập giao về nhà)
+- [x] Viết unit tests: `SessionReportModal.test.tsx` (TDD: pass)
+
+### B4.4: Hủy lịch & Đặt lịch Mới (TDD)
+- [x] Tạo `src/features/bookings/components/CancelBookingModal.tsx` (phân loại người hủy `STUDENT_REQUEST` / `TEACHER_EMERGENCY`, lý do bắt buộc)
+- [x] Tạo `src/features/bookings/components/CreateBookingModal.tsx` (form tạo lịch mới, xử lý conflict lịch 409 `BOOKING_TIME_CONFLICT`)
+- [x] Viết unit tests: `CancelBookingModal.test.tsx` (TDD: pass), `CreateBookingModal.test.tsx` (TDD: pass)
+
+### B4.5: Student Booking Page & App Router
+- [x] Tạo container `src/features/bookings/pages/StudentBookingsPage.tsx`
+- [x] Tạo App Router page `src/app/student/bookings/page.tsx`
+- [x] Re-export toàn bộ public interface qua `src/features/bookings/index.ts`
 
 ---
 
