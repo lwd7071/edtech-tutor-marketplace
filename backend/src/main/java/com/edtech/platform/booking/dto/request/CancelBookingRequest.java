@@ -1,0 +1,1 @@
+package com.edtech.platform.booking.dto.request; import com.edtech.platform.booking.domain.CancelInitiatedBy; public record CancelBookingRequest(long version,String reason,CancelInitiatedBy initiatedBy) {}

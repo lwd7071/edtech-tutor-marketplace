@@ -1,0 +1,1 @@
+package com.edtech.platform.booking.dto.request; import java.time.Instant; import java.util.UUID; public record CreateTrialRequest(UUID teacherId,UUID subjectId,Instant preferredStartTime,String note) {}

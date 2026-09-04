@@ -7,4 +7,6 @@ import java.util.UUID;
 public interface BookingEligibilityFacade {
     Optional<UUID> getTeacherIdForReviewableBooking(UUID studentId, UUID bookingId);
     BookingStatsSnapshot getTeacherBookingStats(UUID teacherId);
+    boolean hasValidBookingOrTrial(UUID teacherId, UUID studentId);
+    boolean hasScheduledBookingForPackage(UUID studentPackageId);
 }
