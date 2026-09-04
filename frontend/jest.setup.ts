@@ -29,3 +29,12 @@ if (typeof ResizeObserver === 'undefined') {
     disconnect() {}
   };
 }
+
+// Polyfill getComputedStyle for Ant Design rc-util / pseudo elements in JSDOM
+// Ngăn JSDOM ném "Not implemented: window.getComputedStyle(elt, pseudoElt)" khi rc-util đo scrollbar
+if (typeof window !== 'undefined' && window.getComputedStyle) {
+  const originalGetComputedStyle = window.getComputedStyle;
+  window.getComputedStyle = function (elt: Element) {
+    return originalGetComputedStyle.call(window, elt);
+  };
+}

@@ -26,14 +26,14 @@ export function RoleGuard({ children, allowedRoles, fallback }: RoleGuardProps) 
         <Alert
           type="warning"
           showIcon
-          message="403 - Bạn không có quyền truy cập trang này"
+          title="403 - Bạn không có quyền truy cập trang này"
           description={
-            <Space orientation="vertical" style={{ width: '100%', marginTop: 'var(--space-3)' }}>
+            <div style={{ width: '100%', marginTop: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <div>Khu vực này chỉ dành cho tài khoản có vai trò: {allowedRoles.join(', ')}.</div>
               <Link href="/">
                 <Button type="primary">Quay về Trang chủ</Button>
               </Link>
-            </Space>
+            </div>
           }
         />
       </div>

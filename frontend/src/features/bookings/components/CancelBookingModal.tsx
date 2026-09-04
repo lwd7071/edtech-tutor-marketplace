@@ -70,12 +70,10 @@ export const CancelBookingModal: React.FC<CancelBookingModalProps> = ({
       <Radio.Group
         value={initiatedBy}
         onChange={(e) => setInitiatedBy(e.target.value)}
-        style={{ marginBottom: 16 }}
+        style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 8 }}
       >
-        <Space direction="vertical">
-          <Radio value="STUDENT_REQUEST">Học sinh yêu cầu đổi/hủy lịch</Radio>
-          <Radio value="TEACHER_EMERGENCY">Giáo viên có việc đột xuất</Radio>
-        </Space>
+        <Radio value="STUDENT_REQUEST">Học sinh yêu cầu đổi/hủy lịch</Radio>
+        <Radio value="TEACHER_EMERGENCY">Giáo viên có việc đột xuất</Radio>
       </Radio.Group>
 
       <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>

@@ -25,9 +25,9 @@ export function TeacherApprovalGuard({ children, fallback }: TeacherApprovalGuar
         <Alert
           type="info"
           showIcon
-          message="Hồ sơ đang chờ phê duyệt"
+          title="Hồ sơ đang chờ phê duyệt"
           description={
-            <Space orientation="vertical" style={{ width: '100%', marginTop: 'var(--space-3)' }}>
+            <div style={{ width: '100%', marginTop: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <div>
                 Hồ sơ giáo viên của bạn đang được ban quản trị xét duyệt. Các tính năng tạo gói học,
                 quản lý lịch dạy và rút tiền sẽ được mở sau khi hồ sơ được phê duyệt thành công.
@@ -35,7 +35,7 @@ export function TeacherApprovalGuard({ children, fallback }: TeacherApprovalGuar
               <Link href="/teacher/profile">
                 <Button type="primary">Kiểm tra trạng thái hồ sơ</Button>
               </Link>
-            </Space>
+            </div>
           }
         />
       </div>

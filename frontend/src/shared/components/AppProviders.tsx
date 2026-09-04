@@ -46,9 +46,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <Alert
             type="error"
             showIcon
-            message="Đã có lỗi xảy ra trong quá trình hiển thị"
+            title="Đã có lỗi xảy ra trong quá trình hiển thị"
             description={
-              <Space orientation="vertical" style={{ width: '100%', marginTop: 'var(--space-2)' }}>
+              <div style={{ width: '100%', marginTop: 'var(--space-2)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                 <Typography.Text type="secondary">
                   {this.state.error?.message || 'Lỗi không xác định. Vui lòng thử lại.'}
                 </Typography.Text>
@@ -56,11 +56,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   type="primary"
                   danger
                   onClick={this.handleReset}
-                  style={{ marginTop: 'var(--space-2)' }}
+                  style={{ marginTop: 'var(--space-2)', alignSelf: 'flex-start' }}
                 >
                   Thử lại
                 </Button>
-              </Space>
+              </div>
             }
           />
         </div>

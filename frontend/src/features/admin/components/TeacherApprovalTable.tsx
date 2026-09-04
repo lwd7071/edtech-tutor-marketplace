@@ -31,12 +31,12 @@ export function TeacherApprovalTable() {
       dataIndex: 'fullName',
       key: 'fullName',
       render: (text: string, record: TeacherApprovalSnapshot) => (
-        <Space direction="vertical" size={2}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Typography.Text strong>{text || 'Chưa cập nhật'}</Typography.Text>
           <Typography.Text type="secondary" style={{ fontSize: 'var(--text-body-sm)' }}>
             {record.email}
           </Typography.Text>
-        </Space>
+        </div>
       ),
     },
     {
