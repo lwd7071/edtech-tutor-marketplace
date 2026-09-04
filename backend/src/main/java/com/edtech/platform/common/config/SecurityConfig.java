@@ -54,8 +54,11 @@ public class SecurityConfig {
                 .accessDeniedHandler(accessDeniedHandler)
             )
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/health").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/api/webhooks/payos").permitAll()
                 .requestMatchers("/api/student/notifications/**").hasRole("STUDENT")
                 .requestMatchers("/ws/**").permitAll() // WebSockets configures auth in STOMP headers usually, or needs permitAll here if using token param
                 .requestMatchers("/api/teacher/**").hasRole("TEACHER")

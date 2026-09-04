@@ -144,4 +144,25 @@ public class TeacherFacadeImpl implements TeacherFacade {
                 profile.getIntroductionVideoUrl()
         );
     }
+
+    @Override
+    public boolean isWithinAvailability(UUID teacherId, java.time.Instant start, java.time.Instant end) {
+        var availabilities = teacherAvailabilityRepository.findByTeacherId(teacherId).stream()
+                .filter(com.edtech.platform.teacher.domain.TeacherAvailability::isActive)
+                .toList();
+        if (availabilities.isEmpty()) {
+            return false;
+        }
+        for (var a : availabilities) {
+            java.time.ZoneId zone = java.time.ZoneId.of(a.getTimezone() != null ? a.getTimezone() : "UTC");
+            java.time.ZonedDateTime zStart = start.atZone(zone);
+            java.time.ZonedDateTime zEnd = end.atZone(zone);
+            if (zStart.getDayOfWeek() == a.getDayOfWeek() && zEnd.getDayOfWeek() == a.getDayOfWeek()) {
+                if (!zStart.toLocalTime().isBefore(a.getStartTime()) && !zEnd.toLocalTime().isAfter(a.getEndTime())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

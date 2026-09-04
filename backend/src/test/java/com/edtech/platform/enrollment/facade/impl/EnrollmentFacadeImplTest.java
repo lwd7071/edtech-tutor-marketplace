@@ -1,31 +1,28 @@
 package com.edtech.platform.enrollment.facade.impl;
 
-import com.edtech.platform.enrollment.facade.EnrollmentFacade;
+import com.edtech.platform.enrollment.domain.StudentPackageStatus;
+import com.edtech.platform.enrollment.repository.StudentPackageRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
-import org.mockito.ArgumentCaptor;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EnrollmentFacadeImplTest {
 
     @Mock
-    private JdbcTemplate jdbcTemplate;
+    private StudentPackageRepository studentPackageRepository;
 
     @InjectMocks
     private EnrollmentFacadeImpl enrollmentFacade;
@@ -43,20 +40,21 @@ class EnrollmentFacadeImplTest {
 
     @Test
     void hasValidRelationship_shouldReturnTrue_whenExists() {
-        when(jdbcTemplate.queryForObject(anyString(), eq(Boolean.class), eq(teacherId), eq(studentId)))
+        when(studentPackageRepository.existsByTeacherIdAndStudentIdAndStatusInAndDeletedFalse(
+                eq(teacherId), eq(studentId), eq(List.of(StudentPackageStatus.ACTIVE, StudentPackageStatus.COMPLETED))))
                 .thenReturn(true);
 
         boolean result = enrollmentFacade.hasValidRelationship(teacherId, studentId);
 
         assertTrue(result);
-        ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
-        verify(jdbcTemplate).queryForObject(sql.capture(), eq(Boolean.class), eq(teacherId), eq(studentId));
-        assertThat(sql.getValue()).contains("is_deleted = false");
+        verify(studentPackageRepository).existsByTeacherIdAndStudentIdAndStatusInAndDeletedFalse(
+                teacherId, studentId, List.of(StudentPackageStatus.ACTIVE, StudentPackageStatus.COMPLETED));
     }
 
     @Test
     void hasValidRelationship_shouldReturnFalse_whenNotExists() {
-        when(jdbcTemplate.queryForObject(anyString(), eq(Boolean.class), eq(teacherId), eq(studentId)))
+        when(studentPackageRepository.existsByTeacherIdAndStudentIdAndStatusInAndDeletedFalse(
+                eq(teacherId), eq(studentId), eq(List.of(StudentPackageStatus.ACTIVE, StudentPackageStatus.COMPLETED))))
                 .thenReturn(false);
 
         boolean result = enrollmentFacade.hasValidRelationship(teacherId, studentId);
@@ -66,17 +64,18 @@ class EnrollmentFacadeImplTest {
     
     @Test
     void hasStudentPackage_shouldReturnTrue_whenExists() {
-        when(jdbcTemplate.queryForObject(anyString(), eq(Boolean.class), eq(pricingPackageId)))
+        when(studentPackageRepository.existsByPricingPackageIdAndDeletedFalse(eq(pricingPackageId)))
                 .thenReturn(true);
 
         boolean result = enrollmentFacade.hasStudentPackage(pricingPackageId);
 
         assertTrue(result);
+        verify(studentPackageRepository).existsByPricingPackageIdAndDeletedFalse(pricingPackageId);
     }
     
     @Test
     void hasStudentPackage_shouldReturnFalse_whenNotExists() {
-        when(jdbcTemplate.queryForObject(anyString(), eq(Boolean.class), eq(pricingPackageId)))
+        when(studentPackageRepository.existsByPricingPackageIdAndDeletedFalse(eq(pricingPackageId)))
                 .thenReturn(false);
 
         boolean result = enrollmentFacade.hasStudentPackage(pricingPackageId);

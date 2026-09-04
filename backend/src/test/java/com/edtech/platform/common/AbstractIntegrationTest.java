@@ -1,5 +1,6 @@
 package com.edtech.platform.common;
 
+import com.edtech.platform.ApiApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -7,7 +8,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest
+@SpringBootTest(classes = ApiApplication.class)
 @ActiveProfiles("test")
 @Testcontainers
 public abstract class AbstractIntegrationTest extends AbstractPostgresContainerTest {

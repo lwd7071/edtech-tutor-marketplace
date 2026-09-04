@@ -26,7 +26,7 @@ class RestApiContractArchitectureTest {
         List<String> violations = new ArrayList<>();
 
         for (var bean : scanner.findCandidateComponents("com.edtech.platform")) {
-            Class<?> controller = Class.forName(bean.getBeanClassName());
+            Class<?> controller = Class.forName(bean.getBeanClassName(), true, Thread.currentThread().getContextClassLoader());
             for (Method method : controller.getDeclaredMethods()) {
                 if (!AnnotatedElementUtils.hasAnnotation(method, RequestMapping.class)) {
                     continue;
