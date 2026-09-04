@@ -1,11 +1,10 @@
-'use client';
-
 import React from 'react';
 import { Drawer, Typography, Descriptions, Divider, Rate, Button } from 'antd';
-import { VideoCameraOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { VideoCameraOutlined, EnvironmentOutlined, MessageOutlined, BookOutlined } from '@ant-design/icons';
 import { BookingDetail } from '../types';
 import { BookingStatusTag } from './BookingStatusTag';
 import { formatSessionTime } from './BookingCard';
+import { getMeetingLink, getChatRoute, getAssignmentsRoute } from '../utils/routes';
 
 interface BookingDetailDrawerProps {
   open: boolean;
@@ -20,6 +19,9 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
 }) => {
   if (!booking) return null;
 
+  const teacherId = booking.teacher?.id || (booking as any).teacherId || '';
+  const hasHomework = Boolean(booking.sessionReport?.followUpNote);
+
   return (
     <Drawer
       title="Chi tiết buổi học"
@@ -27,6 +29,25 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
       onClose={onClose}
       width={480}
       destroyOnHidden
+      footer={
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+          <Button
+            icon={<MessageOutlined />}
+            href={getChatRoute(teacherId, 'STUDENT')}
+          >
+            Nhắn tin với gia sư
+          </Button>
+          {hasHomework && (
+            <Button
+              type="primary"
+              icon={<BookOutlined />}
+              href={getAssignmentsRoute({ bookingId: booking.id })}
+            >
+              Xem bài tập
+            </Button>
+          )}
+        </div>
+      }
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <Typography.Title level={4} style={{ margin: 0 }}>

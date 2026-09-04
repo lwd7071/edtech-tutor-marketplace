@@ -2,13 +2,21 @@
 
 import React from 'react';
 import { Card, Typography, Button, Space, Tag } from 'antd';
-import { VideoCameraOutlined, EnvironmentOutlined, EyeOutlined } from '@ant-design/icons';
+import {
+  VideoCameraOutlined,
+  EnvironmentOutlined,
+  EyeOutlined,
+  MessageOutlined,
+  BookOutlined,
+} from '@ant-design/icons';
 import { BookingDetail } from '../types';
 import { BookingStatusTag } from './BookingStatusTag';
+import { getMeetingLink, getChatRoute, getAssignmentsRoute } from '../utils/routes';
 
 interface BookingCardProps {
   booking: BookingDetail;
   onViewDetail?: (booking: BookingDetail) => void;
+  onChat?: (teacherId: string) => void;
 }
 
 export const formatSessionTime = (startTimeStr: string, endTimeStr: string): string => {
@@ -34,8 +42,21 @@ export const formatSessionTime = (startTimeStr: string, endTimeStr: string): str
   }
 };
 
-export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetail }) => {
+export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetail, onChat }) => {
   const timeFormatted = formatSessionTime(booking.startTime, booking.endTime);
+  const teacherId = booking.teacher?.id || (booking as any).teacherId || '';
+  const teacherName = booking.teacher?.fullName || (booking as any).teacherName || 'Gia sư';
+  const subjectName = booking.subject?.name || (booking as any).subjectName || 'Môn học';
+  const meetingHref = getMeetingLink(booking.meetingLink || (booking as any).meetingUrl);
+  const hasHomework = Boolean(booking.sessionReport?.followUpNote);
+
+  const handleChat = () => {
+    if (onChat) {
+      onChat(teacherId);
+    } else {
+      window.location.href = getChatRoute(teacherId, 'STUDENT');
+    }
+  };
 
   return (
     <Card
@@ -49,10 +70,10 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetail 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
         <div>
           <Typography.Title level={4} style={{ margin: 0 }}>
-            {booking.subject.name}
+            {subjectName}
           </Typography.Title>
           <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-            Gia sư: <strong>{booking.teacher.fullName}</strong>
+            Gia sư: <strong>{teacherName}</strong>
           </Typography.Text>
         </div>
 
@@ -89,24 +110,46 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetail 
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 8,
           paddingTop: 12,
           borderTop: '1px solid var(--color-border, #E7E3DC)',
         }}
       >
-        <div>
-          {booking.status === 'SCHEDULED' && booking.deliveryMode === 'ONLINE' && booking.meetingLink && (
+        <Space size={8}>
+          {booking.status === 'SCHEDULED' &&
+            booking.deliveryMode === 'ONLINE' &&
+            meetingHref && (
+              <Button
+                type="primary"
+                size="small"
+                icon={<VideoCameraOutlined />}
+                href={meetingHref}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Vào lớp học
+              </Button>
+            )}
+
+          <Button
+            size="small"
+            icon={<MessageOutlined />}
+            onClick={handleChat}
+          >
+            Nhắn tin
+          </Button>
+
+          {hasHomework && (
             <Button
-              type="primary"
               size="small"
-              icon={<VideoCameraOutlined />}
-              href={booking.meetingLink}
-              target="_blank"
-              rel="noopener noreferrer"
+              icon={<BookOutlined />}
+              href={getAssignmentsRoute({ bookingId: booking.id })}
             >
-              Vào lớp học
+              Bài tập
             </Button>
           )}
-        </div>
+        </Space>
 
         <Button
           size="small"
