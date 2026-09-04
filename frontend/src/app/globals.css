@@ -1,0 +1,179 @@
+:root {
+  /* ---- Color: brand ---- */
+  --color-primary-50:  #F0FDFA;
+  --color-primary-100: #CCFBF1;
+  --color-primary-500: #14B8A6;
+  --color-primary-600: #0F766E;
+  --color-primary-700: #115E59;
+  --color-primary-900: #042F2E;
+  --color-accent-50:   #FFFBEB;
+  --color-accent-500:  #B45309;
+
+  /* ---- Color: surface & text ---- */
+  --color-background:      #FBFAF8;
+  --color-surface:         #FFFFFF;
+  --color-surface-sunken:  #F5F3EF;
+  --color-surface-hover:   #F7F6F3;
+  --color-border:          #E7E3DC;
+  --color-border-strong:   #D3CEC4;
+  --color-text-primary:    #1C1917;
+  --color-text-secondary:  #57534E;
+  --color-text-tertiary:   #8A837B;
+  --color-text-placeholder:#A8A29E;
+  --color-text-inverse:    #FFFFFF;
+  --color-text-disabled:   #B9B3AB;
+  --color-disabled-bg:     #F1EFEA;
+
+  /* ---- Color: semantic ---- */
+  --color-success-600: #15803D;  --color-success-bg: #F0FDF4;
+  --color-warning-600: #B45309;  --color-warning-bg: #FFFBEB;
+  --color-error-600:   #B91C1C;  --color-error-bg:   #FEF2F2;
+  --color-info-600:    #1D4ED8;  --color-info-bg:    #EFF6FF;
+
+  /* ---- Typography ---- */
+  --font-heading: "Be Vietnam Pro", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-body:    Inter, "Be Vietnam Pro", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", "SF Mono", Consolas, monospace;
+  
+  --text-display: 48px; 
+  --text-h1: 32px; 
+  --text-h2: 24px; 
+  --text-h3: 20px; 
+  --text-h4: 16px;
+  --text-body-lg: 18px; 
+  --text-body: 15px; 
+  --text-body-sm: 14px; 
+  --text-caption: 12px;
+  --text-button: 14px; 
+  --text-label: 13px; 
+  --text-nav: 14px; 
+  --text-overline: 11px;
+  
+  --weight-regular: 400; 
+  --weight-medium: 500; 
+  --weight-semibold: 600; 
+  --weight-bold: 700;
+
+  /* ---- Spacing ---- */
+  --space-1: 4px;  
+  --space-2: 8px;  
+  --space-3: 12px; 
+  --space-4: 16px; 
+  --space-5: 20px;
+  --space-6: 24px; 
+  --space-8: 32px; 
+  --space-10: 40px; 
+  --space-12: 48px;
+  --space-16: 64px; 
+  --space-20: 80px;
+
+  /* ---- Radius ---- */
+  --radius-xs: 4px;   /* tag, badge nhỏ */
+  --radius-sm: 6px;   /* input nhỏ, checkbox */
+  --radius-md: 8px;   /* button, input, select */
+  --radius-lg: 12px;  /* card, alert */
+  --radius-xl: 16px;  /* modal, drawer, card lớn */
+  --radius-full: 9999px; /* avatar, pill, badge tròn */
+
+  /* ---- Shadow ---- */
+  --shadow-xs: 0 1px 2px rgba(28,25,23,.04);
+  --shadow-sm: 0 1px 3px rgba(28,25,23,.06), 0 1px 2px rgba(28,25,23,.04);
+  --shadow-md: 0 4px 12px rgba(28,25,23,.08);
+  --shadow-lg: 0 12px 32px rgba(28,25,23,.12);
+  --shadow-focus: 0 0 0 3px rgba(20,184,166,.28);
+
+  /* ---- Border ---- */
+  --border-width: 1px;
+  --border-default: 1px solid var(--color-border);
+  --border-strong:  1px solid var(--color-border-strong);
+
+  /* ---- Breakpoints ---- */
+  --bp-sm: 640px; 
+  --bp-md: 768px; 
+  --bp-lg: 1024px; 
+  --bp-xl: 1280px; 
+  --bp-2xl: 1440px;
+
+  /* ---- Z-index ---- */
+  --z-base: 0; 
+  --z-sticky: 100; 
+  --z-header: 200; 
+  --z-sidebar: 300;
+  --z-dropdown: 400; 
+  --z-overlay: 300;
+  --z-modal: 400;
+}
+
+/* Custom Overrides for Primitive Components */
+.ant-btn:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 768px) {
+  /* Ensure hit-areas are at least 44px on mobile for accessibility */
+  .ant-input, .ant-btn, .ant-select-selector, .ant-picker {
+    min-height: 44px !important;
+  }
+}
+
+:root {
+  --z-drawer: 600;
+  --z-toast: 700; 
+  --z-tooltip: 800;
+
+  /* ---- Component heights ---- */
+  --size-control-sm: 32px; 
+  --size-control-md: 40px; 
+  --size-control-lg: 48px;
+  --size-header: 64px; 
+  --size-sidebar: 248px; 
+  --size-sidebar-collapsed: 72px;
+  --size-bottomnav: 56px; 
+  --size-filter-panel: 280px;
+  --size-avatar-xs: 24px; 
+  --size-avatar-sm: 32px; 
+  --size-avatar-md: 40px;
+  --size-avatar-lg: 64px; 
+  --size-avatar-xl: 96px;
+  --size-icon-sm: 16px; 
+  --size-icon-md: 18px; 
+  --size-icon-lg: 20px; 
+  --size-icon-xl: 24px;
+  --size-container: 1200px; 
+  --size-container-wide: 1320px; 
+  --size-content: 1280px;
+  --size-form: 880px;
+
+  /* ---- Motion ---- */
+  --duration-instant: 80ms; 
+  --duration-fast: 120ms;
+  --duration-base: 180ms;   
+  --duration-slow: 240ms;
+  --ease-standard: cubic-bezier(.2,0,0,1);
+  --ease-out: cubic-bezier(0,0,.2,1);
+  --ease-in: cubic-bezier(.4,0,1,1);
+}
+
+/* Reset cơ bản */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Các utilities như tabular-nums */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

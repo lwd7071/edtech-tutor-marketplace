@@ -7,94 +7,94 @@ Dưới đây là danh sách các task chi tiết được chia theo từng tu�
 ## A1: Frontend Foundation (Nền tảng UI)
 
 ### A1.1 Cấu trúc dự án
-- [ ] Thiết lập cấu trúc thư mục cho các tính năng của A (`auth`, `marketplace`, `teacher-profile`, `catalog`, `learning`, `chat`, `notifications`, `ranking`)
-- [ ] Khởi tạo thư mục `shared/components` và `shared/lib`
-- [ ] Đảm bảo mỗi feature tự chứa `api`, `components`, `hooks`, `pages`, `schemas`, `types`
+- [x] Thiết lập cấu trúc thư mục cho các tính năng của A (`auth`, `marketplace`, `teacher-profile`, `catalog`, `learning`, `chat`, `notifications`, `ranking`)
+- [x] Khởi tạo thư mục `shared/components` và `shared/lib`
+- [x] Đảm bảo mỗi feature tự chứa `api`, `components`, `hooks`, `pages`, `schemas`, `types`
 
 ### A1.2 Design Tokens & Theme (Spec mục 10)
-- [ ] Định nghĩa toàn bộ CSS variables (tokens) theo spec vào file global CSS:
-  - [ ] Color tokens: brand (primary-50→900), accent (50, 500), surface/text, semantic (success/warning/error/info)
-  - [ ] Typography tokens: font families, type scale (display → overline), weights
-  - [ ] Spacing tokens: space-1 (4px) → space-20 (80px)
-  - [ ] Radius tokens: xs (4px) → full (9999px)
-  - [ ] Shadow tokens: xs → lg + focus ring (`--shadow-focus: 0 0 0 3px rgba(20,184,166,.28)`)
-  - [ ] Border tokens (`--border-default`, `--border-strong`), Breakpoints, Z-index, Component heights, Motion (`120-200ms`)
-- [ ] Cấu hình Ant Design theme token (ánh xạ token → `theme.token` và `theme.components` theo Spec 10.3)
-- [ ] Cài đặt và import các font chữ: `Be Vietnam Pro` (400/500/600/700), `Inter` (400/500/600), `JetBrains Mono` (400/500)
-- [ ] Cấu hình `font-display: swap`, preconnect Google Fonts, subset `latin` + `vietnamese`
+- [x] Định nghĩa toàn bộ CSS variables (tokens) theo spec vào file global CSS:
+  - [x] Color tokens: brand (primary-50→900), accent (50, 500), surface/text, semantic (success/warning/error/info)
+  - [x] Typography tokens: font families, type scale (display → overline), weights
+  - [x] Spacing tokens: space-1 (4px) → space-20 (80px)
+  - [x] Radius tokens: xs (4px) → full (9999px)
+  - [x] Shadow tokens: xs → lg + focus ring (`--shadow-focus: 0 0 0 3px rgba(20,184,166,.28)`)
+  - [x] Border tokens (`--border-default`, `--border-strong`), Breakpoints, Z-index, Component heights, Motion (`120-200ms`)
+- [x] Cấu hình Ant Design theme token (ánh xạ token → `theme.token` và `theme.components` theo Spec 10.3)
+- [x] Cài đặt và import các font chữ: `Be Vietnam Pro` (400/500/600/700), `Inter` (400/500/600), `JetBrains Mono` (400/500)
+- [x] Cấu hình `font-display: swap`, preconnect Google Fonts, subset `latin` + `vietnamese`
 
 ### A1.3 Layout & Structure (Spec mục 9)
-- [ ] Component `Navbar` cho public/auth zone:
-  - [ ] Sticky top, h=64, nền `--color-surface` (`#FFFFFF`), border-bottom 1px `--color-border` (`#E7E3DC`)
-  - [ ] Logo (→ `/`), menu giữa (`Tìm gia sư`, `Môn học`, `Bảng xếp hạng`) với text `--color-text-primary` (`#1C1917`)
-  - [ ] Guest: nút `Đăng nhập` (ghost) + `Đăng ký` (primary `--color-primary-600`)
-  - [ ] Logged in: `NotificationBell` + `Avatar` dropdown
-  - [ ] Shadow xuất hiện khi scroll > 8px (`--shadow-sm`)
-  - [ ] Mobile: hamburger drawer
-- [ ] Component `Sidebar` cho Dashboard (Student/Teacher):
-  - [ ] Cố định 248px desktop, thu gọn 72px (icon only + tooltip), nền `--color-surface`
-  - [ ] Đặc tả item: h=40px, gap 12px, radius 8px (`--radius-md`), 6 states (default/hover/active/disabled/collapsed)
-  - [ ] Hover item: bg `--color-primary-50`, text `--color-text-primary`
-  - [ ] Active indicator: thanh 3px bo tròn bên trái màu primary (`--color-primary-600`), bg `--color-primary-50`, text/icon `--color-primary-600`
-  - [ ] Group label: 11px, uppercase, letter-spacing 0.06em, text `--color-text-tertiary`
-  - [ ] Disabled item (chưa duyệt): opacity 0.45, cursor not-allowed, icon khóa + tooltip
-  - [ ] Mobile/Tablet: overlay drawer
-- [ ] Component `TopHeader` cho app zone:
-  - [ ] h=64px, sticky, z-index `--z-header` (200), nền `--color-surface`, border-bottom 1px `--color-border`
-  - [ ] Trái: toggle sidebar (mobile) + `Breadcrumb` (desktop) / title + back (mobile)
-  - [ ] Phải: `NotificationBell` + `Avatar` dropdown (tên, email, Hồ sơ, Cài đặt, Đăng xuất color `--color-error-600`)
-- [ ] Component `BottomNavigation` cho mobile Student/Teacher:
-  - [ ] h=56px + safe-area (`env(safe-area-inset-bottom)`)
-  - [ ] Student: Tổng quan, Gói học, Lịch học, Bài tập, Tin nhắn
-  - [ ] Teacher: Tổng quan, Lịch dạy, Học sinh, Ví, Thêm (drawer)
-  - [ ] Active: màu primary + icon filled; badge chấm 8px
-- [ ] Component `Footer` cho public zone:
-  - [ ] Nền `--color-primary-900` (`#042F2E`), padding dọc 64px (`--space-16`), text `--color-text-inverse`
-  - [ ] Logo, links, copyright
+- [x] Component `Navbar` cho public/auth zone:
+  - [x] Sticky top, h=64, nền `--color-surface` (`#FFFFFF`), border-bottom 1px `--color-border` (`#E7E3DC`)
+  - [x] Logo (→ `/`), menu giữa (`Tìm gia sư`, `Môn học`, `Bảng xếp hạng`) với text `--color-text-primary` (`#1C1917`)
+  - [x] Guest: nút `Đăng nhập` (ghost) + `Đăng ký` (primary `--color-primary-600`)
+  - [x] Logged in: `NotificationBell` + `Avatar` dropdown
+  - [x] Shadow xuất hiện khi scroll > 8px (`--shadow-sm`)
+  - [x] Mobile: hamburger drawer
+- [x] Component `Sidebar` cho Dashboard (Student/Teacher):
+  - [x] Cố định 248px desktop, thu gọn 72px (icon only + tooltip), nền `--color-surface`
+  - [x] Đặc tả item: h=40px, gap 12px, radius 8px (`--radius-md`), 6 states (default/hover/active/disabled/collapsed)
+  - [x] Hover item: bg `--color-primary-50`, text `--color-text-primary`
+  - [x] Active indicator: thanh 3px bo tròn bên trái màu primary (`--color-primary-600`), bg `--color-primary-50`, text/icon `--color-primary-600`
+  - [x] Group label: 11px, uppercase, letter-spacing 0.06em, text `--color-text-tertiary`
+  - [x] Disabled item (chưa duyệt): opacity 0.45, cursor not-allowed, icon khóa + tooltip
+  - [x] Mobile/Tablet: overlay drawer
+- [x] Component `TopHeader` cho app zone:
+  - [x] h=64px, sticky, z-index `--z-header` (200), nền `--color-surface`, border-bottom 1px `--color-border`
+  - [x] Trái: toggle sidebar (mobile) + `Breadcrumb` (desktop) / title + back (mobile)
+  - [x] Phải: `NotificationBell` + `Avatar` dropdown (tên, email, Hồ sơ, Cài đặt, Đăng xuất color `--color-error-600`)
+- [x] Component `BottomNavigation` cho mobile Student/Teacher:
+  - [x] h=56px + safe-area (`env(safe-area-inset-bottom)`)
+  - [x] Student: Tổng quan, Gói học, Lịch học, Bài tập, Tin nhắn
+  - [x] Teacher: Tổng quan, Lịch dạy, Học sinh, Ví, Thêm (drawer)
+  - [x] Active: màu primary + icon filled; badge chấm 8px
+- [x] Component `Footer` cho public zone:
+  - [x] Nền `--color-primary-900` (`#042F2E`), padding dọc 64px (`--space-16`), text `--color-text-inverse`
+  - [x] Logo, links, copyright
 
 ### A1.4 Shared Primitive Components (Spec mục 11, 6 states)
 
 **Form Controls:**
-- [ ] `Button` (primary/secondary/ghost/text/danger/icon-only) × 3 sizes (sm 32px / md 40px / lg 48px)
-  - [ ] 6 states: default, hover (120ms, bg `--color-primary-700`), active (translateY 1px), focus-visible (ring 3px `--shadow-focus`), disabled (bg `--color-disabled-bg`, text `--color-text-disabled`), loading
-  - [ ] Font weight 600, radius 8px (`--radius-md`), no primaryShadow
-- [ ] `Input` (text/password/prefix/suffix)
-  - [ ] Height 40px (mobile ≥44px hit-area), border `--color-border`, radius 8px
-  - [ ] 6 states + error state (border `--color-error-600` + helper text `--color-error-600`)
-- [ ] `Textarea` (autosize/fixed, max-width 68ch cho đoạn dài)
-- [ ] `Checkbox` (checked/indeterminate)
-- [ ] `Radio` (default/card variant)
-- [ ] `Select` (single/multi/searchable)
-- [ ] `Switch` (default/loading)
-- [ ] `DatePicker` / `TimeRangePicker` (date/range/time-range)
-- [ ] `Search` (inline/global/filter, debounced)
+- [x] `Button` (primary/secondary/ghost/text/danger/icon-only) × 3 sizes (sm 32px / md 40px / lg 48px)
+  - [x] 6 states: default, hover (120ms, bg `--color-primary-700`), active (translateY 1px), focus-visible (ring 3px `--shadow-focus`), disabled (bg `--color-disabled-bg`, text `--color-text-disabled`), loading
+  - [x] Font weight 600, radius 8px (`--radius-md`), no primaryShadow
+- [x] `Input` (text/password/prefix/suffix)
+  - [x] Height 40px (mobile ≥44px hit-area), border `--color-border`, radius 8px
+  - [x] 6 states + error state (border `--color-error-600` + helper text `--color-error-600`)
+- [x] `Textarea` (autosize/fixed, max-width 68ch cho đoạn dài)
+- [x] `Checkbox` (checked/indeterminate)
+- [x] `Radio` (default/card variant)
+- [x] `Select` (single/multi/searchable)
+- [x] `Switch` (default/loading)
+- [x] `DatePicker` / `TimeRangePicker` (date/range/time-range)
+- [x] `Search` (inline/global/filter, debounced)
 
 **Overlay & Navigation:**
-- [ ] `Dropdown` (menu/action)
-- [ ] `Tabs` wrap (line/segmented)
-- [ ] `Modal` (width 480/640/800, destructive variant)
-  - [ ] Trap focus, Escape đóng, trả focus về trigger
-  - [ ] Mobile: full-screen sheet từ dưới
-- [ ] `Drawer` (left/right/full-screen mobile)
-  - [ ] Slide animation 200-240ms, reduced-motion → fade
-- [ ] `Toast` system (success/info/warning/error)
-  - [ ] Không chồng quá 3, nhóm lỗi lặp
-  - [ ] Fade/slide 8px, 180ms
-  - [ ] Không auto-focus, dùng `aria-live`
-- [ ] `Alert` wrap (info/success/warning/error semantic variants)
-- [ ] `Tooltip` wrap (placement variants, giải thích disabled reason)
-- [ ] `Breadcrumb` (collapsible cho desktop, ẩn mobile)
-- [ ] `ConfirmDialog` (normal/danger/stale)
-  - [ ] Variant stale: "Dữ liệu đã thay đổi ở nơi khác" + nút "Tải lại" (409 handling)
+- [x] `Dropdown` (menu/action)
+- [x] `Tabs` wrap (line/segmented)
+- [x] `Modal` (width 480/640/800, destructive variant)
+  - [x] Trap focus, Escape đóng, trả focus về trigger
+  - [x] Mobile: full-screen sheet từ dưới
+- [x] `Drawer` (left/right/full-screen mobile)
+  - [x] Slide animation 200-240ms, reduced-motion → fade
+- [x] `Toast` system (success/info/warning/error)
+  - [x] Không chồng quá 3, nhóm lỗi lặp
+  - [x] Fade/slide 8px, 180ms
+  - [x] Không auto-focus, dùng `aria-live`
+- [x] `Alert` wrap (info/success/warning/error semantic variants)
+- [x] `Tooltip` wrap (placement variants, giải thích disabled reason)
+- [x] `Breadcrumb` (collapsible cho desktop, ẩn mobile)
+- [x] `ConfirmDialog` (normal/danger/stale)
+  - [x] Variant stale: "Dữ liệu đã thay đổi ở nơi khác" + nút "Tải lại" (409 handling)
 
 **Data Display:**
-- [ ] `Table` (default/compact/sticky header)
-  - [ ] Header bg `--color-surface-sunken` (`#F5F3EF`), text `--color-text-secondary`, hover row `--color-surface-hover` (`#F7F6F3`)
-  - [ ] Cell padding 12px 16px, `tabular-nums` cho số, border `--color-border`
-  - [ ] Mobile: chuyển thành card list
-- [ ] `Pagination` (full/simple)
-- [ ] `FileUpload` (single/multiple/dropzone)
-  - [ ] Kéo thả + chọn file, progress indicator
+- [x] `Table` (default/compact/sticky header)
+  - [x] Header bg `--color-surface-sunken` (`#F5F3EF`), text `--color-text-secondary`, hover row `--color-surface-hover` (`#F7F6F3`)
+  - [x] Cell padding 12px 16px, `tabular-nums` cho số, border `--color-border`
+  - [x] Mobile: chuyển thành card list
+- [x] `Pagination` (full/simple)
+- [x] `FileUpload` (single/multiple/dropzone)
+  - [x] Kéo thả + chọn file, progress indicator
 
 ### A1.5 Shared Business Components (Spec mục 11.3)
 - [ ] `StatusTag` — map domain status → semantic token thống nhất (radius 4px `--radius-xs`):
