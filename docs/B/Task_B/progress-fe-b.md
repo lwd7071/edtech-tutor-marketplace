@@ -141,9 +141,9 @@ Toàn bộ quy trình phát triển được triển khai theo chuẩn mực **T
 
 ---
 
-## B4: Quản lý Lịch học & Báo cáo Buổi học (Bookings & Session Report - ĐÃ HOÀN THÀNH 100%)
+## B5: Quản lý Lịch học & Báo cáo Buổi học (Bookings & Session Report - ĐÃ HOÀN THÀNH 100%)
 
-### 1. B4.1: Booking Types, API Clients & Query Hooks
+### 1. B5.1: Booking Types, API Clients & Query Hooks
 - DTOs chuẩn xác theo API Contract & SPEC-FE: `BookingDetail`, `BookingStatus`, `DeliveryMode`, `SessionReport`, `CreateBookingRequest`, `CompleteBookingRequest`, `CancelBookingRequest`, `TrialRequestView`.
 - API Client `bookingApi.ts` với 8 endpoints:
   - `GET /api/student/bookings` (danh sách lịch học học sinh)
@@ -157,14 +157,14 @@ Toàn bộ quy trình phát triển được triển khai theo chuẩn mực **T
 - TanStack Query hooks: `useStudentBookings`, `useCreateBooking`, `useCompleteBooking`, `useCancelBooking`, `useTeacherTrialRequests`, `useAcceptTrialRequest`, `useRejectTrialRequest`, `useCreateTrialRequest`. Tự động invalidate queries liên quan khi mutate.
 - **TDD:** `useBookings.test.tsx` pass 4/4 tests.
 
-### 2. B4.2: Lịch học Tương tác & Chi tiết Buổi học
-- `BookingStatusTag.tsx`: Tag trạng thái trực quan chuẩn màu `SPEC-FE:6.5` (`CONFIRMED`, `COMPLETED`, `CANCELLED_BY_STUDENT`, `CANCELLED_BY_TEACHER`, `SYSTEM_CANCELLED`, `NO_SHOW`).
+### 2. B5.2: Lịch học Tương tác & Chi tiết Buổi học
+- `BookingStatusTag.tsx`: Tag trạng thái trực quan chuẩn màu `SPEC-FE:6.5` (`SCHEDULED`, `COMPLETED`, `CANCELLED`, `EXPIRED`).
 - `BookingCard.tsx`: Hiển thị buổi học với định dạng thời gian Việt Nam `HH:mm – HH:mm · Thứ X, dd/MM/yyyy` (theo `SPEC-FE:1.4`), thông tin môn học, hình thức học (`ONLINE` / `OFFLINE`), link phòng học trực tuyến, nút xem chi tiết và hủy lịch.
 - `BookingDetailDrawer.tsx`: Drawer xem chi tiết buổi học và thông tin `SessionReport` (nội dung bài dạy, nhận xét, đánh giá sao, link record, bài tập).
 - `BookingCalendarView.tsx`: Giao diện danh sách lịch học với Tabs phân loại trạng thái (`Tất cả`, `Sắp tới`, `Đã học`, `Đã hủy`), responsive layout, nút "Đặt lịch học mới" và Empty state.
 - **TDD:** `BookingCalendarView.test.tsx` pass.
 
-### 3. B4.3: Hoàn thành Buổi học & Nộp SessionReport
+### 3. B5.3: Hoàn thành Buổi học & Nộp SessionReport
 - `SessionReportModal.tsx`: Form hoàn thành buổi học dành cho giáo viên nộp SessionReport theo `SPEC-FE:5.3.3`:
   - `lessonTopic` (bắt buộc): Chủ đề / nội dung giảng dạy
   - `studentFeedback` (bắt buộc): Đánh giá, nhận xét về học sinh
@@ -173,22 +173,55 @@ Toàn bộ quy trình phát triển được triển khai theo chuẩn mực **T
   - `homeworkAssigned`: Nội dung bài tập về nhà giao cho học viên
 - **TDD:** `SessionReportModal.test.tsx` pass.
 
-### 4. B4.4: Hủy lịch & Đặt lịch Mới
+### 4. B5.4: Hủy lịch & Đặt lịch Mới
 - `CancelBookingModal.tsx`: Form hủy lịch học theo `SPEC-FE:5.3.2`, bắt buộc chọn lý do hủy theo người khởi tạo (`STUDENT_REQUEST` / `TEACHER_EMERGENCY`) kèm cảnh báo về chính sách hoàn giờ học.
 - `CreateBookingModal.tsx`: Form đặt lịch học mới, chọn gói học, ngày giờ học, hình thức học (`ONLINE` / `OFFLINE`), phòng học/địa chỉ, tự động bắt lỗi xung đột lịch 409 `BOOKING_TIME_CONFLICT`.
 - **TDD:** `CancelBookingModal.test.tsx` pass, `CreateBookingModal.test.tsx` pass.
 
-### 5. B4.5: Student Booking Page & App Router
+### 5. B5.5: Student Booking Page & App Router
 - `StudentBookingsPage.tsx`: Container trang quản lý lịch học của học sinh.
 - App Router Page: `src/app/student/bookings/page.tsx` bọc trong `StudentAppLayout` với tiêu đề và breadcrumb rõ ràng.
 - Export public interfaces qua `src/features/bookings/index.ts`.
 
 ---
 
+## B6: Tích hợp Booking với Learning & Chat (ĐÃ HOÀN THÀNH 100%)
+
+### 1. B6.1: Route Context & Inter-Module Link Helpers (`src/features/bookings/utils/routes.ts`)
+- Cung cấp các tiện ích điều hướng chuẩn giữa các feature:
+  - `getStudentBookingsRoute`: Trả về `/student/bookings`.
+  - `getBookingDetailRoute`: Trả về link mở chi tiết buổi học.
+  - `getChatRoute`: Tạo đường dẫn mở hội thoại 1-1 với gia sư/học sinh (`/student/messages?userId=...` hoặc `/teacher/messages?userId=...`).
+  - `getAssignmentsRoute`: Tạo đường dẫn liên kết sang phân hệ Bài tập (`/student/assignments?bookingId=...`).
+  - `getMeetingLink`: Chuẩn hóa và làm sạch liên kết phòng học trực tuyến (Google Meet, Zoom, MS Teams), loại bỏ URL độc hại (`javascript:`).
+- **TDD:** `routes.test.ts` pass 4/4 tests.
+
+### 2. B6.2: Hook `useUpcomingBooking` & Hàm tính toán độc lập (`useUpcomingBooking.ts`)
+- Lọc buổi học sớm nhất sắp diễn ra ở trạng thái `SCHEDULED`.
+- Tự động tính toán các cờ thời gian thực: `isHappeningNow`, `minutesUntilStart`, và `canJoinMeeting` (mở quyền vào lớp trước 15 phút).
+- Hỗ trợ cả hai chế độ: Tự động query từ server hoặc tính toán từ danh sách bookings truyền vào.
+- **TDD:** `useUpcomingBooking.test.tsx` pass 5/5 tests.
+
+### 3. B6.3: Widget Thẻ Buổi học Sắp tới `UpcomingSessionCard`
+- Thiết kế dạng thẻ Card/Banner nổi bật cho Dashboard (của Member A):
+  - Badge trạng thái thời gian thực: "● Đang diễn ra" hoặc "Sắp bắt đầu (X phút nữa)".
+  - Nút "Vào phòng học" (tự động enable khi đến giờ học), nút "Nhắn tin", nút "Xem chi tiết".
+  - Hỗ trợ skeleton loading mượt mà.
+- **TDD:** `UpcomingSessionCard.test.tsx` pass 4/4 tests.
+
+### 4. B6.4: Tích hợp Nút Chat & Bài tập vào BookingCard & BookingDetailDrawer
+- `BookingCard.tsx`: Bổ sung nút "Nhắn tin" với gia sư và nút "Bài tập" khi buổi học có dặn dò/giao bài.
+- `BookingDetailDrawer.tsx`: Footer drawer tích hợp sẵn nút "Nhắn tin với gia sư" và "Xem bài tập" điều hướng trực tiếp sang Learning module.
+
+### 5. B6.5: Re-export Public Interface
+- Export toàn bộ public API qua `src/features/bookings/index.ts` để các feature của Member A import an toàn.
+
+---
+
 ## Kết quả Kiểm thử & Chẩn đoán Toàn diện
-- **Unit Tests:** **33/33 test suites pass, 64/64 unit tests pass 100%**.
-- **Next.js Production Build:** **Compiled & static generation 9/9 routes thành công** (bao gồm route mới `/student/bookings`).
-- **TypeScript:** Type check sạch 100%, không phát sinh bất kỳ lỗi compile nào.
+- **Unit Tests:** **36/36 test suites pass, 77/77 unit tests pass 100%**.
+- **Next.js Production Build:** **Compiled & static generation 9/9 routes thành công** (0 lỗi TypeScript).
+
 
 
 

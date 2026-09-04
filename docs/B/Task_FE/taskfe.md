@@ -93,7 +93,7 @@ Danh sách các task chi tiết theo tuần cho **Thành viên B (Transaction & 
 
 ---
 
-## B3: Gói học sinh & Thanh toán payOS (Student Packages & Payments - ĐÃ HOÀN THÀNH 100%)
+## B3 & B4: Gói học sinh & Thanh toán payOS (Student Packages & Payments - ĐÃ HOÀN THÀNH 100%)
 
 ### B3.1: Student Packages & Payments Types, API Clients & Query Hooks (TDD)
 - [x] Tạo `src/features/student-packages/types/index.ts` & `src/features/payments/types/index.ts` khớp API Contract & SPEC-FE
@@ -134,9 +134,9 @@ Danh sách các task chi tiết theo tuần cho **Thành viên B (Transaction & 
 
 ---
 
-## B4: Quản lý Lịch học & Báo cáo Buổi học (Bookings & Session Report - ĐÃ HOÀN THÀNH 100%)
+## B5: Quản lý Lịch học & Báo cáo Buổi học (Bookings & Session Report - ĐÃ HOÀN THÀNH 100%)
 
-### B4.1: Booking Types, API Clients & TanStack Query Hooks (TDD)
+### B5.1: Booking Types, API Clients & TanStack Query Hooks (TDD)
 - [x] Tạo `src/features/bookings/types/index.ts` định nghĩa DTOs khớp Backend API Contract & SPEC-FE:
   - [x] `BookingDetail`, `BookingStatus`, `DeliveryMode`, `SessionReport`
   - [x] `CreateBookingRequest`, `CompleteBookingRequest`, `CancelBookingRequest`, `TrialRequestView`
@@ -146,31 +146,49 @@ Danh sách các task chi tiết theo tuần cho **Thành viên B (Transaction & 
   - [x] `useTeacherTrialRequests`, `useAcceptTrialRequest`, `useRejectTrialRequest`, `useCreateTrialRequest`
 - [x] Viết unit tests: `useBookings.test.tsx` (TDD: 4/4 tests pass)
 
-### B4.2: Lịch học Tương tác & Chi tiết Buổi học (TDD)
+### B5.2: Lịch học Tương tác & Chi tiết Buổi học (TDD)
 - [x] Tạo `src/features/bookings/components/BookingStatusTag.tsx` (bảng màu chuẩn `SPEC-FE:6.5`)
 - [x] Tạo `src/features/bookings/components/BookingCard.tsx` (định dạng `HH:mm – HH:mm · Thứ X, dd/MM/yyyy`, link phòng học online, modal chi tiết)
 - [x] Tạo `src/features/bookings/components/BookingDetailDrawer.tsx` (thông tin buổi học, trạng thái, và chi tiết SessionReport khi hoàn thành)
 - [x] Tạo `src/features/bookings/components/BookingCalendarView.tsx` (tabs lọc trạng thái, agenda list responsive)
 - [x] Viết unit tests: `BookingCalendarView.test.tsx` (TDD: pass)
 
-### B4.3: Hoàn thành Buổi học & Nộp SessionReport (TDD)
+### B5.3: Hoàn thành Buổi học & Nộp SessionReport (TDD)
 - [x] Tạo `src/features/bookings/components/SessionReportModal.tsx` (nội dung bài dạy, nhận xét học sinh, đánh giá 1-5 sao, link recording, bài tập giao về nhà)
 - [x] Viết unit tests: `SessionReportModal.test.tsx` (TDD: pass)
 
-### B4.4: Hủy lịch & Đặt lịch Mới (TDD)
+### B5.4: Hủy lịch & Đặt lịch Mới (TDD)
 - [x] Tạo `src/features/bookings/components/CancelBookingModal.tsx` (phân loại người hủy `STUDENT_REQUEST` / `TEACHER_EMERGENCY`, lý do bắt buộc)
 - [x] Tạo `src/features/bookings/components/CreateBookingModal.tsx` (form tạo lịch mới, xử lý conflict lịch 409 `BOOKING_TIME_CONFLICT`)
 - [x] Viết unit tests: `CancelBookingModal.test.tsx` (TDD: pass), `CreateBookingModal.test.tsx` (TDD: pass)
 
-### B4.5: Student Booking Page & App Router
+### B5.5: Student Booking Page & App Router
 - [x] Tạo container `src/features/bookings/pages/StudentBookingsPage.tsx`
 - [x] Tạo App Router page `src/app/student/bookings/page.tsx`
 - [x] Re-export toàn bộ public interface qua `src/features/bookings/index.ts`
 
 ---
 
-## B6: Tích hợp Booking với Learning & Chat
-- [ ] Cung cấp route context và booking links cho các module khác qua public interface
+## B6: Tích hợp Booking với Learning & Chat (ĐÃ HOÀN THÀNH 100%)
+
+### B6.1: Route Context & Inter-Module Link Helpers (TDD)
+- [x] Tạo `src/features/bookings/utils/routes.ts`: `getStudentBookingsRoute`, `getBookingDetailRoute`, `getChatRoute`, `getAssignmentsRoute`, `getMeetingLink`
+- [x] Viết unit tests: `routes.test.ts` (TDD: 4/4 tests pass)
+
+### B6.2: Hook useUpcomingBooking & Pure Calculation (TDD)
+- [x] Tạo `src/features/bookings/hooks/useUpcomingBooking.ts`: tính toán buổi học sớm nhất sắp diễn ra, cờ `isHappeningNow`, `canJoinMeeting` và thời gian còn lại
+- [x] Viết unit tests: `useUpcomingBooking.test.tsx` (TDD: 5/5 tests pass)
+
+### B6.3: Widget UpcomingSessionCard cho Dashboard (TDD)
+- [x] Tạo `src/features/bookings/components/UpcomingSessionCard.tsx`: thẻ hiển thị buổi học kế tiếp nổi bật cho Dashboard, nút vào phòng học, nút nhắn tin và xem chi tiết
+- [x] Viết unit tests: `UpcomingSessionCard.test.tsx` (TDD: 4/4 tests pass)
+
+### B6.4: Tích hợp Nút Chat & Xem bài tập vào BookingCard & BookingDetailDrawer
+- [x] Nâng cấp `BookingCard.tsx`: thêm nút "Nhắn tin" và nút "Bài tập" khi có `homeworkAssigned`
+- [x] Nâng cấp `BookingDetailDrawer.tsx`: thêm footer với nút "Nhắn tin với gia sư" và "Xem bài tập"
+
+### B6.5: Re-export Public Interface
+- [x] Cập nhật `src/features/bookings/index.ts` re-export đầy đủ các tiện ích tích hợp liên mô-đun
 
 ---
 
