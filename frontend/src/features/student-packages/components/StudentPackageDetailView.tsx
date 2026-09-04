@@ -57,7 +57,7 @@ export const StudentPackageDetailView: React.FC<StudentPackageDetailViewProps> =
           showIcon
           title="Gói học đã hết hạn"
           description={
-            <Space orientation="vertical" style={{ width: '100%', marginTop: 8 }}>
+            <div style={{ width: '100%', marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div>
                 Gói học này đã hết thời hạn sử dụng. Bạn không thể đặt thêm lịch học mới, tuy nhiên các buổi đã lên lịch trước đó vẫn diễn ra bình thường.
               </div>
@@ -69,7 +69,7 @@ export const StudentPackageDetailView: React.FC<StudentPackageDetailViewProps> =
                   Yêu cầu hoàn tiền
                 </Button>
               </Space>
-            </Space>
+            </div>
           }
           style={{ marginBottom: 20 }}
         />

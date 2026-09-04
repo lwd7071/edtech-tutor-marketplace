@@ -82,3 +82,5 @@ export interface PaginationParams {
   size?: number;
   sort?: string;
 }
+
+export * from './finance';

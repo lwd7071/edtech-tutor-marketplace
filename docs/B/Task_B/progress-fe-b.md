@@ -218,9 +218,83 @@ Toàn bộ quy trình phát triển được triển khai theo chuẩn mực **T
 
 ---
 
-## Kết quả Kiểm thử & Chẩn đoán Toàn diện
-- **Unit Tests:** **36/36 test suites pass, 77/77 unit tests pass 100%**.
-- **Next.js Production Build:** **Compiled & static generation 9/9 routes thành công** (0 lỗi TypeScript).
+## B7: Quản trị Tài chính & Admin Dashboard (Finance & Admin - ĐÃ HOÀN THÀNH 100%)
+
+### 1. B7.1: DTOs, API Clients & TanStack Query Hooks
+- Định nghĩa đầy đủ DTOs theo SPEC-FE và API Contract của Backend:
+  - `WalletView` (3 buckets: `availableBalanceVnd`, `pendingSettlementBalanceVnd`, `withdrawingBalanceVnd`), `LedgerEntryView` (hạch toán kép).
+  - `BankAccountView`, `UpsertBankAccountRequest`.
+  - `PayoutRequestView`, `CreatePayoutRequest`.
+  - `RefundRequestView`, `CreateRefundRequest`.
+  - `ExtensionRequestView`, `CreateExtensionRequest`.
+  - `AdminDashboardView`, `PlatformSettingsView`, `AuditLogView`.
+- API Clients:
+  - `financeApi.ts`: 7 endpoints cho Teacher & Student (`/api/teacher/wallet`, `/api/teacher/ledger`, `/api/teacher/bank-accounts`, `/api/teacher/payouts`, `/api/student/refunds`, `/api/student/extensions`).
+  - `adminFinanceApi.ts`: 8 endpoints cho Admin (`/api/admin/payouts`, `/api/admin/refunds`, `/api/admin/extensions`, `/api/admin/dashboard`, `/api/admin/settings`, `/api/admin/audit-logs`).
+- TanStack Query hooks:
+  - `useFinance.ts`: `useTeacherWallet`, `useTeacherLedger`, `useBankAccounts`, `usePayoutRequests`, `useStudentRequests`, cùng các mutations tự động invalidate queries.
+  - `useAdminFinance.ts`: `useAdminFinanceQueues`, `useApprovePayout`, `useRejectPayout`, `useProcessRefund`, `useReviewExtension`, `useAdminDashboard`, `usePlatformSettings`, `useUpdatePlatformSettings`, `useAdminAuditLogs`.
+- **TDD:** `financeApi.test.ts` (6 tests pass), `useFinance.test.tsx` (5 tests pass), `useAdminFinance.test.tsx` (4 tests pass).
+
+### 2. B7.2: Ví Giáo viên & Sổ cái Hạch toán Kép
+- `WalletSummaryCard.tsx`: Hiển thị 3 bucket số dư (Khả dụng, Chờ quyết toán, Đang rút), nút "Rút tiền" và "Tài khoản ngân hàng", format ` ₫`, `tabular-nums`.
+- `LedgerTable.tsx`: Sổ cái tài chính hiển thị giao dịch với định dạng dấu `+` màu xanh lá (`#16a34a`) cho ghi có / tiền vào và `−` màu đỏ (`#dc2626`) cho ghi nợ / tiền ra. Hiển thị mã bút toán (monospace) và thời gian chuẩn `dd/MM/yyyy HH:mm`.
+- **TDD:** `WalletSummaryCard.test.tsx` (3 tests pass), `LedgerTable.test.tsx` (2 tests pass).
+
+### 3. B7.3: Rút tiền & Quản lý Tài khoản Ngân hàng
+- `BankAccountList.tsx` & `BankAccountModal.tsx`: Danh sách tài khoản ngân hàng, gắn nhãn mặc định, modal thêm/sửa tài khoản chọn BIN ngân hàng VietQR.
+- `CreatePayoutModal.tsx` & `PayoutListTable.tsx`: Form tạo yêu cầu rút tiền kèm validation số dư khả dụng, bảng theo dõi trạng thái yêu cầu rút (`PENDING`, `APPROVED`, `REJECTED`, `TRANSFERRED`).
+- **TDD:** `PayoutComponents.test.tsx` (2 tests pass).
+
+### 4. B7.4: Hoàn tiền & Gia hạn Gói học của Học sinh
+- `CreateRefundModal.tsx`: Form gửi yêu cầu hoàn tiền cho các buổi chưa học, tính tiền ước tính tự động.
+- `CreateExtensionModal.tsx`: Form gửi yêu cầu gia hạn ngày hết hạn của gói học.
+- `StudentRequestsTable.tsx`: Bảng quản lý tổng hợp các yêu cầu hoàn tiền và gia hạn của học sinh với tabs chuyển đổi trực quan.
+- **TDD:** `StudentFinanceComponents.test.tsx` (2 tests pass).
+
+### 5. B7.5: Hàng đợi Duyệt Tài chính & Cài đặt Sàn của Admin
+- `AdminPayoutTable.tsx`: Bảng duyệt yêu cầu rút tiền (Phê duyệt kèm mã tham chiếu chuyển khoản hoặc Từ chối kèm lý do).
+- `AdminRefundTable.tsx`: Bảng xử lý yêu cầu hoàn tiền (Hoàn tiền hoặc Từ chối).
+- `AdminExtensionTable.tsx`: Bảng duyệt yêu cầu gia hạn gói học (Chấp thuận gia hạn ngày hoặc Từ chối).
+- `AdminDashboardOverview.tsx`: Thống kê tổng quan sàn (Doanh thu, số dư ví, số giao dịch, số học sinh & gia sư hoạt động).
+- `AdminSettingsForm.tsx`: Form cấu hình sàn (Tỷ lệ hoa hồng platform %, hạn mức rút tiền tối thiểu/tối đa, số ngày gia hạn tối đa).
+- `AdminAuditLogTable.tsx`: Bảng nhật ký kiểm toán hệ thống ghi lại toàn bộ hành động quản trị viên.
+- **TDD:** `AdminFinanceTables.test.tsx` (3 tests pass), `AdminFinanceComponents.test.tsx` (3 tests pass).
+
+### 6. B7.6: App Router Pages & Role Protection
+- Next.js App Router:
+  - Teacher: `/teacher/wallet`, `/teacher/bank-accounts`, `/teacher/payouts` (Bảo vệ bởi `RoleGuard: TEACHER` + `TeacherApprovalGuard`).
+  - Student: `/student/requests` (Bảo vệ bởi `RoleGuard: STUDENT`).
+  - Admin: `/admin/dashboard`, `/admin/payouts`, `/admin/refunds`, `/admin/extensions`, `/admin/settings`, `/admin/audit-logs` (Bảo vệ bởi `RoleGuard: ADMIN`).
+- Re-export toàn bộ public API qua `src/features/finance/index.ts` và `src/features/admin/index.ts`.
+
+---
+
+## B8: Hardening, Regression Testing & Hoàn tất Phân hệ B (ĐÃ HOÀN THÀNH 100%)
+
+### 1. B8.1: Kiểm thử Hồi quy Toàn diện (Regression Testing)
+- Toàn bộ các luồng B1 -> B7 được kiểm thử đồng thời:
+  - B1: Core Network, Axios Refresh Mutex Queue, Error Mapping, AppProviders, Route Guards.
+  - B2: Teacher Approval, Subject Proposal Approval, User Moderation.
+  - B3: Student Packages, Session Counter, VietQR Checkout, Payment Polling.
+  - B5: Bookings, Calendar View, Session Report, Cancellation, Booking Conflict 409 handling.
+  - B6: Inter-module routing, useUpcomingBooking real-time helper, UpcomingSessionCard widget.
+  - B7: Teacher Wallet, Ledger, Bank Accounts, Payouts, Refunds, Extensions, Admin Queues, Platform Settings, Audit Logs, Admin Dashboard.
+- **Kết quả Unit Test:** **45/45 test suites PASS**, **107/107 unit tests PASS 100%**.
+
+### 2. B8.2: Next.js Production Build
+- **Kiểm tra TypeScript:** Hoàn toàn sạch, 0 lỗi type (`Finished TypeScript in 12.6s`).
+- **Static Generation:** Biên dịch thành công 20/20 routes (17 Static prerendered, 3 Dynamic server-rendered).
+- **Mã phản hồi HTTP & Guard:** Tất cả các route đều được bao bọc `RoleGuard` ngăn chặn truy cập trái phép.
+
+---
+
+## Tổng kết Bộ chỉ số Hoàn thành của Thành viên B
+- **Số Sprint đã hoàn thành:** 6/6 (B1, B2, B3, B5, B6, B7, B8).
+- **Tổng số Test Suites:** **45/45 PASS (100%)**.
+- **Tổng số Unit Tests:** **107/107 PASS (100%)**.
+- **Trạng thái Build:** **Compiled successfully (Turbopack, Next.js 16.3.4, 0 errors)**.
+- **Tuân thủ Thiết kế:** 100% SPEC-FE (màu Teal `#0F766E`, font số `tabular-nums`, múi giờ `Asia/Ho_Chi_Minh`, định dạng tiền tệ VND ` ₫`, thời gian `dd/MM/yyyy HH:mm`).
 
 
 

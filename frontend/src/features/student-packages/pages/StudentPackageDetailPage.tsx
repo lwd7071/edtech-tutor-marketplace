@@ -7,12 +7,53 @@ import Link from 'next/link';
 import { useStudentPackageDetail } from '../hooks/useStudentPackages';
 import { StudentPackageDetailView } from '../components/StudentPackageDetailView';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { message } from 'antd';
+import {
+  CreateRefundModal,
+  CreateExtensionModal,
+  useCreateRefund,
+  useCreateExtension,
+  CreateRefundRequest,
+  CreateExtensionRequest,
+} from '@/features/finance';
+
 export const StudentPackageDetailPage: React.FC = () => {
   const params = useParams();
+  const router = useRouter();
   const id = params?.id as string;
 
+  const [refundOpen, setRefundOpen] = useState(false);
+  const [extensionOpen, setExtensionOpen] = useState(false);
+
   const { data, isLoading, isError } = useStudentPackageDetail(id);
+  const createRefundMutation = useCreateRefund();
+  const createExtensionMutation = useCreateExtension();
+
   const packageData = data?.data;
+
+  const handleRefundSubmit = async (values: CreateRefundRequest) => {
+    try {
+      await createRefundMutation.mutateAsync(values);
+      message.success('Gửi yêu cầu hoàn tiền thành công');
+      setRefundOpen(false);
+      router.push('/student/requests');
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || 'Không thể gửi yêu cầu hoàn tiền');
+    }
+  };
+
+  const handleExtensionSubmit = async (values: CreateExtensionRequest) => {
+    try {
+      await createExtensionMutation.mutateAsync(values);
+      message.success('Gửi yêu cầu gia hạn thành công');
+      setExtensionOpen(false);
+      router.push('/student/requests');
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || 'Không thể gửi yêu cầu gia hạn');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -35,7 +76,33 @@ export const StudentPackageDetailPage: React.FC = () => {
 
   return (
     <div style={{ padding: 'var(--space-6, 24px) var(--space-4, 16px)' }}>
-      <StudentPackageDetailView packageData={packageData} />
+      <StudentPackageDetailView
+        packageData={packageData}
+        onRefundRequest={() => setRefundOpen(true)}
+        onExtensionRequest={() => setExtensionOpen(true)}
+      />
+
+      <CreateRefundModal
+        open={refundOpen}
+        packageId={packageData.id}
+        packageName={packageData.packageName}
+        remainingSessions={packageData.remainingSessions}
+        estimatedPricePerSession={packageData.totalSessions ? Math.round(packageData.purchasePriceVnd / packageData.totalSessions) : 0}
+        loading={createRefundMutation.isPending}
+        onCancel={() => setRefundOpen(false)}
+        onSubmit={handleRefundSubmit}
+      />
+
+      <CreateExtensionModal
+        open={extensionOpen}
+        packageId={packageData.id}
+        packageName={packageData.packageName}
+        currentExpiryDate={packageData.expiresAt}
+        loading={createExtensionMutation.isPending}
+        onCancel={() => setExtensionOpen(false)}
+        onSubmit={handleExtensionSubmit}
+      />
     </div>
   );
 };
+

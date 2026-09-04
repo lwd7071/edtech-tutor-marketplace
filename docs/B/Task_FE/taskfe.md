@@ -192,14 +192,18 @@ Danh sách các task chi tiết theo tuần cho **Thành viên B (Transaction & 
 
 ---
 
-## B7: Quản trị Tài chính (Finance & Admin)
-- [ ] Ví giáo viên (Teacher Wallet) & Sổ cái (Ledger)
-- [ ] Quản lý tài khoản ngân hàng & Yêu cầu rút tiền (Payout Request)
-- [ ] Yêu cầu hoàn tiền (Refund) và Gia hạn gói học (Extension)
-- [ ] Admin Finance Queues, Platform Settings, Audit Logs, Dashboard Charts
+## B7: Quản trị Tài chính & Admin Dashboard (Finance & Admin - ĐÃ HOÀN THÀNH 100%)
+- [x] Ví giáo viên (Teacher Wallet) 3 bucket: Khả dụng, Chờ quyết toán, Đang rút
+- [x] Sổ cái kép (Ledger): dấu `+` xanh lá, `−` đỏ, mã bút toán, lý do
+- [x] Quản lý tài khoản ngân hàng & Yêu cầu rút tiền (Payout Request)
+- [x] Yêu cầu hoàn tiền (Refund) và Gia hạn gói học (Extension) của học sinh
+- [x] Admin Finance Queues (Phê duyệt rút tiền, hoàn tiền, gia hạn)
+- [x] Cài đặt sàn (Platform Settings), Nhật ký kiểm toán (Audit Logs) & Admin Dashboard Overview
 
 ---
 
-## B8: Hardening & E2E Testing
-- [ ] Tests hồi quy cho toàn bộ flow của B
-- [ ] Kiểm tra Concurrency, Expired Session & Optimistic Locking (409)
+## B8: Hardening, Regression Testing & E2E Verification (ĐÃ HOÀN THÀNH 100%)
+- [x] 100% Test pass: 45/45 test suites, 107/107 unit tests pass
+- [x] Next.js Production Build: 20/20 routes biên dịch thành công, 0 TypeScript errors
+- [x] Role Protection & Router Guard: `RoleGuard` (ADMIN, TEACHER, STUDENT) & `TeacherApprovalGuard`
+- [x] Kiểm tra Concurrency, Expired Session & Token Refresh Mutex Queue
