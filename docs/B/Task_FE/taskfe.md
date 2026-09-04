@@ -52,10 +52,44 @@ Danh sách các task chi tiết theo tuần cho **Thành viên B (Transaction & 
 
 ---
 
-## B2: Quản trị Phê duyệt & Onboarding Admin
-- [ ] Admin Teacher Approval Queue & Detail View
-- [ ] Admin Subject Proposal Queue & Detail View
-- [ ] User Moderation Screen (khóa/mở tài khoản)
+## B2: Quản trị Phê duyệt & Onboarding Admin (ĐÃ HOÀN THÀNH 100%)
+
+### B2.1: Admin Types, API Client & TanStack Query Hooks (TDD)
+- [x] Tạo `src/features/admin/types/index.ts` định nghĩa DTOs khớp Backend Facade:
+  - [x] `TeacherApprovalSnapshot`, `TeacherDocumentSnapshot`, `SubjectProposalSnapshot`, `IdentitySnapshot`
+  - [x] `ApproveTeacherRequest`, `RejectRequest`, `ApproveSubjectProposalRequest`, `ChangeUserStatusRequest`
+- [x] Tạo `src/features/admin/api/adminApi.ts` gọi các endpoint:
+  - [x] `GET /api/admin/teachers/approvals`
+  - [x] `POST /api/admin/teachers/{id}/approve`
+  - [x] `POST /api/admin/teachers/{id}/reject`
+  - [x] `GET /api/admin/subject-proposals`
+  - [x] `POST /api/admin/subject-proposals/{id}/approve`
+  - [x] `POST /api/admin/subject-proposals/{id}/reject`
+  - [x] `PATCH /api/admin/users/{id}/status`
+- [x] Tạo `src/features/admin/hooks/useAdminApprovals.ts` (query & mutations tự động invalidate query cache)
+- [x] Viết unit test `src/features/admin/hooks/useAdminApprovals.test.tsx` (TDD: 6/6 tests pass)
+
+### B2.2: Giao diện Duyệt hồ sơ Giáo viên (Teacher Approvals - TDD)
+- [x] Tạo `src/features/admin/components/TeacherDetailDrawer.tsx` (xem chi tiết hồ sơ, bằng cấp kèm link secureUrl, duyệt/từ chối kèm lý do)
+- [x] Tạo `src/features/admin/components/TeacherApprovalTable.tsx` (bảng ResponsiveTable, lọc theo tabs trạng thái `PENDING_APPROVAL`, `APPROVED`, `REJECTED`, phân trang)
+- [x] Viết unit test `src/features/admin/components/TeacherApprovalTable.test.tsx` (TDD: 2/2 tests pass)
+
+### B2.3: Giao diện Phê duyệt Đề xuất Môn học (Subject Proposals - TDD)
+- [x] Tạo `src/features/admin/components/ApproveSubjectModal.tsx` (form chuẩn hóa tên môn, danh mục, mô tả trước khi tạo)
+- [x] Tạo `src/features/admin/components/SubjectProposalTable.tsx` (bảng quản lý môn đề xuất, duyệt & từ chối kèm lý do bắt buộc)
+- [x] Viết unit test `src/features/admin/components/SubjectProposalTable.test.tsx` (TDD: 2/2 tests pass)
+
+### B2.4: Kiểm duyệt & Điều chỉnh Tài khoản Người dùng (User Moderation - TDD)
+- [x] Tạo `src/features/admin/components/UserModerationModal.tsx` (khóa/mở khóa tài khoản kèm lý do bắt buộc và cảnh báo hành động)
+- [x] Viết unit test `src/features/admin/components/UserModerationModal.test.tsx` (TDD: 2/2 tests pass)
+
+### B2.5: Thiết lập Route Pages & Role Protection Admin
+- [x] Tạo `src/features/admin/pages/AdminTeachersPage.tsx`
+- [x] Tạo `src/features/admin/pages/AdminSubjectsPage.tsx`
+- [x] Tạo các App Router pages bọc `RoleGuard allowedRoles={['ADMIN']}`:
+  - [x] `src/app/admin/teachers/page.tsx`
+  - [x] `src/app/admin/subjects/page.tsx`
+- [x] Export toàn bộ public interface qua `src/features/admin/index.ts`
 
 ---
 

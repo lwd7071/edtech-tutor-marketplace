@@ -54,7 +54,49 @@ Toàn bộ quy trình phát triển được triển khai theo chuẩn mực **T
 
 ---
 
+## B2: Quản trị Phê duyệt & Onboarding Admin (ĐÃ HOÀN THÀNH 100%)
+
+### 1. B2.1: Admin Types, API Client & TanStack Query Hooks (`src/features/admin/`)
+- Khởi tạo đầy đủ DTOs theo spec Backend Facade: `TeacherApprovalSnapshot`, `TeacherDocumentSnapshot`, `SubjectProposalSnapshot`, `IdentitySnapshot`, `ApproveTeacherRequest`, `RejectRequest`, `ApproveSubjectProposalRequest`, `ChangeUserStatusRequest`.
+- API Client `adminApi.ts` tích hợp đầy đủ 7 endpoints quản trị:
+  - `GET /api/admin/teachers/approvals`
+  - `POST /api/admin/teachers/{id}/approve`
+  - `POST /api/admin/teachers/{id}/reject`
+  - `GET /api/admin/subject-proposals`
+  - `POST /api/admin/subject-proposals/{id}/approve`
+  - `POST /api/admin/subject-proposals/{id}/reject`
+  - `PATCH /api/admin/users/{id}/status`
+- TanStack Query hooks `useAdminApprovals.ts`: tự động quản lý cache và invalidate query key tương ứng sau khi mutate thành công.
+- **TDD:** `useAdminApprovals.test.tsx` pass 6/6 tests.
+
+### 2. B2.2: Giao diện Duyệt hồ sơ Giáo viên (`TeacherApprovalTable.tsx` & `TeacherDetailDrawer.tsx`)
+- Drawer chi tiết giáo viên hiển thị đầy đủ thông tin: Trình độ học vấn, số năm kinh nghiệm, tiểu sử, danh sách bằng cấp/chứng chỉ kèm link xem trực tiếp qua `secureUrl`.
+- Hỗ trợ form nhập lý do từ chối bắt buộc (tránh từ chối không có nguyên nhân cụ thể).
+- Bảng quản lý `ResponsiveTable` hỗ trợ tabs chuyển trạng thái (`PENDING_APPROVAL`, `APPROVED`, `REJECTED`) và phân trang đồng bộ với server.
+- **TDD:** `TeacherApprovalTable.test.tsx` pass 2/2 tests.
+
+### 3. B2.3: Giao diện Phê duyệt Đề xuất Môn học (`SubjectProposalTable.tsx` & `ApproveSubjectModal.tsx`)
+- Modal `ApproveSubjectModal` cho phép Admin chuẩn hóa tên môn học, danh mục môn học, và bổ sung mô tả trước khi tạo môn học chính thức vào hệ thống.
+- Bảng hiển thị danh sách các đề xuất từ giáo viên, tích hợp nút "Phê duyệt" và "Từ chối" kèm nhập lý do từ chối.
+- **TDD:** `SubjectProposalTable.test.tsx` pass 2/2 tests.
+
+### 4. B2.4: Kiểm duyệt & Điều chỉnh Tài khoản Người dùng (`UserModerationModal.tsx`)
+- Modal thao tác khóa / mở khóa tài khoản người dùng (`ACTIVE` <-> `LOCKED`).
+- Bắt buộc nhập lý do điều chỉnh trạng thái tài khoản và hiển thị cảnh báo rủi ro thao tác.
+- **TDD:** `UserModerationModal.test.tsx` pass 2/2 tests.
+
+### 5. B2.5: Thiết lập Route Pages & Role Protection Admin
+- `AdminTeachersPage.tsx` và `AdminSubjectsPage.tsx` đóng gói giao diện trang quản trị.
+- Next.js App Router pages:
+  - `src/app/admin/teachers/page.tsx`
+  - `src/app/admin/subjects/page.tsx`
+- Cả hai page được bọc qua `<RoleGuard allowedRoles={['ADMIN']}>`, ngăn chặn truy cập trái phép và hiển thị màn hình 403 thân thiện nếu không có quyền.
+- Export public API sạch sẽ qua `src/features/admin/index.ts`.
+
+---
+
 ## Kết quả Kiểm thử & Chẩn đoán Toàn diện
-- **Unit Tests:** **16/16 test suites pass, 31/31 unit tests pass 100%**.
-- **Next.js Production Build:** **Compiled & static generation 5/5 pages thành công**.
-- **TypeScript:** Không có bất kỳ lỗi type check nào.
+- **Unit Tests:** **20/20 test suites pass, 43/43 unit tests pass 100%**.
+- **Next.js Production Build:** **Compiled & static generation 7/7 pages thành công** (bao gồm `/admin/teachers`, `/admin/subjects`).
+- **TypeScript:** Type check sạch 100%, không phát sinh bất kỳ lỗi compile nào.
+
