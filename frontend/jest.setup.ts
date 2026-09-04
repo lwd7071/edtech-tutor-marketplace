@@ -14,3 +14,9 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Polyfill MessageChannel for Ant Design Form in JSDOM
+if (typeof MessageChannel === 'undefined') {
+  const { MessageChannel } = require('worker_threads');
+  (global as any).MessageChannel = MessageChannel;
+}
