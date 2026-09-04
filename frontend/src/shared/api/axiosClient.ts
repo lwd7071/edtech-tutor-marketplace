@@ -138,3 +138,5 @@ export function setupAxiosInterceptors(client: AxiosInstance) {
 
 // Khởi chạy interceptors cho instance mặc định
 setupAxiosInterceptors(axiosClient);
+
+export default axiosClient;

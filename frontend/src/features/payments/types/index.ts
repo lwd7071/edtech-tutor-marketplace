@@ -1,26 +1,25 @@
-export type PaymentStatus = 'PENDING' | 'PAID' | 'CANCELLED' | 'EXPIRED' | 'FAILED';
+/**
+ * Kiểu dữ liệu và DTO cho phân hệ Thanh toán (Payments & Invoices)
+ * Khớp chuẩn API Contract và SPEC-FE
+ */
 
-export interface CheckoutRequest {
-  packageId: string;
+export type InvoiceStatus = 'PENDING' | 'PAID' | 'CANCELLED' | 'EXPIRED';
+
+export interface CreateInvoiceRequest {
+  pricingPackageId: string;
   returnUrl?: string;
   cancelUrl?: string;
-}
-
-export interface CheckoutResponse {
-  invoiceId: string;
-  paymentUrl: string;
-  orderCode: number;
-  amount: number;
-  status: PaymentStatus;
 }
 
 export interface InvoiceDetail {
   id: string;
   invoiceNumber: string;
-  amount: number;
-  status: PaymentStatus;
-  paymentMethod: string;
-  createdAt: string;
-  expiresAt: string | null;
-  paidAt: string | null;
+  pricingPackageId: string;
+  packageName?: string;
+  amountVnd: number;
+  status: InvoiceStatus;
+  checkoutUrl: string;
+  qrCode: string;
+  paymentExpiredAt: string;
+  paidAt?: string | null;
 }
