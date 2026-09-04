@@ -28,9 +28,9 @@ public interface TeacherProfileRepository extends JpaRepository<TeacherProfile, 
     Optional<TeacherProfile> findByIdForUpdate(@Param("id") UUID id);
 
     @org.springframework.data.jpa.repository.Query("SELECT DISTINCT t.id FROM TeacherProfile t " +
-        "WHERE t.profileStatus = 'APPROVED' AND t.isVisible = true AND t.isDeleted = false " +
-        "AND (:subjectId IS NULL OR EXISTS (SELECT 1 FROM TeacherSubject ts WHERE ts.teacher = t AND ts.subjectId = :subjectId AND ts.isActive = true AND ts.isDeleted = false)) " +
-        "AND (:dayOfWeek IS NULL OR :startTime IS NULL OR :endTime IS NULL OR EXISTS (SELECT 1 FROM TeacherAvailability ta WHERE ta.teacher = t AND ta.dayOfWeek = :dayOfWeek AND ta.startTime <= :startTime AND ta.endTime >= :endTime AND ta.isActive = true AND ta.isDeleted = false))")
+        "WHERE t.profileStatus = 'APPROVED' AND t.isVisible = true AND t.deleted = false " +
+        "AND (:subjectId IS NULL OR EXISTS (SELECT 1 FROM TeacherSubject ts WHERE ts.teacher = t AND ts.subjectId = :subjectId AND ts.isActive = true AND ts.deleted = false)) " +
+        "AND (:dayOfWeek IS NULL OR :startTime IS NULL OR :endTime IS NULL OR EXISTS (SELECT 1 FROM TeacherAvailability ta WHERE ta.teacher = t AND ta.dayOfWeek = :dayOfWeek AND ta.startTime <= :startTime AND ta.endTime >= :endTime AND ta.isActive = true AND ta.deleted = false))")
     java.util.Set<UUID> searchTeacherIds(@org.springframework.data.repository.query.Param("subjectId") UUID subjectId, 
                                          @org.springframework.data.repository.query.Param("dayOfWeek") java.time.DayOfWeek dayOfWeek, 
                                          @org.springframework.data.repository.query.Param("startTime") java.time.LocalTime startTime, 

@@ -13,6 +13,6 @@ import java.util.UUID;
 public interface ConversationRepository extends JpaRepository<Conversation, UUID> {
     Optional<Conversation> findByTeacherIdAndStudentId(UUID teacherId, UUID studentId);
 
-    @Query("SELECT c FROM Conversation c WHERE (c.teacherId = :userId OR c.studentId = :userId) AND c.isDeleted = false ORDER BY c.lastMessageAt DESC NULLS LAST")
+    @Query("SELECT c FROM Conversation c WHERE (c.teacherId = :userId OR c.studentId = :userId) AND c.deleted = false ORDER BY c.lastMessageAt DESC NULLS LAST")
     Page<Conversation> findByUserId(@Param("userId") UUID userId, Pageable pageable);
 }

@@ -18,6 +18,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("select u from User u where u.id = :id")
     Optional<User> findByIdForUpdate(@Param("id") UUID id);
 
-    @org.springframework.data.jpa.repository.Query("SELECT u.id FROM User u WHERE LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) AND u.status = 'ACTIVE' AND u.isDeleted = false")
+    @org.springframework.data.jpa.repository.Query("SELECT u.id FROM User u WHERE LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) AND u.status = 'ACTIVE' AND u.deleted = false")
     java.util.Set<UUID> searchIdsByKeyword(@org.springframework.data.repository.query.Param("keyword") String keyword);
 }
