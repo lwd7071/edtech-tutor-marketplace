@@ -20,6 +20,8 @@ public class PaymentProviderProperties {
     private String baseUrl = "https://api-merchant.payos.vn";
     private Duration connectTimeout = Duration.ofSeconds(3);
     private Duration readTimeout = Duration.ofSeconds(10);
+    private String defaultReturnUrl = "http://localhost:3000/payment/success";
+    private String defaultCancelUrl = "http://localhost:3000/payment/cancel";
 
     @PostConstruct
     void validate() {
