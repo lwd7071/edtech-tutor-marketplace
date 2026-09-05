@@ -6,7 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE student_packages SET is_deleted = true WHERE id = ? AND version = ?")
-@Where(clause = "is_deleted = false")
+@SQLRestriction("is_deleted = false")
 public class StudentPackage extends BaseEntity {
     @Column(name = "student_id", nullable = false) private UUID studentId;
     @Column(name = "teacher_id", nullable = false) private UUID teacherId;

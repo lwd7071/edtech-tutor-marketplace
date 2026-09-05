@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Badge } from 'antd';
 import { 
   AppstoreOutlined, 
   CalendarOutlined, 
@@ -23,7 +24,7 @@ export default function BottomNavigation() {
     { key: '/student/packages', icon: <BookOutlined />, label: 'Gói học' },
     { key: '/student/schedule', icon: <CalendarOutlined />, label: 'Lịch học' },
     { key: '/student/assignments', icon: <BookOutlined />, label: 'Bài tập' },
-    { key: '/student/chat', icon: <MessageOutlined />, label: 'Tin nhắn' },
+    { key: '/student/chat', icon: <MessageOutlined />, label: 'Tin nhắn', hasBadge: true }, // mocked badge
   ];
 
   const teacherItems = [
@@ -31,7 +32,7 @@ export default function BottomNavigation() {
     { key: '/teacher/schedule', icon: <CalendarOutlined />, label: 'Lịch dạy' },
     { key: '/teacher/students', icon: <TeamOutlined />, label: 'Học sinh' },
     { key: '/teacher/wallet', icon: <WalletOutlined />, label: 'Ví' },
-    { key: '/teacher/more', icon: <MenuOutlined />, label: 'Thêm' },
+    { key: '/teacher/more', icon: <MenuOutlined />, label: 'Thêm', hasBadge: true }, // mocked badge
   ];
 
   const items = isTeacher ? teacherItems : studentItems;
@@ -43,7 +44,9 @@ export default function BottomNavigation() {
           const isActive = pathname.startsWith(item.key);
           return (
             <Link key={item.key} href={item.key} className={`nav-item ${isActive ? 'active' : ''}`}>
-              <div className="icon">{item.icon}</div>
+              <Badge dot={item.hasBadge} color="var(--color-error-600)">
+                <div className="icon">{item.icon}</div>
+              </Badge>
               <div className="label">{item.label}</div>
             </Link>
           );

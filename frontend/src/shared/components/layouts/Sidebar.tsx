@@ -106,7 +106,33 @@ export default function Sidebar() {
         selectedKeys={[pathname]}
         items={enhancedItems}
         style={{ borderRight: 'none', padding: 'var(--space-3)' }}
+        className="sidebar-menu"
       />
+      <style>{`
+        .sidebar-menu .ant-menu-item-selected::after {
+          display: none !important; /* Hide AntD default right border */
+        }
+        .sidebar-menu .ant-menu-item-selected {
+          position: relative;
+        }
+        .sidebar-menu .ant-menu-item-selected::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 10%;
+          bottom: 10%;
+          width: 3px;
+          border-radius: 0 4px 4px 0;
+          background-color: var(--color-primary-600);
+        }
+        /* Group label style - if used */
+        .sidebar-menu .ant-menu-item-group-title {
+          font-size: 11px !important;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: var(--color-text-tertiary) !important;
+        }
+      `}</style>
     </Sider>
   );
 }

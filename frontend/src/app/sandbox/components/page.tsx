@@ -9,6 +9,13 @@ import ResponsiveModal from '@/shared/components/ui/ResponsiveModal';
 import ResponsiveTable from '@/shared/components/ui/ResponsiveTable';
 import FileUpload from '@/shared/components/ui/FileUpload';
 import { useConfirmDialog } from '@/shared/components/ui/useConfirmDialog';
+import TeacherCard from '@/shared/components/data-display/TeacherCard';
+import SubjectCard from '@/shared/components/data-display/SubjectCard';
+import PackageCard from '@/shared/components/data-display/PackageCard';
+import NotificationBell from '@/shared/components/feedback/NotificationBell';
+import ChatBubble from '@/shared/components/feedback/ChatBubble';
+import TeacherApprovalBanner from '@/shared/components/ui/TeacherApprovalBanner';
+import WeeklyScheduleGrid from '@/shared/components/data-display/WeeklyScheduleGrid';
 import { useState } from 'react';
 
 const { Title, Text } = Typography;
@@ -176,6 +183,65 @@ export default function ComponentSandbox() {
         <Pagination defaultCurrent={1} total={50} />
         <Divider />
         <FileUpload />
+      </Card>
+
+      <Title level={2} style={{ marginTop: 'var(--space-8)' }}>A1.6 Composite Components Sandbox</Title>
+      
+      <Card title="8. Cards (Teacher, Subject, Package)" style={{ marginBottom: 'var(--space-6)' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+          <div style={{ width: 300 }}>
+            <TeacherCard 
+              id="1" name="Nguyen Van A" avatarUrl="" isVerified rating={4.8} reviewCount={120} lowestPrice={150000} subjects={['Toán', 'Lý']}
+            />
+          </div>
+          <div style={{ width: 250 }}>
+            <TeacherCard 
+              id="2" name="Tran Thi B" variant="compact" rating={4.5} lowestPrice={120000} subjects={['Anh']}
+            />
+          </div>
+          <div style={{ width: 200 }}>
+            <SubjectCard id="1" name="Toán học" description="Toán cấp 3" teacherCount={12} />
+          </div>
+          <div style={{ width: 250 }}>
+            <PackageCard id="1" name="Khóa cơ bản" price={500000} sessionCount={10} description="Học phí rẻ" />
+          </div>
+          <div style={{ width: 250 }}>
+            <PackageCard id="2" name="Khóa đã mua" price={500000} sessionCount={10} variant="purchased" completedSessions={4} />
+          </div>
+        </div>
+      </Card>
+
+      <Card title="9. Notification & Chat" style={{ marginBottom: 'var(--space-6)' }}>
+        <Space size="large" align="start">
+          <NotificationBell 
+            unreadCount={2}
+            notifications={[
+              { id: '1', title: 'Thông báo 1', message: 'Bạn có tin nhắn', timestamp: new Date().toISOString(), isRead: false },
+              { id: '2', title: 'Thông báo 2', message: 'Đã duyệt', timestamp: new Date(Date.now() - 3600000).toISOString(), isRead: true }
+            ]}
+          />
+          <div style={{ width: 400, border: '1px solid var(--color-border)', padding: 16, borderRadius: 8 }}>
+            <ChatBubble variant="other" content="Chào bạn, mình muốn hỏi về khóa học" timestamp={new Date().toISOString()} />
+            <ChatBubble variant="own" content="Vâng, bạn cần hỏi gì ạ?\nKhóa học có giá 500k." timestamp={new Date().toISOString()} status="sent" />
+            <ChatBubble variant="system" content="Người dùng đã offline" />
+          </div>
+        </Space>
+      </Card>
+
+      <Card title="10. Complex UI" style={{ marginBottom: 'var(--space-6)' }}>
+        <TeacherApprovalBanner status="PENDING_APPROVAL" submittedAt={new Date().toISOString()} />
+        <TeacherApprovalBanner status="REJECTED" rejectionReason="Ảnh CMND mờ" onEdit={() => {}} />
+        
+        <Title level={4}>Weekly Schedule (Readonly)</Title>
+        <div style={{ height: 400, overflowY: 'auto' }}>
+          <WeeklyScheduleGrid 
+            mode="readonly"
+            availableSlots={[
+              { dayOfWeek: 2, startTime: '09:00', endTime: '10:00' },
+              { dayOfWeek: 2, startTime: '10:00', endTime: '11:00', isBooked: true },
+            ]}
+          />
+        </div>
       </Card>
     </div>
   );

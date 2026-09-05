@@ -14,3 +14,30 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Mock ResizeObserver
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+// Mock MessageChannel
+global.MessageChannel = class MessageChannel {
+  port1 = {
+    onmessage: null,
+  } as any;
+  port2 = {
+    postMessage: jest.fn(),
+  } as any;
+} as any;
+
+// Mock @ant-design/icons
+jest.mock('@ant-design/icons', () => {
+  return new Proxy({}, {
+    get: function(target, prop) {
+      if (prop === '__esModule') return true;
+      return function() { return null; };
+    }
+  });
+});

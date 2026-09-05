@@ -42,6 +42,7 @@ services:
       DB_USERNAME: edtech_user
       DB_PASSWORD: edtech_password
       REDIS_URL: redis://redis:6379
+      APP_JWT_SECRET: "your-256-bit-secret-key-change-this-in-production-environments-min-32-chars"
     ports:
       - "8080:8080"
     healthcheck:

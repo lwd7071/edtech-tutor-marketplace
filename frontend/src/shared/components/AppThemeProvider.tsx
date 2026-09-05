@@ -18,7 +18,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
   return (
     <AntdRegistry>
       <ConfigProvider theme={appTheme}>
-        <App>
+        <App message={{ maxCount: 3 }}>
           {children}
         </App>
       </ConfigProvider>

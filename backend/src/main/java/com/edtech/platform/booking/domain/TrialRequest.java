@@ -6,12 +6,12 @@ import com.edtech.platform.common.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity @Table(name="trial_requests") @Getter @NoArgsConstructor(access=AccessLevel.PROTECTED)
-@SQLDelete(sql="UPDATE trial_requests SET is_deleted=true WHERE id=?") @Where(clause="is_deleted=false")
+@SQLDelete(sql="UPDATE trial_requests SET is_deleted=true WHERE id=?") @SQLRestriction("is_deleted = false")
 public class TrialRequest extends BaseEntity {
  @Column(name="teacher_id",nullable=false) private UUID teacherId;
  @Column(name="student_id",nullable=false) private UUID studentId;

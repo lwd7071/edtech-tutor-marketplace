@@ -6,13 +6,13 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 import java.util.Objects;
 import java.util.UUID;
 
 @Entity @Table(name="wallets") @Getter @NoArgsConstructor(access=AccessLevel.PROTECTED)
 @SQLDelete(sql="UPDATE wallets SET is_deleted = true WHERE id = ? AND version = ?")
-@Where(clause="is_deleted = false")
+@SQLRestriction("is_deleted = false")
 public class Wallet extends BaseEntity {
     @Column(name="teacher_id", nullable=false, unique=true) private UUID teacherId;
     @Column(name="pending_balance_vnd", nullable=false) private long pendingBalanceVnd;

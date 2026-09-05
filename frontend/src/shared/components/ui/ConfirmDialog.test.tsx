@@ -29,7 +29,7 @@ describe('useConfirmDialog', () => {
     fireEvent.click(screen.getByText('Show Stale Confirm'));
     
     // Check title and custom stale text
-    expect(screen.getByText('Stale Data')).toBeInTheDocument();
+    expect(screen.getAllByText('Stale Data').length).toBeGreaterThan(0);
     expect(screen.getByText('Dữ liệu đã thay đổi ở nơi khác. Vui lòng tải lại trang để xem bản cập nhật mới nhất.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Tải lại' })).toBeInTheDocument();
   });

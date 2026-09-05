@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AppThemeProvider } from "@/shared/components/AppThemeProvider";
+import AuthProvider from "@/shared/components/auth/AuthProvider";
 
 // Configure Next.js optimized fonts
 const inter = Inter({
@@ -39,7 +40,9 @@ export default function RootLayout({
     <html lang="vi" className={`${inter.variable} ${beVietnamPro.variable} ${jetBrainsMono.variable}`}>
       <body className="antialiased">
         <AppThemeProvider>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </AppThemeProvider>
       </body>
     </html>

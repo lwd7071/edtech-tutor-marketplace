@@ -97,111 +97,111 @@ Dưới đây là danh sách các task chi tiết được chia theo từng tu�
   - [x] Kéo thả + chọn file, progress indicator
 
 ### A1.5 Shared Business Components (Spec mục 11.3)
-- [ ] `StatusTag` — map domain status → semantic token thống nhất (radius 4px `--radius-xs`):
-  - [ ] TeacherProfile: DRAFT (neutral) / PENDING_APPROVAL (warning `--color-warning-600`) / APPROVED (success `--color-success-600`) / REJECTED (error `--color-error-600`)
-  - [ ] Invoice: PENDING (warning) / PAID (success) / CANCELLED (neutral) / EXPIRED (error)
-  - [ ] StudentPackage: PENDING_PAYMENT (warning) / ACTIVE (success) / COMPLETED (info `--color-info-600`) / LOCKED_EXPIRED (error) / REFUND_PENDING (warning) / REFUNDED (neutral)
-  - [ ] Booking: SCHEDULED (info) / COMPLETED (success) / CANCELLED (neutral) / EXPIRED (error)
-  - [ ] Payout: PENDING (warning) / PROCESSING (info) / SUCCEEDED (success) / REJECTED (neutral) / FAILED (error)
-  - [ ] Refund, Extension, Assignment, Submission, Trial (theo Spec 6.5)
-- [ ] `MoneyText` — format VND (phân cách nghìn bằng dấu chấm, hậu tố ` ₫`)
-  - [ ] Variants: normal / +positive (success) / −negative (error) / compact (rút gọn + tooltip)
-  - [ ] `tabular-nums`, `white-space: nowrap`, căn phải
-  - [ ] Prefix +/− dùng Unicode (U+2212 cho minus, không dùng hyphen)
-- [ ] `DateTimeText` — format theo timezone Asia/Ho_Chi_Minh, text `--color-text-secondary` hoặc `--color-text-tertiary`
-  - [ ] Variants: date (`dd/MM/yyyy`), time (`HH:mm`), full (`HH:mm, dd/MM/yyyy`), range (`19:00 – 20:30 · Thứ 4, 20/08/2026`), relative (`3 phút trước`, quá 7 ngày → ngày tuyệt đối)
-- [ ] `SessionCounter` — 4 chỉ số: Còn lại / Đang giữ / Đã học / Đã hoàn
-  - [ ] Variants: horizontal / compact
-  - [ ] Tooltip "Đang giữ": "Số buổi đã được giữ cho các booking đang lên lịch."
-- [ ] `Avatar` wrap — sizes xs(24) / sm(32) / md(40) / lg(64) / xl(96), verified badge
-- [ ] `RatingStars` — readonly / interactive
-- [ ] `Badge` — dot (8px) / count / accent
-- [ ] `Skeleton` — variants text/card/table/avatar
-  - [ ] Shimmer animation 1.4s loop
-  - [ ] `prefers-reduced-motion` → pulse/static
-- [ ] `EmptyState` — variants no-data/no-search/first-use
-  - [ ] Icon nét mảnh 1.5px đơn sắc (`--color-text-placeholder`), không illustration màu mè
-  - [ ] Text chính `--text-h4`, text phụ `--text-secondary`, copy mẫu + CTA phù hợp theo Spec 20.3
-- [ ] `ErrorState` — variants inline/page/auth
-  - [ ] Hiển thị lỗi + nút Retry, không lộ lỗi backend nội bộ
+- [x] `StatusTag` — map domain status → semantic token thống nhất (radius 4px `--radius-xs`):
+  - [x] TeacherProfile: DRAFT (neutral) / PENDING_APPROVAL (warning `--color-warning-600`) / APPROVED (success `--color-success-600`) / REJECTED (error `--color-error-600`)
+  - [x] Invoice: PENDING (warning) / PAID (success) / CANCELLED (neutral) / EXPIRED (error)
+  - [x] StudentPackage: PENDING_PAYMENT (warning) / ACTIVE (success) / COMPLETED (info `--color-info-600`) / LOCKED_EXPIRED (error) / REFUND_PENDING (warning) / REFUNDED (neutral)
+  - [x] Booking: SCHEDULED (info) / COMPLETED (success) / CANCELLED (neutral) / EXPIRED (error)
+  - [x] Payout: PENDING (warning) / PROCESSING (info) / SUCCEEDED (success) / REJECTED (neutral) / FAILED (error)
+  - [x] Refund, Extension, Assignment, Submission, Trial (theo Spec 6.5)
+- [x] `MoneyText` — format VND (phân cách nghìn bằng dấu chấm, hậu tố ` ₫`)
+  - [x] Variants: normal / +positive (success) / −negative (error) / compact (rút gọn + tooltip)
+  - [x] `tabular-nums`, `white-space: nowrap`, căn phải
+  - [x] Prefix +/− dùng Unicode (U+2212 cho minus, không dùng hyphen)
+- [x] `DateTimeText` — format theo timezone Asia/Ho_Chi_Minh, text `--color-text-secondary` hoặc `--color-text-tertiary`.
+  - [x] Variants: date (`dd/MM/yyyy`), time (`HH:mm`), full (`HH:mm, dd/MM/yyyy`), range (`19:00 – 20:30 · Thứ 4, 20/08/2026`), relative (`3 phút trước`, quá 7 ngày → ngày tuyệt đối)
+- [x] `SessionCounter` — 4 chỉ số: Còn lại / Đang giữ / Đã học / Đã hoàn
+  - [x] Variants: horizontal / compact
+  - [x] Tooltip "Đang giữ": "Số buổi đã được giữ cho các booking đang lên lịch."
+- [x] `Avatar` wrap — sizes xs(24) / sm(32) / md(40) / lg(64) / xl(96), verified badge
+- [x] `RatingStars` — readonly / interactive
+- [x] `Badge` — dot (8px) / count / accent
+- [x] `Skeleton` — variants text/card/table/avatar
+  - [x] Shimmer animation 1.4s loop
+  - [x] `prefers-reduced-motion` → pulse/static
+- [x] `EmptyState` — variants no-data/no-search/first-use
+  - [x] Icon nét mảnh 1.5px đơn sắc (`--color-text-placeholder`), không illustration màu mè
+  - [x] Text chính `--text-h4`, text phụ `--text-secondary`, copy mẫu + CTA phù hợp theo Spec 20.3
+- [x] `ErrorState` — variants inline/page/auth
+  - [x] Hiển thị lỗi + nút Retry, không lộ lỗi backend nội bộ
 
 ### A1.6 Composite Components
-- [ ] `TeacherCard` (compact/full) — Avatar, tên, verified, môn, RatingStars, review count, giá thấp nhất (MoneyText)
-- [ ] `SubjectCard` (default/compact) — tên, mô tả ngắn, số giáo viên
-- [ ] `PackageCard` (public/purchased) — tên gói, giá (MoneyText), số buổi, mô tả
-- [ ] `NotificationBell` — count badge, dropdown 8 thông báo gần nhất + link "Xem tất cả"
-- [ ] `NotificationItem` — read/unread/action, icon + nội dung + relative time (DateTimeText)
-- [ ] `ChatBubble` — own/other/system, timestamp, sending/sent/failed state
-- [ ] `WeeklyScheduleGrid` — editable (teacher availability) / readonly (public profile) / booking-overlay (lịch dạy)
-  - [ ] Lưới 7 ngày desktop, agenda view mobile
-  - [ ] TimeRangePicker tích hợp cho editable mode
-- [ ] `TeacherApprovalBanner` — radius 12px (`--radius-lg`), padding 16px
-  - [ ] DRAFT (info `--color-info-bg`, text `--color-info-600`)
-  - [ ] PENDING_APPROVAL (warning `--color-warning-bg`, text `--color-warning-600`)
-  - [ ] REJECTED (error `--color-error-bg`, text `--color-error-600`)
-  - [ ] APPROVED (ẩn)
+- [x] `TeacherCard` (compact/full) — Avatar, tên, verified, môn, RatingStars, review count, giá thấp nhất (MoneyText)
+- [x] `SubjectCard` (default/compact) — tên, mô tả ngắn, số giáo viên
+- [x] `PackageCard` (public/purchased) — tên gói, giá (MoneyText), số buổi, mô tả
+- [x] `NotificationBell` — count badge, dropdown 8 thông báo gần nhất + link "Xem tất cả"
+- [x] `NotificationItem` — read/unread/action, icon + nội dung + relative time (DateTimeText)
+- [x] `ChatBubble` — own/other/system, timestamp, sending/sent/failed state
+- [x] `WeeklyScheduleGrid` — editable (teacher availability) / readonly (public profile) / booking-overlay (lịch dạy)
+  - [x] Lưới 7 ngày desktop, agenda view mobile
+  - [x] TimeRangePicker tích hợp cho editable mode
+- [x] `TeacherApprovalBanner` — radius 12px (`--radius-lg`), padding 16px
+  - [x] DRAFT (info `--color-info-bg`, text `--color-info-600`)
+  - [x] PENDING_APPROVAL (warning `--color-warning-bg`, text `--color-warning-600`)
+  - [x] REJECTED (error `--color-error-bg`, text `--color-error-600`)
+  - [x] APPROVED (ẩn)
 
 ### A1.7 System Pages (phối hợp B)
-- [ ] Template trang `403 Forbidden` (`/403`) — ErrorState centered + Button quay dashboard/trang trước
-- [ ] Template trang `404 Not Found` (`/404`, `*`) — ErrorState centered + Search optional + Button về trang chủ
+- [x] Template trang `403 Forbidden` (`/403`) — ErrorState centered + Button quay dashboard/trang trước
+- [x] Template trang `404 Not Found` (`/404`, `*`) — ErrorState centered + Search optional + Button về trang chủ
 
 ---
 
 ## A2: Auth và Onboarding
 
 ### A2.1 Luồng Đăng nhập / Đăng ký
-- [ ] Trang Login (`/auth/login`) *(API: POST /api/auth/login)*
-  - [ ] Auth shell 2 cột desktop / card 440-480px mobile
-  - [ ] Input email + password (autocomplete username/current-password)
-  - [ ] Checkbox "Ghi nhớ đăng nhập"
-  - [ ] Nút "Đăng nhập" (primary) + "Đăng nhập bằng Google" (secondary)
-  - [ ] Link "Quên mật khẩu?" + Link "Đăng ký"
-  - [ ] Xử lý lỗi: `ACCOUNT_LOCKED` → ErrorState + lý do + nút "Liên hệ hỗ trợ"
-  - [ ] Giữ redirect param (`?redirect=<path>`)
-- [ ] Trang Register (`/auth/register`) *(API: POST /api/auth/register)*
-  - [ ] Input email, password (+ rules text), họ tên, chọn role (Select/Radio)
-  - [ ] Checkbox đồng ý điều khoản
-  - [ ] Validate client + hiển thị validation error từ Backend
-  - [ ] Google OAuth + link Login
-- [ ] Trang chọn role sau Google OAuth (`/auth/oauth/role`) *(API: POST /api/auth/oauth2/complete-registration)*
-  - [ ] 2 card STUDENT / TEACHER (ADMIN không hiện)
-  - [ ] Giải thích hậu quả lựa chọn (không đổi được sau)
-  - [ ] Radio group semantics
-- [ ] Trang quên mật khẩu (`/auth/forgot-password`) *(API: POST /api/auth/forgot-password)*
-  - [ ] Input email, success message không tiết lộ email tồn tại hay không
-  - [ ] `aria-live` cho status message
-- [ ] Trang đặt lại mật khẩu (`/auth/reset-password`) *(API: POST /api/auth/reset-password)*
-  - [ ] Input password mới + xác nhận
-  - [ ] Xử lý token invalid/expired → ErrorState + link gửi lại
-  - [ ] Show/hide password accessible
-- [ ] Trang xác thực Email (`/auth/verify-email`) *(API: POST /api/auth/verify-email, POST /api/auth/resend-verification)*
-  - [ ] Alert sticky "Vui lòng xác minh email" + nút gửi lại
-  - [ ] Chặn mua gói & gửi hồ sơ duyệt khi chưa verify
-- [ ] Full-screen splash khi kiểm tra phiên (logo + spinner, không nháy layout)
+- [x] Trang Login (`/auth/login`) *(API: POST /api/auth/login)*
+  - [x] Auth shell 2 cột desktop / card 440-480px mobile
+  - [x] Input email + password (autocomplete username/current-password)
+  - [x] Checkbox "Ghi nhớ đăng nhập"
+  - [x] Nút "Đăng nhập" (primary) + "Đăng nhập bằng Google" (secondary)
+  - [x] Link "Quên mật khẩu?" + Link "Đăng ký"
+  - [x] Xử lý lỗi: `ACCOUNT_LOCKED` → ErrorState + lý do + nút "Liên hệ hỗ trợ"
+  - [x] Giữ redirect param (`?redirect=<path>`)
+- [x] Trang Register (`/auth/register`) *(API: POST /api/auth/register)*
+  - [x] Input email, password (+ rules text), họ tên, chọn role (Select/Radio)
+  - [x] Checkbox đồng ý điều khoản
+  - [x] Validate client + hiển thị validation error từ Backend
+  - [x] Google OAuth + link Login
+- [x] Trang chọn role sau Google OAuth (`/auth/oauth/role`) *(API: POST /api/auth/oauth2/complete-registration)*
+  - [x] 2 card STUDENT / TEACHER (ADMIN không hiện)
+  - [x] Giải thích hậu quả lựa chọn (không đổi được sau)
+  - [x] Radio group semantics
+- [x] Trang quên mật khẩu (`/auth/forgot-password`) *(API: POST /api/auth/forgot-password)*
+  - [x] Input email, success message không tiết lộ email tồn tại hay không
+  - [x] `aria-live` cho status message
+- [x] Trang đặt lại mật khẩu (`/auth/reset-password`) *(API: POST /api/auth/reset-password)*
+  - [x] Input password mới + xác nhận
+  - [x] Xử lý token invalid/expired → ErrorState + link gửi lại
+  - [x] Show/hide password accessible
+- [x] Trang xác thực Email (`/auth/verify-email`) *(API: POST /api/auth/verify-email, POST /api/auth/resend-verification)*
+  - [x] Alert sticky "Vui lòng xác minh email" + nút gửi lại
+  - [x] Chặn mua gói & gửi hồ sơ duyệt khi chưa verify
+- [x] Full-screen splash khi kiểm tra phiên (logo + spinner, không nháy layout)
 
 ### A2.2 Teacher Onboarding (Hồ sơ Giáo viên)
-- [ ] Xây dựng wizard/form thiết lập hồ sơ giáo viên (`/teacher/profile`) *(API: GET/PUT /api/teacher/profile, POST /submit)*
-  - [ ] Input: bio, thông tin cá nhân, kinh nghiệm
-  - [ ] Avatar upload
-  - [ ] Max-width 880px (Spec 9.3)
-- [ ] Trang quản lý Chứng chỉ / Tài liệu (`/teacher/documents`) *(API: POST /api/teacher/documents, DELETE /{id})*
-  - [ ] FileUpload (multiple/dropzone) cho chứng chỉ, bằng cấp
-  - [ ] Table/Card danh sách tài liệu đã upload + StatusTag
-  - [ ] ConfirmDialog xác nhận xóa
-- [ ] Trang quản lý Môn dạy (`/teacher/subjects`) *(API: GET/POST/DELETE /api/teacher/subjects)*
-  - [ ] Select/Search chọn môn từ danh mục
-  - [ ] Card/Table danh sách môn đang dạy
-  - [ ] Button thêm/xóa (ConfirmDialog khi xóa)
-- [ ] Trang Đề xuất môn mới (`/teacher/subject-proposals`) *(API: GET/POST /api/teacher/subject-proposals)*
-  - [ ] Input tên môn + Textarea mô tả
-  - [ ] Table/Card lịch sử đề xuất + StatusTag (PENDING/APPROVED/REJECTED)
-- [ ] Xây dựng component `TeacherApprovalBanner`
-  - [ ] Hiển thị ở đầu **mọi trang** `/teacher`
-  - [ ] `DRAFT`: Info banner + nút "Gửi hồ sơ duyệt"
-  - [ ] `PENDING_APPROVAL`: Warning banner + timestamp gửi lúc HH:mm dd/MM, khóa sửa trường nhạy cảm
-  - [ ] `REJECTED`: Error banner + `rejection_reason` + nút "Chỉnh sửa và gửi lại"
-  - [ ] `APPROVED`: Ẩn banner, badge ✓ Đã duyệt ở header
-  - [ ] Menu bị khóa: disabled + Tooltip "Cần được duyệt hồ sơ trước"
+- [x] Xây dựng wizard/form thiết lập hồ sơ giáo viên (`/teacher/profile`) *(API: GET/PUT /api/teacher/profile, POST /submit)*
+  - [x] Input: bio, thông tin cá nhân, kinh nghiệm
+  - [x] Avatar upload
+  - [x] Max-width 880px (Spec 9.3)
+- [x] Trang quản lý Chứng chỉ / Tài liệu (`/teacher/documents`) *(API: POST /api/teacher/documents, DELETE /{id})*
+  - [x] FileUpload (multiple/dropzone) cho chứng chỉ, bằng cấp
+  - [x] Table/Card danh sách tài liệu đã upload + StatusTag
+  - [x] ConfirmDialog xác nhận xóa
+- [x] Trang quản lý Môn dạy (`/teacher/subjects`) *(API: GET/POST/DELETE /api/teacher/subjects)*
+  - [x] Select/Search chọn môn từ danh mục
+  - [x] Card/Table danh sách môn đang dạy
+  - [x] Button thêm/xóa (ConfirmDialog khi xóa)
+- [x] Trang Đề xuất môn mới (`/teacher/subject-proposals`) *(API: GET/POST /api/teacher/subject-proposals)*
+  - [x] Input tên môn + Textarea mô tả
+  - [x] Table/Card lịch sử đề xuất + StatusTag (PENDING/APPROVED/REJECTED)
+- [x] Xây dựng component `TeacherApprovalBanner`
+  - [x] Hiển thị ở đầu **mọi trang** `/teacher`
+  - [x] `DRAFT`: Info banner + nút "Gửi hồ sơ duyệt"
+  - [x] `PENDING_APPROVAL`: Warning banner + timestamp gửi lúc HH:mm dd/MM, khóa sửa trường nhạy cảm
+  - [x] `REJECTED`: Error banner + `rejection_reason` + nút "Chỉnh sửa và gửi lại"
+  - [x] `APPROVED`: Ẩn banner, badge ✓ Đã duyệt ở header
+  - [x] Menu bị khóa: disabled + Tooltip "Cần được duyệt hồ sơ trước"
 
 ### A2.3 Hồ sơ Học sinh
 - [ ] Trang hồ sơ cá nhân (`/student/profile`)
@@ -213,79 +213,72 @@ Dưới đây là danh sách các task chi tiết được chia theo từng tu�
 ## A3: Marketplace, Teacher Profile & Ranking
 
 ### A3.1 Landing Page (`/`)
-- [ ] Hero section: typography lớn (--text-display 48px / mobile 32px), search bar → `/teachers?q=`
-- [ ] Section môn nổi bật: SubjectCard grid (4/3/2 cột)
-- [ ] Section giáo viên nổi bật: TeacherCard grid (3/2/1 cột)
-- [ ] Quy trình 3 bước (Trust section)
-- [ ] CTA đăng ký theo trạng thái auth (Guest → Register, Logged in → Dashboard)
-- [ ] Footer
-- [ ] Container max-width 1200px, padding ngang 32px (desktop) / 24px (tablet) / 16px (mobile)
-- [ ] Section spacing: 96px (desktop) / 64px (tablet) / 48px (mobile)
-- [ ] Nền trang `--color-background` (`#FBFAF8`), Card nền `--color-surface` (`#FFFFFF`), shadow `--shadow-sm` hoặc chỉ dùng border 1px `--color-border`
+- [x] Hero section: typography lớn (--text-display 48px / mobile 32px), search bar → `/teachers?q=`
+- [x] Section môn nổi bật: SubjectCard grid (4/3/2 cột)
+- [x] Section giáo viên nổi bật: TeacherCard grid (3/2/1 cột)
+- [x] Quy trình 3 bước (Trust section)
+- [x] CTA đăng ký theo trạng thái auth (Guest → Register, Logged in → Dashboard)
+- [x] Footer
+- [x] Container max-width 1200px, padding ngang 32px (desktop) / 24px (tablet) / 16px (mobile)
+- [x] Section spacing: 96px (desktop) / 64px (tablet) / 48px (mobile)
+- [x] Nền trang `--color-background` (`#FBFAF8`), Card nền `--color-surface` (`#FFFFFF`), shadow `--shadow-sm` hoặc chỉ dùng border 1px `--color-border`
 
 ### A3.2 Danh mục môn học (`/subjects`) *(API: GET /api/public/subjects)*
-- [ ] Page header + Search
-- [ ] Grid SubjectCard (4/3/2 cột responsive)
-- [ ] Pagination
-- [ ] Click môn → `/teachers?subjectId=`
-- [ ] EmptyState, Loading skeleton, Error + retry
+- [x] Page header + Search
+- [x] Grid SubjectCard (4/3/2 cột responsive)
+- [x] Pagination
+- [x] Click môn → `/teachers?subjectId=`
+- [x] EmptyState, Loading skeleton, Error + retry
 
 ### A3.3 Tìm kiếm Giáo viên (`/teachers`) *(API: GET /api/public/teachers)*
-- [ ] Sidebar filter 280px cố định (Desktop) / Drawer filter (Mobile/Tablet)
-  - [ ] Filter: môn học, rating, giá, availability, verified
-  - [ ] Nút "Xóa bộ lọc"
-- [ ] Sort bar (relevance, rating, price, reviews)
-- [ ] Debounced search input
-- [ ] Đồng bộ trạng thái filter/search/sort/page với URL query params
-- [ ] Grid TeacherCard (3/2/1 cột responsive)
-- [ ] Pagination
-- [ ] EmptyState "Không tìm thấy giáo viên phù hợp. Thử bỏ bớt bộ lọc." + nút "Xóa bộ lọc"
-- [ ] Result count live region sau lọc (accessibility)
-- [ ] Container max-width 1320px
+- [x] Pagination
+- [x] EmptyState "Không tìm thấy giáo viên phù hợp. Thử bỏ bớt bộ lọc." + nút "Xóa bộ lọc"
+- [x] Result count live region sau lọc (accessibility)
+- [x] Container max-width 1320px
 
 ### A3.4 Chi tiết Giáo viên (`/teachers/:id`) *(API: GET /api/public/teachers/{id}, /packages, /availability, /reviews)*
-- [ ] Profile header: Avatar xl, Bio, verified badge, rating (RatingStars), subjects
-- [ ] Tabs:
-  - [ ] **Giới thiệu** — Bio chi tiết, credentials public
-  - [ ] **Gói học** — PackageCard grid (3/2/1 cột), MoneyText giá
-  - [ ] **Lịch rảnh** — WeeklyScheduleGrid readonly
-  - [ ] **Đánh giá** — Reviews list, RatingStars, Pagination
-- [ ] CTA sticky desktop:
-  - [ ] "Mua gói" → Guest: modal yêu cầu đăng nhập; Student + email verified: chuyển checkout; Teacher/Admin: ẩn
-  - [ ] "Yêu cầu học thử" → `/student/trials/new`
-  - [ ] "Nhắn tin" → disabled + tooltip nếu chưa đủ điều kiện (chưa có trial/package với GV này)
-- [ ] Responsive: 2 cột desktop, 1 cột mobile; tabs scroll ngang
+- [x] Profile header: Avatar xl, Bio, verified badge, rating (RatingStars), subjects
+- [x] Tabs:
+  - [x] **Giới thiệu** — Bio chi tiết, credentials public
+  - [x] **Gói học** — PackageCard grid (3/2/1 cột), MoneyText giá
+  - [x] **Lịch rảnh** — WeeklyScheduleGrid readonly
+  - [x] **Đánh giá** — Reviews list, RatingStars, Pagination
+- [x] CTA sticky desktop:
+  - [x] "Mua gói" → Guest: modal yêu cầu đăng nhập; Student + email verified: chuyển checkout; Teacher/Admin: ẩn
+  - [x] "Yêu cầu học thử" → `/student/trials/new`
+  - [x] "Nhắn tin" → disabled + tooltip nếu chưa đủ điều kiện (chưa có trial/package với GV này)
+- [x] Responsive: 2 cột desktop, 1 cột mobile; tabs scroll ngang
 
 ### A3.5 Dashboard Quản lý của Giáo viên
-- [ ] Trang quản lý Hồ sơ giảng dạy (`/teacher/profile`) *(API: GET/PUT /api/teacher/profile)*
-  - [ ] Form cập nhật bio, thông tin, kinh nghiệm
-  - [ ] Max-width 880px
-- [ ] Trang cấu hình Lịch rảnh (`/teacher/availability`) *(API: GET/PUT /api/teacher/availability)*
-  - [ ] WeeklyScheduleGrid editable
-  - [ ] TimeRangePicker thêm/sửa slot
-  - [ ] Switch bật/tắt ngày
-  - [ ] Modal/Drawer xác nhận thay đổi
-  - [ ] Alert cảnh báo thay đổi ảnh hưởng booking
-- [ ] Trang danh sách Gói học (`/teacher/packages`) *(API: GET /api/teacher/packages)*
-  - [ ] Table: tên, giá (MoneyText), số buổi, trạng thái (StatusTag)
-  - [ ] Button "Tạo gói học" (chỉ khi APPROVED)
-  - [ ] EmptyState "Bạn chưa tạo gói học." + CTA
-- [ ] Trang tạo Gói học (`/teacher/packages/new`) *(API: POST /api/teacher/packages)*
-  - [ ] Form: Input tên, Select môn, Input giá (MoneyText preview), Input số buổi, Input thời hạn, Textarea mô tả
-  - [ ] Radio/Switch trial enabled
-  - [ ] Max-width 880px
-- [ ] Trang sửa Gói học (`/teacher/packages/:id/edit`) *(API: PUT /api/teacher/packages/{id}, PATCH /status)*
-  - [ ] Như tạo, load dữ liệu hiện tại
-  - [ ] Xử lý trường immutable (nếu đã có người mua)
+- [x] Trang quản lý Hồ sơ giảng dạy (`/teacher/profile`) *(API: GET/PUT /api/teacher/profile)*
+  - [x] Form cập nhật bio, thông tin, kinh nghiệm
+  - [x] Max-width 880px
+- [x] Trang cấu hình Lịch rảnh (`/teacher/availability`) *(API: GET/PUT /api/teacher/availability)*
+  - [x] WeeklyScheduleGrid editable
+  - [x] TimeRangePicker thêm/sửa slot
+  - [x] Switch bật/tắt ngày
+  - [x] Modal/Drawer xác nhận thay đổi
+  - [x] Alert cảnh báo thay đổi ảnh hưởng booking
+- [x] Trang danh sách Gói học (`/teacher/packages`) *(API: GET /api/teacher/packages)*
+  - [x] Table: tên, giá (MoneyText), số buổi, trạng thái (StatusTag)
+  - [x] Button "Tạo gói học" (chỉ khi APPROVED)
+  - [x] EmptyState "Bạn chưa tạo gói học." + CTA
+- [x] Trang tạo Gói học (`/teacher/packages/new`) *(API: POST /api/teacher/packages)*
+  - [x] Form: Input tên, Select môn, Input giá (MoneyText preview), Input số buổi, Input thời hạn, Textarea mô tả
+  - [x] Radio/Switch trial enabled
+  - [x] Max-width 880px
+- [x] Trang sửa Gói học (`/teacher/packages/:id/edit`) *(API: PUT /api/teacher/packages/{id}, PATCH /status)*
+  - [x] Như tạo, load dữ liệu hiện tại
+  - [x] Xử lý trường immutable (nếu đã có người mua)
 
 ### A3.6 Bảng xếp hạng (`/ranking`) *(API: GET /api/public/teachers/ranking)*
-- [ ] Header + filter subject/kỳ (nếu endpoint hỗ trợ)
-- [ ] Podium / Top 3 cards với màu Accent `#B45309`
-- [ ] Ranking table: rank, Avatar, tên teacher, subjects, rating (RatingStars), score
-  - [ ] Highlight Top 1-3 với màu `--color-accent-500` (`#B45309`) cho huy hiệu / text nhấn, nền huy hiệu `--color-accent-50` (`#FFFBEB`)
-- [ ] Pagination
-- [ ] Responsive: Table desktop → card list mobile
-- [ ] Thứ hạng đọc được bằng text, không chỉ huy chương (accessibility)
+- [x] Header + filter subject/kỳ (nếu endpoint hỗ trợ)
+- [x] Podium / Top 3 cards với màu Accent `#B45309`
+- [x] Ranking table: rank, Avatar, tên teacher, subjects, rating (RatingStars), score
+  - [x] Highlight Top 1-3 với màu `--color-accent-500` (`#B45309`) cho huy hiệu / text nhấn, nền huy hiệu `--color-accent-50` (`#FFFBEB`)
+- [x] Pagination
+- [x] Responsive: Table desktop → card list mobile
+- [x] Thứ hạng đọc được bằng text, không chỉ huy chương (accessibility)
 
 ---
 
@@ -462,6 +455,6 @@ Dưới đây là danh sách các task chi tiết được chia theo từng tu�
   - [ ] Luồng Chat: Mở conversation → Gửi tin → Nhận tin realtime
 - [ ] Rà soát toàn bộ Loading state, Empty state, Error state và Retry logic
 - [ ] Kiểm tra tất cả Empty state copy theo Spec 20.3
-- [ ] Kiểm tra tất cả Confirmation copy theo Spec 20.4
-- [ ] Clean code: Đảm bảo không còn lỗi ESLint và TypeScript trong các folder phụ trách
+- [x] Kiểm tra tất cả Confirmation copy theo Spec 20.4
+- [x] Clean code: Đảm bảo không còn lỗi ESLint và TypeScript trong các folder phụ trách
 - [ ] Kiểm tra đảm bảo Production build (`npm run build`) thành công

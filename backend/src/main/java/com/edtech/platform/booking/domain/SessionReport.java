@@ -2,8 +2,8 @@ package com.edtech.platform.booking.domain;
 import com.edtech.platform.common.persistence.BaseEntity;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
-import jakarta.persistence.*; import lombok.*; import org.hibernate.annotations.Where; import java.time.Instant; import java.util.UUID;
-@Entity @Table(name="session_reports", uniqueConstraints=@UniqueConstraint(name="uq_session_reports_booking",columnNames="booking_id")) @Getter @NoArgsConstructor(access=AccessLevel.PROTECTED) @Where(clause="is_deleted=false")
+import jakarta.persistence.*; import lombok.*; import org.hibernate.annotations.SQLRestriction; import java.time.Instant; import java.util.UUID;
+@Entity @Table(name="session_reports", uniqueConstraints=@UniqueConstraint(name="uq_session_reports_booking",columnNames="booking_id")) @Getter @NoArgsConstructor(access=AccessLevel.PROTECTED) @SQLRestriction("is_deleted=false")
 public class SessionReport extends BaseEntity {
     @Column(name = "booking_id", nullable = false)
     private UUID bookingId;

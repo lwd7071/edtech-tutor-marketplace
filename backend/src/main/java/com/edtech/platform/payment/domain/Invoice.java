@@ -8,7 +8,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -17,7 +17,7 @@ import java.util.UUID;
 @Entity @Table(name = "invoices") @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE invoices SET is_deleted = true WHERE id = ?")
-@Where(clause = "is_deleted = false")
+@SQLRestriction("is_deleted = false")
 public class Invoice extends BaseEntity {
     @Column(name="invoice_number", nullable=false, length=50, unique=true) private String invoiceNumber;
     @Column(name="student_id", nullable=false) private UUID studentId;
