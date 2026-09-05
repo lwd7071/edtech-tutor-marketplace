@@ -15,7 +15,7 @@ describe('RadioCard', () => {
     const handleChange = jest.fn();
     render(<RadioCard value="opt2" checked={false} onChange={handleChange} title="Option 2" />);
 
-    const wrapper = screen.getByText('Option 2').closest('div');
+    const wrapper = screen.getByText('Option 2').closest('.radio-card');
     fireEvent.click(wrapper!);
     
     expect(handleChange).toHaveBeenCalledWith('opt2');

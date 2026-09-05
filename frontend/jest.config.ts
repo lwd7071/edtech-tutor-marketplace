@@ -13,6 +13,8 @@ const config: Config = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@ant-design/colors/es/(.*)$': '<rootDir>/node_modules/@ant-design/colors/lib/$1',
+    '^@ant-design/colors$': '<rootDir>/node_modules/@ant-design/colors/lib/index.js',
   },
   transformIgnorePatterns: [
     '/node_modules/(?!(@ant-design|rc-.*|@babel/runtime|@ant-design/icons|@ant-design/colors)/)',
