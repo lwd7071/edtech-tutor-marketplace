@@ -5,6 +5,7 @@ import SubjectGrid from '@/features/marketplace/components/SubjectGrid';
 import TeacherGrid from '@/features/marketplace/components/TeacherGrid';
 import TrustSection from '@/features/marketplace/components/TrustSection';
 import CTASection from '@/features/marketplace/components/CTASection';
+import Link from 'next/link';
 import { Typography } from 'antd';
 
 const { Title, Paragraph } = Typography;
@@ -48,7 +49,7 @@ export default async function LandingPage() {
         <section style={{ margin: 'var(--space-16, 64px) 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8, 32px)' }}>
             <Title level={2} style={{ margin: 0 }}>Môn học nổi bật</Title>
-            <a href="/subjects" style={{ color: 'var(--color-primary-600, #0D9488)', fontWeight: 600 }}>Xem tất cả</a>
+            <Link href="/subjects" style={{ color: 'var(--color-primary-600, #0D9488)', fontWeight: 600 }}>Xem tất cả</Link>
           </div>
           <SubjectGrid subjects={topSubjects} />
         </section>
@@ -57,7 +58,7 @@ export default async function LandingPage() {
         <section style={{ margin: 'var(--space-16, 64px) 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8, 32px)' }}>
             <Title level={2} style={{ margin: 0 }}>Giáo viên nổi bật</Title>
-            <a href="/teachers" style={{ color: 'var(--color-primary-600, #0D9488)', fontWeight: 600 }}>Xem tất cả</a>
+            <Link href="/teachers" style={{ color: 'var(--color-primary-600, #0D9488)', fontWeight: 600 }}>Xem tất cả</Link>
           </div>
           <TeacherGrid teachers={topTeachers} />
         </section>

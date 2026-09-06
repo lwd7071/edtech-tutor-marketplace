@@ -225,3 +225,22 @@ Thá»±c hiá»‡n quy trÃ¬nh `/diagnose` Ä‘á»ƒ xá»­ lÃ½ cÃ¡c lá»—i TypeScript theo b
    - Thiáº¿u `PaginatedResponse` trong `public.ts`: Component `teacher.ts` khÃ´ng export interface nÃ y. **ÄÃ£ tá»± Ä‘á»‹nh nghÄ©a láº¡i interface `PaginatedResponse` ngay trong `public.ts` Ä‘á»ƒ gá»¡ phá»¥ thuá»™c.**
    - Lá»—i props `EmptyState` vÃ  `ErrorState`: Truyá»n sai tÃªn biáº¿n (`subtitle` -> `description`, `onAction` -> `onRetry`). **ÄÃ£ Ä‘á»•i tÃªn prop cho khá»›p vá»›i interface.**
 3. **Regression Test (Phase 5 & 6):** Cháº¡y láº¡i `npx tsc --noEmit` thÃ nh cÃ´ng hoÃ n toÃ n, zero errors. ÄÃ£ Ä‘Ã¡nh dáº¥u hoÃ n táº¥t task "Clean code: Äáº£m báº£o khÃ´ng cÃ²n lá»—i TypeScript" trong `taskfe.md`.
+
+### **C?p nh?t Bugfix (Ti?p t?c A8.3 - 06/09/2026)**
+Th?c hi?n review và d?n d?p các l?i ESLint, c?nh báo, và chu?n hóa UI:
+1. **Kh?c ph?c l?i Hoisting & useEffect**: 
+   - Ğua t?t c? các khai báo hàm fetch API (etchAssignments, etchDetail, etchConversations, v.v.) lên tru?c kh?i useEffect trong các component StudentAssignmentList, StudentAssignmentDetail, ChatPage, và các trang bài t?p/ch?m bài c?a giáo viên. Ği?u này x? lı tri?t d? l?i _Cannot access variable before it is declared_ c?a ESLint phiên b?n m?i.
+2. **Xóa Mock Data vi ph?m quy t?c**: 
+   - G? b? hoàn toàn d? li?u mock c?ng trong file ChatPage.tsx khi có l?i 404, tr? v? lu?ng error/empty chu?n xác.
+3. **S?a l?i hi?n th? tên Component (display-name)**:
+   - Ğ?t l?i displayName cho các component b? mock trong (public)/page.test.tsx (MockHeroSearch, MockSubjectGrid, v.v.) d? th?a mãn rule _react/display-name_.
+4. **Chu?n hóa Routing và Code Smell**: 
+   - C?p nh?t trang Landing Page ((public)/page.tsx) thay th? các th? <a> b?ng <Link> c?a next/link.
+   - S?a l?i c?nh báo _exhaustive-deps_ trong RankingLeaderboard.tsx.
+   - Kh?c ph?c l?i function không tinh khi?t trong sandbox/components/page.tsx (dua l?i g?i 
+ew Date() ra ngoài scope render).
+   - D?n d?p ch? th? eslint-disable th?a trong 	eacher/assignments/page.tsx và 	eacher/layout.tsx.
+5. **Chu?n hóa Giao di?n theo Spec (SPEC-FE.md)**: 
+   - C?u trúc l?i Sidebar c?a h?c sinh (StudentAppLayout.tsx) v?i d?y d? các label nhóm (H?C T?P, TRAO Ğ?I, YÊU C?U, TÀI KHO?N), b? sung d?y d? menu Thông báo, Yêu c?u c?a tôi và s?a l?i logic selectedKey.
+   - Kh?c ph?c vi?c s? d?ng các class Tailwind CSS du th?a trong file student/profile/page.tsx (vì frontend không cài Tailwind), thay th? hoàn toàn b?ng inline-styles chu?n hóa theo Ant Design tokens.
+6. **Xác minh**: Toàn b? codebase (ph?m vi Thành viên A) dã s?ch ESLint error, biên d?ch thành công.

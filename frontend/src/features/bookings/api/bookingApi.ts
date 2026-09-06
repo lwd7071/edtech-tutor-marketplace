@@ -122,4 +122,18 @@ export const bookingApi = {
     );
     return response.data;
   },
+
+  /**
+   * Học sinh đánh giá giáo viên sau buổi học
+   */
+  createReview: async (
+    bookingId: string,
+    data: { rating: number; comment?: string }
+  ): Promise<ApiResponse<any>> => {
+    const response = await axiosClient.post<ApiResponse<any>>(
+      `/api/student/bookings/${bookingId}/review`,
+      data
+    );
+    return response.data;
+  },
 };

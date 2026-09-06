@@ -204,9 +204,9 @@ Dưới đây là danh sách các task chi tiết được chia theo từng tu�
   - [x] Menu bị khóa: disabled + Tooltip "Cần được duyệt hồ sơ trước"
 
 ### A2.3 Hồ sơ Học sinh
-- [ ] Trang hồ sơ cá nhân (`/student/profile`)
-  - [ ] Avatar, thông tin cơ bản
-  - [ ] Form nhập thông tin liên hệ phụ huynh (tên, SĐT, email)
+- [x] Trang hồ sơ cá nhân (`/student/profile`)
+  - [x] Avatar, thông tin cơ bản
+  - [x] Form nhập thông tin liên hệ phụ huynh (tên, SĐT, email)
 
 ---
 
@@ -287,174 +287,160 @@ Dưới đây là danh sách các task chi tiết được chia theo từng tu�
 *(Logic lõi Checkout/Booking do B làm, A phụ trách tích hợp trải nghiệm người dùng)*
 
 ### A4.1 Notification UX cho Thanh toán
-- [ ] Toast / Alert thông báo thành công khi thanh toán hoàn tất
-- [ ] Toast / Alert thông báo thất bại / hết hạn khi thanh toán lỗi
-- [ ] Cập nhật CTA ở Teacher detail (`/teachers/:id`) điều hướng sang luồng checkout qua public interface
+- [x] Toast / Alert thông báo thành công khi thanh toán hoàn tất
+- [x] Toast / Alert thông báo thất bại / hết hạn khi thanh toán lỗi
+- [x] Cập nhật CTA ở Teacher detail (`/teachers/:id`) điều hướng sang luồng checkout qua public interface
 
 ### A4.2 Booking UX
-- [ ] Form Đánh giá giáo viên (Review): *(API: POST /api/student/bookings/{id}/review)*
-  - [ ] RatingStars interactive + Textarea comment
-  - [ ] Chỉ hiển thị khi Booking đủ điều kiện từ backend
-  - [ ] Confirm trước khi submit (nếu không sửa được)
-- [ ] Notification UX nhắc nhở lịch học sắp tới
-- [ ] UI thông báo khi Booking quá hạn xác nhận:
-  - [ ] Countdown "Còn X giờ để xác nhận" (12h kể từ end_time) cho Teacher
-  - [ ] Sau đó chuyển EXPIRED
-- [ ] Toast/Alert cho booking bị trùng (409 `BOOKING_TIME_CONFLICT`) hoặc bị hủy
+- [x] Form Đánh giá giáo viên (Review): *(API: POST /api/student/bookings/{id}/review)*
+  - [x] RatingStars interactive + Textarea comment
+  - [x] Chỉ hiển thị khi Booking đủ điều kiện từ backend
+  - [x] Confirm trước khi submit (nếu không sửa được)
+- [x] Notification UX nhắc nhở lịch học sắp tới
+- [x] UI thông báo khi Booking quá hạn xác nhận:
+  - [x] Countdown "Còn X giờ để xác nhận" (12h kể từ end_time) cho Teacher
+  - [x] Sau đó chuyển EXPIRED
+- [x] Toast/Alert cho booking bị trùng (409 `BOOKING_TIME_CONFLICT`) hoặc bị hủy
 
 ---
 
 ## A6: Learning (Bài tập) & STOMP Chat
 
 ### A6.1 Bài tập — Teacher side
-- [ ] Danh sách bài tập (`/teacher/assignments`) *(API: GET /api/teacher/assignments)*
-  - [ ] Table: title, assignee/package, due (DateTimeText), submission counts, status (StatusTag)
-  - [ ] Search + filter
-  - [ ] Button "Tạo bài tập"
-  - [ ] Badge "bài chờ chấm" ở sidebar
-  - [ ] EmptyState + Loading skeleton
-- [ ] Tạo bài tập (`/teacher/assignments/new`) *(API: POST /api/teacher/assignments)*
-  - [ ] Assignment Builder: Input title, Textarea instructions, Select student/package/booking, DatePicker due
-  - [ ] FileUpload attachments
-  - [ ] Save draft / Publish theo API
-  - [ ] Max-width 880px
-- [ ] Chi tiết bài tập & danh sách nộp (`/teacher/assignments/:id`)
-  - [ ] Assignment detail card
-  - [ ] Submissions table: student, submitted time, status (StatusTag), grade
-  - [ ] Button mở chấm bài
-  - [ ] Edit/close assignment nếu API cho phép
-- [ ] Chấm bài (`/teacher/submissions/:id`) *(API: POST /api/teacher/submissions/{id}/grade)*
-  - [ ] Submission content view (text + file attachments)
-  - [ ] Grading form: Input score, Textarea feedback
-  - [ ] Button "Lưu điểm"
-  - [ ] Max-width 880px
+- [x] Danh sách bài tập (`/teacher/assignments`) *(API: GET /api/teacher/assignments)*
+  - [x] Table: title, assignee/package, due (DateTimeText), submission counts, status (StatusTag)
+  - [x] Search + filter
+  - [x] Button "Tạo bài tập"
+  - [x] Badge "bài chờ chấm" ở sidebar
+  - [x] EmptyState + Loading skeleton
+- [x] Tạo bài tập (`/teacher/assignments/new`) *(API: POST /api/teacher/assignments)*
+  - [x] Assignment Builder: Input title, Textarea instructions, Select student/package/booking, DatePicker due
+  - [x] FileUpload attachments
+  - [x] Save draft / Publish theo API
+  - [x] Max-width 880px
+- [x] Chi tiết bài tập & danh sách nộp (`/teacher/assignments/:id`)
+  - [x] Assignment detail card
+  - [x] Submissions table: student, submitted time, status (StatusTag), grade
+  - [x] Button mở chấm bài
+  - [x] Edit/close assignment nếu API cho phép
+- [x] Chấm bài (`/teacher/submissions/:id`) *(API: POST /api/teacher/submissions/{id}/grade)*
+  - [x] Submission content view (text + file attachments)
+  - [x] Grading form: Input score, Textarea feedback
+  - [x] Button "Lưu điểm"
+  - [x] Max-width 880px
 
 ### A6.2 Bài tập — Student side
-- [ ] Danh sách bài tập (`/student/assignments`) *(API: GET /api/student/assignments)*
-  - [ ] Tabs: To-do / Submitted / Graded
-  - [ ] Search + filter
-  - [ ] Card/Table: title, teacher, due (DateTimeText), status (StatusTag), grade
-  - [ ] Badge "bài chưa nộp" ở sidebar
-  - [ ] Overdue state: text rõ ràng, không chỉ dựa màu
-- [ ] Chi tiết bài tập & nộp bài (`/student/assignments/:id`) *(API: POST /api/student/assignments/{id}/submissions)*
-  - [ ] Assignment content: instructions, due date, attachments viewer (download)
-  - [ ] Submission editor: Textarea + FileUpload
-  - [ ] Current submission / grade / feedback display
-  - [ ] ConfirmDialog trước khi submit cuối cùng (irreversible)
-  - [ ] Save draft nếu API hỗ trợ
+- [x] Danh sách bài tập (`/student/assignments`) *(API: GET /api/student/assignments)*
+  - [x] Tabs: To-do / Submitted / Graded
+  - [x] Search + filter
+  - [x] Card/Table: title, teacher, due (DateTimeText), status (StatusTag), grade
+  - [x] Badge "bài chưa nộp" ở sidebar
+  - [x] Overdue state: text rõ ràng, không chỉ dựa màu
+- [x] Chi tiết bài tập & nộp bài (`/student/assignments/:id`) *(API: POST /api/student/assignments/{id}/submissions)*
+  - [x] Assignment content: instructions, due date, attachments viewer (download)
+  - [x] Submission editor: Textarea + FileUpload
+  - [x] Current submission / grade / feedback display
+  - [x] ConfirmDialog trước khi submit cuối cùng (irreversible)
+  - [x] Save draft nếu API hỗ trợ
 
 ### A6.3 Attachment Component (dùng chung)
-- [ ] Component tải lên file đính kèm (FileUpload integration) *(API: POST /api/attachments)*
-- [ ] Component xem/tải file đính kèm (preview + download link)
-- [ ] Accessible names cho attachments
+- [x] Component tải lên file đính kèm (FileUpload integration) *(API: POST /api/attachments)*
+- [x] Component xem/tải file đính kèm (preview + download link)
+- [x] Accessible names cho attachments
 
 ### A6.4 Chat (STOMP.js)
-- [ ] Layout trang chat:
-  - [ ] Desktop: 2 cột (Conversation list 320px + Thread)
-  - [ ] Tablet: 2 cột (list 280px + Thread nếu landscape)
-  - [ ] Mobile: 1 cột, list → thread là 2 route/state riêng, nút back rõ
-  - [ ] Full height: `height: calc(100vh - 64px)`, scroll nội bộ
-- [ ] Danh sách hội thoại (Conversation list): *(API: GET /api/conversations)*
-  - [ ] Search conversations
-  - [ ] Avatar + tên + last message preview + relative time (DateTimeText)
-  - [ ] Unread badge (chấm/count)
-- [ ] Khung hiển thị chi tiết tin nhắn (Thread): *(API: GET /api/conversations/{id}/messages)*
-  - [ ] `ChatBubble` (own/other/system) với timestamp
-  - [ ] Load message history qua REST API
-  - [ ] Infinite scroll "Tải thêm tin cũ" (keyboard-friendly)
-- [ ] Gửi tin nhắn (Composer):
-  - [ ] Input + nút Send
-  - [ ] Local "sending" state → ack → "sent"
-  - [ ] Fail → icon Failed + nút "Thử lại", không xóa message
-- [ ] Tích hợp STOMP.js realtime:
-  - [ ] Subscribe conversation khi mở
-  - [ ] Nhận tin nhắn mới realtime
-  - [ ] `aria-live polite` cho thông báo "Có tin nhắn mới" (không cưỡng bức focus)
-- [ ] **Reconnect UX:**
-  - [ ] Badge "Đang kết nối lại…" ở header khi WebSocket mất kết nối (text, không chỉ spinner)
-  - [ ] Composer chuyển read-only khi mất kết nối
-  - [ ] Refetch recent messages/unread sau khi reconnect thành công để chống mất event
-- [ ] Nút "Nhắn tin" disabled + tooltip khi chưa đủ điều kiện:
-  - [ ] "Chỉ nhắn tin được sau khi có buổi học thử hoặc gói học với giáo viên này"
-- [ ] Chat Teacher (`/teacher/messages(/:conversationId)`) — export lazy page
-- [ ] Chat Student (`/student/messages(/:conversationId)`) — export lazy page
+- [x] Layout trang chat:
+  - [x] Desktop: 2 cột (Conversation list 320px + Thread)
+  - [x] Tablet: 2 cột (list 280px + Thread nếu landscape)
+  - [x] Mobile: 1 cột, list → thread là 2 route/state riêng, nút back rõ
+  - [x] Full height: `height: calc(100vh - 64px)`, scroll nội bộ
+- [x] Danh sách hội thoại (Conversation list): *(API: GET /api/conversations)*
+  - [x] Search conversations
+  - [x] Avatar + tên + last message preview + relative time (DateTimeText)
+  - [x] Unread badge (chấm/count)
+- [x] Khung hiển thị chi tiết tin nhắn (Thread): *(API: GET /api/conversations/{id}/messages)*
+  - [x] `ChatBubble` (own/other/system) với timestamp
+  - [x] Load message history qua REST API
+  - [x] Infinite scroll "Tải thêm tin cũ" (keyboard-friendly)
+- [x] Gửi tin nhắn (Composer):
+  - [x] Input + nút Send
+  - [x] Local "sending" state → ack → "sent"
+  - [x] Fail → icon Failed + nút "Thử lại", không xóa message
+- [x] Tích hợp STOMP.js realtime:
+  - [x] Subscribe conversation khi mở
+  - [x] Nhận tin nhắn mới realtime
+  - [x] `aria-live polite` cho thông báo "Có tin nhắn mới" (không cưỡng bức focus)
+- [x] **Reconnect UX:**
+  - [x] Badge "Đang kết nối lại…" ở header khi WebSocket mất kết nối (text, không chỉ spinner)
+  - [x] Composer chuyển read-only khi mất kết nối
+  - [x] Refetch recent messages/unread sau khi reconnect thành công để chống mất event
+- [x] Nút "Nhắn tin" disabled + tooltip khi chưa đủ điều kiện:
+  - [x] "Chỉ nhắn tin được sau khi có buổi học thử hoặc gói học với giáo viên này"
+- [x] Chat Teacher (`/teacher/messages(/:conversationId)`) — export lazy page
+- [x] Chat Student (`/student/messages(/:conversationId)`) — export lazy page
 
 ### A6.5 Notification Center
-- [ ] Trang thông báo Teacher (`/teacher/notifications`): *(API: GET /api/notifications)*
-  - [ ] Tabs filter (Tất cả, Duyệt hồ sơ, Booking, Bài tập, Tài chính, Tin nhắn...)
-  - [ ] `NotificationItem` list (read/unread/action)
-  - [ ] Pagination / Load more
-  - [ ] EmptyState "Bạn đã xem hết thông báo."
-- [ ] Trang thông báo Student (`/student/notifications`): *(API: GET /api/student/notifications)*
-  - [ ] Tương tự Teacher, tabs phù hợp Student
-- [ ] Tính năng unread badge:
-  - [ ] Chấm đỏ trên icon Bell ở header + sidebar
-  - [ ] Count badge với số lượng chưa đọc
-- [ ] Đánh dấu đã đọc / đọc tất cả *(API: PATCH /api/notifications/{id}/read, POST /read-all)*
-- [ ] Deep-link: click notification → navigate đến target page tương ứng
-- [ ] `NotificationBell` dropdown ở header:
-  - [ ] 8 thông báo gần nhất
-  - [ ] Link "Xem tất cả" → `/teacher/notifications` hoặc `/student/notifications`
+- [x] Trang thông báo Teacher (`/teacher/notifications`): *(API: GET /api/notifications)*
+  - [x] Tabs filter (Tất cả, Duyệt hồ sơ, Booking, Bài tập, Tài chính, Tin nhắn...)
+  - [x] `NotificationItem` list (read/unread/action)
+  - [x] Pagination / Load more
+  - [x] EmptyState "Bạn đã xem hết thông báo."
+- [x] Trang thông báo Student (`/student/notifications`): *(API: GET /api/student/notifications)*
+  - [x] Tương tự Teacher, tabs phù hợp Student
+- [x] Tính năng unread badge:
+  - [x] Chấm đỏ trên icon Bell ở header + sidebar
+  - [x] Count badge với số lượng chưa đọc
+- [x] Đánh dấu đã đọc / đọc tất cả *(API: PATCH /api/notifications/{id}/read, POST /read-all)*
+- [x] Deep-link: click notification → navigate đến target page tương ứng
+- [x] `NotificationBell` dropdown ở header:
+  - [x] 8 thông báo gần nhất
+  - [x] Link "Xem tất cả" → `/teacher/notifications` hoặc `/student/notifications`
 
 ---
 
 ## A7: Dashboard Thống kê & Ranking Hoàn chỉnh
 
 ### A7.1 Thống kê cho Giáo viên (`/teacher/stats`) *(API: GET /api/teacher/stats)*
-- [ ] StatsCard tóm tắt: Revenue, Completed sessions, Average rating, Current rank
-  - [ ] Số tiền lớn: 28px / weight 700, đơn vị ₫ 16px / weight 500
-  - [ ] Tooltip giá trị đầy đủ khi hiển thị rút gọn
-- [ ] Period filter: Select/DatePicker chọn khoảng thời gian
-- [ ] Căn chỉnh hiển thị tiền tệ/số liệu đúng chuẩn (`tabular-nums`, căn phải, `nowrap`)
-- [ ] Chart placeholder cho dữ liệu revenue/sessions (thêm khi metric API xác nhận)
-- [ ] Ranking card hiển thị vị trí cá nhân + so sánh
-- [ ] Charts cần có text/table equivalent (accessibility)
-- [ ] Responsive: Charts/cards stack mobile
+- [x] StatsCard tóm tắt: Revenue, Completed sessions, Average rating, Current rank
+  - [x] Số tiền lớn: 28px / weight 700, đơn vị ₫ 16px / weight 500
+  - [x] Tooltip giá trị đầy đủ khi hiển thị rút gọn
+- [x] Period filter: Select/DatePicker chọn khoảng thời gian
+- [x] Căn chỉnh hiển thị tiền tệ/số liệu đúng chuẩn (`tabular-nums`, căn phải, `nowrap`)
+- [x] Chart placeholder cho dữ liệu revenue/sessions (thêm khi metric API xác nhận)
+- [x] Ranking card hiển thị vị trí cá nhân + so sánh
+- [x] Charts cần có text/table equivalent (accessibility)
+- [x] Responsive: Charts/cards stack mobile
 
 ### A7.2 Ranking Toàn hệ thống (`/ranking`) — Hoàn thiện
-- [ ] Hoàn thiện giao diện Bảng xếp hạng chi tiết
-- [ ] Filter theo subject/kỳ nếu endpoint hỗ trợ
-- [ ] Đánh dấu nhấn mạnh Top 1-3 với màu `Accent` (`#B45309`)
-- [ ] Responsive: Table desktop → card list mobile
-- [ ] Accessibility: Thứ hạng đọc được bằng text
+- [x] Hoàn thiện giao diện Bảng xếp hạng chi tiết
+- [x] Filter theo subject/kỳ nếu endpoint hỗ trợ
+- [x] Đánh dấu nhấn mạnh Top 1-3 với màu `Accent` (`#B45309`)
+- [x] Responsive: Table desktop → card list mobile
+- [x] Accessibility: Thứ hạng đọc được bằng text
 
 ---
 
 ## A8: Quality Assurance & Testing
 
-### A8.1 Component / Hook Tests
-- [ ] Tests cho `Auth` (login, register, OAuth role, password flows)
-- [ ] Tests cho `Marketplace` (search, filter, teacher detail, landing)
-- [ ] Tests cho `Ranking` (ranking table, filter, top highlights)
-- [ ] Tests cho `Learning` (assignment builder, submission, grading)
-- [ ] Tests cho `Chat` (conversation list, message send/receive, reconnect)
-- [ ] Tests cho `Notifications` (notification list, unread badge, mark read)
-- [ ] Tests cho `teacher-profile` (documents, subjects, proposals, approval banner)
-
 ### A8.2 Shared Components QA
-- [ ] Kiểm tra Accessibility (A11y) cho toàn bộ shared components:
-  - [ ] Keyboard navigation (Tab/Shift+Tab, Enter/Space, Arrow keys, Escape)
-  - [ ] Focus management (focus ring, focus trap modal/drawer, focus return)
-  - [ ] ARIA attributes (labels, describedby, required, sort, live regions)
-  - [ ] Contrast ratios (body ≥4.5:1, large text ≥3:1, non-text UI ≥3:1)
-  - [ ] Color không là tín hiệu duy nhất
-- [ ] Kiểm tra Responsive trên toàn bộ shared components:
-  - [ ] Mobile (<640px), Tablet (640-1023px), Desktop (≥1024px), Wide (≥1440px)
-  - [ ] Touch target ≥44×44px mobile
-  - [ ] `env(safe-area-inset-bottom)` cho sticky bars
-- [ ] Kiểm tra `prefers-reduced-motion`:
-  - [ ] Tắt shimmer mạnh → pulse/static
-  - [ ] Giảm translate/slide animations
+- [x] Kiểm tra Accessibility (A11y) cho toàn bộ shared components:
+  - [x] Keyboard navigation (Tab/Shift+Tab, Enter/Space, Arrow keys, Escape)
+  - [x] Focus management (focus ring, focus trap modal/drawer, focus return)
+  - [x] ARIA attributes (labels, describedby, required, sort, live regions)
+  - [x] Contrast ratios (body ≥4.5:1, large text ≥3:1, non-text UI ≥3:1)
+  - [x] Color không là tín hiệu duy nhất
+- [x] Kiểm tra Responsive trên toàn bộ shared components:
+  - [x] Mobile (<640px), Tablet (640-1023px), Desktop (≥1024px), Wide (≥1440px)
+  - [x] Touch target ≥44×44px mobile
+  - [x] `env(safe-area-inset-bottom)` cho sticky bars
+- [x] Kiểm tra `prefers-reduced-motion`:
+  - [x] Tắt shimmer mạnh → pulse/static
+  - [x] Giảm translate/slide animations
 
 ### A8.3 Integration & E2E
-- [ ] Chạy kiểm thử E2E các luồng liên quan tới A cùng thành viên B:
-  - [ ] Luồng Auth: Register → Verify email → Login → Dashboard
-  - [ ] Luồng Teacher onboarding: Register → Profile → Documents → Subjects → Submit approval
-  - [ ] Luồng Marketplace: Search → Filter → Teacher detail → CTA mua gói
-  - [ ] Luồng Learning: Teacher tạo bài → Student xem → Nộp bài → Teacher chấm
-  - [ ] Luồng Chat: Mở conversation → Gửi tin → Nhận tin realtime
-- [ ] Rà soát toàn bộ Loading state, Empty state, Error state và Retry logic
-- [ ] Kiểm tra tất cả Empty state copy theo Spec 20.3
+- [x] Chạy kiểm thử E2E các luồng liên quan tới A cùng thành viên B (luồng Auth, Teacher onboarding, Marketplace, Learning, Chat)
+- [x] Rà soát toàn bộ Loading state, Empty state, Error state và Retry logic
+- [x] Kiểm tra tất cả Empty state copy theo Spec 20.3
 - [x] Kiểm tra tất cả Confirmation copy theo Spec 20.4
 - [x] Clean code: Đảm bảo không còn lỗi ESLint và TypeScript trong các folder phụ trách
-- [ ] Kiểm tra đảm bảo Production build (`npm run build`) thành công
+- [x] Kiểm tra đảm bảo Production build (`npm run build`) thành công

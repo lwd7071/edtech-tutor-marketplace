@@ -76,4 +76,9 @@ export const authApi = {
     const response = await axiosClient.post('/api/auth/oauth2/complete-registration', data);
     return response.data;
   },
+
+  updateParentContact: async (data: any): Promise<ApiResponse<any>> => {
+    const response = await axiosClient.put('/api/student/parent-contact', data);
+    return response.data;
+  },
 };

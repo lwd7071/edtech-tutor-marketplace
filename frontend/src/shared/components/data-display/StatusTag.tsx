@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tag } from 'antd';
 
-export type StatusTagDomain = 'TeacherProfile' | 'Invoice' | 'StudentPackage' | 'Booking' | 'Payout';
+export type StatusTagDomain = 'TeacherProfile' | 'Invoice' | 'StudentPackage' | 'Booking' | 'Payout' | 'Assignment' | 'Submission';
 
 export interface StatusTagProps {
   domain: StatusTagDomain;
@@ -41,6 +41,16 @@ const statusConfig: Record<StatusTagDomain, Record<string, { color: string; labe
     SUCCEEDED: { color: 'success', label: 'Thành công' },
     REJECTED: { color: 'default', label: 'Từ chối' },
     FAILED: { color: 'error', label: 'Thất bại' },
+  },
+  Assignment: {
+    DRAFT: { color: 'default', label: 'Bản nháp' },
+    PUBLISHED: { color: 'processing', label: 'Đã giao' },
+    CLOSED: { color: 'default', label: 'Đã đóng' },
+  },
+  Submission: {
+    DRAFT: { color: 'default', label: 'Bản nháp' },
+    SUBMITTED: { color: 'processing', label: 'Đã nộp' },
+    GRADED: { color: 'success', label: 'Đã chấm điểm' },
   },
 };
 

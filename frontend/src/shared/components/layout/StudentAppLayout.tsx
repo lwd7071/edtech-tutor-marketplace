@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import type { MenuProps } from 'antd';
 import { Layout, Menu, Typography, Space, Button } from 'antd';
 import {
   DashboardOutlined,
@@ -10,9 +11,12 @@ import {
   MessageOutlined,
   UserOutlined,
   HomeOutlined,
+  BellOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 
 const { Header, Sider, Content } = Layout;
 
@@ -23,42 +27,76 @@ interface StudentAppLayoutProps {
 export const StudentAppLayout: React.FC<StudentAppLayoutProps> = ({ children }) => {
   const pathname = usePathname();
 
-  const menuItems = [
+  const menuItems: MenuProps['items'] = [
     {
-      key: '/student',
-      icon: <DashboardOutlined />,
-      label: <Link href="/student">Tổng quan</Link>,
+      type: 'group',
+      label: 'HỌC TẬP',
+      children: [
+        {
+          key: '/student',
+          icon: <DashboardOutlined />,
+          label: <Link href="/student">Tổng quan</Link>,
+        },
+        {
+          key: '/student/packages',
+          icon: <AppstoreOutlined />,
+          label: <Link href="/student/packages">Gói học</Link>,
+        },
+        {
+          key: '/student/bookings',
+          icon: <CalendarOutlined />,
+          label: <Link href="/student/bookings">Lịch học</Link>,
+        },
+        {
+          key: '/student/assignments',
+          icon: <BookOutlined />,
+          label: <Link href="/student/assignments">Bài tập</Link>,
+        },
+      ]
     },
     {
-      key: '/student/packages',
-      icon: <AppstoreOutlined />,
-      label: <Link href="/student/packages">Gói học của tôi</Link>,
+      type: 'group',
+      label: 'TRAO ĐỔI',
+      children: [
+        {
+          key: '/student/messages',
+          icon: <MessageOutlined />,
+          label: <Link href="/student/messages">Tin nhắn</Link>,
+        },
+        {
+          key: '/student/notifications',
+          icon: <BellOutlined />,
+          label: <Link href="/student/notifications">Thông báo</Link>,
+        },
+      ]
     },
     {
-      key: '/student/bookings',
-      icon: <CalendarOutlined />,
-      label: <Link href="/student/bookings">Lịch học</Link>,
+      type: 'group',
+      label: 'YÊU CẦU',
+      children: [
+        {
+          key: '/student/requests',
+          icon: <FileTextOutlined />,
+          label: <Link href="/student/requests">Yêu cầu của tôi</Link>,
+        },
+      ]
     },
     {
-      key: '/student/assignments',
-      icon: <BookOutlined />,
-      label: <Link href="/student/assignments">Bài tập</Link>,
-    },
-    {
-      key: '/student/messages',
-      icon: <MessageOutlined />,
-      label: <Link href="/student/messages">Tin nhắn</Link>,
-    },
-    {
-      key: '/student/profile',
-      icon: <UserOutlined />,
-      label: <Link href="/student/profile">Hồ sơ cá nhân</Link>,
+      type: 'group',
+      label: 'TÀI KHOẢN',
+      children: [
+        {
+          key: '/student/profile',
+          icon: <UserOutlined />,
+          label: <Link href="/student/profile">Hồ sơ</Link>,
+        },
+      ]
     },
   ];
 
-  // Tìm active menu key
-  const selectedKey =
-    menuItems.find((item) => pathname.startsWith(item.key))?.key || '/student/packages';
+  // Tìm active menu key ưu tiên path dài nhất
+  const flatKeys = (menuItems || []).flatMap((g: any) => g?.children?.map((c: any) => c.key) || []);
+  const selectedKey = [...flatKeys].sort((a, b) => b.length - a.length).find(k => pathname === k || (k !== '/student' && pathname.startsWith(k))) || '/student';
 
   return (
     <Layout style={{ minHeight: '100vh', backgroundColor: 'var(--color-background, #FBFAF8)' }}>
@@ -137,6 +175,7 @@ export const StudentAppLayout: React.FC<StudentAppLayoutProps> = ({ children }) 
           <Typography.Text strong style={{ fontSize: 16 }}>
             Khu vực Học sinh
           </Typography.Text>
+          <NotificationBell />
         </Header>
 
         <Content

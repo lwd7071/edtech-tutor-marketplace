@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Button } from 'antd';
 import { TeacherPublicDetail } from '@/shared/api/public';
@@ -9,6 +11,20 @@ interface TeacherProfileHeaderProps {
 }
 
 export const TeacherProfileHeader: React.FC<TeacherProfileHeaderProps> = ({ teacher }) => {
+  const handleBuyClick = () => {
+    // Attempt to click the Packages tab if it's rendered by Ant Design Tabs
+    const packagesTab = document.querySelector('.custom-tabs .ant-tabs-tab[data-node-key="packages"]') as HTMLElement;
+    if (packagesTab) {
+      packagesTab.click();
+    }
+    
+    // Scroll to the tabs area
+    const tabsContainer = document.querySelector('.custom-tabs');
+    if (tabsContainer) {
+      tabsContainer.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="bg-surface rounded-xl border border-border shadow-sm p-6 lg:p-8 flex flex-col md:flex-row gap-8 mb-8 relative">
       {/* Avatar column */}
@@ -28,7 +44,7 @@ export const TeacherProfileHeader: React.FC<TeacherProfileHeaderProps> = ({ teac
             <CheckCircleFilled className="text-primary text-2xl" title="Đã xác thực" />
           </h1>
           <div className="text-text-secondary text-lg flex flex-wrap items-center gap-x-4 gap-y-2">
-            <span className="font-medium text-text-primary">{teacher.subjects.join(', ')}</span>
+            <span className="font-medium text-text-primary">{teacher.subjects?.join(', ')}</span>
             <span>•</span>
             <span>{teacher.yearsOfExperience} năm kinh nghiệm</span>
           </div>
@@ -66,7 +82,7 @@ export const TeacherProfileHeader: React.FC<TeacherProfileHeaderProps> = ({ teac
 
       {/* CTA column (Sticky on Desktop) */}
       <div className="shrink-0 w-full md:w-64 flex flex-col gap-3">
-        <Button type="primary" size="large" className="w-full font-bold h-12 shadow-md hover:shadow-lg transition-shadow">
+        <Button onClick={handleBuyClick} type="primary" size="large" className="w-full font-bold h-12 shadow-md hover:shadow-lg transition-shadow">
           Mua gói
         </Button>
         <Button size="large" className="w-full font-semibold h-12 border-primary text-primary hover:bg-primary-50">

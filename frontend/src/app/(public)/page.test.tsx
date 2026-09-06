@@ -8,12 +8,31 @@ jest.mock('@/shared/api/public', () => ({
   getPublicTeachers: jest.fn(),
 }));
 
-jest.mock('@/features/marketplace/components/HeroSearch', () => () => <div data-testid="hero-search" />);
-jest.mock('@/features/marketplace/components/SubjectGrid', () => () => <div data-testid="subject-grid" />);
-jest.mock('@/features/marketplace/components/TeacherGrid', () => () => <div data-testid="teacher-grid" />);
-jest.mock('@/features/marketplace/components/TrustSection', () => () => <div data-testid="trust-section" />);
-jest.mock('@/features/marketplace/components/CTASection', () => () => <div data-testid="cta-section" />);
-
+jest.mock('@/features/marketplace/components/HeroSearch', () => {
+  const MockHeroSearch = () => <div data-testid="hero-search" />;
+  MockHeroSearch.displayName = 'MockHeroSearch';
+  return MockHeroSearch;
+});
+jest.mock('@/features/marketplace/components/SubjectGrid', () => {
+  const MockSubjectGrid = () => <div data-testid="subject-grid" />;
+  MockSubjectGrid.displayName = 'MockSubjectGrid';
+  return MockSubjectGrid;
+});
+jest.mock('@/features/marketplace/components/TeacherGrid', () => {
+  const MockTeacherGrid = () => <div data-testid="teacher-grid" />;
+  MockTeacherGrid.displayName = 'MockTeacherGrid';
+  return MockTeacherGrid;
+});
+jest.mock('@/features/marketplace/components/TrustSection', () => {
+  const MockTrustSection = () => <div data-testid="trust-section" />;
+  MockTrustSection.displayName = 'MockTrustSection';
+  return MockTrustSection;
+});
+jest.mock('@/features/marketplace/components/CTASection', () => {
+  const MockCTASection = () => <div data-testid="cta-section" />;
+  MockCTASection.displayName = 'MockCTASection';
+  return MockCTASection;
+});
 describe('LandingPage', () => {
   it('renders all sections and fetches data', async () => {
     (getPublicSubjects as jest.Mock).mockResolvedValue({ data: [] });

@@ -2,7 +2,7 @@ import React from 'react';
 import { Space, Tooltip } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
-export interface SessionCounterProps {
+export interface SessionCounterSimpleProps {
   remaining: number;
   onHold: number;
   completed: number;
@@ -10,7 +10,7 @@ export interface SessionCounterProps {
   variant?: 'horizontal' | 'compact';
 }
 
-export const SessionCounter: React.FC<SessionCounterProps> = ({
+export const SessionCounterSimple: React.FC<SessionCounterSimpleProps> = ({
   remaining,
   onHold,
   completed,

@@ -1,14 +1,56 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import { PricingPackageView } from '@/shared/api/public';
 import { MoneyText } from '@/shared/components/data-display/MoneyText';
 import { EmptyState } from '@/shared/components/feedback/EmptyState';
-import { BookOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { BookOutlined, ClockCircleOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { Button, message } from 'antd';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/features/auth';
+import { paymentApi } from '@/features/payments/api/paymentApi';
 
 interface TeacherPackagesTabProps {
   packages: PricingPackageView[];
 }
 
 export const TeacherPackagesTab: React.FC<TeacherPackagesTabProps> = ({ packages }) => {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
+  const [loadingPkgId, setLoadingPkgId] = useState<string | null>(null);
+
+  const handleBuy = async (pkg: PricingPackageView) => {
+    if (!isAuthenticated) {
+      message.info('Vui lòng đăng nhập để mua gói học');
+      router.push('/auth/login');
+      return;
+    }
+
+    try {
+      setLoadingPkgId(pkg.id);
+      
+      const returnUrl = `${window.location.origin}/student/payments/callback?success=true`;
+      const cancelUrl = `${window.location.origin}/student/payments/callback?success=false`;
+
+      const response = await paymentApi.createInvoice({
+        pricingPackageId: pkg.id,
+        returnUrl,
+        cancelUrl,
+      });
+
+      if (response?.data?.checkoutUrl) {
+        window.location.assign(response.data.checkoutUrl);
+      } else {
+        message.error('Không tạo được link thanh toán. Vui lòng thử lại sau.');
+      }
+    } catch (error: any) {
+      console.error('Lỗi khi thanh toán:', error);
+      message.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xử lý thanh toán');
+    } finally {
+      setLoadingPkgId(null);
+    }
+  };
+
   if (!packages || packages.length === 0) {
     return (
       <EmptyState 
@@ -46,6 +88,14 @@ export const TeacherPackagesTab: React.FC<TeacherPackagesTabProps> = ({ packages
                 <MoneyText amount={pkg.priceVnd} />
               </span>
             </div>
+            <Button 
+              type="primary" 
+              icon={<ShoppingCartOutlined />}
+              onClick={() => handleBuy(pkg)}
+              loading={loadingPkgId === pkg.id}
+            >
+              Đăng ký
+            </Button>
           </div>
         </div>
       ))}

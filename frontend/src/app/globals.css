@@ -177,3 +177,37 @@ h1, h2, h3, h4, h5, h6 {
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* A11y: Focus visible ring */
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Reduces motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Make Ant Design Skeleton static instead of shimmering */
+  .ant-skeleton-element .ant-skeleton-button, 
+  .ant-skeleton-element .ant-skeleton-avatar, 
+  .ant-skeleton-element .ant-skeleton-input, 
+  .ant-skeleton-element .ant-skeleton-image,
+  .ant-skeleton-title, 
+  .ant-skeleton-paragraph > li {
+    background: #f0f0f0 !important;
+  }
+}
+
+/* Mobile Safe Area for sticky/fixed elements */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottom-nav, 
+  .mobile-sticky-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), var(--space-4)) !important;
+  }
+}

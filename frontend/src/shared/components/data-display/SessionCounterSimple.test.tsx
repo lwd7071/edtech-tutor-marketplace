@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { SessionCounter } from './SessionCounter';
+import { SessionCounterSimple } from './SessionCounterSimple';
 
 jest.mock('@ant-design/icons', () => ({
   QuestionCircleOutlined: () => <span data-testid="question-icon" />
@@ -15,7 +15,7 @@ describe('SessionCounter Component', () => {
   };
 
   it('renders horizontal variant with all indicators', () => {
-    render(<SessionCounter {...props} variant="horizontal" />);
+    render(<SessionCounterSimple {...props} variant="horizontal" />);
     expect(screen.getAllByText((content, element) => element?.textContent === 'Còn lại: 5')[0]).toBeInTheDocument();
     expect(screen.getAllByText((content, element) => element?.textContent === 'Đang giữ: 2 ')[0]).toBeInTheDocument();
     expect(screen.getAllByText((content, element) => element?.textContent === 'Đã học: 3')[0]).toBeInTheDocument();
@@ -23,7 +23,7 @@ describe('SessionCounter Component', () => {
   });
 
   it('renders compact variant correctly', () => {
-    render(<SessionCounter {...props} variant="compact" />);
+    render(<SessionCounterSimple {...props} variant="compact" />);
     // compact might just show "5/10" or similar with a tooltip, let's say "5 Còn lại"
     expect(screen.getByText('5 / 10')).toBeInTheDocument();
   });

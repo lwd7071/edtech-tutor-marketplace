@@ -5,6 +5,7 @@ import { MenuOutlined, BellOutlined, UserOutlined, SettingOutlined, LogoutOutlin
 import { useAuthStore } from '@/features/auth';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 
 const { Header } = Layout;
 
@@ -60,14 +61,13 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
           icon={<MenuOutlined />} 
           onClick={onMenuClick} 
           className="mobile-menu-toggle"
+          aria-label="Toggle mobile menu"
         />
         {getBreadcrumb()}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-        <Badge dot color="var(--color-error-600)">
-          <Button type="text" icon={<BellOutlined style={{ fontSize: 20 }} />} style={{ width: 40, height: 40 }} />
-        </Badge>
+        <NotificationBell />
         
         <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
           <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
