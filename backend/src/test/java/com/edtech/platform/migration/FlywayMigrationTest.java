@@ -64,7 +64,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     void bookings_shouldHaveExclusionConstraints() {
         assertThat(jdbcTemplate).isNotNull();
         List<String> constraints = jdbcTemplate.query(
-                "SELECT conname FROM pg_constraint WHERE conname IN ('ex_booking_teacher_overlap', 'ex_booking_student_overlap')",
+                "SELECT conname FROM pg_constraint WHERE connamespace = 'public'::regnamespace AND conname IN ('ex_booking_teacher_overlap', 'ex_booking_student_overlap')",
                 (rs, rowNum) -> rs.getString("conname")
         );
 
@@ -123,11 +123,11 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
 
         // 1. Check student_packages.commission_rate is numeric(5,2)
         Integer precision = jdbcTemplate.queryForObject(
-                "SELECT numeric_precision FROM information_schema.columns WHERE table_name = 'student_packages' AND column_name = 'commission_rate'",
+                "SELECT numeric_precision FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'student_packages' AND column_name = 'commission_rate'",
                 Integer.class
         );
         Integer scale = jdbcTemplate.queryForObject(
-                "SELECT numeric_scale FROM information_schema.columns WHERE table_name = 'student_packages' AND column_name = 'commission_rate'",
+                "SELECT numeric_scale FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'student_packages' AND column_name = 'commission_rate'",
                 Integer.class
         );
         assertThat(precision).isEqualTo(5);
@@ -135,7 +135,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
 
         // 2. Check platform_settings has is_singleton
         Integer singletonCount = jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM information_schema.columns WHERE table_name = 'platform_settings' AND column_name = 'is_singleton'",
+                "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'platform_settings' AND column_name = 'is_singleton'",
                 Integer.class
         );
         assertThat(singletonCount).isEqualTo(1);
@@ -203,7 +203,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
 
         List<String> constraints = jdbcTemplate.queryForList("""
                 SELECT conname FROM pg_constraint
-                WHERE conname IN (
+                WHERE connamespace = 'public'::regnamespace AND conname IN (
                   'uq_invoices_student_idempotency', 'ck_invoices_amount_positive',
                   'ck_payment_transactions_amount_positive', 'ck_student_packages_total_positive',
                   'ck_student_packages_price_positive', 'ck_student_packages_commission_range',
