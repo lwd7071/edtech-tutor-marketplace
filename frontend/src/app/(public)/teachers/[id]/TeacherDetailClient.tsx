@@ -41,26 +41,26 @@ export default function TeacherDetailClient({
   const items = [
     {
       key: 'bio',
-      label: <span className="text-base font-semibold"><FileTextOutlined /> Giới thiệu</span>,
+      label: <span style={{ fontSize: 'var(--text-body-lg)', fontWeight: 600 }}><FileTextOutlined /> Giới thiệu</span>,
       children: (
-        <div className="bg-surface p-6 rounded-xl border border-border shadow-sm">
-          <h2 className="text-h4 mb-4">Về giảng viên</h2>
-          <p className="text-text-primary whitespace-pre-line text-base">{teacher.bio || 'Chưa có thông tin giới thiệu.'}</p>
+        <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-6)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
+          <h2 style={{ fontSize: 'var(--text-h4)', marginBottom: 'var(--space-4)' }}>Về giảng viên</h2>
+          <p style={{ color: 'var(--color-text-primary)', whiteSpace: 'pre-line', fontSize: 'var(--text-body-lg)' }}>{teacher.bio || 'Chưa có thông tin giới thiệu.'}</p>
         </div>
       )
     },
     {
       key: 'packages',
-      label: <span className="text-base font-semibold"><BookOutlined /> Gói học ({packages.meta?.totalElements || 0})</span>,
+      label: <span style={{ fontSize: 'var(--text-body-lg)', fontWeight: 600 }}><BookOutlined /> Gói học ({packages.meta?.totalElements || 0})</span>,
       children: (
         <TeacherPackagesTab packages={packages.data} />
       )
     },
     {
       key: 'availability',
-      label: <span className="text-base font-semibold"><CalendarOutlined /> Lịch rảnh</span>,
+      label: <span style={{ fontSize: 'var(--text-body-lg)', fontWeight: 600 }}><CalendarOutlined /> Lịch rảnh</span>,
       children: (
-        <div className="bg-surface p-6 rounded-xl border border-border shadow-sm">
+        <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-6)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
           <WeeklyScheduleGrid 
             mode="readonly"
             availableSlots={availability.map(a => {
@@ -79,7 +79,7 @@ export default function TeacherDetailClient({
     },
     {
       key: 'reviews',
-      label: <span className="text-base font-semibold"><StarOutlined /> Đánh giá ({reviews.meta?.totalElements || 0})</span>,
+      label: <span style={{ fontSize: 'var(--text-body-lg)', fontWeight: 600 }}><StarOutlined /> Đánh giá ({reviews.meta?.totalElements || 0})</span>,
       children: (
         <TeacherReviewsTab 
           reviews={reviews.data} 
@@ -91,7 +91,7 @@ export default function TeacherDetailClient({
   ];
 
   return (
-    <div className="mt-8">
+    <div style={{ marginTop: 'var(--space-8)' }}>
       <Tabs 
         defaultActiveKey="bio" 
         items={items} 

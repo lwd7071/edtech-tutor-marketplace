@@ -89,7 +89,7 @@ function LoginForm() {
       </div>
 
       {errorMsg && (
-        <Alert message={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
+        <Alert description={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
       )}
 
       <form onSubmit={handleSubmit(onSubmit)}>

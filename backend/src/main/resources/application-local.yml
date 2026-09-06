@@ -4,13 +4,13 @@ spring:
       on-profile: local
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/edtech_db}
+    url: ${DB_URL:jdbc:postgresql://127.0.0.1:5432/edtech_db}
     username: ${DB_USERNAME:edtech_user}
     password: ${DB_PASSWORD:edtech_password}
 
   data:
     redis:
-      url: ${REDIS_URL:redis://localhost:6379}
+      url: ${REDIS_URL:redis://127.0.0.1:6379}
 
   jpa:
     hibernate:

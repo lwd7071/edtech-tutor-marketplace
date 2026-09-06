@@ -56,7 +56,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         ...style,
       }}
     >
-      <Space direction="vertical" size="middle" align="center">
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
         {getIcon()}
         
         <div>
@@ -75,7 +75,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             {action}
           </div>
         )}
-      </Space>
+      </div>
     </div>
   );
 };

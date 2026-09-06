@@ -14,12 +14,11 @@ export default function CTASection() {
       style={{ 
         padding: 'var(--space-20, 80px) 24px', 
         textAlign: 'center',
-        backgroundImage: 'url(/images/cta_background.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        background: 'linear-gradient(135deg, var(--color-primary-500, #1677ff) 0%, var(--color-primary-800, #003eb3) 100%)',
         borderRadius: 'var(--radius-xl, 24px)',
         margin: 'var(--space-16, 64px) 0',
-        color: '#FFFFFF'
+        color: '#FFFFFF',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
       }}
     >
       <Title level={2} style={{ color: '#FFFFFF', marginBottom: 'var(--space-4, 16px)' }}>

@@ -44,21 +44,21 @@ export default function RankingPage() {
   }, [selectedSubjectId]);
 
   return (
-    <div className="ranking-page bg-surface min-h-screen py-12 px-4">
-      <div className="max-w-4xl mx-auto text-center mb-10">
-        <Title level={1} className="flex items-center justify-center gap-3 !mb-2">
-          <TrophyOutlined className="text-amber-500" />
+    <div style={{ backgroundColor: 'var(--color-surface)', minHeight: '100vh', padding: 'var(--space-12) var(--space-4)' }}>
+      <div style={{ maxWidth: '896px', margin: '0 auto', textAlign: 'center', marginBottom: 'var(--space-10)' }}>
+        <Title level={1} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
+          <TrophyOutlined style={{ color: '#f59e0b' }} />
           Bảng Xếp Hạng Gia Sư
         </Title>
-        <Paragraph className="text-lg text-text-secondary">
+        <Paragraph style={{ fontSize: '18px', color: 'var(--color-text-secondary)' }}>
           Tôn vinh những gia sư xuất sắc nhất dựa trên đánh giá và số buổi học đã hoàn thành
         </Paragraph>
 
-        <div className="mt-8 max-w-xs mx-auto">
+        <div style={{ marginTop: 'var(--space-8)', maxWidth: '320px', margin: '0 auto' }}>
           <Select
             allowClear
             placeholder="Lọc theo môn học"
-            className="w-full text-left"
+            style={{ width: '100%', textAlign: 'left' }}
             size="large"
             value={selectedSubjectId}
             onChange={setSelectedSubjectId}
@@ -71,7 +71,7 @@ export default function RankingPage() {
       </div>
 
       {loading ? (
-        <div data-testid="ranking-loading" className="flex justify-center py-20">
+        <div data-testid="ranking-loading" style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-20) 0' }}>
           <Spin size="large" />
         </div>
       ) : (

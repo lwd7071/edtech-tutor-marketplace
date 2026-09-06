@@ -31,10 +31,10 @@ export default async function TeachersPage({
   ]);
 
   return (
-    <div className="container mx-auto px-4 md:px-6 lg:px-8 py-8 max-w-[1320px]">
-      <div className="flex flex-col gap-4 mb-8">
-        <h1 className="text-h2 text-text-primary">Tìm kiếm Giáo viên</h1>
-        <p className="text-text-secondary">Khám phá và kết nối với các giáo viên xuất sắc trên toàn quốc</p>
+    <div style={{ maxWidth: 'var(--size-container-wide)', margin: '0 auto', padding: 'var(--space-8) var(--space-4)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }}>
+        <h1 style={{ fontSize: 'var(--text-h2)', color: 'var(--color-text-primary)', margin: 0 }}>Tìm kiếm Giáo viên</h1>
+        <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>Khám phá và kết nối với các giáo viên xuất sắc trên toàn quốc</p>
       </div>
 
       <TeacherSearchClient 

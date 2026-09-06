@@ -6,9 +6,6 @@ import TeacherGrid from '@/features/marketplace/components/TeacherGrid';
 import TrustSection from '@/features/marketplace/components/TrustSection';
 import CTASection from '@/features/marketplace/components/CTASection';
 import Link from 'next/link';
-import { Typography } from 'antd';
-
-const { Title, Paragraph } = Typography;
 
 export default async function LandingPage() {
   let topSubjects: any[] = [];
@@ -30,25 +27,25 @@ export default async function LandingPage() {
     <div style={{ backgroundColor: 'var(--color-background, #FBFAF8)' }}>
       {/* Hero Section */}
       <section style={{ 
-        padding: 'var(--space-20, 80px) 24px', 
+        padding: 'var(--space-20) var(--space-4)', 
         textAlign: 'center',
-        backgroundColor: 'var(--color-surface, #FFFFFF)',
-        borderBottom: '1px solid var(--color-border, #E7E3DC)'
+        backgroundColor: 'var(--color-surface)',
+        borderBottom: '1px solid var(--color-border)'
       }}>
-        <Title style={{ fontSize: 'var(--text-display, 48px)', marginBottom: 'var(--space-4, 16px)' }}>
+        <h1 style={{ fontSize: 'var(--text-display)', marginBottom: 'var(--space-4)', fontWeight: 700 }}>
           Học tập dễ dàng cùng chuyên gia
-        </Title>
-        <Paragraph type="secondary" style={{ fontSize: '18px', maxWidth: '600px', margin: '0 auto var(--space-8, 32px)' }}>
+        </h1>
+        <p style={{ fontSize: '18px', maxWidth: '600px', margin: '0 auto var(--space-8)', color: 'var(--color-text-secondary)' }}>
           Tìm kiếm gia sư phù hợp nhất để đạt được mục tiêu học tập của bạn. Hàng ngàn giáo viên xuất sắc đã sẵn sàng.
-        </Paragraph>
+        </p>
         <HeroSearch />
       </section>
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
+      <div style={{ maxWidth: 'var(--size-container-wide)', margin: '0 auto', padding: '0 var(--space-4)' }}>
         {/* Featured Subjects Section */}
         <section style={{ margin: 'var(--space-16, 64px) 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8, 32px)' }}>
-            <Title level={2} style={{ margin: 0 }}>Môn học nổi bật</Title>
+            <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 600 }}>Môn học nổi bật</h2>
             <Link href="/subjects" style={{ color: 'var(--color-primary-600, #0D9488)', fontWeight: 600 }}>Xem tất cả</Link>
           </div>
           <SubjectGrid subjects={topSubjects} />
@@ -57,7 +54,7 @@ export default async function LandingPage() {
         {/* Featured Teachers Section */}
         <section style={{ margin: 'var(--space-16, 64px) 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8, 32px)' }}>
-            <Title level={2} style={{ margin: 0 }}>Giáo viên nổi bật</Title>
+            <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 600 }}>Giáo viên nổi bật</h2>
             <Link href="/teachers" style={{ color: 'var(--color-primary-600, #0D9488)', fontWeight: 600 }}>Xem tất cả</Link>
           </div>
           <TeacherGrid teachers={topTeachers} />

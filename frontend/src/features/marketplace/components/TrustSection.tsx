@@ -36,7 +36,7 @@ export default function TrustSection() {
       <Row gutter={[32, 32]} justify="center">
         {steps.map((step, index) => (
           <Col xs={24} sm={24} md={8} key={index}>
-            <Card bordered={false} style={{ textAlign: 'center', backgroundColor: 'transparent' }}>
+            <Card variant="borderless" style={{ textAlign: 'center', backgroundColor: 'transparent' }}>
               <div style={{ position: 'relative', width: '100%', height: '240px', marginBottom: 'var(--space-6, 24px)' }}>
                 <Image
                   src={step.image}

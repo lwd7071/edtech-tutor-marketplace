@@ -1,10 +1,9 @@
 import React from 'react';
-import { Typography, Pagination, Space } from 'antd';
+import { Pagination, Space } from 'antd';
 import { getPublicSubjects } from '@/shared/api/public';
 import SubjectGrid from '@/features/marketplace/components/SubjectGrid';
 import SubjectSearchInput from './SubjectSearchInput';
 
-const { Title, Paragraph } = Typography;
 
 export default async function SubjectsPage({
   searchParams,
@@ -33,12 +32,12 @@ export default async function SubjectsPage({
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: 'var(--space-12, 48px) 16px' }}>
-      <div style={{ textAlign: 'center', marginBottom: 'var(--space-12, 48px)' }}>
-        <Title level={2}>Danh mục môn học</Title>
-        <Paragraph type="secondary" style={{ fontSize: '16px' }}>
+    <div style={{ maxWidth: 'var(--size-container-wide)', margin: '0 auto', padding: 'var(--space-12) var(--space-4)' }}>
+      <div style={{ textAlign: 'center', marginBottom: 'var(--space-12)' }}>
+        <h1 style={{ margin: '0 0 var(--space-4) 0', fontSize: 'var(--text-h1)', fontWeight: 600 }}>Danh mục môn học</h1>
+        <p style={{ fontSize: '18px', color: 'var(--color-text-secondary)', margin: 0 }}>
           Khám phá các môn học đa dạng và tìm giáo viên phù hợp với bạn
-        </Paragraph>
+        </p>
         
         <div style={{ maxWidth: '400px', margin: 'var(--space-6, 24px) auto 0' }}>
           <SubjectSearchInput defaultValue={keyword} />

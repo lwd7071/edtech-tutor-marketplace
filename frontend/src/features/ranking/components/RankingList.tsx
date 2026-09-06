@@ -22,42 +22,49 @@ export const RankingList: React.FC<RankingListProps> = ({ teachers }) => {
   }
 
   return (
-    <div className="ranking-list max-w-3xl mx-auto flex flex-col gap-3">
+    <div style={{ maxWidth: '768px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       {teachers.map((teacher) => (
         <Link 
           href={`/teachers/${teacher.teacherId}`} 
           key={teacher.teacherId}
-          className="flex items-center p-4 bg-surface rounded-xl border border-border shadow-sm hover:shadow-md transition-shadow group"
+          style={{ 
+            display: 'flex', alignItems: 'center', padding: 'var(--space-4)', 
+            backgroundColor: 'var(--color-surface)', borderRadius: 'var(--radius-xl)', 
+            border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)',
+            textDecoration: 'none', color: 'inherit', transition: 'box-shadow 0.2s'
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.boxShadow = 'var(--shadow-md)')}
+          onMouseLeave={(e) => (e.currentTarget.style.boxShadow = 'var(--shadow-sm)')}
         >
-          <div className="w-12 font-bold text-xl text-text-tertiary text-center mr-4">
+          <div style={{ width: '48px', fontWeight: 'bold', fontSize: '20px', color: 'var(--color-text-tertiary)', textAlign: 'center', marginRight: 'var(--space-4)' }}>
             {teacher.globalRank}
           </div>
           
           <Avatar 
             src={teacher.avatarUrl} 
             size={56} 
-            className="border-2 border-border mr-4"
+            style={{ border: '2px solid var(--color-border)', marginRight: 'var(--space-4)' }}
           >
             {teacher.fullName.charAt(0)}
           </Avatar>
           
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-text-primary text-lg truncate group-hover:text-primary-600 transition-colors">
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ margin: 0, fontWeight: 'bold', color: 'var(--color-text-primary)', fontSize: '18px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {teacher.fullName}
             </h3>
             {teacher.bioExcerpt && (
-              <p className="text-text-secondary text-sm truncate mt-0.5">
+              <p style={{ margin: '2px 0 0', color: 'var(--color-text-secondary)', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {teacher.bioExcerpt}
               </p>
             )}
           </div>
           
-          <div className="flex flex-col items-end justify-center ml-4">
-            <div className="flex items-center gap-1 font-bold text-lg">
-              <StarFilled className="text-amber-400" />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', marginLeft: 'var(--space-4)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold', fontSize: '18px' }}>
+              <StarFilled style={{ color: '#f59e0b' }} />
               <span>{teacher.bayesianRating?.toFixed(1) || '0.0'}</span>
             </div>
-            <div className="text-xs text-text-tertiary">
+            <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
               {teacher.completedSessionCount} buổi
             </div>
           </div>

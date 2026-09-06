@@ -70,7 +70,7 @@ export default function RegisterPage() {
       </div>
 
       {errorMsg && (
-        <Alert message={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
+        <Alert description={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
       )}
 
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -80,7 +80,7 @@ export default function RegisterPage() {
             name="role"
             control={control}
             render={({ field }) => (
-              <Space direction="vertical" style={{ width: '100%' }} size="small">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
                 <RadioCard 
                   title="Học sinh / Phụ huynh" 
                   description="Tìm kiếm gia sư và tham gia các khóa học"
@@ -95,7 +95,7 @@ export default function RegisterPage() {
                   checked={field.value === 'TEACHER'}
                   onChange={field.onChange}
                 />
-              </Space>
+              </div>
             )}
           />
           {errors.role && <Text type="danger" style={{ fontSize: 'var(--text-body-sm)' }}>{errors.role.message}</Text>}

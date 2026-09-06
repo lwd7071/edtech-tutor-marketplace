@@ -51,9 +51,9 @@ export default function TeacherSearchClient({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
+    <div style={{ display: 'flex', gap: 'var(--space-8)', flexWrap: 'wrap' }}>
       {/* Sidebar */}
-      <div className="w-full lg:w-[280px] shrink-0">
+      <div style={{ flexShrink: 0, width: '100%', maxWidth: '280px' }}>
         <TeacherFilterSidebar 
           filters={initialFilters} 
           subjects={subjects}
@@ -63,7 +63,7 @@ export default function TeacherSearchClient({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 min-w-0">
+      <div style={{ flex: 1, minWidth: '300px' }}>
         <TeacherSortBar 
           totalElements={initialTeachers.meta?.totalElements || 0}
           value={initialFilters.sort}
@@ -76,21 +76,20 @@ export default function TeacherSearchClient({
           isError={false}
         />
 
-        {/* Note: Pagination component should be added here, currently just a placeholder if not present */}
         {initialTeachers.meta?.totalPages > 1 && (
-          <div className="mt-8 flex justify-center" data-testid="pagination">
+          <div style={{ marginTop: 'var(--space-8)', display: 'flex', justifyContent: 'center' }} data-testid="pagination">
             <button 
               disabled={initialTeachers.meta.page === 0}
               onClick={() => handlePageChange(initialTeachers.meta.page)}
-              className="mr-2 p-2"
+              style={{ marginRight: 'var(--space-2)', padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'white', cursor: initialTeachers.meta.page === 0 ? 'not-allowed' : 'pointer', opacity: initialTeachers.meta.page === 0 ? 0.5 : 1 }}
             >
               Trang trước
             </button>
-            <span>Trang {initialTeachers.meta.page + 1} / {initialTeachers.meta.totalPages}</span>
+            <span style={{ display: 'flex', alignItems: 'center' }}>Trang {initialTeachers.meta.page + 1} / {initialTeachers.meta.totalPages}</span>
             <button 
               disabled={!initialTeachers.meta.hasNext}
               onClick={() => handlePageChange(initialTeachers.meta.page + 2)}
-              className="ml-2 p-2"
+              style={{ marginLeft: 'var(--space-2)', padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'white', cursor: !initialTeachers.meta.hasNext ? 'not-allowed' : 'pointer', opacity: !initialTeachers.meta.hasNext ? 0.5 : 1 }}
             >
               Trang sau
             </button>

@@ -113,7 +113,7 @@ export default function Navbar() {
         placement="right"
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
-        width={280}
+        size="default"
       >
         <Menu mode="vertical" items={NAV_MENU} style={{ border: 'none' }} />
       </Drawer>

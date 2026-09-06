@@ -19,18 +19,18 @@ export default function Footer() {
           </Col>
           <Col xs={24} md={8}>
             <Title level={4} style={{ color: 'var(--color-text-inverse)' }}>Về chúng tôi</Title>
-            <Space direction="vertical">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <Link href="/about" style={{ color: 'var(--color-text-inverse)', opacity: 0.8 }}>Giới thiệu</Link>
               <Link href="/terms" style={{ color: 'var(--color-text-inverse)', opacity: 0.8 }}>Điều khoản sử dụng</Link>
               <Link href="/privacy" style={{ color: 'var(--color-text-inverse)', opacity: 0.8 }}>Chính sách bảo mật</Link>
-            </Space>
+            </div>
           </Col>
           <Col xs={24} md={8}>
             <Title level={4} style={{ color: 'var(--color-text-inverse)' }}>Hỗ trợ</Title>
-            <Space direction="vertical">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <Link href="/faq" style={{ color: 'var(--color-text-inverse)', opacity: 0.8 }}>Câu hỏi thường gặp</Link>
               <Link href="/contact" style={{ color: 'var(--color-text-inverse)', opacity: 0.8 }}>Liên hệ</Link>
-            </Space>
+            </div>
           </Col>
         </Row>
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'var(--space-8)', paddingTop: 'var(--space-8)', textAlign: 'center' }}>

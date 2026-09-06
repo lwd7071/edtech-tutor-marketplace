@@ -19,7 +19,6 @@ public class SubjectService {
     private final SubjectRepository subjectRepository;
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "SUBJECT_ACTIVE_LIST", key = "(#keyword == null ? 'ALL' : #keyword) + '_' + (#educationLevel == null ? 'ALL' : #educationLevel.name()) + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     public Page<SubjectSummary> getPublicSubjects(String keyword, EducationLevel educationLevel, Pageable pageable) {
         Specification<Subject> spec = Specification.where(isActiveTrue());
 

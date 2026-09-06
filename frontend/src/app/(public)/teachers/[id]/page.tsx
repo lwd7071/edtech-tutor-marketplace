@@ -42,7 +42,7 @@ export default async function TeacherDetailPage({
   }
 
   return (
-    <div className="container mx-auto px-4 md:px-6 lg:px-8 py-8 max-w-[1320px]">
+    <div style={{ maxWidth: 'var(--size-container-wide)', margin: '0 auto', padding: 'var(--space-8) var(--space-4)' }}>
       <TeacherProfileHeader teacher={teacher} />
       
       <TeacherDetailClient 

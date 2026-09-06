@@ -95,9 +95,9 @@ VALUES (
 -- 3. SUBJECTS
 INSERT INTO subjects (id, code, name, slug, education_level, description, is_active, created_source)
 VALUES
-    ('d0000000-0000-0000-0000-000000000001', 'SUB_MATH', 'Toán Học', 'toan-hoc', 'Cấp 3', 'Môn Toán cấp 2 và cấp 3', true, 'ADMIN'),
-    ('d0000000-0000-0000-0000-000000000002', 'SUB_ENG', 'Tiếng Anh', 'tieng-anh', 'Mọi cấp độ', 'Tiếng Anh giao tiếp & IELTS', true, 'ADMIN'),
-    ('d0000000-0000-0000-0000-000000000003', 'SUB_PHY', 'Vật Lý', 'vat-ly', 'Cấp 3', 'Môn Vật lý cấp 3 & Luyện thi ĐH', true, 'ADMIN')
+    ('d0000000-0000-0000-0000-000000000001', 'SUB_MATH', 'Toán Học', 'toan-hoc', 'HIGH_SCHOOL', 'Môn Toán cấp 2 và cấp 3', true, 'ADMIN'),
+    ('d0000000-0000-0000-0000-000000000002', 'SUB_ENG', 'Tiếng Anh', 'tieng-anh', 'OTHER', 'Tiếng Anh giao tiếp & IELTS', true, 'ADMIN'),
+    ('d0000000-0000-0000-0000-000000000003', 'SUB_PHY', 'Vật Lý', 'vat-ly', 'HIGH_SCHOOL', 'Môn Vật lý cấp 3 & Luyện thi ĐH', true, 'ADMIN')
 ON CONFLICT (id) DO NOTHING;
 
 -- 4. TEACHER SUBJECTS

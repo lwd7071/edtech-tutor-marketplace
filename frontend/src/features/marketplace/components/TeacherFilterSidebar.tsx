@@ -16,17 +16,17 @@ export const TeacherFilterSidebar: React.FC<TeacherFilterSidebarProps> = ({
   onClear
 }) => {
   return (
-    <div className="bg-surface rounded-xl border border-border p-6 shadow-sm flex flex-col gap-6 w-full">
-      <div className="flex items-center justify-between">
-        <h3 className="text-h4 m-0">Lọc kết quả</h3>
-        <Button type="link" onClick={onClear} className="p-0 text-text-secondary h-auto">
+    <div style={{ backgroundColor: 'var(--color-surface)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', padding: 'var(--space-6)', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', width: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h3 style={{ fontSize: 'var(--text-h4)', margin: 0 }}>Lọc kết quả</h3>
+        <Button type="link" onClick={onClear} style={{ padding: 0, color: 'var(--color-text-secondary)', height: 'auto' }}>
           Xóa bộ lọc
         </Button>
       </div>
 
       {/* Môn học */}
-      <div className="flex flex-col gap-2">
-        <label className="font-semibold text-text-primary">Môn học</label>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+        <label style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>Môn học</label>
         <Select
           data-testid="subject-select"
           allowClear
@@ -34,17 +34,17 @@ export const TeacherFilterSidebar: React.FC<TeacherFilterSidebarProps> = ({
           value={filters.subjectId || null}
           onChange={(value) => onChange({ subjectId: value || undefined })}
           options={subjects?.map(s => ({ label: s.name, value: s.id }))}
-          className="w-full h-10"
+          style={{ width: '100%', height: '40px' }}
         />
       </div>
 
       {/* Hình thức học */}
-      <div className="flex flex-col gap-2">
-        <label className="font-semibold text-text-primary">Hình thức học</label>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+        <label style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>Hình thức học</label>
         <Radio.Group 
           value={filters.deliveryMode || ''} 
           onChange={(e) => onChange({ deliveryMode: e.target.value || undefined })}
-          className="flex flex-col gap-2"
+          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}
         >
           <Radio value="">Tất cả</Radio>
           <Radio value="ONLINE">Học Online</Radio>
@@ -53,25 +53,25 @@ export const TeacherFilterSidebar: React.FC<TeacherFilterSidebarProps> = ({
       </div>
 
       {/* Khoảng giá */}
-      <div className="flex flex-col gap-2">
-        <label className="font-semibold text-text-primary">Khoảng giá (VNĐ)</label>
-        <div className="flex items-center gap-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+        <label style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>Khoảng giá (VNĐ)</label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <InputNumber
             data-testid="min-price"
             placeholder="Tối thiểu"
             value={filters.minPrice}
             onChange={(val) => onChange({ minPrice: val as number | undefined })}
-            className="w-full"
+            style={{ width: '100%' }}
             min={0}
             step={50000}
           />
-          <span className="text-text-secondary">-</span>
+          <span style={{ color: 'var(--color-text-secondary)' }}>-</span>
           <InputNumber
             data-testid="max-price"
             placeholder="Tối đa"
             value={filters.maxPrice}
             onChange={(val) => onChange({ maxPrice: val as number | undefined })}
-            className="w-full"
+            style={{ width: '100%' }}
             min={0}
             step={50000}
           />
@@ -79,12 +79,12 @@ export const TeacherFilterSidebar: React.FC<TeacherFilterSidebarProps> = ({
       </div>
 
       {/* Đánh giá */}
-      <div className="flex flex-col gap-2">
-        <label className="font-semibold text-text-primary">Đánh giá</label>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+        <label style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>Đánh giá</label>
         <Radio.Group 
           value={filters.minRating} 
           onChange={(e) => onChange({ minRating: e.target.value })}
-          className="flex flex-col gap-2"
+          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}
         >
           <Radio value={undefined}>Tất cả</Radio>
           <Radio value={4.5}>Từ 4.5 sao</Radio>

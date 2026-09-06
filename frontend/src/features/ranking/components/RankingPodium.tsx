@@ -25,55 +25,66 @@ export const RankingPodium: React.FC<RankingPodiumProps> = ({ teachers }) => {
   const rank3 = top3.find(t => t.globalRank === 3) || (top3.length > 2 ? top3[2] : null);
 
   const renderPodiumItem = (teacher: TeacherRankingItem | null, position: 1 | 2 | 3) => {
-    if (!teacher) return <div className="podium-empty flex-1" />;
+    if (!teacher) return <div style={{ flex: 1 }} />;
 
     const isRank1 = position === 1;
-    const heightClass = isRank1 ? 'h-40 md:h-48' : (position === 2 ? 'h-32 md:h-36' : 'h-28 md:h-32');
-    const colorClass = isRank1 ? 'bg-amber-100 border-amber-300' : (position === 2 ? 'bg-slate-100 border-slate-300' : 'bg-orange-50 border-orange-200');
-    const badgeColor = isRank1 ? '#f59e0b' : (position === 2 ? '#94a3b8' : '#d97706');
+    const height = isRank1 ? '160px' : (position === 2 ? '130px' : '110px');
+    const bgColor = isRank1 ? 'var(--color-warning-bg)' : (position === 2 ? '#f1f5f9' : '#fff7ed');
+    const borderColor = isRank1 ? 'var(--color-warning-600)' : (position === 2 ? '#cbd5e1' : '#fed7aa');
+    const badgeColor = isRank1 ? 'var(--color-warning-600)' : (position === 2 ? '#94a3b8' : '#d97706');
 
     return (
-      <Link href={`/teachers/${teacher.teacherId}`} className="flex-1 flex flex-col items-center group transition-transform hover:-translate-y-2">
-        <div className="relative mb-3">
+      <Link href={`/teachers/${teacher.teacherId}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', transition: 'transform 0.2s', cursor: 'pointer' }}>
+        <div style={{ position: 'relative', marginBottom: 'var(--space-3)' }}>
           <Avatar 
             src={teacher.avatarUrl} 
             size={isRank1 ? 100 : 80} 
-            className={`border-4 border-white shadow-md ${isRank1 ? 'shadow-amber-200' : ''}`}
+            style={{ border: '4px solid white', boxShadow: isRank1 ? '0 4px 12px rgba(245, 158, 11, 0.3)' : 'var(--shadow-md)' }}
           >
             {teacher.fullName.charAt(0)}
           </Avatar>
           <div 
-            className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-0.5 text-white font-bold text-xs shadow-sm flex items-center gap-1"
-            style={{ backgroundColor: badgeColor }}
+            style={{ 
+              position: 'absolute', bottom: '-12px', left: '50%', transform: 'translateX(-50%)', 
+              backgroundColor: badgeColor, borderRadius: 'var(--radius-full)', 
+              padding: '2px 12px', color: 'white', fontWeight: 'bold', fontSize: '12px', 
+              boxShadow: 'var(--shadow-sm)', display: 'flex', alignItems: 'center', gap: '4px',
+              whiteSpace: 'nowrap'
+            }}
           >
             {isRank1 && <TrophyOutlined />}
             Top {position}
           </div>
         </div>
         
-        <div className="text-center mb-4 px-2">
-          <div className="font-bold text-text-primary line-clamp-1 group-hover:text-primary-600 transition-colors">
+        <div style={{ textAlign: 'center', marginBottom: 'var(--space-4)', padding: '0 8px' }}>
+          <div style={{ fontWeight: 'bold', color: 'var(--color-text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '120px' }}>
             {teacher.fullName}
           </div>
-          <div className="flex items-center justify-center gap-1 text-sm mt-1">
-            <StarFilled className="text-amber-400" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontSize: '14px', marginTop: '4px' }}>
+            <StarFilled style={{ color: '#f59e0b' }} />
             <Text strong>{teacher.bayesianRating?.toFixed(1) || '0.0'}</Text>
-            <Text type="secondary" className="text-xs">
+            <Text type="secondary" style={{ fontSize: '12px' }}>
               ({teacher.completedSessionCount} buổi)
             </Text>
           </div>
         </div>
 
-        <div className={`w-full rounded-t-lg border-t border-l border-r flex items-end justify-center pb-4 ${heightClass} ${colorClass}`}>
-          <span className="text-4xl font-black text-black/10">{position}</span>
+        <div style={{ 
+          width: '100%', borderTopLeftRadius: 'var(--radius-lg)', borderTopRightRadius: 'var(--radius-lg)', 
+          borderTop: `1px solid ${borderColor}`, borderLeft: `1px solid ${borderColor}`, borderRight: `1px solid ${borderColor}`, 
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 'var(--space-4)',
+          height, backgroundColor: bgColor
+        }}>
+          <span style={{ fontSize: '40px', fontWeight: 900, color: 'rgba(0,0,0,0.1)' }}>{position}</span>
         </div>
       </Link>
     );
   };
 
   return (
-    <div className="ranking-podium max-w-3xl mx-auto mt-12 mb-16 px-4">
-      <div className="flex items-end justify-center gap-2 md:gap-6">
+    <div style={{ maxWidth: '768px', margin: 'var(--space-12) auto var(--space-16)', padding: '0 var(--space-4)' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 'var(--space-4)' }}>
         {renderPodiumItem(rank2, 2)}
         {renderPodiumItem(rank1, 1)}
         {renderPodiumItem(rank3, 3)}

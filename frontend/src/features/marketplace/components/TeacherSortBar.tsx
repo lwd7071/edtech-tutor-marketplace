@@ -13,17 +13,17 @@ export const TeacherSortBar: React.FC<TeacherSortBarProps> = ({
   onChange
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-surface p-4 rounded-xl shadow-sm border border-border gap-4 mb-6">
-      <span className="text-text-primary font-medium" aria-live="polite">
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--color-surface)', padding: 'var(--space-4)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--color-border)', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+      <span style={{ color: 'var(--color-text-primary)', fontWeight: 500 }} aria-live="polite">
         Tìm thấy {totalElements} giáo viên
       </span>
-      <div className="flex items-center gap-3">
-        <span className="text-text-secondary whitespace-nowrap">Sắp xếp theo:</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+        <span style={{ color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>Sắp xếp theo:</span>
         <Select
           data-testid="sort-select"
           value={value || ''}
           onChange={(val) => onChange(val === '' ? undefined : val)}
-          className="w-48"
+          style={{ width: '192px' }}
           options={[
             { label: 'Mặc định', value: '' },
             { label: 'Giá tăng dần', value: 'price_asc' },
