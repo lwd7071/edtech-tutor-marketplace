@@ -118,8 +118,6 @@ export interface AvailabilityView {
 export interface Review {
   id: string;
   rating: number;
-  id: string;
-  rating: number;
   comment?: string;
   createdAt: string;
   reviewerName: string;

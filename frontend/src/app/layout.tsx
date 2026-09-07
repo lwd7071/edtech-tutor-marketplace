@@ -6,25 +6,25 @@ import { AppThemeProvider } from "@/shared/components/AppThemeProvider";
 import AuthProvider from "@/shared/components/auth/AuthProvider";
 import { AppProviders } from '@/shared/components/AppProviders';
 
-// Configure Next.js optimized fonts
+// Cấu hình webfont tối ưu từ Google Fonts hỗ trợ đầy đủ tiếng Việt
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
   display: "swap",
-  variable: "--font-body",
-  weight: ["400", "500", "600"],
+  variable: "--font-inter",
+  weight: ["400", "500", "600", "700"],
 });
 
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
   display: "swap",
-  variable: "--font-heading",
+  variable: "--font-be-vietnam-pro",
   weight: ["400", "500", "600", "700"],
 });
 
 const jetBrainsMono = JetBrains_Mono({
   subsets: ["latin", "vietnamese"],
   display: "swap",
-  variable: "--font-mono",
+  variable: "--font-jetbrains-mono",
   weight: ["400", "500"],
 });
 
@@ -42,9 +42,11 @@ export default function RootLayout({
     <html lang="vi" className={`${inter.variable} ${beVietnamPro.variable} ${jetBrainsMono.variable}`} suppressHydrationWarning>
       <body className="antialiased" suppressHydrationWarning>
         <AppThemeProvider>
-          <AppProviders><AuthProvider>
-            {children}
-          </AuthProvider></AppProviders>
+          <AppProviders>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </AppProviders>
         </AppThemeProvider>
       </body>
     </html>
