@@ -1,41 +1,23 @@
-import { axiosClient } from '@/shared/api/axiosClient';
-import { ApiResponse } from '@/shared/api/types';
-import {
-  StudentPackageSummary,
-  StudentPackageDetail,
-  StudentPackageStatus,
-} from '../types';
-
-export const studentPackageApi = {
-  /**
-   * Lấy danh sách gói học của học sinh đang đăng nhập
-   */
-  getStudentPackages: async (
-    status?: StudentPackageStatus,
-    page: number = 0,
-    size: number = 20,
-    sort: string = 'createdAt,desc'
-  ): Promise<ApiResponse<StudentPackageSummary[]>> => {
-    const params: Record<string, unknown> = { page, size, sort };
-    if (status) {
-      params.status = status;
-    }
-    const response = await axiosClient.get<ApiResponse<StudentPackageSummary[]>>(
-      '/api/student/packages',
-      { params }
-    );
-    return response.data;
-  },
-
-  /**
-   * Lấy thông tin chi tiết một gói học theo id
-   */
-  getStudentPackageDetail: async (
-    id: string
-  ): Promise<ApiResponse<StudentPackageDetail>> => {
-    const response = await axiosClient.get<ApiResponse<StudentPackageDetail>>(
-      `/api/student/packages/${id}`
-    );
-    return response.data;
-  },
+import {axiosClient} from '@/shared/api/axiosClient';
+import type {ApiResponse} from '@/shared/api/types';
+import {getTeacherDetail,getPublicSubjects} from '@/shared/api/public';
+import type {StudentPackageSummary,StudentPackageDetail,StudentPackageStatus} from '../types';
+type Wire=Omit<StudentPackageSummary,'teacher'|'subject'>&{teacherId:string;subjectId:string};
+async function enrich(items:Wire[]):Promise<StudentPackageSummary[]>{
+ const ids=[...new Set(items.map(p=>p.teacherId).filter(Boolean))];
+ const teachers=await Promise.all(ids.map(async id=>[id,await getTeacherDetail(id).catch(()=>null)] as const));
+ const byId=new Map(teachers);
+ const subjects=items.length?await getPublicSubjects({size:100}).catch(()=>null):null;
+ return items.map(p=>({...p,teacher:{id:p.teacherId,fullName:byId.get(p.teacherId)?.fullName||'Gia sư',avatarUrl:byId.get(p.teacherId)?.avatarUrl},subject:{id:p.subjectId,name:subjects?.data.find(s=>s.id===p.subjectId)?.name||'Môn học'}}));
+}
+export const studentPackageApi={
+ async getStudentPackages(status?:StudentPackageStatus,page=0,size=20,sort='createdAt,desc'):Promise<ApiResponse<StudentPackageSummary[]>>{
+  const {data}=await axiosClient.get<{content:Wire[];number:number;size:number;totalElements:number;totalPages:number}>('/api/student/packages',{params:{status,page,size,sort}});
+  return {data:await enrich(data.content),success:true,message:'',errors:[],meta:{page:data.number,size:data.size,totalElements:data.totalElements,totalPages:data.totalPages}};
+ },
+ async getStudentPackageDetail(id:string):Promise<ApiResponse<StudentPackageDetail>>{
+  const {data}=await axiosClient.get<Wire>('/api/student/packages/'+id);
+  return {data:(await enrich([data]))[0],success:true,message:'',errors:[]};
+ }
 };
+

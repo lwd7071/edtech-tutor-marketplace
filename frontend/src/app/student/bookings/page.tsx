@@ -1,8 +1,3 @@
-'use client';
+import BookingWorkspace from '@/features/bookings/pages/BookingWorkspace';
+export default function Page(){return <BookingWorkspace role="student"/>;}
 
-import React from 'react';
-import { StudentBookingsPage } from '@/features/bookings';
-
-export default function Page() {
-  return <StudentBookingsPage />;
-}

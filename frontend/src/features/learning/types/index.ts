@@ -50,8 +50,6 @@ export interface GradeSubmissionRequest {
   feedbackText?: string;
 }
 
-// These interfaces are for the placeholder GET requests 
-// which are not yet implemented in backend but needed for UI.
 export interface TeacherAssignmentListItem {
   id: string;
   title: string;
@@ -73,5 +71,5 @@ export interface SubmissionListItem {
 }
 
 export interface TeacherAssignmentDetail extends AssignmentDetail {
-  submissions: SubmissionListItem[];
+  submissions: SubmissionDetail[];
 }

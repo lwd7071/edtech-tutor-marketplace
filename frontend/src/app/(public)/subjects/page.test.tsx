@@ -57,7 +57,7 @@ describe('SubjectsPage', () => {
 
     // Call the async Server Component
     const searchParams = { keyword: 'Toán', page: '1' };
-    const PageComponent = await SubjectsPage({ searchParams });
+    const PageComponent = await SubjectsPage({ searchParams: Promise.resolve(searchParams) });
     render(PageComponent);
 
     expect(screen.getByTestId('debounced-search')).toBeInTheDocument();
@@ -75,9 +75,11 @@ describe('SubjectsPage', () => {
   it('handles error state', async () => {
     (getPublicSubjects as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-    const PageComponent = await SubjectsPage({ searchParams: {} });
+    const PageComponent = await SubjectsPage({ searchParams: Promise.resolve({}) });
     render(PageComponent);
 
     expect(screen.getByTestId('subject-grid-error')).toBeInTheDocument();
   });
 });
+
+

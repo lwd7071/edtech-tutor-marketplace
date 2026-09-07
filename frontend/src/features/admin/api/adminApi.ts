@@ -18,23 +18,23 @@ export const adminApi = {
     size: number = 20,
     sort: string = 'createdAt,asc'
   ): Promise<ApiResponse<TeacherApprovalSnapshot[]>> => {
-    return axiosClient.get('/admin/teachers/approvals', {
+    return (await axiosClient.get('/api/admin/teachers/approvals', {
       params: { status, page, size, sort },
-    });
+    })).data;
   },
 
   approveTeacher: async (
     teacherId: string,
     data: ApproveTeacherRequest
   ): Promise<ApiResponse<TeacherApprovalSnapshot>> => {
-    return axiosClient.post(`/admin/teachers/${teacherId}/approve`, data);
+    return (await axiosClient.post(`/api/admin/teachers/${teacherId}/approve`, data)).data;
   },
 
   rejectTeacher: async (
     teacherId: string,
     data: RejectRequest
   ): Promise<ApiResponse<TeacherApprovalSnapshot>> => {
-    return axiosClient.post(`/admin/teachers/${teacherId}/reject`, data);
+    return (await axiosClient.post(`/api/admin/teachers/${teacherId}/reject`, data)).data;
   },
 
   // 2. Phê duyệt đề xuất môn học
@@ -43,23 +43,23 @@ export const adminApi = {
     size: number = 20,
     sort: string = 'createdAt,asc'
   ): Promise<ApiResponse<SubjectProposalSnapshot[]>> => {
-    return axiosClient.get('/admin/subject-proposals', {
+    return (await axiosClient.get('/api/admin/subject-proposals', {
       params: { page, size, sort },
-    });
+    })).data;
   },
 
   approveSubjectProposal: async (
     proposalId: string,
     data: ApproveSubjectProposalRequest
   ): Promise<ApiResponse<SubjectProposalSnapshot>> => {
-    return axiosClient.post(`/admin/subject-proposals/${proposalId}/approve`, data);
+    return (await axiosClient.post(`/api/admin/subject-proposals/${proposalId}/approve`, data)).data;
   },
 
   rejectSubjectProposal: async (
     proposalId: string,
     data: RejectRequest
   ): Promise<ApiResponse<SubjectProposalSnapshot>> => {
-    return axiosClient.post(`/admin/subject-proposals/${proposalId}/reject`, data);
+    return (await axiosClient.post(`/api/admin/subject-proposals/${proposalId}/reject`, data)).data;
   },
 
   // 3. Kiểm duyệt người dùng
@@ -67,6 +67,7 @@ export const adminApi = {
     userId: string,
     data: ChangeUserStatusRequest
   ): Promise<ApiResponse<IdentitySnapshot>> => {
-    return axiosClient.patch(`/admin/users/${userId}/status`, data);
+    return (await axiosClient.patch(`/api/admin/users/${userId}/status`, data)).data;
   },
 };
+

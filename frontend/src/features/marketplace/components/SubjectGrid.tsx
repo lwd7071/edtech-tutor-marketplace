@@ -1,58 +1,14 @@
 'use client';
-
-import React from 'react';
-import { Row, Col } from 'antd';
-import SubjectCard from '@/shared/components/data-display/SubjectCard';
-import { EmptyState } from '@/shared/components/feedback/EmptyState';
-import { ErrorState } from '@/shared/components/feedback/ErrorState';
-import { Skeleton } from '@/shared/components/feedback/Skeleton';
-
-interface SubjectGridProps {
-  subjects: any[];
-  isLoading?: boolean;
-  isError?: boolean;
-  onRetry?: () => void;
-}
-
-export default function SubjectGrid({ subjects, isLoading, isError, onRetry }: SubjectGridProps) {
-  if (isError) {
-    return <ErrorState actionText="Tải lại" onRetry={onRetry} />;
-  }
-
-  if (isLoading) {
-    return (
-      <Row gutter={[16, 16]}>
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Col xs={24} sm={12} md={8} lg={6} key={i}>
-            <Skeleton variant="card" />
-          </Col>
-        ))}
-      </Row>
-    );
-  }
-
-  if (!subjects || subjects.length === 0) {
-    return (
-      <EmptyState
-        title="Không tìm thấy môn học"
-        description="Vui lòng thử lại với từ khóa khác"
-      />
-    );
-  }
-
-  return (
-    <Row gutter={[16, 16]}>
-      {subjects.map((subject) => (
-        <Col xs={24} sm={12} md={8} lg={6} key={subject.id}>
-          <SubjectCard 
-            id={subject.id}
-            name={subject.name}
-            description={subject.description}
-            imageUrl={subject.imageUrl}
-            teacherCount={subject.teacherCount}
-          />
-        </Col>
-      ))}
-    </Row>
-  );
+import Link from 'next/link';
+import {useRouter} from 'next/navigation';
+import {BookOutlined} from '@ant-design/icons';
+import {EmptyState} from '@/shared/components/feedback/EmptyState';
+import {ErrorState} from '@/shared/components/feedback/ErrorState';
+import type {SubjectSummary} from '@/shared/api/public';
+const levels:Record<string,string>={ELEMENTARY:'Tiểu học',MIDDLE_SCHOOL:'THCS',HIGH_SCHOOL:'THPT',UNIVERSITY:'Đại học',OTHER:'Khác'};
+export default function SubjectGrid({subjects,isError,onRetry}:{subjects:SubjectSummary[];isError?:boolean;isLoading?:boolean;onRetry?:()=>void}){
+ const router=useRouter();
+ if(isError)return <ErrorState title="Chưa tải được môn học" actionText="Tải lại" onRetry={onRetry||(()=>router.refresh())}/>;
+ if(!subjects.length)return <EmptyState title="Không tìm thấy môn học" description="Thử tìm bằng tên môn học khác."/>;
+ return <div className="tm-subject-grid">{subjects.map(s=><Link key={s.id} className="tm-card-link" href={'/teachers?subjectId='+encodeURIComponent(s.id)}><article className="tm-subject-card"><span className="tm-subject-icon"><BookOutlined/></span><h3>{s.name}</h3>{s.educationLevel&&<small>{levels[s.educationLevel]||s.educationLevel}</small>}{s.description&&<p>{s.description}</p>}<small>Tìm gia sư →</small></article></Link>)}</div>;
 }

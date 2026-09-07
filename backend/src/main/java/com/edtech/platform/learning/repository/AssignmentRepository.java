@@ -11,6 +11,7 @@ import java.util.UUID;
 
 @Repository
 public interface AssignmentRepository extends JpaRepository<Assignment, UUID> {
+    Page<Assignment> findByTeacherId(UUID teacherId, Pageable pageable);
     Page<Assignment> findByStudentIdAndStatus(UUID studentId, AssignmentStatus status, Pageable pageable);
     Page<Assignment> findByStudentId(UUID studentId, Pageable pageable);
 }

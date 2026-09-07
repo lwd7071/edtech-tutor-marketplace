@@ -59,7 +59,7 @@ describe('TeacherDetailPage', () => {
     (getTeacherReviews as jest.Mock).mockResolvedValue({ data: [], meta: {} });
 
     // Server Component call
-    const PageComponent = await TeacherDetailPage({ params: { id: '1' }, searchParams: {} });
+    const PageComponent = await TeacherDetailPage({ params: Promise.resolve({ id: '1' }), searchParams: Promise.resolve({}) });
     render(PageComponent);
 
     expect(screen.getByTestId('teacher-profile-header')).toBeInTheDocument();
@@ -72,3 +72,4 @@ describe('TeacherDetailPage', () => {
     expect(getTeacherReviews).toHaveBeenCalledWith('1', 0, 10);
   });
 });
+

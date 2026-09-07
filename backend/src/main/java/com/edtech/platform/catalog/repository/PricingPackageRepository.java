@@ -11,6 +11,7 @@ import java.util.UUID;
 
 @Repository
 public interface PricingPackageRepository extends JpaRepository<PricingPackage, UUID> {
+    Page<PricingPackage> findByTeacherId(UUID teacherId, Pageable pageable);
     Page<PricingPackage> findByTeacherIdAndStatus(UUID teacherId, PackageStatus status, Pageable pageable);
 
     @org.springframework.data.jpa.repository.Query("SELECT DISTINCT p.teacherId FROM PricingPackage p WHERE p.status = 'ACTIVE' AND p.deleted = false AND (:minPrice IS NULL OR p.priceVnd >= :minPrice) AND (:maxPrice IS NULL OR p.priceVnd <= :maxPrice)")

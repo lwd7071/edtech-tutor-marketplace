@@ -1,97 +1,14 @@
 'use client';
-
-import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, message, Skeleton } from 'antd';
-import { teacherApi, TeacherProfile } from '@/shared/api/teacher';
-
-const { TextArea } = Input;
-
-export const TeacherProfileForm: React.FC = () => {
-  const [form] = Form.useForm<TeacherProfile>();
-  const [profile, setProfile] = useState<TeacherProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const data = await teacherApi.getProfile();
-        setProfile(data);
-      } catch (error) {
-        message.error('Không thể tải hồ sơ giáo viên');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
-  }, []);
-
-  const onFinish = async (values: TeacherProfile) => {
-    setSubmitting(true);
-    try {
-      await teacherApi.updateProfile(values);
-      message.success('Cập nhật hồ sơ thành công');
-    } catch (error) {
-      message.error('Cập nhật hồ sơ thất bại');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (loading) {
-    return <div data-testid="loading-skeleton"><Skeleton active /></div>;
-  }
-
-  return (
-    <div className="bg-surface p-6 rounded-xl border border-border shadow-sm max-w-3xl">
-      <h2 className="text-xl font-bold mb-6 text-text-primary">Hồ sơ Giảng dạy</h2>
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={onFinish}
-        initialValues={profile || {}}
-        requiredMark={false}
-      >
-        <Form.Item
-          name="bio"
-          label="Tiểu sử (Bio)"
-          rules={[{ required: true, message: 'Vui lòng nhập tiểu sử' }]}
-        >
-          <TextArea 
-            rows={4} 
-            placeholder="Giới thiệu về bản thân và phong cách giảng dạy của bạn..." 
-            className="w-full"
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="experience"
-          label="Kinh nghiệm làm việc"
-          rules={[{ required: true, message: 'Vui lòng nhập kinh nghiệm' }]}
-        >
-          <TextArea 
-            rows={4} 
-            placeholder="Liệt kê kinh nghiệm làm việc, giảng dạy của bạn..." 
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="education"
-          label="Học vấn / Bằng cấp"
-          rules={[{ required: true, message: 'Vui lòng nhập học vấn' }]}
-        >
-          <TextArea 
-            rows={4} 
-            placeholder="Liệt kê các trường đã học, bằng cấp, chứng chỉ liên quan..." 
-          />
-        </Form.Item>
-
-        <Form.Item className="mb-0 mt-6 flex justify-end">
-          <Button type="primary" htmlType="submit" loading={submitting}>
-            Lưu thay đổi
-          </Button>
-        </Form.Item>
-      </Form>
-    </div>
-  );
-};
+import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useState} from 'react';
+import {Form,Input,InputNumber,Switch,Select,Button,Alert,App,Skeleton} from 'antd';
+import {teacherApi,type TeacherProfile} from '@/shared/api/teacher';
+export function TeacherProfileForm(){
+ const {message}=App.useApp();const client=useQueryClient();const [busy,setBusy]=useState(false);
+ const query=useQuery({queryKey:['teacher-profile'],queryFn:teacherApi.getProfile});
+ const save=async(values:TeacherProfile)=>{setBusy(true);try{await teacherApi.updateProfile(values);await client.invalidateQueries({queryKey:['teacher-profile']});message.success('Đã lưu hồ sơ.');}catch{message.error('Chưa lưu được hồ sơ. Kiểm tra thông tin và thử lại.');}finally{setBusy(false);}};
+ if(query.isLoading)return <Skeleton active/>;
+ if(query.isError||!query.data)return <Alert type="error" title="Chưa tải được hồ sơ" action={<Button onClick={()=>query.refetch()}>Thử lại</Button>}/>;
+ const p=query.data;const status=p.approvalStatus||'DRAFT';
+ return <div className="tm-stack" style={{maxWidth:820}}><header className="tm-page-heading"><h1>Hồ sơ gia sư</h1><p>Thông tin rõ ràng giúp học viên hiểu cách bạn giảng dạy.</p></header><Alert showIcon type={status==='REJECTED'?'warning':status==='APPROVED'?'success':'info'} title={{DRAFT:'Hồ sơ bản nháp',PENDING_APPROVAL:'Hồ sơ đang chờ duyệt',APPROVED:'Hồ sơ đã được duyệt',REJECTED:'Hồ sơ cần bổ sung'}[status]} description={p.rejectionReason||(status==='APPROVED'?'Lưu chỉnh sửa sẽ đưa hồ sơ về bản nháp và cần gửi duyệt lại.':'Hoàn thiện giới thiệu, môn dạy và tài liệu xác minh trước khi gửi duyệt.')}/><section className="tm-panel"><Form key={JSON.stringify(p)} layout="vertical" initialValues={p} disabled={busy||status==='PENDING_APPROVAL'} onFinish={save}><Form.Item name="bio" label="Giới thiệu và phương pháp giảng dạy" rules={[{required:true,message:'Nhập giới thiệu'}]}><Input.TextArea rows={6}/></Form.Item><Form.Item name="yearsOfExperience" label="Số năm kinh nghiệm" rules={[{required:true}]}><InputNumber min={0} max={80}/></Form.Item><Form.Item name="languages" label="Ngôn ngữ giảng dạy"><Select mode="tags" options={['Tiếng Việt','Tiếng Anh'].map(value=>({value,label:value}))}/></Form.Item><div className="tm-inline"><Form.Item name="supportsOnline" label="Dạy online" valuePropName="checked"><Switch/></Form.Item><Form.Item name="supportsOffline" label="Dạy trực tiếp" valuePropName="checked"><Switch/></Form.Item></div><Form.Item name="locationAddress" label="Địa điểm dạy trực tiếp"><Input/></Form.Item><Form.Item name="introductionVideoUrl" label="Link video giới thiệu" rules={[{type:'url',message:'Nhập đường dẫn video hợp lệ'}]}><Input/></Form.Item><Button htmlType="submit" type="primary" loading={busy}>Lưu hồ sơ</Button></Form></section>{['DRAFT','REJECTED'].includes(status)&&<Button type="primary" loading={busy} onClick={async()=>{setBusy(true);try{await teacherApi.submitProfile();await query.refetch();message.success('Đã gửi hồ sơ xét duyệt');}catch{message.error('Chưa gửi được hồ sơ. Kiểm tra điều kiện và thử lại.');}finally{setBusy(false);}}}>Gửi hồ sơ xét duyệt</Button>}</div>;
+}

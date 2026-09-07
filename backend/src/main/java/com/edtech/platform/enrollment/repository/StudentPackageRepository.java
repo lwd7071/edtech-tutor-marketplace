@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface StudentPackageRepository extends JpaRepository<StudentPackage, UUID> {
+    Page<StudentPackage> findByTeacherId(UUID teacherId, Pageable pageable);
+    Page<StudentPackage> findByTeacherIdAndStudentId(UUID teacherId, UUID studentId, Pageable pageable);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from StudentPackage p where p.id = :id")
     Optional<StudentPackage> findByIdForUpdate(UUID id);

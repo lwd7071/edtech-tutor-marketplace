@@ -55,7 +55,7 @@ describe('TeachersPage', () => {
 
     // Call Server Component function
     const searchParams = { keyword: 'Math' };
-    const PageComponent = await TeachersPage({ searchParams });
+    const PageComponent = await TeachersPage({ searchParams: Promise.resolve(searchParams) });
     render(PageComponent);
 
     expect(screen.getByTestId('teacher-filter-sidebar')).toBeInTheDocument();
@@ -68,3 +68,5 @@ describe('TeachersPage', () => {
     expect(getPublicSubjects).toHaveBeenCalled();
   });
 });
+
+

@@ -1,47 +1,10 @@
-import React from 'react';
-import { getPublicTeachers, getPublicSubjects, TeacherSearchParams } from '@/shared/api/public';
+import {getPublicTeachers,getPublicSubjects,type TeacherSearchParams} from '@/shared/api/public';
 import TeacherSearchClient from './TeacherSearchClient';
-
-export default async function TeachersPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const page = searchParams.page ? parseInt(searchParams.page as string, 10) - 1 : 0;
-  const size = searchParams.size ? parseInt(searchParams.size as string, 10) : 12;
-
-  const params: TeacherSearchParams = {
-    keyword: searchParams.keyword as string | undefined,
-    subjectId: searchParams.subjectId as string | undefined,
-    dayOfWeek: searchParams.dayOfWeek as string | undefined,
-    startTime: searchParams.startTime as string | undefined,
-    endTime: searchParams.endTime as string | undefined,
-    minPrice: searchParams.minPrice ? Number(searchParams.minPrice) : undefined,
-    maxPrice: searchParams.maxPrice ? Number(searchParams.maxPrice) : undefined,
-    minRating: searchParams.minRating ? Number(searchParams.minRating) : undefined,
-    deliveryMode: searchParams.deliveryMode as string | undefined,
-    sort: searchParams.sort as string | undefined,
-    page,
-    size,
-  };
-
-  const [teachersResponse, subjectsResponse] = await Promise.all([
-    getPublicTeachers(params).catch(() => ({ data: [], meta: { page: 0, totalElements: 0, size: 12 } })),
-    getPublicSubjects({ size: 100 }).catch(() => ({ data: [], meta: {} }))
-  ]);
-
-  return (
-    <div style={{ maxWidth: 'var(--size-container-wide)', margin: '0 auto', padding: 'var(--space-8) var(--space-4)' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }}>
-        <h1 style={{ fontSize: 'var(--text-h2)', color: 'var(--color-text-primary)', margin: 0 }}>Tìm kiếm Giáo viên</h1>
-        <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>Khám phá và kết nối với các giáo viên xuất sắc trên toàn quốc</p>
-      </div>
-
-      <TeacherSearchClient 
-        initialFilters={params}
-        initialTeachers={teachersResponse}
-        subjects={subjectsResponse.data || []}
-      />
-    </div>
-  );
+export default async function Page({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){
+ const q=await searchParams;const value=(key:string)=>typeof q[key]==='string'?q[key] as string:undefined;
+ const number=(key:string)=>{const v=value(key);return v!==undefined&&v.trim()!==''&&Number.isFinite(Number(v))&&Number(v)>=0?Number(v):undefined;};
+ const params:TeacherSearchParams={keyword:value('keyword'),subjectId:value('subjectId'),minPrice:number('minPrice'),maxPrice:number('maxPrice'),minRating:number('minRating'),deliveryMode:value('deliveryMode'),sort:value('sort'),page:Math.max(0,Math.floor(number('page')||1)-1),size:12};
+ if(value('dayOfWeek')&&value('startTime')&&value('endTime'))Object.assign(params,{dayOfWeek:value('dayOfWeek'),startTime:value('startTime'),endTime:value('endTime')});
+ const [teachers,subjects]=await Promise.allSettled([getPublicTeachers(params),getPublicSubjects({size:100})]);
+ return <div className="tm-container tm-page"><header className="tm-page-heading"><p className="tm-eyebrow">Tìm người đồng hành</p><h1>Gia sư cho mục tiêu của bạn</h1><p>Chọn môn học, hình thức và ngân sách. Khám phá từng hồ sơ trước khi bắt đầu.</p></header><TeacherSearchClient initialFilters={params} initialTeachers={teachers.status==='fulfilled'?teachers.value:{data:[],meta:{}}} subjects={subjects.status==='fulfilled'?subjects.value.data:[]} isError={teachers.status==='rejected'}/></div>;
 }

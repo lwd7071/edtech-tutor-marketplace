@@ -27,6 +27,20 @@ public class TeacherPricingPackageController {
 
     private final PricingPackageService pricingPackageService;
 
+    @org.springframework.web.bind.annotation.GetMapping
+    public ApiResponse<java.util.List<PricingPackageView>> list(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.edtech.platform.common.security.AuthenticatedUser user,
+            org.springframework.data.domain.Pageable pageable) {
+        var page = pricingPackageService.getOwnPackages(user.id(), pageable);
+        return ApiResponse.page(page.getContent(), com.edtech.platform.common.response.PageMeta.from(page));
+    }
+
+    @org.springframework.web.bind.annotation.GetMapping("/{id}")
+    public ApiResponse<PricingPackageView> detail(@PathVariable UUID id,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.edtech.platform.common.security.AuthenticatedUser user) {
+        return ApiResponse.ok(pricingPackageService.getOwnPackage(user.id(), id));
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<PricingPackageView> createPackage(

@@ -1,0 +1,13 @@
+'use client';
+import {useState} from 'react';
+import {useQuery} from '@tanstack/react-query';
+import Link from 'next/link';
+import {Alert,Button,Select,Pagination,Skeleton,Input} from 'antd';
+import {axiosClient} from '@/shared/api/axiosClient';
+import type {ApiResponse} from '@/shared/api/types';
+import type {BookingDetail} from '../types';
+export default function BookingWorkspace({role}:{role:'student'|'teacher'}){
+ const [page,setPage]=useState(0);const [status,setStatus]=useState<string>();const [date,setDate]=useState('');
+ const q=useQuery({queryKey:['workspace-bookings',role,page,status,date],queryFn:async()=>{let from:string|undefined,to:string|undefined;if(date){const start=new Date(date+'T00:00:00');const end=new Date(start);end.setDate(end.getDate()+1);from=start.toISOString();to=end.toISOString();}return (await axiosClient.get<ApiResponse<BookingDetail[]>>('/api/'+role+'/bookings',{params:{page,size:12,status,from,to,sort:'startTime,asc'}})).data;}});
+ return <div className="tm-stack"><header className="tm-page-heading"><h1>{role==='teacher'?'Lịch dạy':'Lịch học'}</h1><p>Các buổi học đã được tạo. Thời gian hiển thị theo múi giờ thiết bị của bạn.</p></header><div className="tm-toolbar"><div className="tm-inline"><Select aria-label="Trạng thái buổi học" allowClear placeholder="Tất cả trạng thái" value={status} onChange={v=>{setStatus(v);setPage(0);}} style={{width:190}} options={[['SCHEDULED','Sắp diễn ra'],['COMPLETED','Đã hoàn thành'],['CANCELLED','Đã hủy'],['EXPIRED','Hết hạn']].map(([value,label])=>({value,label}))}/><Input aria-label="Ngày học" type="date" value={date} onChange={e=>{setDate(e.target.value);setPage(0);}}/></div>{role==='teacher'&&<Link className="tm-button" href="/teacher/students">Chọn học viên để tạo buổi</Link>}</div>{q.isLoading?<Skeleton active/>:q.isError?<Alert type="error" title="Chưa tải được lịch" action={<Button onClick={()=>q.refetch()}>Thử lại</Button>}/>:<>{q.data?.data.length?<div className="tm-package-grid">{q.data.data.map(b=><Link href={'/'+role+'/bookings/'+b.id} key={b.id} className="tm-panel tm-dashboard-link"><p className="tm-eyebrow">{b.trial?'Buổi học thử':'Buổi học'} · {{SCHEDULED:'Sắp diễn ra',COMPLETED:'Đã học',CANCELLED:'Đã hủy',EXPIRED:'Hết hạn'}[b.status]}</p><h2>{b.subject.name}</h2><p>{role==='teacher'?b.student.fullName:b.teacher.fullName}</p><strong>{new Date(b.startTime).toLocaleString('vi-VN')}</strong><p>{b.deliveryMode==='ONLINE'?'Online':'Trực tiếp'} · Xem chi tiết →</p></Link>)}</div>:<section className="tm-panel">Chưa có buổi học với điều kiện đã chọn.</section>}<Pagination current={page+1} pageSize={12} total={q.data?.meta?.totalElements||0} showSizeChanger={false} onChange={n=>setPage(n-1)}/></>}</div>;
+}

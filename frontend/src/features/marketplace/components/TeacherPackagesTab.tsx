@@ -1,104 +1,14 @@
 'use client';
-
-import React, { useState } from 'react';
-import { PricingPackageView } from '@/shared/api/public';
-import { MoneyText } from '@/shared/components/data-display/MoneyText';
-import { EmptyState } from '@/shared/components/feedback/EmptyState';
-import { BookOutlined, ClockCircleOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-import { Button, message } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/features/auth';
-import { paymentApi } from '@/features/payments/api/paymentApi';
-
-interface TeacherPackagesTabProps {
-  packages: PricingPackageView[];
+import {useRef,useState} from 'react';
+import {usePathname,useRouter} from 'next/navigation';
+import {App,Button,Modal} from 'antd';
+import type {PricingPackageView} from '@/shared/api/public';
+import {useAuthStore} from '@/features/auth';
+import {paymentApi} from '@/features/payments/api/paymentApi';
+export function TeacherPackagesTab({packages}:{packages:PricingPackageView[]}){
+ const {user}=useAuthStore();const router=useRouter();const pathname=usePathname();const {message}=App.useApp();const [selected,setSelected]=useState<PricingPackageView|null>(null);const [busy,setBusy]=useState(false);const key=useRef<string|null>(null);
+ const choose=(pkg:PricingPackageView)=>{if(!user){router.push('/auth/login?redirect='+encodeURIComponent(pathname+'?packageId='+pkg.id+'#packages'));return;}if(user.role!=='STUDENT')return;key.current=crypto.randomUUID();setSelected(pkg);};
+ const buy=async()=>{if(!selected||busy)return;setBusy(true);try{const callback=window.location.origin+'/student/payments/callback';const res=await paymentApi.createInvoice({pricingPackageId:selected.id,returnUrl:callback,cancelUrl:callback},key.current!);if(!res.data.id)throw new Error('Chưa nhận được mã hóa đơn.');router.push('/student/checkout/'+res.data.id);}catch(e){message.error(e instanceof Error?e.message:'Chưa tạo được hóa đơn. Thử lại với cùng yêu cầu.');}finally{setBusy(false);}};
+ if(!packages.length)return <p>Gia sư chưa mở gói học. Bạn có thể xem lịch rảnh và gửi yêu cầu học thử.</p>;
+ return <><div className="tm-package-grid">{packages.map(pkg=><article className="tm-package" key={pkg.id}><span className="tm-chip">{pkg.subjectName||'Gói học 1–1'}</span><h3>{pkg.name}</h3>{pkg.description&&<p>{pkg.description}</p>}<div>{pkg.totalSessions??pkg.sessionCount} buổi · {pkg.sessionDurationMinutes??pkg.durationMinutes} phút/buổi{pkg.durationDays&&<p>Hạn sử dụng: {pkg.durationDays} ngày</p>}</div><div className="tm-package-price">{new Intl.NumberFormat('vi-VN').format(pkg.priceVnd)}đ <small style={{fontSize:12,fontWeight:400}}>trọn gói</small></div>{(!user||user.role==='STUDENT')&&<Button type="primary" size="large" onClick={()=>choose(pkg)}>Chọn gói học</Button>}</article>)}</div><Modal open={!!selected} title="Xác nhận gói học" onCancel={()=>{if(!busy)setSelected(null);}} onOk={buy} confirmLoading={busy} okText="Tạo hóa đơn thanh toán" cancelText="Quay lại" closable={!busy} maskClosable={!busy}>{selected&&<><h3>{selected.name}</h3><p>{selected.totalSessions??selected.sessionCount} buổi · {selected.sessionDurationMinutes??selected.durationMinutes} phút/buổi</p><p>Giá trọn gói: <strong>{new Intl.NumberFormat('vi-VN').format(selected.priceVnd)}đ</strong></p><p>Sau khi thanh toán được xác nhận, gói học sẽ xuất hiện trong tài khoản. Gia sư sẽ thống nhất và tạo lịch học.</p></>}</Modal></>;
 }
-
-export const TeacherPackagesTab: React.FC<TeacherPackagesTabProps> = ({ packages }) => {
-  const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
-  const [loadingPkgId, setLoadingPkgId] = useState<string | null>(null);
-
-  const handleBuy = async (pkg: PricingPackageView) => {
-    if (!isAuthenticated) {
-      message.info('Vui lòng đăng nhập để mua gói học');
-      router.push('/auth/login');
-      return;
-    }
-
-    try {
-      setLoadingPkgId(pkg.id);
-      
-      const returnUrl = `${window.location.origin}/student/payments/callback?success=true`;
-      const cancelUrl = `${window.location.origin}/student/payments/callback?success=false`;
-
-      const response = await paymentApi.createInvoice({
-        pricingPackageId: pkg.id,
-        returnUrl,
-        cancelUrl,
-      });
-
-      if (response?.data?.checkoutUrl) {
-        window.location.assign(response.data.checkoutUrl);
-      } else {
-        message.error('Không tạo được link thanh toán. Vui lòng thử lại sau.');
-      }
-    } catch (error: any) {
-      console.error('Lỗi khi thanh toán:', error);
-      message.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xử lý thanh toán');
-    } finally {
-      setLoadingPkgId(null);
-    }
-  };
-
-  if (!packages || packages.length === 0) {
-    return (
-      <EmptyState 
-        title="Chưa có gói học nào"
-        description="Giáo viên này hiện tại chưa công khai gói học nào."
-      />
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {packages.map(pkg => (
-        <div key={pkg.id} className="bg-surface rounded-xl border border-border shadow-sm p-6 hover:shadow-md transition-shadow flex flex-col h-full">
-          <div className="mb-4 flex-1">
-            <h3 className="text-h4 text-text-primary mb-2 line-clamp-2">{pkg.name}</h3>
-            {pkg.description && (
-              <p className="text-text-secondary text-sm line-clamp-3 mb-4">{pkg.description}</p>
-            )}
-            <div className="flex flex-col gap-2 mt-4 text-text-primary">
-              <div className="flex items-center gap-2">
-                <BookOutlined className="text-text-secondary" />
-                <span>{pkg.sessionCount} buổi</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <ClockCircleOutlined className="text-text-secondary" />
-                <span>{pkg.durationMinutes} phút/buổi</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-4 pt-4 border-t border-border flex items-end justify-between">
-            <div className="flex flex-col">
-              <span className="text-xs text-text-secondary">Giá trọn gói</span>
-              <span className="text-xl font-bold text-primary">
-                <MoneyText amount={pkg.priceVnd} />
-              </span>
-            </div>
-            <Button 
-              type="primary" 
-              icon={<ShoppingCartOutlined />}
-              onClick={() => handleBuy(pkg)}
-              loading={loadingPkgId === pkg.id}
-            >
-              Đăng ký
-            </Button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};

@@ -1,71 +1,9 @@
-import React from 'react';
-import { getPublicSubjects, getPublicTeachers } from '@/shared/api/public';
+import Link from 'next/link';
+import {getPublicSubjects,getPublicTeachers} from '@/shared/api/public';
 import HeroSearch from '@/features/marketplace/components/HeroSearch';
 import SubjectGrid from '@/features/marketplace/components/SubjectGrid';
 import TeacherGrid from '@/features/marketplace/components/TeacherGrid';
-import TrustSection from '@/features/marketplace/components/TrustSection';
-import CTASection from '@/features/marketplace/components/CTASection';
-import Link from 'next/link';
-
-export default async function LandingPage() {
-  let topSubjects: any[] = [];
-  let topTeachers: any[] = [];
-  
-  // Parallel data fetching for subjects and teachers
-  try {
-    const [subjectsRes, teachersRes] = await Promise.all([
-      getPublicSubjects({ page: 0, size: 8 }),
-      getPublicTeachers({ sort: 'rating_desc', page: 0, size: 6 }),
-    ]);
-    topSubjects = subjectsRes.data;
-    topTeachers = teachersRes.data;
-  } catch (error) {
-    console.error('Failed to fetch landing page data', error);
-  }
-
-  return (
-    <div style={{ backgroundColor: 'var(--color-background, #FBFAF8)' }}>
-      {/* Hero Section */}
-      <section style={{ 
-        padding: 'var(--space-20) var(--space-4)', 
-        textAlign: 'center',
-        backgroundColor: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-border)'
-      }}>
-        <h1 style={{ fontSize: 'var(--text-display)', marginBottom: 'var(--space-4)', fontWeight: 700 }}>
-          Học tập dễ dàng cùng chuyên gia
-        </h1>
-        <p style={{ fontSize: '18px', maxWidth: '600px', margin: '0 auto var(--space-8)', color: 'var(--color-text-secondary)' }}>
-          Tìm kiếm gia sư phù hợp nhất để đạt được mục tiêu học tập của bạn. Hàng ngàn giáo viên xuất sắc đã sẵn sàng.
-        </p>
-        <HeroSearch />
-      </section>
-
-      <div style={{ maxWidth: 'var(--size-container-wide)', margin: '0 auto', padding: '0 var(--space-4)' }}>
-        {/* Featured Subjects Section */}
-        <section style={{ margin: 'var(--space-16, 64px) 0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8, 32px)' }}>
-            <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 600 }}>Môn học nổi bật</h2>
-            <Link href="/subjects" style={{ color: 'var(--color-primary-600, #0D9488)', fontWeight: 600 }}>Xem tất cả</Link>
-          </div>
-          <SubjectGrid subjects={topSubjects} />
-        </section>
-
-        {/* Featured Teachers Section */}
-        <section style={{ margin: 'var(--space-16, 64px) 0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-8, 32px)' }}>
-            <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 600 }}>Giáo viên nổi bật</h2>
-            <Link href="/teachers" style={{ color: 'var(--color-primary-600, #0D9488)', fontWeight: 600 }}>Xem tất cả</Link>
-          </div>
-          <TeacherGrid teachers={topTeachers} />
-        </section>
-
-        {/* Trust Section */}
-        <TrustSection />
-
-        {/* CTA Section */}
-        <CTASection />
-      </div>
-    </div>
-  );
+export default async function LandingPage(){
+ const [subjects,teachers]=await Promise.allSettled([getPublicSubjects({page:0,size:8}),getPublicTeachers({sort:'rating_desc',page:0,size:6})]);
+ return <><section className="tm-hero"><div className="tm-container"><div className="tm-hero-grid"><div><p className="tm-eyebrow">Học 1–1 cùng gia sư</p><h1>Một người hướng dẫn.<br/><em>Nhiều bước tiến mới.</em></h1><p className="tm-lead">Tìm gia sư theo môn học, thời gian và ngân sách của bạn. Xem hồ sơ, chọn gói học và bắt đầu từ mục tiêu của riêng mình.</p></div><aside className="tm-hero-note"><h2>Bắt đầu từ điều bạn cần</h2>{[['Môn học','Từ kiến thức nền đến mục tiêu tiếp theo.'],['Cách học','Online hoặc gặp trực tiếp.'],['Nhịp học','Trao đổi và thống nhất lịch với gia sư.']].map(([title,body],i)=><div key={title} className="tm-note-row"><b>{i+1}</b><div><strong>{title}</strong><p>{body}</p></div></div>)}</aside></div><HeroSearch subjects={subjects.status==='fulfilled'?subjects.value.data:[]}/></div></section><div className="tm-container"><section className="tm-section"><div className="tm-section-head"><div><h2>Bạn muốn học gì?</h2><p>Chọn môn học để khám phá gia sư phù hợp.</p></div><Link href="/subjects">Tất cả môn học →</Link></div><SubjectGrid subjects={subjects.status==='fulfilled'?subjects.value.data:[]} isError={subjects.status==='rejected'}/></section><section className="tm-section"><div className="tm-section-head"><div><h2>Gia sư được đánh giá cao</h2><p>Xem kinh nghiệm, môn dạy và gói học trong từng hồ sơ.</p></div><Link href="/teachers">Tất cả gia sư →</Link></div><TeacherGrid teachers={teachers.status==='fulfilled'?teachers.value.data:[]} isError={teachers.status==='rejected'}/></section><section className="tm-section"><div className="tm-section-head"><div><p className="tm-eyebrow">Từ tìm kiếm đến buổi học</p><h2>Một khởi đầu rõ ràng</h2></div><Link href="/how-it-works">Xem hướng dẫn →</Link></div><div className="tm-steps">{[['Chọn gia sư','So sánh môn dạy, kinh nghiệm và gói học trong hồ sơ.'],['Trao đổi nhu cầu','Gửi yêu cầu học thử để gia sư phản hồi hoặc chọn mua gói học.'],['Bắt đầu học','Sau khi thống nhất, gia sư tạo buổi học. Theo dõi lịch và bài tập trong tài khoản.']].map(([title,body],i)=><article className="tm-step" key={title}><span>0{i+1}</span><h3>{title}</h3><p>{body}</p></article>)}</div></section><section className="tm-cta"><div><h2>Chia sẻ kiến thức của bạn.</h2><p>Tạo hồ sơ gia sư và xây dựng không gian dạy học của riêng mình.</p></div><Link href="/become-a-tutor" className="tm-button tm-button-secondary">Trở thành gia sư →</Link></section></div></>;
 }

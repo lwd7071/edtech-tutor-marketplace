@@ -1,61 +1,15 @@
 'use client';
-
-import React from 'react';
-import { Row, Col } from 'antd';
+import Link from 'next/link';
+import {useRouter} from 'next/navigation';
+import {Skeleton as AntSkeleton} from 'antd';
 import TeacherCard from '@/shared/components/data-display/TeacherCard';
-import { EmptyState } from '@/shared/components/feedback/EmptyState';
-import { ErrorState } from '@/shared/components/feedback/ErrorState';
-import { Skeleton } from '@/shared/components/feedback/Skeleton';
-
-interface TeacherGridProps {
-  teachers: any[];
-  isLoading?: boolean;
-  isError?: boolean;
-  onRetry?: () => void;
-}
-
-export default function TeacherGrid({ teachers, isLoading, isError, onRetry }: TeacherGridProps) {
-  if (isError) {
-    return <ErrorState actionText="Tải lại" onRetry={onRetry} />;
-  }
-
-  if (isLoading) {
-    return (
-      <Row gutter={[16, 16]}>
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Col xs={24} sm={24} md={12} lg={8} key={i}>
-            <Skeleton variant="card" />
-          </Col>
-        ))}
-      </Row>
-    );
-  }
-
-  if (!teachers || teachers.length === 0) {
-    return (
-      <EmptyState
-        title="Không tìm thấy giáo viên"
-        description="Vui lòng thử lại với tiêu chí khác"
-      />
-    );
-  }
-
-  return (
-    <Row gutter={[16, 16]}>
-      {teachers.map((teacher) => (
-        <Col xs={24} sm={24} md={12} lg={8} key={teacher.id}>
-          <TeacherCard 
-            id={teacher.id}
-            name={teacher.user?.fullName || teacher.name}
-            avatarUrl={teacher.user?.avatarUrl || teacher.avatarUrl}
-            isVerified={teacher.isVerified}
-            subjects={teacher.subjects?.map((s: any) => s.subjectName || s)}
-            rating={teacher.rating}
-            reviewCount={teacher.reviewCount}
-            lowestPrice={teacher.lowestPrice}
-          />
-        </Col>
-      ))}
-    </Row>
-  );
+import {EmptyState} from '@/shared/components/feedback/EmptyState';
+import {ErrorState} from '@/shared/components/feedback/ErrorState';
+import type {TeacherCard as Teacher} from '@/shared/api/public';
+export default function TeacherGrid({teachers,isLoading,isError,onRetry}:{teachers:Teacher[];isLoading?:boolean;isError?:boolean;onRetry?:()=>void}){
+ const router=useRouter();
+ if(isError)return <ErrorState title="Chưa tải được danh sách gia sư" actionText="Tải lại" onRetry={onRetry||(()=>router.refresh())}/>;
+ if(isLoading)return <div className="tm-teacher-grid">{[1,2,3].map(i=><div className="tm-panel" key={i}><AntSkeleton active avatar/></div>)}</div>;
+ if(!teachers?.length)return <EmptyState title="Không tìm thấy gia sư" description="Thử bỏ bớt bộ lọc hoặc chọn môn học khác."/>;
+ return <div className="tm-teacher-grid">{teachers.map(t=><Link className="tm-card-link" href={'/teachers/'+t.id} key={t.id}><TeacherCard id={t.id} name={t.fullName||'Gia sư'} avatarUrl={t.avatarUrl} isVerified={t.verifiedBadge} subjects={t.subjects?.map(s=>typeof s==='string'?s:s.name)} rating={t.averageRating} reviewCount={t.reviewCount} lowestPrice={t.startingPriceVnd} yearsOfExperience={t.yearsOfExperience} supportsOnline={t.supportsOnline} supportsOffline={t.supportsOffline}/></Link>)}</div>;
 }

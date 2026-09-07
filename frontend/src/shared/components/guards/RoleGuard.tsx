@@ -1,44 +1,15 @@
 'use client';
-
-import React, { ReactNode } from 'react';
-import { useAuthStore, UserRole } from '@/features/auth';
-import { Alert, Button, Space } from 'antd';
+import {useEffect} from 'react';
+import {usePathname,useRouter} from 'next/navigation';
+import {useAuthStore,type UserRole} from '@/features/auth';
+import {Result,Button} from 'antd';
 import Link from 'next/link';
-
-interface RoleGuardProps {
-  children: ReactNode;
-  allowedRoles: UserRole[];
-  fallback?: ReactNode;
-}
-
-/**
- * RoleGuard: Kiểm tra phân quyền theo vai trò (STUDENT, TEACHER, ADMIN)
- * Nếu không đúng vai trò, hiển thị giao diện 403 thân thiện
- */
-export function RoleGuard({ children, allowedRoles, fallback }: RoleGuardProps) {
-  const { user, isAuthenticated } = useAuthStore();
-
-  if (!isAuthenticated || !user || !allowedRoles.includes(user.role)) {
-    if (fallback) return <>{fallback}</>;
-
-    return (
-      <div style={{ padding: 'var(--space-8)', maxWidth: 600, margin: 'var(--space-12) auto' }}>
-        <Alert
-          type="warning"
-          showIcon
-          title="403 - Bạn không có quyền truy cập trang này"
-          description={
-            <div style={{ width: '100%', marginTop: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-              <div>Khu vực này chỉ dành cho tài khoản có vai trò: {allowedRoles.join(', ')}.</div>
-              <Link href="/">
-                <Button type="primary">Quay về Trang chủ</Button>
-              </Link>
-            </div>
-          }
-        />
-      </div>
-    );
-  }
-
-  return <>{children}</>;
+export function RoleGuard({children,allowedRoles,fallback}:{children:React.ReactNode;allowedRoles:UserRole[];fallback?:React.ReactNode}){
+ const {user,isAuthenticated}=useAuthStore();const router=useRouter();const pathname=usePathname();
+ useEffect(()=>{if(!isAuthenticated||!user)router.replace('/auth/login?redirect='+encodeURIComponent(pathname));},[isAuthenticated,user,router,pathname]);
+ if(!isAuthenticated||!user)return <Result title="Đang chuyển đến đăng nhập"/>;
+ if(!allowedRoles.includes(user.role))return fallback||<Result status="403" title="Bạn không có quyền truy cập" extra={<Link href="/"><Button>Về trang chủ</Button></Link>}/>;
+ if(['LOCKED','DISABLED'].includes(user.status))return <Result status="warning" title="Tài khoản hiện không thể sử dụng" subTitle="Vui lòng liên hệ đơn vị vận hành để kiểm tra trạng thái tài khoản."/>;
+ if(user.status==='PENDING_VERIFICATION')return <Result status="info" title="Xác minh email để tiếp tục" extra={<Link href="/auth/verify-email">Xác minh email</Link>}/>;
+ return <>{children}</>;
 }

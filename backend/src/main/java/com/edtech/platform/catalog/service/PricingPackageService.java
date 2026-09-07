@@ -69,6 +69,23 @@ public class PricingPackageService {
         return toView(saved);
     }
 
+    @Transactional(readOnly = true)
+    public Page<PricingPackageView> getOwnPackages(UUID userId, Pageable pageable) {
+        TeacherSnapshot teacher = teacherFacade.getTeacherByUserId(userId);
+        if (teacher == null) throw new BusinessException(ErrorCode.TEACHER_PROFILE_NOT_FOUND);
+        return pricingPackageRepository.findByTeacherId(teacher.id(), pageable).map(this::toView);
+    }
+
+    @Transactional(readOnly = true)
+    public PricingPackageView getOwnPackage(UUID userId, UUID id) {
+        TeacherSnapshot teacher = teacherFacade.getTeacherByUserId(userId);
+        PricingPackage pkg = pricingPackageRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND));
+        if (teacher == null || !pkg.getTeacherId().equals(teacher.id()))
+            throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
+        return toView(pkg);
+    }
+
     @Transactional
     public PricingPackageView updatePackage(UUID userId, UUID packageId, UpsertPricingPackageRequest request) {
         TeacherSnapshot profile = teacherFacade.getTeacherByUserId(userId);

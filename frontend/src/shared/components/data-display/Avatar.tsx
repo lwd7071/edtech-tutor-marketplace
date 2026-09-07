@@ -22,7 +22,7 @@ export const Avatar: React.FC<AvatarProps> = ({ size = 'md', isVerified, childre
 
   const avatarElement = (
     <AntdAvatar size={pixelSize} {...props}>
-      {children}
+      {children || (typeof props.alt === 'string' ? props.alt.trim().split(/\s+/).slice(-2).map(part => part[0]).join('') : undefined)}
     </AntdAvatar>
   );
 

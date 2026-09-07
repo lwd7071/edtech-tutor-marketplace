@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InvoiceCreationResponse {
+    private java.util.UUID id;
     private String invoiceNumber;
     private String status;
     private String checkoutUrl;

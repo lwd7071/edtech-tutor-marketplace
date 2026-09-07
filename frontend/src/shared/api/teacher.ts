@@ -4,6 +4,13 @@ import { AvailabilityView, PricingPackageView } from './public';
 export interface TeacherProfile {
   id?: string;
   bio?: string;
+  yearsOfExperience?: number;
+  languages?: string[];
+  supportsOnline?: boolean;
+  supportsOffline?: boolean;
+  locationAddress?: string;
+  introductionVideoUrl?: string;
+  profileStatus?: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
   experience?: string;
   education?: string;
   avatarUrl?: string;
@@ -50,49 +57,66 @@ export interface CreatePackageRequest {
   subjectId: string;
   description: string;
   priceVnd: number;
-  sessionCount: number;
-  durationMonths: number;
-  trialEnabled: boolean;
+  sessionCount?: number;
+  durationMonths?: number;
+  trialEnabled?: boolean;
+  totalSessions?: number;
+  durationDays?: number;
+  sessionDurationMinutes?: number;
+  status?: string;
 }
 
 export interface UpdatePackageRequest {
+  subjectId?: string;
   name: string;
   description: string;
   priceVnd: number;
-  sessionCount: number;
-  durationMonths: number;
-  trialEnabled: boolean;
+  sessionCount?: number;
+  durationMonths?: number;
+  trialEnabled?: boolean;
+  totalSessions?: number;
+  durationDays?: number;
+  sessionDurationMinutes?: number;
+  status?: string;
 }
 
+type SubjectWire = {id:string;subject:{id:string;name:string;educationLevel:string}};
+const subjectView = (s:SubjectWire):TeacherSubject => ({id:s.subject.id,subjectId:s.subject.id,name:s.subject.name,category:s.subject.educationLevel});
+type DocumentWire = {id:string;title:string;secureUrl:string;documentType:string;verificationStatus:TeacherDocument['status'];verifiedAt:string};
+const documentView = (d:DocumentWire):TeacherDocument => ({id:d.id,name:d.title||d.documentType,url:d.secureUrl,type:d.documentType,status:d.verificationStatus,uploadedAt:d.verifiedAt});
+
 export const teacherApi = {
-  getProfile: () => axiosClient.get<TeacherProfile>('/api/teacher/profile').then(res => res.data),
-  updateProfile: (data: TeacherProfile) => axiosClient.put<TeacherProfile>('/api/teacher/profile', data).then(res => res.data),
+  getProfile: () => axiosClient.get<{data: TeacherProfile}>('/api/teacher/profile').then(res => ({...res.data.data, approvalStatus: res.data.data.profileStatus})),
+  updateProfile: (data: TeacherProfile) => axiosClient.put<{data: TeacherProfile}>('/api/teacher/profile', data).then(res => res.data.data),
   submitProfile: () => axiosClient.post('/api/teacher/profile/submit').then(res => res.data),
   
-  getDocuments: () => axiosClient.get<TeacherDocument[]>('/api/teacher/documents').then(res => res.data),
+  getDocuments: () => axiosClient.get<{data:DocumentWire[]}>('/api/teacher/documents').then(res => res.data.data.map(documentView)),
   uploadDocument: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    return axiosClient.post<TeacherDocument>('/api/teacher/documents', formData, {
+    formData.append('documentType', 'OTHER');
+    formData.append('title', file.name);
+    return axiosClient.post<{data:DocumentWire}>('/api/teacher/documents', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
-    }).then(res => res.data);
+    }).then(res => documentView(res.data.data));
   },
   deleteDocument: (id: string) => axiosClient.delete(`/api/teacher/documents/${id}`).then(res => res.data),
 
-  getSubjects: () => axiosClient.get<TeacherSubject[]>('/api/teacher/subjects').then(res => res.data),
-  addSubject: (subjectId: string) => axiosClient.post<TeacherSubject>('/api/teacher/subjects', { subjectId }).then(res => res.data),
+  getSubjects: () => axiosClient.get<{data:SubjectWire[]}>('/api/teacher/subjects').then(res => res.data.data.map(subjectView)),
+  addSubject: (subjectId: string) => axiosClient.post<{data:SubjectWire}>(`/api/teacher/subjects/${subjectId}`, {}).then(res => subjectView(res.data.data)),
   deleteSubject: (id: string) => axiosClient.delete(`/api/teacher/subjects/${id}`).then(res => res.data),
-  searchPublicSubjects: (query: string) => axiosClient.get<{id: string, name: string, category: string}[]>('/api/subjects', { params: { query } }).then(res => res.data),
+  searchPublicSubjects: (query: string) => axiosClient.get<{data:{id: string, name: string, educationLevel: string}[]}>('/api/public/subjects', { params: { keyword:query,size:100 } }).then(res => res.data.data.map(s=>({...s,category:s.educationLevel}))),
 
   getSubjectProposals: () => axiosClient.get<TeacherSubjectProposal[]>('/api/teacher/subject-proposals').then(res => res.data),
   createSubjectProposal: (data: { name: string, description: string }) => axiosClient.post<TeacherSubjectProposal>('/api/teacher/subject-proposals', data).then(res => res.data),
 
   // Availability
-  getAvailabilities: () => axiosClient.get<AvailabilityView[]>('/api/teacher/availability').then(res => res.data),
-  replaceAvailabilities: (data: ReplaceAvailabilityRequest) => axiosClient.put<void>('/api/teacher/availability', data).then(res => res.data),
+  getAvailabilities: () => axiosClient.get<{data:AvailabilityView[]}>('/api/teacher/availability').then(res => res.data.data),
+  replaceAvailabilities: (data: ReplaceAvailabilityRequest) => axiosClient.put('/api/teacher/availability', {availabilities:data.items}).then(res => res.data),
 
   // Packages
-  getPackages: () => axiosClient.get<PricingPackageView[]>('/api/teacher/packages').then(res => res.data),
+  getPackages: () => axiosClient.get<{data:PricingPackageView[]}>('/api/teacher/packages', {params:{size:100}}).then(res => res.data.data),
+  getPackage: (id:string) => axiosClient.get<{data:PricingPackageView}>(`/api/teacher/packages/${id}`).then(res=>res.data.data),
   createPackage: (data: CreatePackageRequest) => axiosClient.post<PricingPackageView>('/api/teacher/packages', data).then(res => res.data),
   updatePackage: (id: string, data: UpdatePackageRequest) => axiosClient.put<PricingPackageView>(`/api/teacher/packages/${id}`, data).then(res => res.data),
   updatePackageStatus: (id: string, status: string) => axiosClient.patch<void>(`/api/teacher/packages/${id}/status`, { status }).then(res => res.data),

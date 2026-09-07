@@ -1,56 +1,17 @@
-import React from 'react';
-import { 
-  getTeacherDetail, 
-  getTeacherPackages, 
-  getTeacherAvailability, 
-  getTeacherReviews 
-} from '@/shared/api/public';
-import { TeacherProfileHeader } from '@/features/marketplace/components/TeacherProfileHeader';
+import Link from 'next/link';
+import {notFound} from 'next/navigation';
+import {getTeacherDetail,getTeacherPackages,getTeacherAvailability,getTeacherReviews,getPublicSubjects} from '@/shared/api/public';
+import {TeacherProfileHeader} from '@/features/marketplace/components/TeacherProfileHeader';
 import TeacherDetailClient from './TeacherDetailClient';
-
-export default async function TeacherDetailPage({
-  params,
-  searchParams
-}: {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const teacherId = params.id;
-  const reviewsPage = searchParams.reviewsPage ? parseInt(searchParams.reviewsPage as string, 10) - 1 : 0;
-  const packagesPage = searchParams.packagesPage ? parseInt(searchParams.packagesPage as string, 10) - 1 : 0;
-
-  // Fetch all data in parallel
-  const [
-    teacher,
-    packagesResponse,
-    availability,
-    reviewsResponse
-  ] = await Promise.all([
-    getTeacherDetail(teacherId).catch(() => null),
-    getTeacherPackages(teacherId, packagesPage, 20).catch(() => ({ data: [], meta: { page: 0, totalElements: 0, size: 20 } })),
-    getTeacherAvailability(teacherId).catch(() => []),
-    getTeacherReviews(teacherId, reviewsPage, 10).catch(() => ({ data: [], meta: { page: 0, totalElements: 0, size: 10 } }))
-  ]);
-
-  if (!teacher) {
-    return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-h2 text-text-primary mb-4">Không tìm thấy giáo viên</h1>
-        <p className="text-text-secondary">Giáo viên này không tồn tại hoặc đã bị khóa.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ maxWidth: 'var(--size-container-wide)', margin: '0 auto', padding: 'var(--space-8) var(--space-4)' }}>
-      <TeacherProfileHeader teacher={teacher} />
-      
-      <TeacherDetailClient 
-        teacher={teacher}
-        packages={packagesResponse}
-        availability={availability}
-        reviews={reviewsResponse}
-      />
-    </div>
-  );
+export default async function Page({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<Record<string,string|string[]|undefined>>}){
+ const {id}=await params; const q=await searchParams;
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))notFound();
+ const index=(v:unknown)=>typeof v==='string'&&/^\d+$/.test(v)?Math.max(0,Number(v)-1):0;
+ const teacher=await getTeacherDetail(id).catch((error)=>{if(error.response?.status===404)notFound();throw error;});
+ const [packages,availability,reviews,subjects]=await Promise.allSettled([getTeacherPackages(id,index(q.packagesPage),6),getTeacherAvailability(id),getTeacherReviews(id,index(q.reviewsPage),10),getPublicSubjects({size:100})]);
+ const p=packages.status==='fulfilled'?packages.value:{data:[],meta:{}};
+ const subjectOptions=subjects.status==='fulfilled'?subjects.value.data.filter(s=>teacher.subjects.includes(s.name)):[];
+ const errors=[packages.status==='rejected'?'packages':'',availability.status==='rejected'?'availability':'',reviews.status==='rejected'?'reviews':''].filter(Boolean);
+ return <div className="tm-container tm-page"><p><Link href="/teachers">← Về danh sách gia sư</Link></p><TeacherProfileHeader teacher={teacher}/><TeacherDetailClient teacher={teacher} packages={p} availability={availability.status==='fulfilled'?availability.value:[]} reviews={reviews.status==='fulfilled'?reviews.value:{data:[],meta:{}}} subjectOptions={subjectOptions} errors={errors}/></div>;
 }
+

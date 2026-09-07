@@ -219,6 +219,8 @@ create table invoices (
     payos_payment_link_id    varchar(255),
     checkout_url             varchar(500),
     qr_code                  text,
+    idempotency_key          uuid,
+    request_fingerprint      varchar(64),
     payment_expired_at       timestamptz,
     paid_at                  timestamptz,
     created_at               timestamptz not null default now(),
@@ -396,7 +398,8 @@ create index ix_reviews_teacher_visible on reviews (teacher_id, is_visible, crea
 create trigger trg_reviews_updated before update on reviews for each row execute function set_updated_at();
 
 create table teacher_stats (
-    teacher_id                 uuid primary key references teacher_profiles(id),
+    id                         uuid primary key default gen_random_uuid(),
+    teacher_id                 uuid not null unique references teacher_profiles(id),
     average_rating             numeric(3,2) not null default 0,
     bayesian_rating            numeric(3,2) not null default 0,
     review_count               int not null default 0,
@@ -405,7 +408,10 @@ create table teacher_stats (
     trial_session_count        int not null default 0,
     trial_conversion_rate      numeric(5,4) not null default 0,
     global_rank                int,
-    calculated_at              timestamptz not null default now()
+    calculated_at              timestamptz not null default now(),
+    created_at                 timestamptz not null default now(),
+    updated_at                 timestamptz not null default now(),
+    is_deleted                 boolean not null default false
 );
 
 -- =====================================================================

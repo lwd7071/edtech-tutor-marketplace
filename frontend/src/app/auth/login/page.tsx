@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { ErrorState } from '@/shared/components/feedback/ErrorState';
+import { roleHome, safeReturnTo } from '@/shared/lib/navigation';
 
 const { Title, Text } = Typography;
 
@@ -51,7 +52,7 @@ function LoginForm() {
       
       if (res.data) {
         setAuth(res.data.user, res.data.accessToken, res.data.refreshToken, values.remember);
-        const redirectPath = searchParams.get('redirect') || '/';
+        const redirectPath = safeReturnTo(searchParams.get('redirect'), roleHome(res.data.user.role));
         router.push(redirectPath);
       }
     } catch (error: any) {

@@ -14,22 +14,35 @@ export interface SubjectSummary {
   id: string;
   name: string;
   description?: string;
+  educationLevel?: string;
   thumbnailUrl?: string;
   totalTeachers?: number;
 }
 
 export interface TeacherCard {
   id: string;
-  user: {
+  fullName?: string;
+  user?: {
     fullName: string;
     avatarUrl?: string;
   };
+  name?: string;
+  avatarUrl?: string;
   headline?: string;
+  bioExcerpt?: string;
+  yearsOfExperience?: number;
   rating?: number;
+  averageRating?: number;
+  bayesianRating?: number;
   reviewCount?: number;
   minPrice?: number;
-  subjects?: { id: string; name: string }[];
+  lowestPrice?: number;
+  startingPriceVnd?: number;
+  subjects?: ({ id: string; name: string } | string)[];
   isVerified?: boolean;
+  verifiedBadge?: boolean;
+  supportsOnline?: boolean;
+  supportsOffline?: boolean;
 }
 
 export interface GetPublicSubjectsParams {
@@ -86,6 +99,12 @@ export interface PricingPackageView {
   priceVnd: number;
   sessionCount: number;
   durationMinutes: number;
+  totalSessions?: number;
+  sessionDurationMinutes?: number;
+  durationDays?: number;
+  subjectId?: string;
+  subjectName?: string;
+  version?: number;
   status: string;
 }
 
@@ -99,9 +118,12 @@ export interface AvailabilityView {
 export interface Review {
   id: string;
   rating: number;
+  id: string;
+  rating: number;
   comment?: string;
   createdAt: string;
   reviewerName: string;
+  student?: { id: string; fullName: string; avatarUrl?: string };
 }
 
 export interface ApiResponse<T> {

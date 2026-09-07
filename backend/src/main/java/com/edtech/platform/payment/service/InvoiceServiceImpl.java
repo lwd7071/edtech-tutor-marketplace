@@ -151,8 +151,8 @@ public class InvoiceServiceImpl implements InvoiceService {
                         pendingInvoice.getPayosOrderCode(),
                         pendingInvoice.getAmountVnd(),
                         "Thanh toan " + pendingInvoice.getInvoiceNumber(),
-                        URI.create(returnUrl),
-                        URI.create(cancelUrl)
+                        org.springframework.web.util.UriComponentsBuilder.fromUriString(returnUrl).queryParam("invoiceId", pendingInvoice.getId()).build().toUri(),
+                        org.springframework.web.util.UriComponentsBuilder.fromUriString(cancelUrl).queryParam("invoiceId", pendingInvoice.getId()).build().toUri()
                 );
                 linkResult = paymentGateway.createPaymentLink(command);
             }

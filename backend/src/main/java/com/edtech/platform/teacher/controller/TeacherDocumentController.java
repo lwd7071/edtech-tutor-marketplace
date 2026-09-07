@@ -19,6 +19,11 @@ public class TeacherDocumentController {
 
     private final TeacherDocumentService teacherDocumentService;
 
+    @GetMapping
+    public ApiResponse<java.util.List<TeacherDocumentView>> list(Principal principal) {
+        return ApiResponse.ok(teacherDocumentService.getDocuments(UUID.fromString(principal.getName())));
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<TeacherDocumentView> uploadDocument(

@@ -1,103 +1,13 @@
 'use client';
-
-import React from 'react';
-import { Tabs } from 'antd';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { TeacherPublicDetail, PricingPackageView, AvailabilityView, Review, PageMeta } from '@/shared/api/public';
-import { TeacherPackagesTab } from '@/features/marketplace/components/TeacherPackagesTab';
-import { TeacherReviewsTab } from '@/features/marketplace/components/TeacherReviewsTab';
-import WeeklyScheduleGrid from '@/shared/components/data-display/WeeklyScheduleGrid';
-import { FileTextOutlined, BookOutlined, CalendarOutlined, StarOutlined } from '@ant-design/icons';
-
-interface TeacherDetailClientProps {
-  teacher: TeacherPublicDetail;
-  packages: { data: PricingPackageView[]; meta: any };
-  availability: AvailabilityView[];
-  reviews: { data: Review[]; meta: any };
-}
-
-export default function TeacherDetailClient({
-  teacher,
-  packages,
-  availability,
-  reviews
-}: TeacherDetailClientProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const handleReviewsPageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('reviewsPage', (page + 1).toString());
-    router.push(`${pathname}?${params.toString()}`);
-  };
-
-  const handlePackagesPageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('packagesPage', (page + 1).toString());
-    router.push(`${pathname}?${params.toString()}`);
-  };
-
-  const items = [
-    {
-      key: 'bio',
-      label: <span style={{ fontSize: 'var(--text-body-lg)', fontWeight: 600 }}><FileTextOutlined /> Giới thiệu</span>,
-      children: (
-        <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-6)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
-          <h2 style={{ fontSize: 'var(--text-h4)', marginBottom: 'var(--space-4)' }}>Về giảng viên</h2>
-          <p style={{ color: 'var(--color-text-primary)', whiteSpace: 'pre-line', fontSize: 'var(--text-body-lg)' }}>{teacher.bio || 'Chưa có thông tin giới thiệu.'}</p>
-        </div>
-      )
-    },
-    {
-      key: 'packages',
-      label: <span style={{ fontSize: 'var(--text-body-lg)', fontWeight: 600 }}><BookOutlined /> Gói học ({packages.meta?.totalElements || 0})</span>,
-      children: (
-        <TeacherPackagesTab packages={packages.data} />
-      )
-    },
-    {
-      key: 'availability',
-      label: <span style={{ fontSize: 'var(--text-body-lg)', fontWeight: 600 }}><CalendarOutlined /> Lịch rảnh</span>,
-      children: (
-        <div style={{ backgroundColor: 'var(--color-surface)', padding: 'var(--space-6)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
-          <WeeklyScheduleGrid 
-            mode="readonly"
-            availableSlots={availability.map(a => {
-              const dayMap: Record<string, number> = {
-                'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3, 'THURSDAY': 4, 'FRIDAY': 5, 'SATURDAY': 6, 'SUNDAY': 7
-              };
-              return {
-                dayOfWeek: dayMap[a.dayOfWeek] || 1,
-                startTime: a.startTime.substring(0, 5),
-                endTime: a.endTime.substring(0, 5)
-              };
-            })}
-          />
-        </div>
-      )
-    },
-    {
-      key: 'reviews',
-      label: <span style={{ fontSize: 'var(--text-body-lg)', fontWeight: 600 }}><StarOutlined /> Đánh giá ({reviews.meta?.totalElements || 0})</span>,
-      children: (
-        <TeacherReviewsTab 
-          reviews={reviews.data} 
-          meta={reviews.meta} 
-          onPageChange={handleReviewsPageChange}
-        />
-      )
-    }
-  ];
-
-  return (
-    <div style={{ marginTop: 'var(--space-8)' }}>
-      <Tabs 
-        defaultActiveKey="bio" 
-        items={items} 
-        className="custom-tabs"
-        size="large"
-      />
-    </div>
-  );
+import {Pagination,Alert,Button} from 'antd';
+import {useRouter,usePathname,useSearchParams} from 'next/navigation';
+import type {TeacherPublicDetail,PricingPackageView,AvailabilityView,Review,PageMeta} from '@/shared/api/public';
+import {TeacherPackagesTab} from '@/features/marketplace/components/TeacherPackagesTab';
+import TrialRequestForm from '@/features/marketplace/components/TrialRequestForm';
+const days:Record<string,string>={MONDAY:'Thứ hai',TUESDAY:'Thứ ba',WEDNESDAY:'Thứ tư',THURSDAY:'Thứ năm',FRIDAY:'Thứ sáu',SATURDAY:'Thứ bảy',SUNDAY:'Chủ nhật'};
+export default function TeacherDetailClient({teacher,packages,availability,reviews,subjectOptions=[],errors=[]}:{teacher:TeacherPublicDetail;packages:{data:PricingPackageView[];meta:Partial<PageMeta>};availability:AvailabilityView[];reviews:{data:Review[];meta:Partial<PageMeta>};subjectOptions?:{id:string;name:string}[];errors?:string[]}){
+ const router=useRouter();const pathname=usePathname();const search=useSearchParams();
+ const page=(key:string,n:number,anchor:string)=>{const q=new URLSearchParams(search.toString());q.set(key,String(n));router.push(pathname+'?'+q.toString()+'#'+anchor,{scroll:false});};
+ const error=(key:string)=>errors.includes(key)?<Alert type="error" title="Chưa tải được dữ liệu" action={<Button onClick={()=>router.refresh()}>Thử lại</Button>}/>:null;
+ return <><nav className="tm-detail-nav" aria-label="Các phần hồ sơ"><a href="#about">Giới thiệu</a><a href="#packages">Gói học</a><a href="#availability">Lịch rảnh</a><a href="#reviews">Đánh giá</a></nav><div className="tm-detail-grid"><div className="tm-stack"><section id="about" className="tm-panel tm-section-anchor"><h2>Về gia sư</h2><p className="tm-prose">{teacher.bio||'Gia sư chưa cập nhật giới thiệu.'}</p>{teacher.introductionVideoUrl&&/^https?:\/\//.test(teacher.introductionVideoUrl)&&<a href={teacher.introductionVideoUrl} target="_blank" rel="noopener noreferrer">Xem video giới thiệu ↗</a>}</section><section id="packages" className="tm-panel tm-section-anchor"><h2>Chọn gói học</h2>{error('packages')||<TeacherPackagesTab packages={packages.data}/>} {(packages.meta.totalPages||0)>1&&<div className="tm-pagination"><Pagination current={(packages.meta.page||0)+1} pageSize={packages.meta.size} total={packages.meta.totalElements} showSizeChanger={false} onChange={n=>page('packagesPage',n,'packages')}/></div>}</section><section id="availability" className="tm-panel tm-section-anchor"><h2>Lịch rảnh trong tuần</h2><p>Lịch rảnh thể hiện thời gian gia sư có thể nhận dạy; buổi học cụ thể cần được thống nhất.</p>{error('availability')||<div className="tm-stack">{availability.length?availability.map((a,i)=><div className="tm-toolbar" key={a.id||i}><strong>{days[a.dayOfWeek]||a.dayOfWeek}</strong><span>{a.startTime.slice(0,5)} – {a.endTime.slice(0,5)}</span></div>):<p>Gia sư chưa cập nhật lịch rảnh.</p>}</div>}</section><section id="reviews" className="tm-panel tm-section-anchor"><h2>Đánh giá từ học viên</h2>{error('reviews')||<>{reviews.data.length?reviews.data.map(r=><article className="tm-review" key={r.id}><div className="tm-toolbar"><strong>{r.reviewerName}</strong><time>{new Date(r.createdAt).toLocaleDateString('vi-VN')}</time></div><span className="tm-star">{r.rating} ★</span><p>{r.comment}</p></article>):<p>Chưa có đánh giá.</p>}{(reviews.meta.totalPages||0)>1&&<Pagination current={(reviews.meta.page||0)+1} pageSize={reviews.meta.size} total={reviews.meta.totalElements} showSizeChanger={false} onChange={n=>page('reviewsPage',n,'reviews')}/>}</>}</section></div><aside id="trial" className="tm-panel tm-detail-aside tm-section-anchor"><h2>Bắt đầu với gia sư</h2><a className="tm-button" style={{width:'100%',marginBottom:24}} href="#packages">Xem các gói học</a><h3>Yêu cầu học thử</h3><TrialRequestForm teacherId={teacher.id} subjects={subjectOptions}/></aside></div></>;
 }

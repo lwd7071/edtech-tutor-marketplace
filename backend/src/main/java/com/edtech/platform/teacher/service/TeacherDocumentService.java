@@ -32,6 +32,13 @@ public class TeacherDocumentService {
     private final Tika tika = new Tika();
 
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+    @Transactional(readOnly = true)
+    public List<TeacherDocumentView> getDocuments(UUID userId) {
+        TeacherProfile profile = teacherProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.TEACHER_PROFILE_NOT_FOUND));
+        return teacherDocumentRepository.findByTeacherIdIn(List.of(profile.getId())).stream().map(this::toView).toList();
+    }
     private static final List<String> ALLOWED_MIME_TYPES = List.of("image/jpeg", "image/png", "application/pdf");
 
     @Transactional

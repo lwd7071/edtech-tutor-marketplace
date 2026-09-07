@@ -1,12 +1,3 @@
-'use client';
+import AssignmentList from '@/features/learning/components/AssignmentList';
+export default function Page(){return <AssignmentList role="student"/>;}
 
-import React from 'react';
-import { StudentAssignmentList } from '@/features/learning/components/StudentAssignmentList';
-
-export default function StudentAssignmentsPage() {
-  return (
-    <div className="max-w-7xl mx-auto py-6">
-      <StudentAssignmentList />
-    </div>
-  );
-}

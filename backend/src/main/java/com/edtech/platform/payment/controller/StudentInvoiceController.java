@@ -43,6 +43,7 @@ public class StudentInvoiceController {
 
     private InvoiceCreationResponse toResponse(Invoice invoice) {
         return InvoiceCreationResponse.builder()
+                .id(invoice.getId())
                 .invoiceNumber(invoice.getInvoiceNumber())
                 .status(invoice.getStatus().name())
                 .checkoutUrl(invoice.getCheckoutUrl())

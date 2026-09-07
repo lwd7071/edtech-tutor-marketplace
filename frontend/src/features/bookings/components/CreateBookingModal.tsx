@@ -24,6 +24,8 @@ export const CreateBookingModal: React.FC<CreateBookingModalProps> = ({
     try {
       await createMutation.mutateAsync({
         ...values,
+        startTime: new Date(values.startTime).toISOString(),
+        endTime: new Date(values.endTime).toISOString(),
         studentPackageId,
         deliveryMode,
       });
@@ -60,7 +62,7 @@ export const CreateBookingModal: React.FC<CreateBookingModalProps> = ({
       >
         <Form.Item
           name="startTime"
-          label="Thời gian bắt đầu (ISO-8601 hoặc yyyy-MM-ddTHH:mm)"
+          label="Thời gian bắt đầu (giờ địa phương)"
           rules={[{ required: true, message: 'Vui lòng nhập thời gian bắt đầu' }]}
         >
           <Input type="datetime-local" />
@@ -68,7 +70,7 @@ export const CreateBookingModal: React.FC<CreateBookingModalProps> = ({
 
         <Form.Item
           name="endTime"
-          label="Thời gian kết thúc (ISO-8601 hoặc yyyy-MM-ddTHH:mm)"
+          label="Thời gian kết thúc (giờ địa phương)"
           rules={[{ required: true, message: 'Vui lòng nhập thời gian kết thúc' }]}
         >
           <Input type="datetime-local" />

@@ -1,101 +1,15 @@
 'use client';
-
-import React from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { TeacherFilterSidebar } from '@/features/marketplace/components/TeacherFilterSidebar';
-import { TeacherSortBar } from '@/features/marketplace/components/TeacherSortBar';
+import {useState} from 'react';
+import {useRouter,usePathname,useSearchParams} from 'next/navigation';
+import {Button,Drawer,Input,Pagination,Tag} from 'antd';
+import {FilterOutlined} from '@ant-design/icons';
+import {TeacherFilterSidebar} from '@/features/marketplace/components/TeacherFilterSidebar';
+import {TeacherSortBar} from '@/features/marketplace/components/TeacherSortBar';
 import TeacherGrid from '@/features/marketplace/components/TeacherGrid';
-import { TeacherSearchParams, SubjectSummary } from '@/shared/api/public';
-
-interface TeacherSearchClientProps {
-  initialFilters: TeacherSearchParams;
-  initialTeachers: any; // ApiResponse<TeacherCard[]>
-  subjects: SubjectSummary[];
-}
-
-export default function TeacherSearchClient({
-  initialFilters,
-  initialTeachers,
-  subjects
-}: TeacherSearchClientProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const handleFilterChange = (newFilters: Partial<TeacherSearchParams>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    
-    // Update params
-    Object.entries(newFilters).forEach(([key, value]) => {
-      if (value === undefined || value === '') {
-        params.delete(key);
-      } else {
-        params.set(key, String(value));
-      }
-    });
-
-    // Reset to page 1 on filter change
-    if (!('page' in newFilters)) {
-      params.delete('page');
-    }
-
-    router.push(`${pathname}?${params.toString()}`);
-  };
-
-  const handleClearFilters = () => {
-    router.push(pathname);
-  };
-
-  const handlePageChange = (page: number) => {
-    handleFilterChange({ page });
-  };
-
-  return (
-    <div style={{ display: 'flex', gap: 'var(--space-8)', flexWrap: 'wrap' }}>
-      {/* Sidebar */}
-      <div style={{ flexShrink: 0, width: '100%', maxWidth: '280px' }}>
-        <TeacherFilterSidebar 
-          filters={initialFilters} 
-          subjects={subjects}
-          onChange={handleFilterChange}
-          onClear={handleClearFilters}
-        />
-      </div>
-
-      {/* Main Content */}
-      <div style={{ flex: 1, minWidth: '300px' }}>
-        <TeacherSortBar 
-          totalElements={initialTeachers.meta?.totalElements || 0}
-          value={initialFilters.sort}
-          onChange={(sort) => handleFilterChange({ sort })}
-        />
-        
-        <TeacherGrid 
-          teachers={initialTeachers.data || []}
-          isLoading={false}
-          isError={false}
-        />
-
-        {initialTeachers.meta?.totalPages > 1 && (
-          <div style={{ marginTop: 'var(--space-8)', display: 'flex', justifyContent: 'center' }} data-testid="pagination">
-            <button 
-              disabled={initialTeachers.meta.page === 0}
-              onClick={() => handlePageChange(initialTeachers.meta.page)}
-              style={{ marginRight: 'var(--space-2)', padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'white', cursor: initialTeachers.meta.page === 0 ? 'not-allowed' : 'pointer', opacity: initialTeachers.meta.page === 0 ? 0.5 : 1 }}
-            >
-              Trang trước
-            </button>
-            <span style={{ display: 'flex', alignItems: 'center' }}>Trang {initialTeachers.meta.page + 1} / {initialTeachers.meta.totalPages}</span>
-            <button 
-              disabled={!initialTeachers.meta.hasNext}
-              onClick={() => handlePageChange(initialTeachers.meta.page + 2)}
-              style={{ marginLeft: 'var(--space-2)', padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'white', cursor: !initialTeachers.meta.hasNext ? 'not-allowed' : 'pointer', opacity: !initialTeachers.meta.hasNext ? 0.5 : 1 }}
-            >
-              Trang sau
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+import type {TeacherSearchParams,SubjectSummary,TeacherCard,PageMeta} from '@/shared/api/public';
+export default function TeacherSearchClient({initialFilters,initialTeachers,subjects,isError=false}:{initialFilters:TeacherSearchParams;initialTeachers:{data:TeacherCard[];meta:Partial<PageMeta>};subjects:SubjectSummary[];isError?:boolean}){
+ const router=useRouter();const pathname=usePathname();const search=useSearchParams();const [open,setOpen]=useState(false);
+ const change=(values:Partial<TeacherSearchParams>)=>{const q=new URLSearchParams(search.toString());Object.entries(values).forEach(([key,value])=>{if(value===undefined||value===null||value==='')q.delete(key);else q.set(key,String(value));});if(!('page'in values))q.delete('page');router.push(pathname+'?'+q.toString());};
+ const filter=<TeacherFilterSidebar filters={initialFilters} subjects={subjects} onChange={change} onClear={()=>router.push(pathname)}/>;
+ return <><div className="tm-toolbar"><Input.Search aria-label="Tìm gia sư theo từ khóa" placeholder="Tên gia sư hoặc từ khóa" defaultValue={initialFilters.keyword} onSearch={keyword=>change({keyword})} allowClear style={{maxWidth:520}} size="large"/><Button className="tm-mobile-only" icon={<FilterOutlined/>} onClick={()=>setOpen(true)}>Bộ lọc</Button></div><div className="tm-chips" style={{marginBottom:20}}>{initialFilters.subjectId&&<Tag closable onClose={()=>change({subjectId:undefined})}>{subjects.find(s=>s.id===initialFilters.subjectId)?.name||'Môn đã chọn'}</Tag>}{initialFilters.deliveryMode&&<Tag closable onClose={()=>change({deliveryMode:undefined})}>{initialFilters.deliveryMode}</Tag>}{(initialFilters.minPrice!==undefined||initialFilters.maxPrice!==undefined)&&<Tag closable onClose={()=>change({minPrice:undefined,maxPrice:undefined})}>Giá gói: {initialFilters.minPrice?.toLocaleString('vi-VN')||'0'} – {initialFilters.maxPrice?.toLocaleString('vi-VN')||'không giới hạn'}đ</Tag>}</div><div className="tm-search-layout"><aside className="tm-filter-desktop">{filter}</aside><div><TeacherSortBar totalElements={initialTeachers.meta.totalElements||0} value={initialFilters.sort} onChange={sort=>change({sort})}/><TeacherGrid teachers={initialTeachers.data} isError={isError}/>{(initialTeachers.meta.totalPages||0)>1&&<div className="tm-pagination"><Pagination current={(initialTeachers.meta.page||0)+1} total={initialTeachers.meta.totalElements} pageSize={initialTeachers.meta.size||12} showSizeChanger={false} onChange={page=>change({page})}/></div>}</div></div><Drawer title="Lọc gia sư" open={open} onClose={()=>setOpen(false)}>{filter}<Button block onClick={()=>setOpen(false)} style={{marginTop:16}}>Xem kết quả</Button></Drawer></>;
 }
