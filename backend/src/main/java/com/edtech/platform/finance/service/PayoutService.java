@@ -1,8 +1,8 @@
 package com.edtech.platform.finance.service;
 
-import com.edtech.platform.admin.dto.request.CompleteTransferRequest;
-import com.edtech.platform.admin.dto.request.ProcessPayoutRequest;
-import com.edtech.platform.admin.dto.request.RejectRequest;
+import com.edtech.platform.finance.command.CompleteTransferCommand;
+import com.edtech.platform.finance.command.ProcessPayoutCommand;
+import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.finance.domain.*;
@@ -133,7 +133,7 @@ public class PayoutService {
     }
 
     @Transactional
-    public PayoutRequestView processPayout(UUID adminId, UUID payoutId, ProcessPayoutRequest request) {
+    public PayoutRequestView processPayout(UUID adminId, UUID payoutId, ProcessPayoutCommand request) {
         PayoutRequest payout = payoutRequestRepository.findByIdForUpdate(payoutId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
 
@@ -146,7 +146,7 @@ public class PayoutService {
     }
 
     @Transactional
-    public PayoutRequestView completePayout(UUID adminId, UUID payoutId, CompleteTransferRequest request) {
+    public PayoutRequestView completePayout(UUID adminId, UUID payoutId, CompleteTransferCommand request) {
         PayoutRequest payout = payoutRequestRepository.findByIdForUpdate(payoutId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
 
@@ -188,11 +188,11 @@ public class PayoutService {
     }
 
     @Transactional
-    public PayoutRequestView rejectPayout(UUID adminId, UUID payoutId, RejectRequest request, long version) {
+    public PayoutRequestView rejectPayout(UUID adminId, UUID payoutId, RejectFinanceCommand request) {
         PayoutRequest payout = payoutRequestRepository.findByIdForUpdate(payoutId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        if (payout.getVersion() != version) {
+        if (payout.getVersion() != request.version()) {
             throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
         }
 

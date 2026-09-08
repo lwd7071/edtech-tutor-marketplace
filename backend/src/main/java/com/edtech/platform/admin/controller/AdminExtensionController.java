@@ -7,6 +7,8 @@ import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.common.security.RequireRole;
 import com.edtech.platform.finance.dto.response.ExtensionRequestView;
+import com.edtech.platform.finance.command.ApproveExtensionCommand;
+import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.finance.service.ExtensionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +45,8 @@ public class AdminExtensionController {
             @PathVariable UUID id,
             @Valid @RequestBody ApproveExtensionRequest request
     ) {
-        return ApiResponse.ok(extensionService.approveExtension(user.id(), id, request));
+        return ApiResponse.ok(extensionService.approveExtension(user.id(), id,
+                new ApproveExtensionCommand(request.approvedExpiryDate(), request.adminNote())));
     }
 
     @PostMapping("/{id}/reject")
@@ -52,6 +55,7 @@ public class AdminExtensionController {
             @PathVariable UUID id,
             @Valid @RequestBody RejectRequest request
     ) {
-        return ApiResponse.ok(extensionService.rejectExtension(user.id(), id, request));
+        return ApiResponse.ok(extensionService.rejectExtension(user.id(), id,
+                new RejectFinanceCommand(request.reason(), 0)));
     }
 }

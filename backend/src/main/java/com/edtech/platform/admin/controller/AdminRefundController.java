@@ -8,6 +8,9 @@ import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.common.security.RequireRole;
 import com.edtech.platform.finance.dto.response.RefundRequestView;
+import com.edtech.platform.finance.command.ApproveRefundCommand;
+import com.edtech.platform.finance.command.CompleteTransferCommand;
+import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.finance.service.RefundService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +47,8 @@ public class AdminRefundController {
             @PathVariable UUID id,
             @Valid @RequestBody ApproveRefundRequest request
     ) {
-        return ApiResponse.ok(refundService.approveRefund(user.id(), id, request));
+        return ApiResponse.ok(refundService.approveRefund(user.id(), id,
+                new ApproveRefundCommand(request.approvedSessions(), request.adminNote(), request.version())));
     }
 
     @PostMapping("/{id}/reject")
@@ -54,7 +58,8 @@ public class AdminRefundController {
             @RequestParam(defaultValue = "0") long version,
             @Valid @RequestBody RejectRequest request
     ) {
-        return ApiResponse.ok(refundService.rejectRefund(user.id(), id, request, version));
+        return ApiResponse.ok(refundService.rejectRefund(user.id(), id,
+                new RejectFinanceCommand(request.reason(), version)));
     }
 
     @PostMapping("/{id}/complete")
@@ -63,6 +68,8 @@ public class AdminRefundController {
             @PathVariable UUID id,
             @Valid @RequestBody CompleteTransferRequest request
     ) {
-        return ApiResponse.ok(refundService.completeRefund(user.id(), id, request));
+        return ApiResponse.ok(refundService.completeRefund(user.id(), id,
+                new CompleteTransferCommand(request.bankReference(), request.transferredAt(),
+                        request.proofPublicId(), request.proofUrl(), request.version())));
     }
 }

@@ -1,7 +1,7 @@
 package com.edtech.platform.finance.service;
 
-import com.edtech.platform.admin.dto.request.ApproveExtensionRequest;
-import com.edtech.platform.admin.dto.request.RejectRequest;
+import com.edtech.platform.finance.command.ApproveExtensionCommand;
+import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.enrollment.facade.EnrollmentFacade;
 import com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot;
@@ -83,7 +83,7 @@ class ExtensionServiceTest {
         when(extensionRequestRepository.findByIdForUpdate(extensionId)).thenReturn(Optional.of(extension));
 
         Instant approved = Instant.now().plusSeconds(86400 * 45);
-        ApproveExtensionRequest req = new ApproveExtensionRequest(approved, "Duyet gia han 45 ngay");
+        ApproveExtensionCommand req = new ApproveExtensionCommand(approved, "Duyet gia han 45 ngay");
 
         ExtensionRequestView view = extensionService.approveExtension(adminId, extensionId, req);
 
@@ -100,7 +100,7 @@ class ExtensionServiceTest {
         ReflectionTestUtils.setField(extension, "id", extensionId);
         when(extensionRequestRepository.findByIdForUpdate(extensionId)).thenReturn(Optional.of(extension));
 
-        RejectRequest req = new RejectRequest("Khong hop le");
+        RejectFinanceCommand req = new RejectFinanceCommand("Khong hop le", 0);
 
         ExtensionRequestView view = extensionService.rejectExtension(adminId, extensionId, req);
 

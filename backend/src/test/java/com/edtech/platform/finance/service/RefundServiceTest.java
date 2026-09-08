@@ -1,10 +1,11 @@
 package com.edtech.platform.finance.service;
 
-import com.edtech.platform.admin.dto.request.ApproveRefundRequest;
-import com.edtech.platform.admin.dto.request.CompleteTransferRequest;
-import com.edtech.platform.admin.dto.request.RejectRequest;
+import com.edtech.platform.finance.command.ApproveRefundCommand;
+import com.edtech.platform.finance.command.CompleteTransferCommand;
+import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.booking.facade.BookingEligibilityFacade;
 import com.edtech.platform.common.exception.BusinessException;
+import com.edtech.platform.common.config.properties.AccountEncryptionProperties;
 import com.edtech.platform.enrollment.facade.EnrollmentFacade;
 import com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot;
 import com.edtech.platform.finance.domain.RefundRequest;
@@ -15,6 +16,8 @@ import com.edtech.platform.finance.dto.response.RefundRequestView;
 import com.edtech.platform.finance.repository.LedgerEntryRepository;
 import com.edtech.platform.finance.repository.RefundRequestRepository;
 import com.edtech.platform.finance.repository.WalletRepository;
+import com.edtech.platform.finance.mapper.RefundRequestViewMapper;
+import com.edtech.platform.finance.security.AccountNumberProtector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +29,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import java.security.SecureRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,9 +54,11 @@ class RefundServiceTest {
 
     @BeforeEach
     void setUp() {
+        var protector = new AccountNumberProtector(
+                new AccountEncryptionProperties("01234567890123456789012345678901"), new SecureRandom());
         refundService = new RefundService(
                 refundRequestRepository, enrollmentFacade, bookingEligibilityFacade,
-                walletRepository, ledgerEntryRepository
+                walletRepository, ledgerEntryRepository, protector, new RefundRequestViewMapper(protector)
         );
     }
 
@@ -103,7 +109,7 @@ class RefundServiceTest {
         EnrollmentPackageSnapshot pkg = mockPackage(10, 8, 2, 0, 1000000L);
         when(enrollmentFacade.inspect(packageId, null)).thenReturn(pkg);
 
-        ApproveRefundRequest req = new ApproveRefundRequest(3, "Duyet 3 buoi", 0L);
+        ApproveRefundCommand req = new ApproveRefundCommand(3, "Duyet 3 buoi", 0L);
 
         RefundRequestView view = refundService.approveRefund(adminId, refundId, req);
 
@@ -131,7 +137,7 @@ class RefundServiceTest {
         wallet.creditPending(760000L); // 8 * 95k = 760k
         when(walletRepository.findByTeacherIdForUpdate(teacherId)).thenReturn(Optional.of(wallet));
 
-        CompleteTransferRequest req = new CompleteTransferRequest("VCB-REF-123", Instant.now(), "proof", "https://proof", 0L);
+        CompleteTransferCommand req = new CompleteTransferCommand("VCB-REF-123", Instant.now(), "proof", "https://proof", 0L);
 
         RefundRequestView view = refundService.completeRefund(adminId, refundId, req);
 
@@ -151,9 +157,9 @@ class RefundServiceTest {
         ReflectionTestUtils.setField(refund, "id", refundId);
         when(refundRequestRepository.findByIdForUpdate(refundId)).thenReturn(Optional.of(refund));
 
-        RejectRequest req = new RejectRequest("Khong du dieu kien");
+        RejectFinanceCommand req = new RejectFinanceCommand("Khong du dieu kien", 0L);
 
-        RefundRequestView view = refundService.rejectRefund(adminId, refundId, req, 0L);
+        RefundRequestView view = refundService.rejectRefund(adminId, refundId, req);
 
         assertThat(view.status()).isEqualTo(RefundStatus.REJECTED);
         verify(enrollmentFacade).restoreFromRefundPending(packageId);

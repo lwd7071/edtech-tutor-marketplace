@@ -1,8 +1,8 @@
 package com.edtech.platform.finance.service;
 
-import com.edtech.platform.admin.dto.request.ApproveRefundRequest;
-import com.edtech.platform.admin.dto.request.CompleteTransferRequest;
-import com.edtech.platform.admin.dto.request.RejectRequest;
+import com.edtech.platform.finance.command.ApproveRefundCommand;
+import com.edtech.platform.finance.command.CompleteTransferCommand;
+import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.booking.facade.BookingEligibilityFacade;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
@@ -11,10 +11,11 @@ import com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot;
 import com.edtech.platform.finance.domain.*;
 import com.edtech.platform.finance.dto.request.CreateRefundRequest;
 import com.edtech.platform.finance.dto.response.RefundRequestView;
+import com.edtech.platform.finance.mapper.RefundRequestViewMapper;
 import com.edtech.platform.finance.repository.LedgerEntryRepository;
 import com.edtech.platform.finance.repository.RefundRequestRepository;
 import com.edtech.platform.finance.repository.WalletRepository;
-import com.edtech.platform.finance.util.AccountNumberCipher;
+import com.edtech.platform.finance.security.AccountNumberProtector;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,8 @@ public class RefundService {
     private final BookingEligibilityFacade bookingEligibilityFacade;
     private final WalletRepository walletRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
+    private final AccountNumberProtector accountNumbers;
+    private final RefundRequestViewMapper views;
 
     @Transactional
     public RefundRequestView createRefund(UUID studentId, CreateRefundRequest request) {
@@ -71,7 +74,7 @@ public class RefundService {
         enrollmentFacade.markRefundPending(pkg.id());
 
         // 2. Encrypt account number
-        String encryptedAccNumber = AccountNumberCipher.encrypt(request.accountNumber());
+        String encryptedAccNumber = accountNumbers.encrypt(request.accountNumber());
 
         // 3. Create RefundRequest
         RefundRequest refund = RefundRequest.create(
@@ -86,13 +89,13 @@ public class RefundService {
         );
         refund = refundRequestRepository.save(refund);
 
-        return RefundRequestView.from(refund);
+        return views.toView(refund);
     }
 
     @Transactional(readOnly = true)
     public Page<RefundRequestView> findStudentRefunds(UUID studentId, Pageable pageable) {
         return refundRequestRepository.findByStudentIdOrderByCreatedAtDesc(studentId, pageable)
-                .map(RefundRequestView::from);
+                .map(views::toView);
     }
 
     @Transactional(readOnly = true)
@@ -106,11 +109,11 @@ public class RefundService {
         Page<RefundRequest> page = (status != null)
                 ? refundRequestRepository.findByStatusOrderByCreatedAtDesc(status, pageable)
                 : refundRequestRepository.findAllByOrderByCreatedAtDesc(pageable);
-        return page.map(RefundRequestView::from);
+        return page.map(views::toView);
     }
 
     @Transactional
-    public RefundRequestView approveRefund(UUID adminId, UUID refundId, ApproveRefundRequest request) {
+    public RefundRequestView approveRefund(UUID adminId, UUID refundId, ApproveRefundCommand request) {
         RefundRequest refund = refundRequestRepository.findByIdForUpdate(refundId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFUND_NOT_FOUND));
 
@@ -144,15 +147,15 @@ public class RefundService {
                 .divide(BigDecimal.valueOf(totalSessions), 0, RoundingMode.FLOOR).longValue();
 
         refund.approve(adminId, request.approvedSessions(), refundAmountVnd, request.adminNote(), Instant.now());
-        return RefundRequestView.from(refund);
+        return views.toView(refund);
     }
 
     @Transactional
-    public RefundRequestView rejectRefund(UUID adminId, UUID refundId, RejectRequest request, long version) {
+    public RefundRequestView rejectRefund(UUID adminId, UUID refundId, RejectFinanceCommand request) {
         RefundRequest refund = refundRequestRepository.findByIdForUpdate(refundId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFUND_NOT_FOUND));
 
-        if (refund.getVersion() != version) {
+        if (refund.getVersion() != request.version()) {
             throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
         }
 
@@ -161,11 +164,11 @@ public class RefundService {
         // Restore package status
         enrollmentFacade.restoreFromRefundPending(refund.getStudentPackageId());
 
-        return RefundRequestView.from(refund);
+        return views.toView(refund);
     }
 
     @Transactional
-    public RefundRequestView completeRefund(UUID adminId, UUID refundId, CompleteTransferRequest request) {
+    public RefundRequestView completeRefund(UUID adminId, UUID refundId, CompleteTransferCommand request) {
         RefundRequest refund = refundRequestRepository.findByIdForUpdate(refundId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFUND_NOT_FOUND));
 
@@ -222,6 +225,6 @@ public class RefundService {
         // 3. Complete refund
         refund.complete(adminId, request.bankReference(), request.proofPublicId(), request.proofUrl(), Instant.now());
 
-        return RefundRequestView.from(refund);
+        return views.toView(refund);
     }
 }

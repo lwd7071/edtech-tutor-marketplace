@@ -2,10 +2,13 @@ package com.edtech.platform.finance.service;
 
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
+import com.edtech.platform.common.config.properties.AccountEncryptionProperties;
 import com.edtech.platform.finance.domain.TeacherBankAccount;
 import com.edtech.platform.finance.dto.request.UpsertBankAccountRequest;
 import com.edtech.platform.finance.dto.response.BankAccountView;
 import com.edtech.platform.finance.repository.TeacherBankAccountRepository;
+import com.edtech.platform.finance.mapper.BankAccountViewMapper;
+import com.edtech.platform.finance.security.AccountNumberProtector;
 import com.edtech.platform.teacher.facade.TeacherFacade;
 import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +21,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.security.SecureRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,7 +45,10 @@ class BankAccountServiceTest {
 
     @BeforeEach
     void setUp() {
-        bankAccountService = new BankAccountService(bankAccountRepository, teacherFacade);
+        var protector = new AccountNumberProtector(
+                new AccountEncryptionProperties("01234567890123456789012345678901"), new SecureRandom());
+        bankAccountService = new BankAccountService(bankAccountRepository, teacherFacade,
+                protector, new BankAccountViewMapper(protector));
     }
 
     private TeacherSnapshot mockTeacherSnapshot() {

@@ -5,8 +5,9 @@ import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.finance.domain.TeacherBankAccount;
 import com.edtech.platform.finance.dto.request.UpsertBankAccountRequest;
 import com.edtech.platform.finance.dto.response.BankAccountView;
+import com.edtech.platform.finance.mapper.BankAccountViewMapper;
 import com.edtech.platform.finance.repository.TeacherBankAccountRepository;
-import com.edtech.platform.finance.util.AccountNumberCipher;
+import com.edtech.platform.finance.security.AccountNumberProtector;
 import com.edtech.platform.teacher.facade.TeacherFacade;
 import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,8 @@ public class BankAccountService {
 
     private final TeacherBankAccountRepository bankAccountRepository;
     private final TeacherFacade teacherFacade;
+    private final AccountNumberProtector accountNumbers;
+    private final BankAccountViewMapper views;
 
     private UUID resolveTeacherId(UUID teacherUserId) {
         TeacherSnapshot teacher = teacherFacade.getTeacherByUserId(teacherUserId);
@@ -36,7 +39,7 @@ public class BankAccountService {
         UUID teacherId = resolveTeacherId(teacherUserId);
         return bankAccountRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId)
                 .stream()
-                .map(BankAccountView::from)
+                .map(views::toView)
                 .toList();
     }
 
@@ -51,7 +54,7 @@ public class BankAccountService {
             isDefault = true;
         }
 
-        String encrypted = AccountNumberCipher.encrypt(request.accountNumber());
+        String encrypted = accountNumbers.encrypt(request.accountNumber());
         TeacherBankAccount account = TeacherBankAccount.create(
                 teacherId,
                 request.bankBin(),
@@ -66,7 +69,7 @@ public class BankAccountService {
             bankAccountRepository.unsetDefaultExcept(teacherId, account.getId());
         }
 
-        return BankAccountView.from(account);
+        return views.toView(account);
     }
 
     @Transactional
@@ -78,7 +81,7 @@ public class BankAccountService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.BANK_ACCOUNT_NOT_FOUND));
 
         boolean isDefault = request.isDefault() != null && request.isDefault();
-        String encrypted = AccountNumberCipher.encrypt(request.accountNumber());
+        String encrypted = accountNumbers.encrypt(request.accountNumber());
         account.update(
                 request.bankBin(),
                 request.bankName(),
@@ -91,7 +94,7 @@ public class BankAccountService {
             bankAccountRepository.unsetDefaultExcept(teacherId, account.getId());
         }
 
-        return BankAccountView.from(account);
+        return views.toView(account);
     }
 
     @Transactional

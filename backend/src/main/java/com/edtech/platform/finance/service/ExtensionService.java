@@ -1,7 +1,7 @@
 package com.edtech.platform.finance.service;
 
-import com.edtech.platform.admin.dto.request.ApproveExtensionRequest;
-import com.edtech.platform.admin.dto.request.RejectRequest;
+import com.edtech.platform.finance.command.ApproveExtensionCommand;
+import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.enrollment.facade.EnrollmentFacade;
@@ -78,7 +78,7 @@ public class ExtensionService {
     }
 
     @Transactional
-    public ExtensionRequestView approveExtension(UUID adminId, UUID extensionId, ApproveExtensionRequest request) {
+    public ExtensionRequestView approveExtension(UUID adminId, UUID extensionId, ApproveExtensionCommand request) {
         PackageExtensionRequest extension = extensionRequestRepository.findByIdForUpdate(extensionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.EXTENSION_REQUEST_NOT_FOUND));
 
@@ -100,7 +100,7 @@ public class ExtensionService {
     }
 
     @Transactional
-    public ExtensionRequestView rejectExtension(UUID adminId, UUID extensionId, RejectRequest request) {
+    public ExtensionRequestView rejectExtension(UUID adminId, UUID extensionId, RejectFinanceCommand request) {
         PackageExtensionRequest extension = extensionRequestRepository.findByIdForUpdate(extensionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.EXTENSION_REQUEST_NOT_FOUND));
 

@@ -8,6 +8,9 @@ import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.common.security.RequireRole;
 import com.edtech.platform.finance.dto.response.PayoutRequestView;
+import com.edtech.platform.finance.command.CompleteTransferCommand;
+import com.edtech.platform.finance.command.ProcessPayoutCommand;
+import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.finance.service.PayoutService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +47,8 @@ public class AdminPayoutController {
             @PathVariable UUID id,
             @RequestBody ProcessPayoutRequest request
     ) {
-        return ApiResponse.ok(payoutService.processPayout(user.id(), id, request));
+        return ApiResponse.ok(payoutService.processPayout(user.id(), id,
+                new ProcessPayoutCommand(request.version())));
     }
 
     @PostMapping("/{id}/complete")
@@ -53,7 +57,9 @@ public class AdminPayoutController {
             @PathVariable UUID id,
             @Valid @RequestBody CompleteTransferRequest request
     ) {
-        return ApiResponse.ok(payoutService.completePayout(user.id(), id, request));
+        return ApiResponse.ok(payoutService.completePayout(user.id(), id,
+                new CompleteTransferCommand(request.bankReference(), request.transferredAt(),
+                        request.proofPublicId(), request.proofUrl(), request.version())));
     }
 
     @PostMapping("/{id}/reject")
@@ -63,6 +69,7 @@ public class AdminPayoutController {
             @RequestParam(defaultValue = "0") long version,
             @Valid @RequestBody RejectRequest request
     ) {
-        return ApiResponse.ok(payoutService.rejectPayout(user.id(), id, request, version));
+        return ApiResponse.ok(payoutService.rejectPayout(user.id(), id,
+                new RejectFinanceCommand(request.reason(), version)));
     }
 }

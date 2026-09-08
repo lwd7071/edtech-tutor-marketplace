@@ -1,8 +1,7 @@
 package com.edtech.platform.finance.service;
 
-import com.edtech.platform.admin.dto.request.CompleteTransferRequest;
-import com.edtech.platform.admin.dto.request.ProcessPayoutRequest;
-import com.edtech.platform.admin.dto.request.RejectRequest;
+import com.edtech.platform.finance.command.CompleteTransferCommand;
+import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.finance.domain.PayoutRequest;
@@ -113,7 +112,7 @@ class PayoutServiceTest {
         wallet.reserveAvailable(500000L);
         when(walletRepository.findByTeacherIdForUpdate(teacherId)).thenReturn(Optional.of(wallet));
 
-        CompleteTransferRequest req = new CompleteTransferRequest(
+        CompleteTransferCommand req = new CompleteTransferCommand(
                 "VCB123456", Instant.now(), "proof_pub", "https://proof.example.com", 0L
         );
 
@@ -140,8 +139,8 @@ class PayoutServiceTest {
         wallet.reserveAvailable(500000L);
         when(walletRepository.findByTeacherIdForUpdate(teacherId)).thenReturn(Optional.of(wallet));
 
-        RejectRequest req = new RejectRequest("Sai so tai khoan");
-        PayoutRequestView view = payoutService.rejectPayout(adminId, payoutId, req, 0L);
+        RejectFinanceCommand req = new RejectFinanceCommand("Sai so tai khoan", 0L);
+        PayoutRequestView view = payoutService.rejectPayout(adminId, payoutId, req);
 
         assertThat(view.status()).isEqualTo(PayoutStatus.REJECTED);
         assertThat(wallet.getReservedBalanceVnd()).isEqualTo(0L);
