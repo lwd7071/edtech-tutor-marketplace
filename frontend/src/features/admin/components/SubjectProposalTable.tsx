@@ -78,7 +78,7 @@ export function SubjectProposalTable() {
       render: (text?: string) => text || '---',
     },
     {
-      title: 'Giáo viên đề xuất',
+      title: 'Gia sư đề xuất',
       dataIndex: 'teacherName',
       key: 'teacherName',
     },

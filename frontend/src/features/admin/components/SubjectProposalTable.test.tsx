@@ -9,7 +9,7 @@ const mockProposal: SubjectProposalSnapshot = {
   teacherId: 't-101',
   teacherName: 'Nguyễn Văn A',
   proposedName: 'Toán học nâng cao 12',
-  educationLevel: 'Toán học',
+  educationLevel: 'HIGH_SCHOOL',
   description: 'Chương trình luyện thi đại học môn Toán nâng cao',
   status: 'PENDING',
   createdAt: '2026-03-01T10:00:00Z',
@@ -24,7 +24,7 @@ jest.mock('../hooks/useAdminApprovals', () => ({
           teacherId: 't-101',
           teacherName: 'Nguyễn Văn A',
           proposedName: 'Toán học nâng cao 12',
-          educationLevel: 'Toán học',
+          educationLevel: 'HIGH_SCHOOL',
           description: 'Chương trình luyện thi đại học môn Toán nâng cao',
           status: 'PENDING',
           createdAt: '2026-03-01T10:00:00Z',
@@ -61,6 +61,6 @@ describe('SubjectProposalTable & ApproveSubjectModal (TDD)', () => {
 
     expect(screen.getByText('Chuẩn hóa & Phê duyệt Môn học')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Toán học nâng cao 12')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Toán học')).toBeInTheDocument();
+    expect(screen.getByText('THPT')).toBeInTheDocument();
   });
 });

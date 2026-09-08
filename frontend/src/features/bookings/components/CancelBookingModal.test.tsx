@@ -33,8 +33,8 @@ describe('CancelBookingModal (TDD)', () => {
     render(<CancelBookingModal open={true} booking={mockBooking} onClose={handleClose} />);
 
     expect(screen.getByText('Hủy lịch học')).toBeInTheDocument();
-    expect(screen.getByText('Học sinh yêu cầu đổi/hủy lịch')).toBeInTheDocument();
-    expect(screen.getByText('Giáo viên có việc đột xuất')).toBeInTheDocument();
+    expect(screen.getByText('Học viên yêu cầu đổi hoặc hủy lịch')).toBeInTheDocument();
+    expect(screen.getByText('Gia sư có việc đột xuất')).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Nhập lý do hủy lịch/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Xác nhận hủy buổi học/i })).toBeInTheDocument();
   });

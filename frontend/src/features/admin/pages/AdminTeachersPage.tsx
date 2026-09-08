@@ -10,10 +10,10 @@ export function AdminTeachersPage() {
       <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
         <div>
           <Typography.Title level={2} style={{ marginBottom: 4 }}>
-            Quản trị Xét duyệt Giáo viên
+            Xét duyệt hồ sơ gia sư
           </Typography.Title>
           <Typography.Paragraph type="secondary">
-            Xem xét hồ sơ, kiểm tra văn bằng chứng chỉ và phê duyệt hoặc từ chối giáo viên đăng ký giảng dạy.
+            Xem hồ sơ, kiểm tra văn bằng và phê duyệt hoặc từ chối gia sư đăng ký giảng dạy.
           </Typography.Paragraph>
         </div>
         <TeacherApprovalTable />

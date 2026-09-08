@@ -3,9 +3,9 @@
 import React from 'react';
 import { useParams } from 'next/navigation';
 import { Spin, Empty, Button } from 'antd';
-import Link from 'next/link';
 import { useStudentPackageDetail } from '../hooks/useStudentPackages';
 import { StudentPackageDetailView } from '../components/StudentPackageDetailView';
+import { ActionLink, PageActions } from '@/shared/components/navigation/NavigationLinks';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -58,7 +58,7 @@ export const StudentPackageDetailPage: React.FC = () => {
   if (isLoading) {
     return (
       <div style={{ textAlign: 'center', padding: '100px 0' }}>
-        <Spin size="large" tip="Đang tải thông tin gói học..." />
+        <Spin size="large" description="Đang tải thông tin gói học..." />
       </div>
     );
   }
@@ -67,9 +67,7 @@ export const StudentPackageDetailPage: React.FC = () => {
     return (
       <div style={{ textAlign: 'center', padding: '80px 0' }}>
         <Empty description="Không tìm thấy thông tin gói học hoặc bạn không có quyền xem" />
-        <Link href="/student/packages" style={{ marginTop: 16, display: 'inline-block' }}>
-          <Button type="primary">Quay lại danh sách</Button>
-        </Link>
+        <PageActions centered><ActionLink href="/student/packages">Xem danh sách gói học</ActionLink></PageActions>
       </div>
     );
   }
@@ -105,4 +103,3 @@ export const StudentPackageDetailPage: React.FC = () => {
     </div>
   );
 };
-

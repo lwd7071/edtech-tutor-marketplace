@@ -63,7 +63,7 @@ export const TeacherWalletPage: React.FC = () => {
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'var(--space-6) 0' }}>
       <div style={{ marginBottom: 24 }}>
         <Typography.Title level={2} style={{ marginBottom: 4 }}>
-          Ví & Tài chính Giáo viên
+          Ví và thu nhập gia sư
         </Typography.Title>
         <Typography.Text type="secondary" style={{ fontSize: 14 }}>
           Quản lý số dư thu nhập, sổ cái biến động tiền, tài khoản nhận và yêu cầu rút tiền

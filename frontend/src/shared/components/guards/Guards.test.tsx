@@ -67,7 +67,7 @@ describe('Route Guards & Access Control (TDD)', () => {
         </RoleGuard>
       );
 
-      expect(screen.getByText(/Bạn không có quyền truy cập trang này/i)).toBeInTheDocument();
+      expect(screen.getByText('Bạn không có quyền truy cập')).toBeInTheDocument();
       expect(screen.queryByText('Khu vực Giáo viên & Admin')).not.toBeInTheDocument();
     });
 

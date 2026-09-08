@@ -34,7 +34,7 @@ describe('SessionReportModal (TDD)', () => {
 
     expect(screen.getByText('Báo cáo Hoàn thành Buổi học')).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Nhập tóm tắt nội dung đã dạy/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Nhận xét tinh thần, mức độ tiếp thu/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Nhận xét tinh thần và mức độ tiếp thu/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Hoàn thành & Gửi báo cáo/i })).toBeInTheDocument();
   });
 });

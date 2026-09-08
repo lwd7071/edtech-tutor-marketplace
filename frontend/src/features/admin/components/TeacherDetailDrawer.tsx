@@ -28,7 +28,7 @@ export function TeacherDetailDrawer({ open, teacher, onClose }: TeacherDetailDra
         teacherId: teacher.teacherProfileId,
         data: { note: approvalNote },
       });
-      message.success('Đã phê duyệt hồ sơ giáo viên thành công');
+      message.success('Đã phê duyệt hồ sơ gia sư thành công');
       onClose();
     } catch (err) {
       const parsed = parseApiError(err);
@@ -47,7 +47,7 @@ export function TeacherDetailDrawer({ open, teacher, onClose }: TeacherDetailDra
         teacherId: teacher.teacherProfileId,
         data: { reason: rejectReason },
       });
-      message.success('Đã từ chối hồ sơ giáo viên');
+      message.success('Đã từ chối hồ sơ gia sư');
       setShowRejectInput(false);
       setRejectReason('');
       onClose();
@@ -72,7 +72,7 @@ export function TeacherDetailDrawer({ open, teacher, onClose }: TeacherDetailDra
 
   return (
     <Drawer
-      title="Chi tiết Hồ sơ Giáo viên"
+      title="Chi tiết hồ sơ gia sư"
       open={open}
       onClose={onClose}
       size="large"
@@ -98,8 +98,9 @@ export function TeacherDetailDrawer({ open, teacher, onClose }: TeacherDetailDra
         <Descriptions.Item label="Họ và tên">{teacher.fullName || 'Chưa cập nhật'}</Descriptions.Item>
         <Descriptions.Item label="Email">{teacher.email || 'Chưa cập nhật'}</Descriptions.Item>
         <Descriptions.Item label="Trạng thái">{renderStatusTag(teacher.status)}</Descriptions.Item>
-        <Descriptions.Item label="Học vấn">{teacher.education || 'Chưa cập nhật'}</Descriptions.Item>
-        <Descriptions.Item label="Kinh nghiệm">{teacher.experienceYears ? `${teacher.experienceYears} năm` : 'Chưa cập nhật'}</Descriptions.Item>
+        <Descriptions.Item label="Kinh nghiệm">{teacher.yearsOfExperience ? `${teacher.yearsOfExperience} năm` : 'Chưa cập nhật'}</Descriptions.Item>
+        <Descriptions.Item label="Ngôn ngữ">{teacher.languages?.join(', ') || 'Chưa cập nhật'}</Descriptions.Item>
+        <Descriptions.Item label="Hình thức">{[teacher.supportsOnline && 'Online', teacher.supportsOffline && 'Trực tiếp'].filter(Boolean).join(', ') || 'Chưa cập nhật'}</Descriptions.Item>
         <Descriptions.Item label="Tiểu sử">{teacher.bio || 'Chưa có tiểu sử giới thiệu'}</Descriptions.Item>
       </Descriptions>
 
@@ -156,7 +157,7 @@ export function TeacherDetailDrawer({ open, teacher, onClose }: TeacherDetailDra
         <div style={{ marginTop: 'var(--space-6)' }}>
           <Typography.Text strong>Ghi chú phê duyệt (tùy chọn):</Typography.Text>
           <Input
-            placeholder="Nhập ghi chú gửi cho giáo viên (nếu có)"
+            placeholder="Nhập ghi chú gửi cho gia sư (nếu có)"
             value={approvalNote}
             onChange={(e) => setApprovalNote(e.target.value)}
             style={{ marginTop: 'var(--space-2)' }}

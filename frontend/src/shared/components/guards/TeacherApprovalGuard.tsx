@@ -29,7 +29,7 @@ export function TeacherApprovalGuard({ children, fallback }: TeacherApprovalGuar
           description={
             <div style={{ width: '100%', marginTop: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <div>
-                Hồ sơ giáo viên của bạn đang được ban quản trị xét duyệt. Các tính năng tạo gói học,
+                Hồ sơ gia sư của bạn đang được ban quản trị xét duyệt. Các tính năng tạo gói học,
                 quản lý lịch dạy và rút tiền sẽ được mở sau khi hồ sơ được phê duyệt thành công.
               </div>
               <Link href="/teacher/profile">

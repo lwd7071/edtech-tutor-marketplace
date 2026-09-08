@@ -70,7 +70,7 @@ export const BankAccountList: React.FC<BankAccountListProps> = ({
             Tài khoản ngân hàng
           </Typography.Title>
           <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-            Tài khoản dùng để nhận tiền khi thực hiện rút tiền từ ví giáo viên
+            Tài khoản dùng để nhận tiền khi thực hiện rút tiền từ ví gia sư
           </Typography.Text>
         </div>
 

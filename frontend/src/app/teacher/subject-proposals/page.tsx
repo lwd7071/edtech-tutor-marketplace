@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Typography, Spin, message, Alert, Card, Form, Input, Button, Table, Tag } from 'antd';
+import { Typography, Spin, message, Alert, Card, Form, Input, Button, Table, Tag, Select } from 'antd';
 import { TeacherSubjectProposal, teacherApi } from '@/shared/api/teacher';
 
 const { Title } = Typography;
+const EDUCATION_LABELS: Record<TeacherSubjectProposal['educationLevel'], string> = {
+  ELEMENTARY: 'Tiểu học', MIDDLE_SCHOOL: 'THCS', HIGH_SCHOOL: 'THPT', UNIVERSITY: 'Đại học', OTHER: 'Khác',
+};
 
 export default function SubjectProposalsPage() {
   const [proposals, setProposals] = useState<TeacherSubjectProposal[]>([]);
@@ -15,6 +18,8 @@ export default function SubjectProposalsPage() {
 
   const fetchProposals = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const data = await teacherApi.getSubjectProposals();
       setProposals(data);
     } catch (err) {
@@ -28,7 +33,7 @@ export default function SubjectProposalsPage() {
     fetchProposals();
   }, []);
 
-  const onFinish = async (values: { name: string; description: string }) => {
+  const onFinish = async (values: { proposedName: string; educationLevel: TeacherSubjectProposal['educationLevel']; description?: string }) => {
     setSubmitting(true);
     try {
       const newProp = await teacherApi.createSubjectProposal(values);
@@ -45,8 +50,14 @@ export default function SubjectProposalsPage() {
   const columns = [
     {
       title: 'Tên môn học',
-      dataIndex: 'name',
-      key: 'name',
+      dataIndex: 'proposedName',
+      key: 'proposedName',
+    },
+    {
+      title: 'Cấp học',
+      dataIndex: 'educationLevel',
+      key: 'educationLevel',
+      render: (level: TeacherSubjectProposal['educationLevel']) => EDUCATION_LABELS[level] || level,
     },
     {
       title: 'Mô tả',
@@ -67,37 +78,49 @@ export default function SubjectProposalsPage() {
       }
     },
     {
-      title: 'Ngày gửi',
-      dataIndex: 'submittedAt',
-      key: 'submittedAt',
-      render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
+      title: 'Phản hồi',
+      dataIndex: 'reviewNote',
+      key: 'reviewNote',
+      render: (note?: string) => note || '—',
     },
   ];
 
   if (loading) {
-    return <div style={{ textAlign: 'center', padding: '40px' }}><Spin size="large" tip="Đang tải danh sách đề xuất..." /></div>;
+    return <div style={{ textAlign: 'center', padding: '40px' }}><Spin size="large" description="Đang tải danh sách đề xuất..." /></div>;
   }
 
   return (
     <div style={{ maxWidth: 880, margin: '0 auto' }}>
       <Title level={2}>Đề xuất Môn học mới</Title>
       
-      {error && <Alert type="error" message={error} style={{ marginBottom: 24 }} />}
+      {error && <Alert type="error" title={error} action={<Button onClick={fetchProposals}>Thử lại</Button>} style={{ marginBottom: 24 }} />}
       
       <Card title="Gửi đề xuất mới" style={{ marginBottom: 24 }}>
         <Form form={form} layout="vertical" onFinish={onFinish}>
           <Form.Item
             label="Tên môn học"
-            name="name"
+            name="proposedName"
             rules={[{ required: true, message: 'Vui lòng nhập tên môn học' }]}
           >
             <Input placeholder="Tên môn học" />
+          </Form.Item>
+          <Form.Item
+            label="Cấp học"
+            name="educationLevel"
+            rules={[{ required: true, message: 'Vui lòng chọn cấp học' }]}
+          >
+            <Select options={[
+              { value: 'ELEMENTARY', label: 'Tiểu học' },
+              { value: 'MIDDLE_SCHOOL', label: 'THCS' },
+              { value: 'HIGH_SCHOOL', label: 'THPT' },
+              { value: 'UNIVERSITY', label: 'Đại học' },
+              { value: 'OTHER', label: 'Khác' },
+            ]} />
           </Form.Item>
           
           <Form.Item
             label="Mô tả"
             name="description"
-            rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}
           >
             <Input.TextArea rows={3} placeholder="Mô tả" />
           </Form.Item>

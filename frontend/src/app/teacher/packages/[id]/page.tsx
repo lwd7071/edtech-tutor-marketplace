@@ -17,7 +17,7 @@ export default function EditPackagePage({ params }: { params: Promise<{ id: stri
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div style={{ maxWidth: 820, margin: '0 auto' }}>
       <PackageForm mode="edit" packageId={id} onSave={handleSave} onCancel={handleCancel} />
     </div>
   );

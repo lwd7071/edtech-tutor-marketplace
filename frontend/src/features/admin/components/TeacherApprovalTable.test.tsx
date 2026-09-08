@@ -15,8 +15,9 @@ jest.mock('../hooks/useAdminApprovals', () => ({
           fullName: 'Nguyễn Văn A',
           email: 'nguyenvana@gmail.com',
           bio: 'Giáo viên Toán 5 năm kinh nghiệm',
-          education: 'Đại học Sư phạm Hà Nội',
-          experienceYears: 5,
+          yearsOfExperience: 5,
+          languages: ['Tiếng Việt'],
+          supportsOnline: true,
           status: 'PENDING_APPROVAL',
           documents: [
             {
@@ -63,8 +64,9 @@ describe('TeacherApprovalTable & Drawer (TDD)', () => {
       fullName: 'Nguyễn Văn A',
       email: 'nguyenvana@gmail.com',
       bio: 'Giáo viên Toán 5 năm kinh nghiệm',
-      education: 'Đại học Sư phạm Hà Nội',
-      experienceYears: 5,
+      yearsOfExperience: 5,
+      languages: ['Tiếng Việt'],
+      supportsOnline: true,
       status: 'PENDING_APPROVAL',
       documents: [
         {
@@ -82,8 +84,8 @@ describe('TeacherApprovalTable & Drawer (TDD)', () => {
     const handleClose = jest.fn();
     render(<TeacherDetailDrawer open={true} teacher={mockTeacher} onClose={handleClose} />);
 
-    expect(screen.getByText('Chi tiết Hồ sơ Giáo viên')).toBeInTheDocument();
-    expect(screen.getByText('Đại học Sư phạm Hà Nội')).toBeInTheDocument();
+    expect(screen.getByText('Chi tiết hồ sơ gia sư')).toBeInTheDocument();
+    expect(screen.getByText('Tiếng Việt')).toBeInTheDocument();
     expect(screen.getByText('Bằng Cử nhân Sư phạm Toán')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Xem tài liệu/i })).toHaveAttribute('href', 'https://cdn.example.com/degree.pdf');
     expect(screen.getByRole('button', { name: /Phê duyệt/i })).toBeInTheDocument();

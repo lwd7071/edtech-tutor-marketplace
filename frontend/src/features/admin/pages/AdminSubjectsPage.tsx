@@ -13,7 +13,7 @@ export function AdminSubjectsPage() {
             Quản trị Đề xuất Môn học
           </Typography.Title>
           <Typography.Paragraph type="secondary">
-            Xem xét các yêu cầu mở môn học mới từ giáo viên, chuẩn hóa danh mục và phê duyệt để đưa vào danh sách môn học chính thức.
+            Xem các yêu cầu mở môn học mới từ gia sư, chuẩn hóa và đưa vào danh mục chính thức.
           </Typography.Paragraph>
         </div>
         <SubjectProposalTable />

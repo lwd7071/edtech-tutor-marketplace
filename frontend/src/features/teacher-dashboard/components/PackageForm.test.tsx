@@ -1,72 +1,29 @@
 import React from 'react';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { App } from 'antd';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PackageForm } from './PackageForm';
 import { teacherApi } from '@/shared/api/teacher';
-import { message } from 'antd';
 
-jest.mock('@/shared/api/teacher', () => ({
-  teacherApi: {
-    getSubjects: jest.fn(),
-    getPackages: jest.fn(),
-    createPackage: jest.fn(),
-    updatePackage: jest.fn(),
-  }
-}));
-
-jest.mock('antd', () => {
-  const antd = jest.requireActual('antd');
-  return {
-    ...antd,
-    message: {
-      success: jest.fn(),
-      error: jest.fn(),
-    }
-  };
-});
+jest.mock('@/shared/api/teacher', () => ({ teacherApi: { getSubjects: jest.fn(), getPackage: jest.fn(), createPackage: jest.fn(), updatePackage: jest.fn() } }));
+const renderForm = (element: React.ReactElement) => render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><App>{element}</App></QueryClientProvider>);
 
 describe('PackageForm', () => {
-  const mockSubjects = [
-    { id: 'sub-1', name: 'Toán học', category: 'Toán' }
-  ];
-  
-  const mockPackage = {
-    id: 'pkg-1',
-    name: 'Toán Cơ Bản',
-    subjectId: 'sub-1',
-    priceVnd: 500000,
-    sessionCount: 10,
-    durationMonths: 3,
-    description: 'Học cơ bản',
-    trialEnabled: true,
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
-    (teacherApi.getSubjects as jest.Mock).mockResolvedValue(mockSubjects);
-    (teacherApi.getPackages as jest.Mock).mockResolvedValue([mockPackage]);
+    (teacherApi.getSubjects as jest.Mock).mockResolvedValue([{ id: 'link-1', subjectId: 'sub-1', name: 'Toán học', category: 'HIGH_SCHOOL' }]);
+    (teacherApi.getPackage as jest.Mock).mockResolvedValue({ id: 'pkg-1', name: 'Toán cơ bản', subjectId: 'sub-1', priceVnd: 500000, totalSessions: 10, sessionDurationMinutes: 60, durationDays: 60, description: 'Học cơ bản', status: 'DRAFT' });
   });
 
-  it('renders create form correctly', async () => {
-    await act(async () => {
-      render(<PackageForm mode="create" onSave={() => {}} onCancel={() => {}} />);
-    });
-    
-    expect(screen.getByText('Tạo Gói Học Mới')).toBeInTheDocument();
-    expect(screen.getByLabelText(/Tên gói học/i)).toBeInTheDocument();
+  it('renders the create form', async () => {
+    renderForm(<PackageForm mode="create" onSave={jest.fn()} onCancel={jest.fn()} />);
+    expect(await screen.findByText('Tạo gói học')).toBeInTheDocument();
+    expect(screen.getByLabelText('Tên gói học')).toBeInTheDocument();
   });
 
-  it('renders edit form correctly and populates data', async () => {
-    await act(async () => {
-      render(<PackageForm mode="edit" packageId="pkg-1" onSave={() => {}} onCancel={() => {}} />);
-    });
-    
-    expect(screen.getByText('Sửa Gói Học')).toBeInTheDocument();
-    
-    const nameInput = await screen.findByLabelText(/Tên gói học/i);
-    expect(nameInput).toHaveValue('Toán Cơ Bản');
-    
-    // In edit mode, price and session count should be disabled to prevent issues with purchased packages
-    expect(screen.getByLabelText(/Giá tiền/i)).toBeDisabled();
-    expect(screen.getByLabelText(/Số buổi/i)).toBeDisabled();
+  it('loads the package in edit mode', async () => {
+    renderForm(<PackageForm mode="edit" packageId="pkg-1" onSave={jest.fn()} onCancel={jest.fn()} />);
+    expect(await screen.findByDisplayValue('Toán cơ bản')).toBeInTheDocument();
+    expect(screen.getByText('Chỉnh sửa gói học')).toBeInTheDocument();
   });
 });

@@ -61,7 +61,7 @@ export const CancelBookingModal: React.FC<CancelBookingModalProps> = ({
       destroyOnHidden
     >
       <Typography.Paragraph>
-        Bạn đang thực hiện hủy buổi học môn <strong>{booking.subject.name}</strong> với học sinh <strong>{booking.student.fullName}</strong>.
+        Bạn đang hủy buổi học môn <strong>{booking.subject.name}</strong> với học viên <strong>{booking.student.fullName}</strong>.
       </Typography.Paragraph>
 
       <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>
@@ -72,8 +72,8 @@ export const CancelBookingModal: React.FC<CancelBookingModalProps> = ({
         onChange={(e) => setInitiatedBy(e.target.value)}
         style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 8 }}
       >
-        <Radio value="STUDENT_REQUEST">Học sinh yêu cầu đổi/hủy lịch</Radio>
-        <Radio value="TEACHER_EMERGENCY">Giáo viên có việc đột xuất</Radio>
+        <Radio value="STUDENT_REQUEST">Học viên yêu cầu đổi hoặc hủy lịch</Radio>
+        <Radio value="TEACHER_EMERGENCY">Gia sư có việc đột xuất</Radio>
       </Radio.Group>
 
       <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>

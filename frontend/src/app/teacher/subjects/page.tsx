@@ -53,14 +53,14 @@ export default function SubjectsPage() {
   };
 
   if (loading) {
-    return <div style={{ textAlign: 'center', padding: '40px' }}><Spin size="large" tip="Đang tải danh sách môn học..." /></div>;
+    return <div style={{ textAlign: 'center', padding: '40px' }}><Spin size="large" description="Đang tải danh sách môn học..." /></div>;
   }
 
   return (
     <div style={{ maxWidth: 880, margin: '0 auto' }}>
       <Title level={2}>Quản lý Môn dạy</Title>
       
-      {error && <Alert type="error" message={error} style={{ marginBottom: 24 }} />}
+      {error && <Alert type="error" title={error} style={{ marginBottom: 24 }} />}
       
       <Card style={{ marginBottom: 24 }}>
         <SubjectSelector onAdd={handleAddSubject} />

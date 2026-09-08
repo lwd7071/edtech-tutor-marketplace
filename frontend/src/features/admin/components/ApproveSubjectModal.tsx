@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Button, message } from 'antd';
+import { Modal, Form, Input, Button, message, Select } from 'antd';
 import { SubjectProposalSnapshot, ApproveSubjectProposalRequest } from '../types';
 import { useApproveSubjectProposal } from '../hooks/useAdminApprovals';
 
@@ -25,8 +25,10 @@ export const ApproveSubjectModal: React.FC<ApproveSubjectModalProps> = ({
   useEffect(() => {
     if (proposal && open) {
       form.setFieldsValue({
+        resolution: 'CREATE_NEW',
+        code: '',
         name: currentName,
-        category: currentCategory,
+        educationLevel: currentCategory as ApproveSubjectProposalRequest['educationLevel'],
         description: proposal.description || '',
       });
     }
@@ -60,11 +62,20 @@ export const ApproveSubjectModal: React.FC<ApproveSubjectModalProps> = ({
         layout="vertical"
         onFinish={handleSubmit}
         initialValues={{
+          resolution: 'CREATE_NEW',
           name: currentName,
-          category: currentCategory,
+          educationLevel: currentCategory,
           description: proposal?.description || '',
         }}
       >
+        <Form.Item name="resolution" hidden><Input /></Form.Item>
+        <Form.Item
+          name="code"
+          label="Mã môn học"
+          rules={[{ required: true, message: 'Vui lòng nhập mã môn học' }, { pattern: /^[A-Z0-9_-]+$/, message: 'Dùng chữ in hoa, số, dấu gạch ngang hoặc gạch dưới' }]}
+        >
+          <Input placeholder="Ví dụ: MATH_12" style={{ textTransform: 'uppercase' }} />
+        </Form.Item>
         <Form.Item
           name="name"
           label="Tên môn học chuẩn hóa"
@@ -74,15 +85,24 @@ export const ApproveSubjectModal: React.FC<ApproveSubjectModalProps> = ({
         </Form.Item>
 
         <Form.Item
-          name="category"
-          label="Danh mục môn học"
-          rules={[{ required: true, message: 'Vui lòng nhập danh mục' }]}
+          name="educationLevel"
+          label="Cấp học"
+          rules={[{ required: true, message: 'Vui lòng chọn cấp học' }]}
         >
-          <Input placeholder="Ví dụ: Toán học" />
+          <Select options={[
+            { value: 'ELEMENTARY', label: 'Tiểu học' },
+            { value: 'MIDDLE_SCHOOL', label: 'THCS' },
+            { value: 'HIGH_SCHOOL', label: 'THPT' },
+            { value: 'UNIVERSITY', label: 'Đại học' },
+            { value: 'OTHER', label: 'Khác' },
+          ]} />
         </Form.Item>
 
         <Form.Item name="description" label="Mô tả môn học">
           <Input.TextArea rows={3} placeholder="Mô tả chương trình học, mục tiêu..." />
+        </Form.Item>
+        <Form.Item name="note" label="Ghi chú cho gia sư">
+          <Input.TextArea rows={2} placeholder="Thông tin cần lưu ý sau khi duyệt" />
         </Form.Item>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>

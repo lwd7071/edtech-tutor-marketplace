@@ -74,7 +74,7 @@ export const UpcomingSessionCard: React.FC<UpcomingSessionCardProps> = ({
   const { isHappeningNow, minutesUntilStart, canJoinMeeting } = getUpcomingBookingFromList([booking]);
   const formattedTime = formatSessionTime(booking.startTime, booking.endTime);
   const subjectTitle = booking.subject?.name || (booking as any).subjectName || 'Buổi học';
-  const teacherName = booking.teacher?.fullName || (booking as any).teacherName || 'Giáo viên';
+  const teacherName = booking.teacher?.fullName || (booking as any).teacherName || 'Gia sư';
   const teacherId = booking.teacher?.id || (booking as any).teacherId || '';
   const meetingHref = getMeetingLink(booking.meetingLink || (booking as any).meetingUrl);
 

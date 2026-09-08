@@ -40,15 +40,14 @@ export function TeacherApprovalTable() {
       ),
     },
     {
-      title: 'Học vấn',
-      dataIndex: 'education',
-      key: 'education',
-      render: (text: string) => text || 'Chưa cập nhật',
+      title: 'Hình thức dạy',
+      key: 'deliveryModes',
+      render: (_: unknown, record: TeacherApprovalSnapshot) => [record.supportsOnline && 'Online', record.supportsOffline && 'Trực tiếp'].filter(Boolean).join(', ') || 'Chưa cập nhật',
     },
     {
       title: 'Kinh nghiệm',
-      dataIndex: 'experienceYears',
-      key: 'experienceYears',
+      dataIndex: 'yearsOfExperience',
+      key: 'yearsOfExperience',
       render: (years: number) => (years ? `${years} năm` : 'Chưa cập nhật'),
     },
     {
@@ -84,7 +83,7 @@ export function TeacherApprovalTable() {
   ];
 
   return (
-    <Card title="Quản lý Phê duyệt Hồ sơ Giáo viên" style={{ width: '100%' }}>
+    <Card title="Quản lý phê duyệt hồ sơ gia sư" style={{ width: '100%' }}>
       <Tabs
         activeKey={selectedStatus}
         onChange={(key) => {
@@ -116,8 +115,8 @@ export function TeacherApprovalTable() {
           <Space direction="vertical" style={{ width: '100%' }}>
             <Typography.Text strong>{record.fullName}</Typography.Text>
             <Typography.Text type="secondary">{record.email}</Typography.Text>
-            <div>Học vấn: {record.education}</div>
-            <div>Kinh nghiệm: {record.experienceYears ? `${record.experienceYears} năm` : 'N/A'}</div>
+            <div>Hình thức: {[record.supportsOnline && 'Online', record.supportsOffline && 'Trực tiếp'].filter(Boolean).join(', ') || 'Chưa cập nhật'}</div>
+            <div>Kinh nghiệm: {record.yearsOfExperience ? `${record.yearsOfExperience} năm` : 'Chưa cập nhật'}</div>
             <Button
               type="primary"
               ghost

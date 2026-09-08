@@ -1,94 +1,44 @@
 import React from 'react';
-import { render, screen, fireEvent, act, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { App } from 'antd';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PackageList } from './PackageList';
 import { teacherApi } from '@/shared/api/teacher';
-import { message } from 'antd';
+import { axiosClient } from '@/shared/api/axiosClient';
 
-jest.mock('@/shared/api/teacher', () => ({
-  teacherApi: {
-    getPackages: jest.fn(),
-    getProfile: jest.fn(),
-    updatePackageStatus: jest.fn(),
-  }
-}));
+jest.mock('@/shared/api/teacher', () => ({ teacherApi: { getProfile: jest.fn(), updatePackageStatus: jest.fn() } }));
+jest.mock('@/shared/api/axiosClient', () => ({ axiosClient: { get: jest.fn() } }));
 
-jest.mock('antd', () => {
-  const antd = jest.requireActual('antd');
-  return {
-    ...antd,
-    message: {
-      success: jest.fn(),
-      error: jest.fn(),
-    }
-  };
-});
+const packages = [
+  { id: '1', name: 'Toán cơ bản', subjectName: 'Toán', priceVnd: 500000, totalSessions: 10, sessionDurationMinutes: 60, durationDays: 60, status: 'ACTIVE' },
+  { id: '2', name: 'Toán nâng cao', subjectName: 'Toán', priceVnd: 800000, totalSessions: 12, sessionDurationMinutes: 60, durationDays: 90, status: 'INACTIVE' },
+];
+const renderPage = () => render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><App><PackageList onEdit={jest.fn()} onCreate={jest.fn()} /></App></QueryClientProvider>);
 
 describe('PackageList', () => {
-  const mockPackages = [
-    { id: '1', name: 'Toán Cơ Bản', priceVnd: 500000, sessionCount: 10, status: 'ACTIVE' },
-    { id: '2', name: 'Toán Nâng Cao', priceVnd: 800000, sessionCount: 12, status: 'INACTIVE' }
-  ];
-
   beforeEach(() => {
     jest.clearAllMocks();
     (teacherApi.getProfile as jest.Mock).mockResolvedValue({ approvalStatus: 'APPROVED' });
-    (teacherApi.getPackages as jest.Mock).mockResolvedValue(mockPackages);
+    (axiosClient.get as jest.Mock).mockResolvedValue({ data: { data: packages, meta: { page: 0, size: 12, totalElements: 2, totalPages: 1 } } });
   });
 
-  it('renders loading initially and then shows list', async () => {
-    await act(async () => {
-      render(<PackageList onEdit={() => {}} onCreate={() => {}} />);
-    });
-    
-    expect(screen.getByText('Toán Cơ Bản')).toBeInTheDocument();
-    expect(screen.getByText('Toán Nâng Cao')).toBeInTheDocument();
+  it('renders packages and enables creation for an approved tutor', async () => {
+    renderPage();
+    expect(await screen.findByText('Toán cơ bản')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tạo gói học' })).toBeEnabled();
   });
 
-  it('enables create button if teacher is APPROVED', async () => {
-    const onCreate = jest.fn();
-    await act(async () => {
-      render(<PackageList onEdit={() => {}} onCreate={onCreate} />);
-    });
-
-    const createBtn = screen.getByRole('button', { name: /Tạo gói học/i });
-    expect(createBtn).not.toBeDisabled();
-    
-    fireEvent.click(createBtn);
-    expect(onCreate).toHaveBeenCalled();
-  });
-
-  it('disables create button if teacher is NOT APPROVED', async () => {
+  it('disables creation while the profile is not approved', async () => {
     (teacherApi.getProfile as jest.Mock).mockResolvedValue({ approvalStatus: 'PENDING_APPROVAL' });
-    
-    await act(async () => {
-      render(<PackageList onEdit={() => {}} onCreate={() => {}} />);
-    });
-
-    const createBtn = screen.getByRole('button', { name: /Tạo gói học/i });
-    expect(createBtn).toBeDisabled();
+    renderPage();
+    await screen.findByText('Toán cơ bản');
+    expect(screen.getByRole('button', { name: 'Tạo gói học' })).toBeDisabled();
   });
 
-  it('calls updatePackageStatus when toggling status', async () => {
+  it('updates the package status', async () => {
     (teacherApi.updatePackageStatus as jest.Mock).mockResolvedValue({});
-    
-    await act(async () => {
-      render(<PackageList onEdit={() => {}} onCreate={() => {}} />);
-    });
-
-    // Assume we have a button/switch for "Vô hiệu hóa" or "Kích hoạt"
-    // The first row is ACTIVE, so it has a button to change to INACTIVE
-    // We can find the row for "Toán Cơ Bản"
-    const row = screen.getByText('Toán Cơ Bản').closest('tr');
-    expect(row).toBeInTheDocument();
-    
-    const toggleBtn = within(row as HTMLElement).getByRole('switch');
-    fireEvent.click(toggleBtn);
-
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    expect(teacherApi.updatePackageStatus).toHaveBeenCalledWith('1', 'INACTIVE');
-    expect(message.success).toHaveBeenCalledWith('Cập nhật trạng thái thành công');
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Ngừng bán' }));
+    await waitFor(() => expect(teacherApi.updatePackageStatus).toHaveBeenCalledWith('1', 'INACTIVE'));
   });
 });

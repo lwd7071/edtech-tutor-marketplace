@@ -16,7 +16,7 @@ export default function CreatePackagePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div style={{ maxWidth: 820, margin: '0 auto' }}>
       <PackageForm mode="create" onSave={handleSave} onCancel={handleCancel} />
     </div>
   );

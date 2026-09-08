@@ -30,7 +30,7 @@ export const AdminRefundsPage: React.FC = () => {
           Hàng đợi Hoàn tiền Học viên
         </Typography.Title>
         <Typography.Text type="secondary" style={{ fontSize: 14 }}>
-          Thẩm định, duyệt và xác nhận hoàn tiền cho học sinh yêu cầu trả gói học
+          Thẩm định, duyệt và xác nhận hoàn tiền cho học viên yêu cầu trả gói học
         </Typography.Text>
       </div>
 

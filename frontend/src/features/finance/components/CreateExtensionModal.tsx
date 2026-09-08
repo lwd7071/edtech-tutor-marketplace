@@ -56,7 +56,7 @@ export const CreateExtensionModal: React.FC<CreateExtensionModalProps> = ({
       confirmLoading={loading}
       onCancel={onCancel}
       onOk={handleOk}
-      destroyOnClose
+      destroyOnHidden
     >
       <div style={{ margin: '16px 0' }}>
         <Alert

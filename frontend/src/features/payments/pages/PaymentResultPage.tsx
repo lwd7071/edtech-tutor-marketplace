@@ -17,7 +17,7 @@ export const PaymentResultPage: React.FC = () => {
   if (isLoading) {
     return (
       <div style={{ textAlign: 'center', padding: '100px 0' }}>
-        <Spin size="large" tip="Đang kiểm tra trạng thái thanh toán..." />
+        <Spin size="large" description="Đang kiểm tra trạng thái thanh toán..." />
       </div>
     );
   }

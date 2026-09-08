@@ -37,6 +37,6 @@ describe('PaymentResultView (TDD)', () => {
     render(<PaymentResultView invoice={expiredInvoice} />);
 
     expect(screen.getByText('Hóa đơn đã hết hạn')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Quay lại/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Về trang chủ/i })).toHaveAttribute('href', '/');
   });
 });

@@ -58,7 +58,7 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
 
       <Descriptions column={1} bordered size="small">
         <Descriptions.Item label="Gia sư">{booking.teacher.fullName}</Descriptions.Item>
-        <Descriptions.Item label="Học sinh">{booking.student.fullName}</Descriptions.Item>
+        <Descriptions.Item label="Học viên">{booking.student.fullName}</Descriptions.Item>
         <Descriptions.Item label="Thời gian">
           {formatSessionTime(booking.startTime, booking.endTime)}
         </Descriptions.Item>
@@ -91,7 +91,7 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
           <div style={{ backgroundColor: 'var(--color-surface-sunken, #F5F3EF)', padding: 16, borderRadius: 'var(--radius-md, 8px)' }}>
             <div style={{ marginBottom: 12 }}>
               <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
-                Đánh giá của giáo viên:
+                Đánh giá của gia sư:
               </Typography.Text>
               <Rate disabled defaultValue={booking.sessionReport.teacherSelfRating} />
             </div>
@@ -107,7 +107,7 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
 
             <div style={{ marginBottom: 12 }}>
               <Typography.Text strong style={{ display: 'block', fontSize: 13 }}>
-                Nhận xét học sinh:
+                Nhận xét học viên:
               </Typography.Text>
               <Typography.Paragraph style={{ margin: 0, fontSize: 14 }}>
                 {booking.sessionReport.feedback}

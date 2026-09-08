@@ -110,7 +110,7 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({
         </Form.Item>
 
         <Form.Item
-          label="Thời gian tối đa để giáo viên xác nhận hoàn thành buổi học"
+          label="Thời gian tối đa để gia sư xác nhận hoàn thành buổi học"
           name="bookingExpirationHours"
           tooltip="Sau khoảng thời gian này kể từ end_time của buổi học nếu không có báo cáo, buổi học sẽ tự động chuyển sang EXPIRED"
           rules={[{ required: true, message: 'Vui lòng nhập số giờ hết hạn' }]}

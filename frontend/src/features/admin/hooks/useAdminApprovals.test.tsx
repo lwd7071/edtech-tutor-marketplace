@@ -29,9 +29,11 @@ function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return ({ children }: { children: React.ReactNode }) => (
+  const TestQueryProvider = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
+  TestQueryProvider.displayName = 'TestQueryProvider';
+  return TestQueryProvider;
 }
 
 describe('Admin Approvals TanStack Hooks (TDD)', () => {
@@ -99,7 +101,7 @@ describe('Admin Approvals TanStack Hooks (TDD)', () => {
     expect(adminApi.getSubjectProposals).toHaveBeenCalledWith(0, 20, 'createdAt,asc');
   });
 
-  it('useApproveSubjectProposal should call approve subject API with category and name', async () => {
+  it('useApproveSubjectProposal should call approve subject API with the backend resolution payload', async () => {
     (adminApi.approveSubjectProposal as jest.Mock).mockResolvedValueOnce({
       data: { proposalId: 'p1', status: 'APPROVED' },
     });
@@ -110,12 +112,14 @@ describe('Admin Approvals TanStack Hooks (TDD)', () => {
 
     await result.current.mutateAsync({
       proposalId: 'p1',
-      data: { name: 'IELTS Academic', category: 'Ngoại ngữ', description: 'Ôn thi IELTS 4 kỹ năng' },
+      data: { resolution: 'CREATE_NEW', code: 'IELTS_ACADEMIC', name: 'IELTS Academic', educationLevel: 'OTHER', description: 'Ôn thi IELTS 4 kỹ năng' },
     });
 
     expect(adminApi.approveSubjectProposal).toHaveBeenCalledWith('p1', {
+      resolution: 'CREATE_NEW',
+      code: 'IELTS_ACADEMIC',
       name: 'IELTS Academic',
-      category: 'Ngoại ngữ',
+      educationLevel: 'OTHER',
       description: 'Ôn thi IELTS 4 kỹ năng',
     });
   });

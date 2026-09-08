@@ -158,7 +158,7 @@ export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
                   <LockOutlined style={{ marginRight: 6, color: 'var(--color-text-tertiary, #8A837B)' }} />
                   Đang xử lý rút
                 </Typography.Text>
-                <Tooltip title="Số tiền đang giữ trong các lệnh rút tiền đang chờ Admin phê duyệt và chuyển khoản.">
+                <Tooltip title="Số tiền đang giữ trong các lệnh rút tiền đang chờ quản trị viên phê duyệt và chuyển khoản.">
                   <InfoCircleOutlined style={{ color: 'var(--color-text-tertiary, #8A837B)' }} />
                 </Tooltip>
               </div>

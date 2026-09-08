@@ -58,7 +58,7 @@ export const CreatePayoutModal: React.FC<CreatePayoutModalProps> = ({
       confirmLoading={loading}
       onCancel={onCancel}
       onOk={handleOk}
-      destroyOnClose
+      destroyOnHidden
     >
       <div style={{ margin: '16px 0' }}>
         <Alert
@@ -68,7 +68,7 @@ export const CreatePayoutModal: React.FC<CreatePayoutModalProps> = ({
           description={
             <div style={{ marginTop: 4 }}>
               Số dư khả dụng hiện tại: <strong style={{ color: 'var(--color-primary-600, #0F766E)' }}>{availableBalanceVnd.toLocaleString('vi-VN')} ₫</strong>.
-              Tiền sẽ được giữ ở trạng thái "Đang rút" cho đến khi Admin duyệt chuyển khoản.
+              Tiền sẽ ở trạng thái &ldquo;Đang rút&rdquo; cho đến khi quản trị viên duyệt chuyển khoản.
             </div>
           }
         />

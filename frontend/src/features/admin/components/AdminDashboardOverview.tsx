@@ -114,7 +114,7 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
                 {stats?.pendingRefundsCount ?? 0} yêu cầu
               </div>
               <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                Yêu cầu từ học sinh cần thẩm định
+                Yêu cầu từ học viên cần thẩm định
               </Typography.Text>
             </div>
           </Card>
@@ -131,7 +131,7 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <Typography.Text type="secondary" style={{ fontSize: 13 }}>
                 <TeamOutlined style={{ marginRight: 6 }} />
-                Giáo viên trên sàn
+                Gia sư trên sàn
               </Typography.Text>
               <div style={{ fontSize: 22, fontWeight: 600 }}>{stats?.totalTeachers ?? 0}</div>
             </div>
@@ -143,7 +143,7 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <Typography.Text type="secondary" style={{ fontSize: 13 }}>
                 <UserOutlined style={{ marginRight: 6 }} />
-                Học sinh trên sàn
+                Học viên trên sàn
               </Typography.Text>
               <div style={{ fontSize: 22, fontWeight: 600 }}>{stats?.totalStudents ?? 0}</div>
             </div>

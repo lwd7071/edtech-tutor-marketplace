@@ -11,14 +11,14 @@ describe('StudentAppLayout (TDD)', () => {
   it('should render sidebar navigation links for student zone', () => {
     render(
       <StudentAppLayout>
-        <div>Content học sinh</div>
+        <div>Nội dung học viên</div>
       </StudentAppLayout>
     );
 
-    expect(screen.getByText('EdTech Student')).toBeInTheDocument();
-    expect(screen.getByText('Gói học của tôi')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /tutor match/i })).toBeInTheDocument();
+    expect(screen.getAllByText('Gói học').length).toBeGreaterThan(0);
     expect(screen.getByText('Lịch học')).toBeInTheDocument();
     expect(screen.getByText('Bài tập')).toBeInTheDocument();
-    expect(screen.getByText('Content học sinh')).toBeInTheDocument();
+    expect(screen.getByText('Nội dung học viên')).toBeInTheDocument();
   });
 });

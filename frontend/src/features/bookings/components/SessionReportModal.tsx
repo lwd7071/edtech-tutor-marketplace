@@ -54,7 +54,7 @@ export const SessionReportModal: React.FC<SessionReportModalProps> = ({
       width={560}
     >
       <Typography.Paragraph type="secondary">
-        Buổi học môn <strong>{booking.subject.name}</strong> với học sinh <strong>{booking.student.fullName}</strong>.
+        Buổi học môn <strong>{booking.subject.name}</strong> với học viên <strong>{booking.student.fullName}</strong>.
       </Typography.Paragraph>
 
       <Form
@@ -73,10 +73,10 @@ export const SessionReportModal: React.FC<SessionReportModalProps> = ({
 
         <Form.Item
           name="feedback"
-          label="Nhận xét học sinh"
-          rules={[{ required: true, message: 'Vui lòng nhập nhận xét học sinh' }]}
+          label="Nhận xét học viên"
+          rules={[{ required: true, message: 'Vui lòng nhập nhận xét học viên' }]}
         >
-          <Input.TextArea rows={3} placeholder="Nhận xét tinh thần, mức độ tiếp thu của học sinh..." />
+          <Input.TextArea rows={3} placeholder="Nhận xét tinh thần và mức độ tiếp thu của học viên..." />
         </Form.Item>
 
         <Form.Item name="followUpNote" label="Dặn dò / Bài tập về nhà">

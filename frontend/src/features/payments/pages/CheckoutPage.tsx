@@ -28,7 +28,7 @@ export const CheckoutPage: React.FC = () => {
   if (isLoading) {
     return (
       <div style={{ textAlign: 'center', padding: '100px 0' }}>
-        <Spin size="large" tip="Đang tải thông tin đơn hàng..." />
+        <Spin size="large" description="Đang tải thông tin đơn hàng..." />
       </div>
     );
   }

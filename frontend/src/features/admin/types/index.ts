@@ -19,8 +19,12 @@ export interface TeacherApprovalSnapshot {
   fullName?: string;
   email?: string;
   bio?: string;
-  education?: string;
-  experienceYears?: number;
+  yearsOfExperience?: number;
+  languages?: string[];
+  supportsOnline?: boolean;
+  supportsOffline?: boolean;
+  locationAddress?: string | null;
+  introductionVideoUrl?: string | null;
   status: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
   rejectionReason?: string | null;
   approvedBy?: string | null;
@@ -67,9 +71,13 @@ export interface RejectRequest {
 }
 
 export interface ApproveSubjectProposalRequest {
-  name: string;
-  category: string;
+  resolution: 'CREATE_NEW' | 'LINK_EXISTING';
+  existingSubjectId?: string;
+  code?: string;
+  name?: string;
+  educationLevel?: 'ELEMENTARY' | 'MIDDLE_SCHOOL' | 'HIGH_SCHOOL' | 'UNIVERSITY' | 'OTHER';
   description?: string;
+  note?: string;
 }
 
 export interface ChangeUserStatusRequest {

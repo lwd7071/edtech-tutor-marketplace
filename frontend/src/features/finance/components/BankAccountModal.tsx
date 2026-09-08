@@ -77,7 +77,7 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
       confirmLoading={loading}
       onCancel={onCancel}
       onOk={handleOk}
-      destroyOnClose
+      destroyOnHidden
     >
       <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
         <Form.Item

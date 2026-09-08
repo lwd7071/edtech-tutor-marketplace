@@ -43,7 +43,7 @@ describe('AvailabilityEditor', () => {
       render(<AvailabilityEditor />);
     });
     
-    expect(screen.getByText(/Lưu ý: Thay đổi lịch rảnh sẽ ảnh hưởng đến các booking sắp tới/i)).toBeInTheDocument();
+    expect(screen.getByText(/Các khung giờ mới chỉ áp dụng cho những lịch học được tạo sau khi bạn lưu/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Lưu lịch rảnh/i })).toBeInTheDocument();
   });
 

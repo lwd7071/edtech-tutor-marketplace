@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Result, Button, Card, Typography, Space } from 'antd';
-import Link from 'next/link';
+import { Result, Card } from 'antd';
 import { InvoiceDetail } from '../types';
 import { formatVnd } from './CheckoutQRView';
+import { ActionLink } from '@/shared/components/navigation/NavigationLinks';
 
 interface PaymentResultViewProps {
   invoice: InvoiceDetail;
@@ -23,14 +23,8 @@ export const PaymentResultView: React.FC<PaymentResultViewProps> = ({ invoice })
             title="Thanh toán thành công!"
             subTitle={`Gói học của bạn đã được kích hoạt. Mã hóa đơn: ${invoice.invoiceNumber}.`}
             extra={[
-              <Link href="/student/packages" key="packages">
-                <Button type="primary" size="large">
-                  Gói học của tôi
-                </Button>
-              </Link>,
-              <Link href="/" key="home">
-                <Button size="large">Về trang chủ</Button>
-              </Link>,
+              <ActionLink href="/student/packages" key="packages">Gói học của tôi</ActionLink>,
+              <ActionLink href="/" variant="secondary" key="home">Về trang chủ</ActionLink>,
             ]}
           >
             <div
@@ -72,11 +66,7 @@ export const PaymentResultView: React.FC<PaymentResultViewProps> = ({ invoice })
             title="Hóa đơn đã hết hạn"
             subTitle={`Hóa đơn ${invoice.invoiceNumber} đã quá thời hạn thanh toán.`}
             extra={[
-              <Link href="/" key="back">
-                <Button type="primary" size="large">
-                  Quay lại
-                </Button>
-              </Link>,
+              <ActionLink href="/" key="back">Về trang chủ</ActionLink>,
             ]}
           />
         </Card>
@@ -95,9 +85,7 @@ export const PaymentResultView: React.FC<PaymentResultViewProps> = ({ invoice })
           title="Giao dịch chưa hoàn thành"
           subTitle={`Trạng thái đơn hàng: ${invoice.status}`}
           extra={[
-            <Link href="/" key="home">
-              <Button type="primary">Về trang chủ</Button>
-            </Link>,
+            <ActionLink href="/" key="home">Về trang chủ</ActionLink>,
           ]}
         />
       </Card>

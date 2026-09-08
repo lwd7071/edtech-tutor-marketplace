@@ -209,7 +209,7 @@ export const StudentRequestsTable: React.FC<StudentRequestsTableProps> = ({
       render: (status: ExtensionStatus) => getExtensionStatusTag(status),
     },
     {
-      title: 'Lý do / Phản hồi Admin',
+      title: 'Lý do / Phản hồi quản trị viên',
       key: 'reason',
       render: (_, record) => {
         const text = record.adminNote || record.reason;

@@ -17,13 +17,13 @@ describe('CheckoutQRView (TDD)', () => {
   };
 
   it('should render invoice details, amount in VND, QR code and payOS button', () => {
-    render(<CheckoutQRView invoice={mockInvoice} />);
+    const { container } = render(<CheckoutQRView invoice={mockInvoice} />);
 
-    expect(screen.getByText(/Thanh toán đơn hàng/i)).toBeInTheDocument();
-    expect(screen.getByText('INV-20260819-000123')).toBeInTheDocument();
+    expect(screen.getByText(/Thanh toán gói học/i)).toBeInTheDocument();
+    expect(screen.getByText(/INV-20260819-000123/)).toBeInTheDocument();
     expect(screen.getByText('1.000.000 ₫')).toBeInTheDocument();
-    expect(screen.getByAltText(/Mã QR Thanh toán/i)).toHaveAttribute('src', 'https://api.vietqr.io/image/test.png');
-    expect(screen.getByRole('link', { name: /Mở cổng thanh toán payOS/i })).toHaveAttribute(
+    expect(container.querySelector('canvas, svg')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Mở trang thanh toán/i })).toHaveAttribute(
       'href',
       'https://pay.payos.vn/web/test'
     );

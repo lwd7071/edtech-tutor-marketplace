@@ -5,7 +5,7 @@ import { TeacherProfileForm } from '@/features/teacher-dashboard/components/Teac
 
 export default function TeacherProfilePage() {
   return (
-    <div className="max-w-3xl mx-auto">
+    <div style={{ maxWidth: 820, margin: '0 auto' }}>
       <TeacherProfileForm />
     </div>
   );

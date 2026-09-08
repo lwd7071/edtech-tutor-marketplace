@@ -16,7 +16,7 @@ export default function TeacherPackagesPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div style={{ maxWidth: 1024, margin: '0 auto' }}>
       <PackageList onCreate={handleCreate} onEdit={handleEdit} />
     </div>
   );

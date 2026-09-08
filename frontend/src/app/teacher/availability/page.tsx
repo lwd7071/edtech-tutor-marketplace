@@ -5,7 +5,7 @@ import { AvailabilityEditor } from '@/features/teacher-dashboard/components/Avai
 
 export default function TeacherAvailabilityPage() {
   return (
-    <div className="max-w-5xl mx-auto">
+    <div style={{ maxWidth: 1024, margin: '0 auto' }}>
       <AvailabilityEditor />
     </div>
   );

@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { Card, Tag, Typography, Button, Space, Alert, Progress, Divider, Row, Col } from 'antd';
-import { ArrowLeftOutlined, CalendarOutlined, ClockCircleOutlined, UserOutlined, BookOutlined } from '@ant-design/icons';
-import Link from 'next/link';
+import { CalendarOutlined, ClockCircleOutlined, UserOutlined, BookOutlined } from '@ant-design/icons';
 import { StudentPackageDetail } from '../types';
 import { SessionCounter } from './SessionCounter';
 import { getPackageStatusConfig, formatVnd, formatDate } from './StudentPackageCard';
+import { BackLink } from '@/shared/components/navigation/NavigationLinks';
 
 interface StudentPackageDetailViewProps {
   packageData: StudentPackageDetail;
@@ -30,11 +30,7 @@ export const StudentPackageDetailView: React.FC<StudentPackageDetailViewProps> =
     <div style={{ maxWidth: 880, margin: '0 auto' }}>
       {/* Header điều hướng & Tiêu đề */}
       <div style={{ marginBottom: 20 }}>
-        <Link href="/student/packages">
-          <Button icon={<ArrowLeftOutlined />} type="text" style={{ paddingLeft: 0, marginBottom: 8 }}>
-            Quay lại danh sách gói học
-          </Button>
-        </Link>
+        <BackLink href="/student/packages">Danh sách gói học</BackLink>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <div>
             <Typography.Title level={2} style={{ margin: 0 }}>
@@ -123,7 +119,7 @@ export const StudentPackageDetailView: React.FC<StudentPackageDetailViewProps> =
             <Space align="start">
               <UserOutlined style={{ fontSize: 18, color: 'var(--color-primary-600, #0F766E)', marginTop: 2 }} />
               <div>
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>Giáo viên đảm nhiệm</Typography.Text>
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>Gia sư phụ trách</Typography.Text>
                 <div><strong>{packageData.teacher.fullName}</strong></div>
               </div>
             </Space>

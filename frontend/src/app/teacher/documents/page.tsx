@@ -44,14 +44,14 @@ export default function DocumentsPage() {
   };
 
   if (loading) {
-    return <div style={{ textAlign: 'center', padding: '40px' }}><Spin size="large" tip="Đang tải tài liệu..." /></div>;
+    return <div style={{ textAlign: 'center', padding: '40px' }}><Spin size="large" description="Đang tải tài liệu..." /></div>;
   }
 
   return (
     <div style={{ maxWidth: 880, margin: '0 auto' }}>
       <Title level={2}>Tài liệu & Chứng chỉ</Title>
       
-      {error && <Alert type="error" message={error} style={{ marginBottom: 24 }} />}
+      {error && <Alert type="error" title={error} style={{ marginBottom: 24 }} />}
       
       <DocumentUploadBox onSuccess={handleUploadSuccess} />
       

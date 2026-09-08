@@ -244,7 +244,7 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
           </Form.Item>
 
           <Form.Item label="Ghi chú admin" name="adminNote">
-            <Input.TextArea rows={2} placeholder="Đã hoàn tiền thành công vào tài khoản học sinh..." />
+            <Input.TextArea rows={2} placeholder="Đã hoàn tiền thành công vào tài khoản học viên..." />
           </Form.Item>
         </Form>
       </Modal>

@@ -18,6 +18,7 @@ export const AvailabilityEditor: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [slots, setSlots] = useState<TimeSlot[]>([]);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const fetchAvailabilities = async () => {
@@ -30,6 +31,7 @@ export const AvailabilityEditor: React.FC = () => {
         }));
         setSlots(mappedSlots);
       } catch (error) {
+        setLoadError(true);
         message.error('Không thể tải lịch rảnh');
       } finally {
         setLoading(false);
@@ -80,24 +82,26 @@ export const AvailabilityEditor: React.FC = () => {
   }
 
   return (
-    <div className="availability-editor bg-surface p-6 rounded-xl border border-border shadow-sm max-w-5xl">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-text-primary">Lịch giảng dạy</h2>
+    <div className="tm-panel tm-stack">
+      <div className="tm-toolbar">
+        <div className="tm-page-heading" style={{ marginBottom: 0 }}><h1>Lịch rảnh giảng dạy</h1><p>Chọn các khung giờ bạn có thể nhận lịch học.</p></div>
         <Button 
           type="primary" 
           icon={<SaveOutlined />} 
           onClick={handleSave} 
           loading={saving}
+          disabled={loadError}
         >
           Lưu lịch rảnh
         </Button>
       </div>
+      {loadError && <Alert title="Chưa tải được lịch rảnh" description="Tải lại trang trước khi chỉnh sửa để tránh ghi đè lịch hiện có." type="error" showIcon />}
       
       <Alert
-        message="Lưu ý: Thay đổi lịch rảnh sẽ ảnh hưởng đến các booking sắp tới. Học viên đã đặt lịch sẽ không bị thay đổi, nhưng các slot mới sẽ được áp dụng ngay lập tức."
+        message="Lịch đã xác nhận không thay đổi"
+        description="Các khung giờ mới chỉ áp dụng cho những lịch học được tạo sau khi bạn lưu."
         type="warning"
         showIcon
-        className="mb-6"
       />
 
       <WeeklyScheduleGrid

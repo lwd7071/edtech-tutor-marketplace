@@ -35,7 +35,7 @@ export const CreateBookingModal: React.FC<CreateBookingModalProps> = ({
     } catch (err: any) {
       const errorCode = err?.response?.data?.errors?.[0]?.code;
       if (errorCode === 'BOOKING_TIME_CONFLICT') {
-        message.error('Trùng lịch! Giáo viên hoặc học sinh đã có lịch học trong khung giờ này.');
+        message.error('Trùng lịch: gia sư hoặc học viên đã có buổi học trong khung giờ này.');
       } else {
         message.error('Không thể đặt lịch học. Vui lòng kiểm tra lại thông tin.');
       }

@@ -79,7 +79,7 @@ export const CreateRefundModal: React.FC<CreateRefundModalProps> = ({
       confirmLoading={loading}
       onCancel={onCancel}
       onOk={handleOk}
-      destroyOnClose
+      destroyOnHidden
     >
       <div style={{ margin: '16px 0' }}>
         <Alert
@@ -89,7 +89,7 @@ export const CreateRefundModal: React.FC<CreateRefundModalProps> = ({
           description={
             <div style={{ marginTop: 4 }}>
               Số buổi chưa học còn lại: <strong>{remainingSessions} buổi</strong>.
-              Khi gửi yêu cầu hoàn tiền, gói học sẽ chuyển sang trạng thái "Đang xử lý hoàn tiền" và tạm khóa chức năng đặt lịch học mới.
+              Khi gửi yêu cầu hoàn tiền, gói học sẽ chuyển sang trạng thái &ldquo;Đang xử lý hoàn tiền&rdquo; và tạm khóa chức năng đặt lịch học mới.
             </div>
           }
         />

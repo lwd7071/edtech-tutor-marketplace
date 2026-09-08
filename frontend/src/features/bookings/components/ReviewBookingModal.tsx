@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, Button, message, Rate } from 'antd';
 import { bookingApi } from '@/features/bookings/api/bookingApi';
+import { parseApiError } from '@/shared/api/types';
 
 interface ReviewBookingModalProps {
   bookingId: string;
@@ -33,8 +34,8 @@ export const ReviewBookingModal: React.FC<ReviewBookingModalProps> = ({
           message.success('Cảm ơn bạn đã đánh giá buổi học!');
           form.resetFields();
           onSuccess();
-        } catch (error: any) {
-          message.error(error?.response?.data?.message || 'Có lỗi xảy ra khi gửi đánh giá');
+        } catch (error) {
+          message.error(parseApiError(error).message || 'Có lỗi xảy ra khi gửi đánh giá');
         } finally {
           setLoading(false);
         }
@@ -44,17 +45,17 @@ export const ReviewBookingModal: React.FC<ReviewBookingModalProps> = ({
 
   return (
     <Modal
-      title={`Đánh giá giáo viên ${teacherName}`}
+      title={`Đánh giá gia sư ${teacherName}`}
       open={visible}
       onCancel={onCancel}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
     >
       <Form
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        className="mt-4"
+        style={{ marginTop: 16 }}
         initialValues={{ rating: 5 }}
       >
         <Form.Item
@@ -62,7 +63,7 @@ export const ReviewBookingModal: React.FC<ReviewBookingModalProps> = ({
           label="Chất lượng buổi học"
           rules={[{ required: true, message: 'Vui lòng chọn số sao đánh giá' }]}
         >
-          <Rate className="text-2xl text-yellow-500" />
+          <Rate style={{ fontSize: 24, color: '#f59e0b' }} />
         </Form.Item>
 
         <Form.Item
@@ -78,7 +79,7 @@ export const ReviewBookingModal: React.FC<ReviewBookingModalProps> = ({
           />
         </Form.Item>
 
-        <div className="flex justify-end gap-3 mt-6">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 24 }}>
           <Button onClick={onCancel} disabled={loading}>
             Hủy
           </Button>
