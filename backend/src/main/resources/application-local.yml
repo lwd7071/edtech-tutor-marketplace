@@ -19,5 +19,12 @@ spring:
     open-in-view: false
 
 app:
+  email:
+    provider: logging
   jwt:
     secret: ${APP_JWT_SECRET:local-dev-only-secret-change-before-sharing-32chars}
+
+management:
+  health:
+    mail:
+      enabled: false

@@ -49,11 +49,9 @@ build/
 **/application-override.yml
 **/application-*.local.yml
 **/application-*.local.properties
-application-local.yml
 application-local.properties
 
 # Local environment configs
-backend/src/main/resources/application-local.yml
 
 # JDK and Maven local installations
 jdk21/
