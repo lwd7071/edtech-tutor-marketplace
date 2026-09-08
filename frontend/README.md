@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tutor Match Frontend
 
-## Getting Started
+Frontend của nền tảng kết nối học viên với gia sư 1-1. Cấu trúc giao diện, danh sách trang và phân quyền nằm tại [`docs/planning/SPEC-FE.md`](../docs/planning/SPEC-FE.md).
 
-First, run the development server:
+## Công nghệ
+
+- Next.js 16 App Router, React 19 và TypeScript
+- Ant Design 6
+- TanStack Query, Axios và Zustand
+- STOMP.js cho chat realtime
+- Jest và Testing Library
+
+## Chạy dự án
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Mở `http://localhost:3000`. Backend mặc định chạy tại `http://localhost:8080`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_WS_URL=ws://localhost:8080/ws
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Hai biến trên là tùy chọn. WebSocket mặc định dùng `/ws` trên host hiện tại.
 
-## Learn More
+## Kiểm tra trước khi bàn giao
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+npx tsc --noEmit
+npm test
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Baseline hiện tại: 96 test suites, 245 tests và 54 routes build thành công.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Cấu trúc
 
-## Deploy on Vercel
+```text
+src/
+├── app/          Route, layout và guard theo vai trò
+├── features/     Nghiệp vụ theo domain
+└── shared/       API client, component, store và tiện ích dùng chung
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Các domain chính gồm `auth`, `marketplace`, `teacher-dashboard`, `student-packages`, `bookings`, `learning`, `chat`, `notifications`, `payments`, `finance`, `ranking` và `admin`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Quy ước
+
+- Page trong `app` chỉ ghép layout, guard và feature component; nghiệp vụ đặt trong `features`.
+- API dùng `shared/api/axiosClient.ts`; không tạo Axios client riêng trong component.
+- DTO và payload phải khớp Backend. Không dùng dữ liệu giả để che response thiếu trường.
+- Trang lấy dữ liệu phải có loading, error/retry và empty state.
+- UI ẩn hành động sai quyền; route vẫn phải có guard khi truy cập URL trực tiếp.
+- Chỉ điều hướng `referenceUrl` từ Backend khi là đường dẫn nội bộ bắt đầu bằng `/`.
+- Nội dung dùng thống nhất: **gia sư**, **học viên**, **quản trị viên**.
+- Public/student ưu tiên mobile; teacher/admin ưu tiên desktop nhưng vẫn phải dùng được trên màn hình nhỏ.
+
+## Tài liệu nguồn
+
+- [Đặc tả Frontend](../docs/planning/SPEC-FE.md)
+- [API contract](../docs/architecture/API_CONTRACT.md)
+- [Mã lỗi](../docs/architecture/ERROR_CODES.md)
+- [Thiết lập toàn dự án](../docs/guidelines/SETUP.md)
+- [Coding convention](../docs/guidelines/CODING_CONVENTION.md)
