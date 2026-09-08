@@ -2,12 +2,12 @@ name: Backend CI
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ main, dev ]
     paths:
       - 'backend/**'
       - '.github/workflows/backend-ci.yml'
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [ main, dev ]
     paths:
       - 'backend/**'
       - '.github/workflows/backend-ci.yml'
@@ -41,7 +41,7 @@ jobs:
 
       - name: Run Maven Tests with Testcontainers
         working-directory: backend
-        run: mvn clean test -B -Dfile.encoding=UTF-8
+        run: mvn clean verify -B --no-transfer-progress -Dfile.encoding=UTF-8
 
       - name: Upload Test Results
         if: always()
@@ -70,4 +70,5 @@ jobs:
           file: ./backend/Dockerfile
           push: false
           tags: edtech-api:latest
+
 
