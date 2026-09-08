@@ -21,13 +21,13 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    @DisplayName("Tất cả 23 file migration V1-V23 phải được apply và validate thành công")
+    @DisplayName("Tất cả 25 file migration V1-V25 phải được apply và validate thành công")
     void flyway_shouldApplyAllMigrationsSuccessfully() {
         assertThat(flyway).isNotNull();
         MigrationInfo[] appliedMigrations = flyway.info().applied();
 
         assertThat(appliedMigrations)
-                .hasSize(23)
+                .hasSize(25)
                 .allSatisfy(info -> {
                     assertThat(info.getState().isApplied()).isTrue();
                     assertThat(info.getVersion()).isNotNull();

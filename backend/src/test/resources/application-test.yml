@@ -25,6 +25,9 @@ app:
     refresh-expiration-ms: 604800000
 
 management:
+  health:
+    mail:
+      enabled: false
   endpoints:
     web:
       exposure:

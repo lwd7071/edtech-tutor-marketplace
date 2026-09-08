@@ -5,19 +5,20 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "app.email.provider", havingValue = "logging")
 public class LoggingEmailService implements EmailService {
     @Override
     public void sendVerificationEmail(String email, String token) {
-        log.info("Đã gửi email tới {}", email);
+        log.info("Email verification requested (logging provider; no email sent)");
     }
 
     @Override
     public void sendPasswordResetEmail(String email, String token) {
-        log.info("Đã gửi email tới {}", email);
+        log.info("Password reset requested (logging provider; no email sent)");
     }
 
     @Override
     public void sendNotificationEmail(String to, String subject, String content) {
-        log.info("Đã gửi email thông báo tới {}: [{}] {}", to, subject, content);
+        log.info("Notification email requested (logging provider; no email sent)");
     }
 }

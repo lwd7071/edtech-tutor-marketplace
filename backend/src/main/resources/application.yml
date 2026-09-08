@@ -32,9 +32,12 @@ spring:
     properties:
       mail:
         smtp:
-          auth: false
+          auth: ${SPRING_MAIL_SMTP_AUTH:false}
+          connectiontimeout: 3000
+          timeout: 5000
+          writetimeout: 5000
           starttls:
-            enable: false
+            enable: ${SPRING_MAIL_STARTTLS_ENABLE:false}
 
   # --- Security OAuth2 ---
   security:
@@ -62,6 +65,10 @@ server:
 
 # --- Custom App Configuration ---
 app:
+  email:
+    provider: ${APP_EMAIL_PROVIDER:smtp}
+    from: ${APP_EMAIL_FROM:noreply@tutormatch.local}
+    frontend-url: ${APP_FRONTEND_URL:http://localhost:3000}
   jwt:
     secret: ${APP_JWT_SECRET}
     access-expiration-ms: 900000
