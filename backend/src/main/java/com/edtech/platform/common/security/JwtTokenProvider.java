@@ -3,7 +3,7 @@ package com.edtech.platform.common.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import com.edtech.platform.common.config.properties.JwtProperties;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -17,11 +17,9 @@ public class JwtTokenProvider {
     private final SecretKey key;
     private final long accessExpirationMs;
 
-    public JwtTokenProvider(
-            @Value("${app.jwt.secret}") String secret,
-            @Value("${app.jwt.access-expiration-ms}") long accessExpirationMs) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.accessExpirationMs = accessExpirationMs;
+    public JwtTokenProvider(JwtProperties properties) {
+        this.key = Keys.hmacShaKeyFor(properties.secret().getBytes(StandardCharsets.UTF_8));
+        this.accessExpirationMs = properties.accessExpirationMs();
     }
 
     public String generateAccessToken(AuthenticatedUser user) {

@@ -1,11 +1,11 @@
 package com.edtech.platform.auth.security;
 
+import com.edtech.platform.common.config.properties.OAuthProperties;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -19,9 +19,8 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
     private static final Logger log = LoggerFactory.getLogger(OAuth2AuthenticationFailureHandler.class);
     private final String frontendRedirectUri;
 
-    public OAuth2AuthenticationFailureHandler(
-            @Value("${app.oauth2.frontend-redirect-uri:http://localhost:3000/oauth2/callback}") String frontendRedirectUri) {
-        this.frontendRedirectUri = frontendRedirectUri;
+    public OAuth2AuthenticationFailureHandler(OAuthProperties properties) {
+        this.frontendRedirectUri = properties.frontendRedirectUri().toString();
     }
 
     @Override

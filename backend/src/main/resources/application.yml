@@ -42,7 +42,7 @@ spring:
           timeout: 5000
           writetimeout: 5000
           starttls:
-            enable: ${SPRING_MAIL_STARTTLS_ENABLE:false}
+            enable: ${SPRING_MAIL_STARTTLS_ENABLE:${SPRING_MAIL_SMTP_STARTTLS_ENABLE:false}}
 
   # --- Security OAuth2 ---
   security:
@@ -75,6 +75,7 @@ app:
     provider: ${APP_EMAIL_PROVIDER:smtp}
     from: ${APP_EMAIL_FROM:noreply@tutormatch.local}
     frontend-url: ${APP_FRONTEND_URL:http://localhost:3000}
+    poll-delay-ms: ${APP_EMAIL_POLL_DELAY_MS:10000}
   jwt:
     secret: ${APP_JWT_SECRET}
     access-expiration-ms: 900000
@@ -93,6 +94,9 @@ app:
     base-url: ${PAYOS_BASE_URL:https://api-merchant.payos.vn}
     connect-timeout: ${PAYOS_CONNECT_TIMEOUT:3s}
     read-timeout: ${PAYOS_READ_TIMEOUT:10s}
+  finance:
+    account-encryption:
+      key: ${EDTECH_ACCOUNT_ENCRYPTION_KEY:01234567890123456789012345678901}
 
 # --- Resilience4j Configuration ---
 resilience4j.circuitbreaker:
@@ -116,12 +120,6 @@ management:
       exposure:
         include: "*"
       base-path: /actuator
-
-logging:
-  pattern:
-    console: "%d{HH:mm:ss.SSS} %-5level [%X{requestId:-startup}] %logger{36} - %msg%n"
-  level:
-    org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport: WARN
   endpoint:
     health:
       show-details: always
@@ -141,4 +139,10 @@ logging:
     distribution:
       percentiles-histogram:
         http.server.requests: true
+
+logging:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{requestId:-startup}] %logger{36} - %msg%n"
+  level:
+    org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport: WARN
 

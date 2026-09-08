@@ -3,9 +3,9 @@ package com.edtech.platform.auth.security;
 import com.edtech.platform.auth.domain.User;
 import com.edtech.platform.auth.repository.UserRepository;
 import com.edtech.platform.auth.service.RedisTokenService;
+import com.edtech.platform.common.config.properties.OAuthProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -28,10 +28,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     public OAuth2AuthenticationSuccessHandler(UserRepository userRepository,
                                               RedisTokenService redisTokenService,
-                                              @Value("${app.oauth2.frontend-redirect-uri:http://localhost:3000/oauth2/callback}") String frontendRedirectUri) {
+                                              OAuthProperties properties) {
         this.userRepository = userRepository;
         this.redisTokenService = redisTokenService;
-        this.frontendRedirectUri = frontendRedirectUri;
+        this.frontendRedirectUri = properties.frontendRedirectUri().toString();
     }
 
     @Override

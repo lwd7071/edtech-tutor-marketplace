@@ -1,9 +1,9 @@
 package com.edtech.platform.common.config;
 
+import com.edtech.platform.common.config.properties.CorsProperties;
 import com.edtech.platform.common.security.JwtAuthenticationFilter;
 import com.edtech.platform.common.security.RestAccessDeniedHandler;
 import com.edtech.platform.common.security.RestAuthenticationEntryPoint;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.edtech.platform.auth.security.OAuth2AuthenticationSuccessHandler;
@@ -18,7 +18,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -31,21 +30,21 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RestAuthenticationEntryPoint authenticationEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
-
-    @Value("${app.cors.allowed-origins}")
-    private String allowedOrigins;
+    private final CorsProperties corsProperties;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             RestAuthenticationEntryPoint authenticationEntryPoint,
             RestAccessDeniedHandler accessDeniedHandler,
             OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
-            OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler) {
+            OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler,
+            CorsProperties corsProperties) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
         this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
         this.oAuth2AuthenticationFailureHandler = oAuth2AuthenticationFailureHandler;
+        this.corsProperties = corsProperties;
     }
 
     @Bean
@@ -85,14 +84,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        List<String> origins = Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim).filter(s -> !s.isBlank()).toList();
-        if (origins.contains("*")) {
-            throw new IllegalStateException("Wildcard CORS origin is forbidden; configure explicit origins");
-        }
-        configuration.setAllowedOrigins(origins);
+        configuration.setAllowedOrigins(corsProperties.allowedOrigins());
         
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         
