@@ -5,7 +5,7 @@ import { TeacherStatsOverview } from '@/features/ranking/components/TeacherStats
 
 export default function TeacherStatsPage() {
   return (
-    <div className="max-w-7xl mx-auto">
+    <div style={{ maxWidth: 1120, margin: '0 auto' }}>
       <TeacherStatsOverview />
     </div>
   );

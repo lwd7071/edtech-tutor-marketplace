@@ -34,6 +34,7 @@ public class TeacherStatsService {
     private final PlatformSettingsFacade platformSettingsFacade;
     private final BookingEligibilityFacade bookingEligibilityFacade;
     private final ReviewRepository reviewRepository;
+    private final com.edtech.platform.enrollment.facade.EnrollmentFacade enrollmentFacade;
     
     private final org.springframework.cache.CacheManager cacheManager;
 
@@ -78,7 +79,7 @@ public class TeacherStatsService {
         });
     }
 
-    @Transactional
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public void recalculateTeacherStats(UUID teacherId) {
         log.info("Recalculating TeacherStats for teacher {}", teacherId);
         // 1. Get configuration
@@ -101,7 +102,7 @@ public class TeacherStatsService {
         int trialSessions = bookingStats.trialSessions();
         
         double completionRate = totalSessions > 0 ? (double) completedSessions / totalSessions : 0.0;
-        double trialConversionRate = 0.0; 
+        double trialConversionRate = TrialConversion.calculate(bookingEligibilityFacade.firstCompletedTrials(teacherId), enrollmentFacade.latestPurchaseTimes(teacherId));
 
         TeacherStats stats = teacherStatsRepository.findByTeacherId(teacherId).orElse(TeacherStats.builder().teacherId(teacherId).build());
         stats.setAverageRating(java.math.BigDecimal.valueOf(r).setScale(2, java.math.RoundingMode.HALF_UP));

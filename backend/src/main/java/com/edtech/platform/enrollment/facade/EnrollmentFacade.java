@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface EnrollmentFacade {
+    java.util.Map<UUID, java.time.Instant> latestPurchaseTimes(UUID teacherId);
     
     /**
      * Checks if a valid learning relationship exists between a teacher and a student.

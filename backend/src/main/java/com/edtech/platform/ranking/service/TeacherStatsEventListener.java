@@ -16,6 +16,11 @@ public class TeacherStatsEventListener {
     private final TeacherStatsService teacherStatsService;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onPayment(com.edtech.platform.common.event.payment.PaymentSucceededEvent event) {
+        teacherStatsService.recalculateTeacherStats(event.getTeacherId());
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onReviewCreated(ReviewCreatedEvent event) {
         log.info("Received ReviewCreatedEvent for teacher: {}", event.getTeacherId());
         teacherStatsService.recalculateTeacherStats(event.getTeacherId());

@@ -19,6 +19,14 @@ public class EnrollmentFacadeImpl implements EnrollmentFacade {
     private final com.edtech.platform.enrollment.repository.StudentPackageRepository studentPackageRepository;
 
     @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public java.util.Map<UUID, java.time.Instant> latestPurchaseTimes(UUID teacherId) {
+        var result = new java.util.HashMap<UUID, java.time.Instant>();
+        for (var row : studentPackageRepository.latestPurchaseTimes(teacherId)) result.put((UUID) row[0], (java.time.Instant) row[1]);
+        return result;
+    }
+
+    @Override
     public boolean hasValidRelationship(UUID teacherId, UUID studentId) {
         return studentPackageRepository.existsByTeacherIdAndStudentIdAndStatusInAndDeletedFalse(
                 teacherId,

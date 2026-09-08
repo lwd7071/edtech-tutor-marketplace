@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface StudentPackageRepository extends JpaRepository<StudentPackage, UUID> {
+    @Query("select p.studentId, max(p.startsAt) from StudentPackage p where p.teacherId=:teacherId and p.deleted=false group by p.studentId")
+    java.util.List<Object[]> latestPurchaseTimes(UUID teacherId);
     Page<StudentPackage> findByTeacherId(UUID teacherId, Pageable pageable);
     Page<StudentPackage> findByTeacherIdAndStudentId(UUID teacherId, UUID studentId, Pageable pageable);
     @Lock(LockModeType.PESSIMISTIC_WRITE)

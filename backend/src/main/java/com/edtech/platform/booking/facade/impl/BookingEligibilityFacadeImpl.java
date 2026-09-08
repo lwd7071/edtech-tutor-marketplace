@@ -24,6 +24,16 @@ public class BookingEligibilityFacadeImpl implements BookingEligibilityFacade {
 
     @Override
     @Transactional(readOnly = true)
+    public java.util.Map<UUID, java.time.Instant> firstCompletedTrials(UUID teacherId) {
+        var result = new java.util.HashMap<UUID, java.time.Instant>();
+        for (var row : bookingRepository.firstCompletedTrials(teacherId)) {
+            if (row[1] != null) result.put((UUID) row[0], (java.time.Instant) row[1]);
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<UUID> getTeacherIdForReviewableBooking(UUID studentId, UUID bookingId) {
         return bookingRepository.findById(bookingId)
                 .filter(b -> b.getStatus() == BookingStatus.COMPLETED && studentId.equals(b.getStudentId()))

@@ -162,7 +162,7 @@ export const RankingLeaderboard: React.FC = () => {
           <Card 
             key={record.teacherId} 
             className={`shadow-sm rounded-xl border ${record.globalRank <= 3 ? 'border-orange-200 bg-orange-50/30' : 'border-border'}`}
-            bodyStyle={{ padding: '16px' }}
+            styles={{ body: { padding: '16px' } }}
             onClick={() => router.push(`/teachers/${record.teacherId}`)}
           >
             <div className="flex items-start gap-4">

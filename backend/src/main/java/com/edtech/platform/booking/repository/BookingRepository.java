@@ -1,6 +1,8 @@
 package com.edtech.platform.booking.repository;
 import com.edtech.platform.booking.domain.*; import org.springframework.data.domain.*; import org.springframework.data.jpa.repository.*; import org.springframework.data.repository.query.Param; import jakarta.persistence.LockModeType; import java.util.*;
 public interface BookingRepository extends JpaRepository<Booking,UUID> {
+ @Query("select b.studentId, min(b.completedAt) from Booking b where b.teacherId=:teacherId and b.trial=true and b.status=com.edtech.platform.booking.domain.BookingStatus.COMPLETED and b.deleted=false group by b.studentId")
+ java.util.List<Object[]> firstCompletedTrials(UUID teacherId);
  @Query("select b from Booking b where b.teacherId=:teacherId and (:status is null or b.status=:status) and (:from is null or b.startTime>=:from) and (:to is null or b.startTime<:to)") Page<Booking> findTeacher(UUID teacherId, BookingStatus status, java.time.Instant from, java.time.Instant to, Pageable pageable);
  @Query("select b from Booking b where b.studentId=:studentId and (:status is null or b.status=:status) and (:from is null or b.startTime>=:from) and (:to is null or b.startTime<:to)") Page<Booking> findStudent(UUID studentId, BookingStatus status, java.time.Instant from, java.time.Instant to, Pageable pageable);
  @Lock(LockModeType.PESSIMISTIC_WRITE) @Query("select b from Booking b where b.id=:id") Optional<Booking> findByIdForUpdate(UUID id);
