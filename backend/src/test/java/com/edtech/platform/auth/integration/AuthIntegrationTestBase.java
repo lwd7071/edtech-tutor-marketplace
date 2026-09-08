@@ -1,6 +1,6 @@
 package com.edtech.platform.auth.integration;
 
-import com.edtech.platform.auth.service.EmailService;
+import com.edtech.platform.mail.MailService;
 import com.edtech.platform.common.AbstractIntegrationTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -11,7 +11,7 @@ import org.springframework.test.context.DynamicPropertySource;
 public abstract class AuthIntegrationTestBase extends AbstractIntegrationTest {
 
     @MockBean
-    protected EmailService emailService;
+    protected MailService emailService;
 
     @DynamicPropertySource
     static void configureAuthProperties(DynamicPropertyRegistry registry) {

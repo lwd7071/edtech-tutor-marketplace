@@ -15,6 +15,7 @@ import com.edtech.platform.common.security.JwtTokenProvider;
 import com.edtech.platform.common.security.RateLimiterService;
 import com.edtech.platform.auth.event.UserRegisteredEvent;
 import com.edtech.platform.common.security.UserStatusCacheService;
+import com.edtech.platform.mail.MailService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,7 +43,7 @@ public class AuthService {
     private final ApplicationEventPublisher eventPublisher;
     private final RedisTokenService redisTokenService;
     private final RateLimiterService rateLimiterService;
-    private final EmailService emailService;
+    private final MailService emailService;
     private final UserStatusCacheService userStatusCache;
     private final long accessTokenExpirationMs;
     private final long refreshTokenExpirationMs;
@@ -54,7 +55,7 @@ public class AuthService {
                        ApplicationEventPublisher eventPublisher,
                        RedisTokenService redisTokenService,
                        RateLimiterService rateLimiterService,
-                       EmailService emailService,
+                       MailService emailService,
                        UserStatusCacheService userStatusCache,
                        @Value("${app.jwt.access-expiration-ms:900000}") long accessTokenExpirationMs,
                        @Value("${app.jwt.refresh-expiration-ms:604800000}") long refreshTokenExpirationMs) {

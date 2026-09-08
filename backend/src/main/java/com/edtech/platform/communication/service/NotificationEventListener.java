@@ -1,7 +1,7 @@
 package com.edtech.platform.communication.service;
 
 import com.edtech.platform.auth.facade.IdentityFacade;
-import com.edtech.platform.auth.service.EmailService;
+import com.edtech.platform.mail.MailService;
 import com.edtech.platform.common.event.booking.BookingCompletedEvent;
 import com.edtech.platform.common.event.booking.BookingCreatedEvent;
 import com.edtech.platform.common.event.payment.PaymentSucceededEvent;
@@ -18,7 +18,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class NotificationEventListener {
 
     private final NotificationService notificationService;
-    private final EmailService emailService;
+    private final MailService emailService;
     private final IdentityFacade identityFacade;
     private final com.edtech.platform.teacher.facade.TeacherFacade teacherFacade;
 
