@@ -22,6 +22,8 @@ describe('RegisterPage', () => {
     expect(screen.getByText('Đăng ký tài khoản')).toBeInTheDocument();
     expect(screen.getByText('Học viên / Phụ huynh')).toBeInTheDocument();
     expect(screen.getByText('Gia sư')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Đăng ký bằng Google/i }))
+      .toHaveAttribute('href', 'http://localhost:8080/oauth2/authorization/google');
   });
 
   it('shows validation error for weak password', async () => {

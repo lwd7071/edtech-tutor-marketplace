@@ -6,13 +6,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import RadioCard from '@/shared/components/ui/RadioCard';
+import { roleHome } from '@/shared/lib/navigation';
 
 const { Title, Text } = Typography;
 
 function OAuthRoleContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tempToken = searchParams.get('tempToken');
+  const registrationToken = searchParams.get('registrationToken');
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const [role, setRole] = useState<'STUDENT' | 'TEACHER'>('STUDENT');
@@ -20,7 +21,7 @@ function OAuthRoleContent() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const onSubmit = async () => {
-    if (!tempToken) {
+    if (!registrationToken) {
       setErrorMsg('Token không hợp lệ. Vui lòng đăng nhập lại.');
       return;
     }
@@ -29,12 +30,12 @@ function OAuthRoleContent() {
       setLoading(true);
       setErrorMsg(null);
       
-      const payload = { tempToken, role };
+      const payload = { registrationToken, role };
       const res = await authApi.completeOAuthRegistration(payload);
       
       if (res.data) {
         setAuth(res.data.user, res.data.accessToken, res.data.refreshToken, true);
-        router.push('/');
+        router.push(roleHome(res.data.user.role));
       }
     } catch (error: any) {
       setErrorMsg(error.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại sau.');

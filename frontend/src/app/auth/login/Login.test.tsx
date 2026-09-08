@@ -25,6 +25,8 @@ describe('LoginPage', () => {
     expect(screen.getByRole('heading', { name: 'Đăng nhập' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Nhập email của bạn')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Nhập mật khẩu')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Đăng nhập bằng Google/i }))
+      .toHaveAttribute('href', 'http://localhost:8080/oauth2/authorization/google');
   });
 
   it('shows validation errors for empty fields', async () => {

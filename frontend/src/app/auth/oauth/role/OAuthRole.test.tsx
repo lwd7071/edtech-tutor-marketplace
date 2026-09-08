@@ -51,10 +51,10 @@ describe('OAuthRolePage', () => {
 
     await waitFor(() => {
       expect(authApi.completeOAuthRegistration).toHaveBeenCalledWith({
-        tempToken: 'mock-temp-token',
+        registrationToken: 'mock-temp-token',
         role: 'TEACHER'
       });
-      expect(mockPush).toHaveBeenCalledWith('/');
+      expect(mockPush).toHaveBeenCalledWith('/student');
     });
   });
 

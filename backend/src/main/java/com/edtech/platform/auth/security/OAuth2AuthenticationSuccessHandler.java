@@ -10,6 +10,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
@@ -17,6 +19,8 @@ import java.util.Optional;
 
 @Component
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(OAuth2AuthenticationSuccessHandler.class);
 
     private final UserRepository userRepository;
     private final RedisTokenService redisTokenService;
@@ -39,6 +43,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String provider = "GOOGLE";
 
         if (email == null) {
+            log.warn("Google OAuth rejected because provider response has no email");
             getRedirectStrategy().sendRedirect(request, response, frontendRedirectUri + "?error=AUTH_OAUTH_LINK_NOT_ALLOWED");
             return;
         }
@@ -48,12 +53,15 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (provider.equals(user.getOauthProvider()) && subject.equals(user.getOauthSubject())) {
+                log.info("Google OAuth login succeeded for userId={}", user.getId());
                 String exchangeCode = redisTokenService.issue(RedisTokenService.Purpose.OAUTH_LOGIN_EXCHANGE, user.getId().toString());
                 getRedirectStrategy().sendRedirect(request, response, frontendRedirectUri + "?exchangeCode=" + exchangeCode);
             } else {
+                log.warn("Google OAuth account link rejected for existing userId={}", user.getId());
                 getRedirectStrategy().sendRedirect(request, response, frontendRedirectUri + "?error=AUTH_OAUTH_LINK_NOT_ALLOWED");
             }
         } else {
+            log.info("Google OAuth registration requires role selection");
             Map<String, String> payload = Map.of(
                     "email", email,
                     "oauthProvider", provider,

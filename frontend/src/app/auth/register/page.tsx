@@ -9,6 +9,7 @@ import { GoogleOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
+import { BASE_API_URL } from '@/shared/api/axiosClient';
 import RadioCard from '@/shared/components/ui/RadioCard';
 
 const { Title, Text } = Typography;
@@ -196,7 +197,13 @@ export default function RegisterPage() {
 
       <Divider plain>Hoặc</Divider>
 
-      <Button size="large" block icon={<GoogleOutlined />} style={{ marginBottom: 'var(--space-6)' }}>
+      <Button
+        size="large"
+        block
+        icon={<GoogleOutlined />}
+        href={`${BASE_API_URL}/oauth2/authorization/google`}
+        style={{ marginBottom: 'var(--space-6)' }}
+      >
         Đăng ký bằng Google
       </Button>
 

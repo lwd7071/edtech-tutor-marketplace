@@ -9,6 +9,7 @@ import { GoogleOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
+import { BASE_API_URL } from '@/shared/api/axiosClient';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { ErrorState } from '@/shared/components/feedback/ErrorState';
 import { roleHome, safeReturnTo } from '@/shared/lib/navigation';
@@ -159,7 +160,13 @@ function LoginForm() {
 
       <Divider plain>Hoặc</Divider>
 
-      <Button size="large" block icon={<GoogleOutlined />} style={{ marginBottom: 'var(--space-6)' }}>
+      <Button
+        size="large"
+        block
+        icon={<GoogleOutlined />}
+        href={`${BASE_API_URL}/oauth2/authorization/google`}
+        style={{ marginBottom: 'var(--space-6)' }}
+      >
         Đăng nhập bằng Google
       </Button>
 
