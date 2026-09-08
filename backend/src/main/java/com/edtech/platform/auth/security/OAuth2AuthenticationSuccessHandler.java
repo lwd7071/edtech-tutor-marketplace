@@ -1,6 +1,6 @@
 package com.edtech.platform.auth.security;
 
-import com.edtech.platform.auth.service.OAuthAccountService;
+import com.edtech.platform.auth.service.OAuthAuthorizationPort;
 import com.edtech.platform.auth.service.OAuthAuthorizationResult;
 import com.edtech.platform.auth.service.OAuthIdentity;
 import com.edtech.platform.common.config.properties.OAuthProperties;
@@ -18,10 +18,10 @@ import java.io.IOException;
 @Slf4j
 @Component
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-    private final OAuthAccountService accounts;
+    private final OAuthAuthorizationPort accounts;
     private final String frontendRedirectUri;
 
-    public OAuth2AuthenticationSuccessHandler(OAuthAccountService accounts, OAuthProperties properties) {
+    public OAuth2AuthenticationSuccessHandler(OAuthAuthorizationPort accounts, OAuthProperties properties) {
         this.accounts = accounts;
         this.frontendRedirectUri = properties.frontendRedirectUri().toString();
     }

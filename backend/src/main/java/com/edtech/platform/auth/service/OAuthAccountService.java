@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class OAuthAccountService {
+public class OAuthAccountService implements OAuthAuthorizationPort {
     private final UserRepository users;
     private final RedisTokenService oneTimeTokens;
     private final ApplicationEventPublisher events;
@@ -30,6 +30,7 @@ public class OAuthAccountService {
     private final Clock clock;
 
     @Transactional(readOnly = true)
+    @Override
     public OAuthAuthorizationResult authorize(OAuthIdentity identity) {
         if (identity.email() == null || identity.email().isBlank()) {
             return new OAuthAuthorizationResult.Rejected(ErrorCode.AUTH_OAUTH_LINK_NOT_ALLOWED.name());
