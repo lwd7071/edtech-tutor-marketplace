@@ -6,6 +6,11 @@ spring:
       - optional:file:.env.cloud[.properties]
       - optional:file:../.env.cloud[.properties]
 
+  datasource:
+    url: ${CLOUD_DB_URL:${DB_URL}}
+    username: ${CLOUD_DB_USERNAME:${DB_USERNAME}}
+    password: ${CLOUD_DB_PASSWORD:${DB_PASSWORD}}
+
   jpa:
     hibernate:
       ddl-auto: validate

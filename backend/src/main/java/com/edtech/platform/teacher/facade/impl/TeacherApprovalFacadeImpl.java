@@ -21,12 +21,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import com.edtech.platform.teacher.facade.dto.TeacherDocumentSnapshot;
 import com.edtech.platform.teacher.domain.TeacherDocument;
+import com.edtech.platform.auth.facade.IdentityFacade;
+import com.edtech.platform.auth.facade.dto.IdentitySnapshot;
 
 @Service
 @RequiredArgsConstructor
 public class TeacherApprovalFacadeImpl implements TeacherApprovalFacade {
     private final TeacherProfileRepository teacherProfileRepository;
     private final TeacherDocumentRepository teacherDocumentRepository;
+    private final IdentityFacade identityFacade;
 
     @Override
     @Transactional(readOnly = true)
@@ -81,7 +84,10 @@ public class TeacherApprovalFacadeImpl implements TeacherApprovalFacade {
         Map<UUID, List<TeacherDocument>> byTeacher = ids.isEmpty() ? Map.of()
                 : teacherDocumentRepository.findByTeacherIdIn(ids).stream()
                 .collect(Collectors.groupingBy(document -> document.getTeacher().getId()));
-        return page.map(profile -> toSnapshot(profile, byTeacher.getOrDefault(profile.getId(), List.of())));
+        Map<UUID, IdentitySnapshot> identities = identityFacade.getIdentities(
+                page.getContent().stream().map(TeacherProfile::getUserId).toList());
+        return page.map(profile -> toSnapshot(profile, byTeacher.getOrDefault(profile.getId(), List.of()),
+                identities.get(profile.getUserId())));
     }
 
     private List<TeacherDocument> documents(UUID teacherId) {
@@ -89,9 +95,18 @@ public class TeacherApprovalFacadeImpl implements TeacherApprovalFacade {
     }
 
     private TeacherApprovalSnapshot toSnapshot(TeacherProfile profile, List<TeacherDocument> documents) {
+        return toSnapshot(profile, documents, identityFacade.getIdentity(profile.getUserId()).orElse(null));
+    }
+
+    private TeacherApprovalSnapshot toSnapshot(TeacherProfile profile, List<TeacherDocument> documents,
+                                               IdentitySnapshot identity) {
         return new TeacherApprovalSnapshot(profile.getId(), profile.getUserId(), profile.getProfileStatus().name(),
                 profile.getRejectionReason(), profile.getApprovedById(), profile.getApprovedAt(),
-                documents.stream().map(this::documentSnapshot).toList());
+                documents.stream().map(this::documentSnapshot).toList(),
+                identity == null ? null : identity.fullName(), identity == null ? null : identity.email(),
+                profile.getBio(), profile.getYearsOfExperience(), profile.getLanguages(),
+                profile.isSupportsOnline(), profile.isSupportsOffline(), profile.getLocationAddress(),
+                profile.getIntroductionVideoUrl());
     }
 
     private TeacherDocumentSnapshot documentSnapshot(TeacherDocument document) {

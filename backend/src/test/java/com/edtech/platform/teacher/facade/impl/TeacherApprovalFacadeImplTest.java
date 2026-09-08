@@ -6,6 +6,7 @@ import com.edtech.platform.teacher.domain.ProfileStatus;
 import com.edtech.platform.teacher.domain.TeacherProfile;
 import com.edtech.platform.teacher.repository.TeacherDocumentRepository;
 import com.edtech.platform.teacher.repository.TeacherProfileRepository;
+import com.edtech.platform.auth.facade.IdentityFacade;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.when;
 class TeacherApprovalFacadeImplTest {
     @Mock TeacherProfileRepository profiles;
     @Mock TeacherDocumentRepository documents;
+    @Mock IdentityFacade identityFacade;
 
     @Test
     void approvingAnAlreadyProcessedProfileReturnsConflictCode() {
@@ -31,7 +33,7 @@ class TeacherApprovalFacadeImplTest {
         ReflectionTestUtils.setField(profile, "id", id);
         ReflectionTestUtils.setField(profile, "profileStatus", ProfileStatus.APPROVED);
         when(profiles.findByIdForUpdate(id)).thenReturn(Optional.of(profile));
-        TeacherApprovalFacadeImpl facade = new TeacherApprovalFacadeImpl(profiles, documents);
+        TeacherApprovalFacadeImpl facade = new TeacherApprovalFacadeImpl(profiles, documents, identityFacade);
 
         assertThatThrownBy(() -> facade.approve(id, UUID.randomUUID()))
                 .isInstanceOfSatisfying(BusinessException.class,

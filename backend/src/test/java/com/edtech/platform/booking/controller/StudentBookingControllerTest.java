@@ -1,9 +1,7 @@
 package com.edtech.platform.booking.controller;
 
 import com.edtech.platform.booking.domain.BookingStatus;
-import com.edtech.platform.booking.domain.DeliveryMode;
-import com.edtech.platform.booking.dto.response.BookingDetail;
-import com.edtech.platform.booking.service.BookingService;
+import com.edtech.platform.booking.service.BookingReadService;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,7 +21,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,7 +38,7 @@ class StudentBookingControllerTest {
     private MockMvc mockMvc;
 
     @Mock
-    private BookingService bookingService;
+    private BookingReadService bookingReadService;
 
     @InjectMocks
     private StudentBookingController controller;
@@ -49,7 +48,7 @@ class StudentBookingControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
-                .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(), new HandlerMethodArgumentResolver() {
                     @Override
                     public boolean supportsParameter(MethodParameter parameter) {
                         return parameter.hasParameterAnnotation(AuthenticationPrincipal.class);
@@ -66,12 +65,11 @@ class StudentBookingControllerTest {
 
     @Test
     void listBookings_shouldReturn200Paged() throws Exception {
-        BookingDetail detail = new BookingDetail(
-                UUID.randomUUID(), UUID.randomUUID(), studentUserId, UUID.randomUUID(), UUID.randomUUID(),
-                Instant.now(), Instant.now().plusSeconds(3600), DeliveryMode.ONLINE, BookingStatus.SCHEDULED,
-                false, false, null, 0L
-        );
-        when(bookingService.findStudent(eq(studentUserId), any(), any(), any(), any()))
+        var detail = new LinkedHashMap<String, Object>();
+        detail.put("id", UUID.randomUUID());
+        detail.put("studentId", studentUserId);
+        detail.put("status", BookingStatus.SCHEDULED);
+        when(bookingReadService.list(eq(studentUserId), eq(false), any(), any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(detail)));
 
         mockMvc.perform(get("/api/student/bookings")
