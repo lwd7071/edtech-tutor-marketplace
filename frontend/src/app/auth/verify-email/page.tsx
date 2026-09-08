@@ -103,7 +103,6 @@ function VerifyEmailContent() {
       <Title level={3} style={{ marginBottom: 'var(--space-2)' }}>Vui lòng xác minh email</Title>
       
       <Alert 
-        message={undefined}
         title="Kiểm tra hộp thư đến" 
         description="Chúng tôi đã gửi một email xác minh đến địa chỉ của bạn. Vui lòng nhấp vào liên kết trong email để kích hoạt tài khoản."
         type="info" 
@@ -112,7 +111,7 @@ function VerifyEmailContent() {
       />
 
       {resendSuccess && (
-        <Alert message={undefined} title="Đã gửi lại email xác minh thành công." type="success" style={{ marginBottom: 'var(--space-4)' }} />
+        <Alert title="Đã gửi lại email xác minh thành công." type="success" style={{ marginBottom: 'var(--space-4)' }} />
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>

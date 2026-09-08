@@ -67,21 +67,17 @@ export function setupAxiosInterceptors(client: AxiosInstance) {
         originalRequest._retry = true;
         isRefreshing = true;
 
-        let refreshToken = useAuthStore.getState().refreshToken;
+        const refreshToken = useAuthStore.getState().refreshToken || Cookies.get('refreshToken') || null;
+
         if (!refreshToken) {
           isRefreshing = false;
           processQueue(error, null);
-          refreshToken = Cookies.get('refreshToken') || null;
-        }
-
-        if (!refreshToken) {
           useAuthStore.getState().logout();
           return Promise.reject(error);
         }
 
         try {
-          // B's test expects '/auth/refresh-token'
-          const { data } = await axios.post(`${BASE_API_URL}/api/auth/refresh`, { refreshToken });
+          const { data } = await client.post('/api/auth/refresh', { refreshToken });
           
           if (data.success && data.data) {
             const newAccessToken = data.data.accessToken;

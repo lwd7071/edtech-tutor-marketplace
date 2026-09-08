@@ -49,9 +49,9 @@ describe('TeacherFilterSidebar', () => {
     render(<TeacherFilterSidebar {...defaultProps} />);
     expect(screen.getByText('Lọc kết quả')).toBeInTheDocument();
     expect(screen.getByText('Môn học')).toBeInTheDocument();
-    expect(screen.getByText('Khoảng giá (VNĐ)')).toBeInTheDocument();
+    expect(screen.getByText('Giá trọn gói (VNĐ)')).toBeInTheDocument();
     expect(screen.getByText('Đánh giá')).toBeInTheDocument();
-    expect(screen.getByText('Hình thức học')).toBeInTheDocument();
+    expect(screen.getByText('Hình thức')).toBeInTheDocument();
   });
 
   it('calls onClear when clear button is clicked', () => {

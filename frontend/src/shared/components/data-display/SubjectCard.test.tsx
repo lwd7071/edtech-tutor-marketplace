@@ -15,11 +15,11 @@ describe('SubjectCard', () => {
     
     expect(screen.getByText('Toán học')).toBeInTheDocument();
     expect(screen.getByText('Môn toán từ cơ bản đến nâng cao')).toBeInTheDocument();
-    expect(screen.getByText('42 giáo viên')).toBeInTheDocument();
+    expect(screen.getByText('42 gia sư')).toBeInTheDocument();
   });
 
   it('handles 0 teachers', () => {
     render(<SubjectCard {...defaultProps} teacherCount={0} />);
-    expect(screen.getByText('Chưa có giáo viên')).toBeInTheDocument();
+    expect(screen.getByText('Chưa có gia sư')).toBeInTheDocument();
   });
 });

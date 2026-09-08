@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -32,10 +32,14 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const { control, handleSubmit, formState: { errors } } = useForm<RegisterFormValues>({
+  const { control, handleSubmit, setValue, formState: { errors } } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: { fullName: '', email: '', password: '', role: 'STUDENT' as any },
   });
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('role') === 'TEACHER') setValue('role', 'TEACHER');
+  }, [setValue]);
 
   const onSubmit = async (values: RegisterFormValues) => {
     try {
@@ -82,7 +86,7 @@ export default function RegisterPage() {
             render={({ field }) => (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
                 <RadioCard 
-                  title="Học sinh / Phụ huynh" 
+                  title="Học viên / Phụ huynh"
                   description="Tìm kiếm gia sư và tham gia các khóa học"
                   value="STUDENT"
                   checked={field.value === 'STUDENT'}

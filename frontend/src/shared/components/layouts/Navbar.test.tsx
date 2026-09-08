@@ -18,14 +18,14 @@ describe('Navbar Component', () => {
     render(<Navbar />);
     
     // Should see Logo
-    expect(screen.getByText('Edtech Tutor')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /tutor match/i })).toBeInTheDocument();
     
     // Should see Menu items
     expect(screen.getByText('Tìm gia sư')).toBeInTheDocument();
     
     // Should see Auth buttons
-    expect(screen.getByRole('button', { name: /đăng nhập/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /đăng ký/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /đăng nhập/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /bắt đầu học/i })).toBeInTheDocument();
   });
 
   it('renders user menu when authenticated', () => {
@@ -37,7 +37,7 @@ describe('Navbar Component', () => {
     render(<Navbar />);
     
     // Should NOT see Login/Register
-    expect(screen.queryByRole('button', { name: /đăng nhập/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /đăng nhập/i })).not.toBeInTheDocument();
     
     // Should see user name or avatar
     expect(screen.getByText('John Doe')).toBeInTheDocument();

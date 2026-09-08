@@ -13,8 +13,8 @@ jest.mock('@/shared/components/feedback/Skeleton', () => ({ Skeleton: () => <div
 
 describe('TeacherGrid', () => {
   it('renders loading skeleton', () => {
-    render(<TeacherGrid isLoading={true} teachers={[]} />);
-    expect(screen.getAllByTestId('skeleton').length).toBeGreaterThan(0);
+    const { container } = render(<TeacherGrid isLoading={true} teachers={[]} />);
+    expect(container.querySelectorAll('.ant-skeleton').length).toBeGreaterThan(0);
   });
 
   it('renders error state', () => {
@@ -29,8 +29,8 @@ describe('TeacherGrid', () => {
 
   it('renders teacher cards when teachers are provided', () => {
     const teachers = [
-      { id: '1', user: { fullName: 'Nguyễn Văn A' } },
-      { id: '2', user: { fullName: 'Trần Thị B' } },
+      { id: '1', fullName: 'Nguyễn Văn A' },
+      { id: '2', fullName: 'Trần Thị B' },
     ];
     render(<TeacherGrid isLoading={false} teachers={teachers} />);
     

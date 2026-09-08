@@ -20,7 +20,7 @@ describe('RegisterPage', () => {
   it('renders register form correctly', () => {
     render(<RegisterPage />);
     expect(screen.getByText('Đăng ký tài khoản')).toBeInTheDocument();
-    expect(screen.getByText('Học sinh / Phụ huynh')).toBeInTheDocument();
+    expect(screen.getByText('Học viên / Phụ huynh')).toBeInTheDocument();
     expect(screen.getByText('Gia sư')).toBeInTheDocument();
   });
 

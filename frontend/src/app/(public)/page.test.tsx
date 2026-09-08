@@ -41,12 +41,12 @@ describe('LandingPage', () => {
     const Page = await LandingPage();
     render(Page);
 
-    expect(screen.getByText('Học tập dễ dàng cùng chuyên gia')).toBeInTheDocument();
+    expect(screen.getByText(/Một người hướng dẫn/)).toBeInTheDocument();
     expect(screen.getByTestId('hero-search')).toBeInTheDocument();
     expect(screen.getByTestId('subject-grid')).toBeInTheDocument();
     expect(screen.getByTestId('teacher-grid')).toBeInTheDocument();
-    expect(screen.getByTestId('trust-section')).toBeInTheDocument();
-    expect(screen.getByTestId('cta-section')).toBeInTheDocument();
+    expect(screen.getByText('Một khởi đầu rõ ràng')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Trở thành gia sư/i })).toBeInTheDocument();
 
     expect(getPublicSubjects).toHaveBeenCalled();
     expect(getPublicTeachers).toHaveBeenCalled();

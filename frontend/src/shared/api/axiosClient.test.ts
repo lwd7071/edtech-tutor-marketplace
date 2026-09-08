@@ -95,7 +95,7 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
     // Refresh API chỉ được gọi 1 lần duy nhất
     expect(mockPost).toHaveBeenCalledTimes(1);
     expect(mockPost).toHaveBeenCalledWith(
-      '/auth/refresh-token',
+      '/api/auth/refresh',
       { refreshToken: 'valid-refresh-token' }
     );
 

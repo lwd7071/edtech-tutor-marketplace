@@ -1,8 +1,8 @@
-import Link from 'next/link';
 import {notFound} from 'next/navigation';
 import {getTeacherDetail,getTeacherPackages,getTeacherAvailability,getTeacherReviews,getPublicSubjects} from '@/shared/api/public';
 import {TeacherProfileHeader} from '@/features/marketplace/components/TeacherProfileHeader';
 import TeacherDetailClient from './TeacherDetailClient';
+import {BackLink} from '@/shared/components/navigation/NavigationLinks';
 export default async function Page({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<Record<string,string|string[]|undefined>>}){
  const {id}=await params; const q=await searchParams;
  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))notFound();
@@ -12,6 +12,6 @@ export default async function Page({params,searchParams}:{params:Promise<{id:str
  const p=packages.status==='fulfilled'?packages.value:{data:[],meta:{}};
  const subjectOptions=subjects.status==='fulfilled'?subjects.value.data.filter(s=>teacher.subjects.includes(s.name)):[];
  const errors=[packages.status==='rejected'?'packages':'',availability.status==='rejected'?'availability':'',reviews.status==='rejected'?'reviews':''].filter(Boolean);
- return <div className="tm-container tm-page"><p><Link href="/teachers">← Về danh sách gia sư</Link></p><TeacherProfileHeader teacher={teacher}/><TeacherDetailClient teacher={teacher} packages={p} availability={availability.status==='fulfilled'?availability.value:[]} reviews={reviews.status==='fulfilled'?reviews.value:{data:[],meta:{}}} subjectOptions={subjectOptions} errors={errors}/></div>;
+ return <div className="tm-container tm-page"><BackLink href="/teachers">Danh sách gia sư</BackLink><TeacherProfileHeader teacher={teacher}/><TeacherDetailClient teacher={teacher} packages={p} availability={availability.status==='fulfilled'?availability.value:[]} reviews={reviews.status==='fulfilled'?reviews.value:{data:[],meta:{}}} subjectOptions={subjectOptions} errors={errors}/></div>;
 }
 

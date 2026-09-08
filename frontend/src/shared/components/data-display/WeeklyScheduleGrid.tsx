@@ -1,6 +1,5 @@
 import React from 'react';
 import { useMediaQuery } from 'react-responsive';
-import { Select } from 'antd'; // Using for Agenda view fallback
 
 export interface TimeSlot {
   dayOfWeek: number; // 1 (Mon) - 7 (Sun)
@@ -46,7 +45,7 @@ export default function WeeklyScheduleGrid({
   };
 
   // Simple agenda view for mobile (fallback UI)
-  if (isMobile) {
+  if (isMobile && mode !== 'editable') {
     return (
       <div className={`weekly-schedule agenda-view ${className}`}>
         <p className="agenda-notice">Phiên bản Mobile hiển thị dưới dạng danh sách (Agenda).</p>
@@ -156,12 +155,14 @@ export default function WeeklyScheduleGrid({
         .weekly-schedule {
           border: var(--border-default);
           border-radius: var(--radius-md);
-          overflow: hidden;
+          overflow-x: auto;
+          overflow-y: hidden;
           background: var(--color-surface);
         }
         .schedule-grid {
           display: grid;
           grid-template-columns: 64px repeat(7, 1fr);
+          min-width: 760px;
         }
         .grid-header-corner, .grid-header-day {
           background-color: var(--color-surface-sunken);

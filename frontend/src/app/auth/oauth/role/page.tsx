@@ -61,12 +61,12 @@ function OAuthRoleContent() {
       />
 
       {errorMsg && (
-        <Alert message={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
+        <Alert title={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
       )}
 
       <Space direction="vertical" style={{ width: '100%', marginBottom: 'var(--space-8)' }} size="middle">
         <RadioCard 
-          title="Học sinh / Phụ huynh" 
+          title="Học viên / Phụ huynh"
           description="Tìm kiếm gia sư và tham gia các khóa học"
           value="STUDENT"
           checked={role === 'STUDENT'}

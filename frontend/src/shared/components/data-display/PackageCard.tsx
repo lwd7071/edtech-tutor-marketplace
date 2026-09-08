@@ -33,7 +33,7 @@ export default function PackageCard({
       hoverable={!!onClick} 
       onClick={onClick}
       className={`package-card ${isPurchased ? 'purchased' : 'public'} ${className}`}
-      bodyStyle={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', height: '100%' }}
+      styles={{ body: { padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', height: '100%' } }}
     >
       <div className="pkg-header">
         <h3 className="pkg-name">{name}</h3>

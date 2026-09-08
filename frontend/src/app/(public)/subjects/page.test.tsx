@@ -20,12 +20,6 @@ jest.mock('@/features/marketplace/components/SubjectGrid', () => {
   };
 });
 
-jest.mock('@/shared/components/ui/DebouncedSearch', () => {
-  return function MockDebouncedSearch() {
-    return <input data-testid="debounced-search" />;
-  };
-});
-
 // Mock Next.js Link and useRouter
 jest.mock('next/link', () => {
   return ({ children }: any) => {
@@ -60,7 +54,8 @@ describe('SubjectsPage', () => {
     const PageComponent = await SubjectsPage({ searchParams: Promise.resolve(searchParams) });
     render(PageComponent);
 
-    expect(screen.getByTestId('debounced-search')).toBeInTheDocument();
+    expect(screen.getByLabelText('Tên môn học')).toHaveValue('Toán');
+    expect(screen.getByRole('button', { name: 'Tìm môn học' })).toBeInTheDocument();
     expect(screen.getByTestId('subject-grid')).toBeInTheDocument();
     expect(screen.getByText('Môn Toán')).toBeInTheDocument();
     
@@ -68,7 +63,8 @@ describe('SubjectsPage', () => {
     expect(getPublicSubjects).toHaveBeenCalledWith({
       keyword: 'Toán',
       page: 0,
-      size: 20
+      educationLevel: undefined,
+      size: 16
     });
   });
 

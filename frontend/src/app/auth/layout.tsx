@@ -22,7 +22,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             Học Trực Tuyến Cùng Gia Sư Giỏi
           </h1>
           <p style={{ fontSize: 'var(--text-body-lg)', color: 'var(--color-text-secondary)' }}>
-            Nền tảng kết nối hàng ngàn học sinh với các gia sư hàng đầu, giúp bạn đạt được mục tiêu học tập một cách dễ dàng và hiệu quả.
+            Nền tảng kết nối học viên với gia sư phù hợp, giúp bạn tiến gần mục tiêu học tập theo nhịp riêng.
           </p>
         </div>
       </div>

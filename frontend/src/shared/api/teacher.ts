@@ -36,10 +36,13 @@ export interface TeacherSubject {
 
 export interface TeacherSubjectProposal {
   id: string;
-  name: string;
+  proposedName: string;
+  educationLevel: 'ELEMENTARY' | 'MIDDLE_SCHOOL' | 'HIGH_SCHOOL' | 'UNIVERSITY' | 'OTHER';
   description: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  submittedAt: string;
+  reviewNote?: string | null;
+  reviewedAt?: string | null;
+  createdSubjectId?: string | null;
 }
 
 
@@ -107,8 +110,8 @@ export const teacherApi = {
   deleteSubject: (id: string) => axiosClient.delete(`/api/teacher/subjects/${id}`).then(res => res.data),
   searchPublicSubjects: (query: string) => axiosClient.get<{data:{id: string, name: string, educationLevel: string}[]}>('/api/public/subjects', { params: { keyword:query,size:100 } }).then(res => res.data.data.map(s=>({...s,category:s.educationLevel}))),
 
-  getSubjectProposals: () => axiosClient.get<TeacherSubjectProposal[]>('/api/teacher/subject-proposals').then(res => res.data),
-  createSubjectProposal: (data: { name: string, description: string }) => axiosClient.post<TeacherSubjectProposal>('/api/teacher/subject-proposals', data).then(res => res.data),
+  getSubjectProposals: () => axiosClient.get<{data:TeacherSubjectProposal[]}>('/api/teacher/subject-proposals', {params:{size:100}}).then(res => res.data.data),
+  createSubjectProposal: (data: { proposedName: string, educationLevel: TeacherSubjectProposal['educationLevel'], description?: string }) => axiosClient.post<{data:TeacherSubjectProposal}>('/api/teacher/subject-proposals', data).then(res => res.data.data),
 
   // Availability
   getAvailabilities: () => axiosClient.get<{data:AvailabilityView[]}>('/api/teacher/availability').then(res => res.data.data),
@@ -117,7 +120,7 @@ export const teacherApi = {
   // Packages
   getPackages: () => axiosClient.get<{data:PricingPackageView[]}>('/api/teacher/packages', {params:{size:100}}).then(res => res.data.data),
   getPackage: (id:string) => axiosClient.get<{data:PricingPackageView}>(`/api/teacher/packages/${id}`).then(res=>res.data.data),
-  createPackage: (data: CreatePackageRequest) => axiosClient.post<PricingPackageView>('/api/teacher/packages', data).then(res => res.data),
-  updatePackage: (id: string, data: UpdatePackageRequest) => axiosClient.put<PricingPackageView>(`/api/teacher/packages/${id}`, data).then(res => res.data),
+  createPackage: (data: CreatePackageRequest) => axiosClient.post<{data:PricingPackageView}>('/api/teacher/packages', data).then(res => res.data.data),
+  updatePackage: (id: string, data: UpdatePackageRequest) => axiosClient.put<{data:PricingPackageView}>(`/api/teacher/packages/${id}`, data).then(res => res.data.data),
   updatePackageStatus: (id: string, status: string) => axiosClient.patch<void>(`/api/teacher/packages/${id}/status`, { status }).then(res => res.data),
 };

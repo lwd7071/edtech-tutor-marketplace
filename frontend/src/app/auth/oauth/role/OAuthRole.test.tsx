@@ -27,7 +27,7 @@ describe('OAuthRolePage', () => {
   it('renders role selection correctly', () => {
     render(<OAuthRolePage />);
     expect(screen.getByRole('heading', { name: 'Hoàn tất đăng ký' })).toBeInTheDocument();
-    expect(screen.getByText('Học sinh / Phụ huynh')).toBeInTheDocument();
+    expect(screen.getByText('Học viên / Phụ huynh')).toBeInTheDocument();
     expect(screen.getByText('Gia sư')).toBeInTheDocument();
     expect(screen.getByText('Vai trò này không thể thay đổi sau khi bạn hoàn tất đăng ký.')).toBeInTheDocument();
   });

@@ -50,7 +50,7 @@ export default function Sidebar() {
     { 
       key: '/teacher/students', 
       icon: isPendingTeacher ? <LockOutlined /> : <TeamOutlined />, 
-      label: isPendingTeacher ? 'Học sinh' : <Link href="/teacher/students">Học sinh</Link>,
+      label: isPendingTeacher ? 'Học viên' : <Link href="/teacher/students">Học viên</Link>,
       disabled: isPendingTeacher,
     },
     { 

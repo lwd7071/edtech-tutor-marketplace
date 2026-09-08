@@ -14,8 +14,8 @@ jest.mock('@/shared/components/feedback/Skeleton', () => ({ Skeleton: () => <div
 
 describe('SubjectGrid', () => {
   it('renders loading skeleton', () => {
-    render(<SubjectGrid isLoading={true} subjects={[]} />);
-    expect(screen.getAllByTestId('skeleton').length).toBeGreaterThan(0);
+    const { container } = render(<SubjectGrid isLoading={true} subjects={[]} />);
+    expect(container.querySelectorAll('.ant-skeleton').length).toBeGreaterThan(0);
   });
 
   it('renders error state', () => {
@@ -35,7 +35,7 @@ describe('SubjectGrid', () => {
     ];
     render(<SubjectGrid isLoading={false} subjects={subjects} />);
     
-    expect(screen.getAllByTestId('subject-card')).toHaveLength(2);
+    expect(screen.getAllByRole('link')).toHaveLength(2);
     expect(screen.getByText('Toán')).toBeInTheDocument();
     expect(screen.getByText('Lý')).toBeInTheDocument();
   });

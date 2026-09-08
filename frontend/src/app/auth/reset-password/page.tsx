@@ -86,7 +86,7 @@ function ResetPasswordForm() {
       </div>
 
       {errorMsg && (
-        <Alert message={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
+        <Alert title={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
       )}
 
       <form onSubmit={handleSubmit(onSubmit)}>

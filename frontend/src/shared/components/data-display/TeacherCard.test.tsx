@@ -22,11 +22,12 @@ describe('TeacherCard', () => {
     expect(screen.getByText('Nguyen Van A')).toBeInTheDocument();
     
     // Subjects
-    expect(screen.getByText('Toán, Lý')).toBeInTheDocument();
+    expect(screen.getByText('Toán')).toBeInTheDocument();
+    expect(screen.getByText('Lý')).toBeInTheDocument();
     
     // Rating & reviews
     expect(screen.getByText('4.8')).toBeInTheDocument();
-    expect(screen.getByText('(120)')).toBeInTheDocument();
+    expect(screen.getByText('(120 đánh giá)')).toBeInTheDocument();
     
     // Price
     expect(screen.getByText(/150\.000/)).toBeInTheDocument();
@@ -39,7 +40,8 @@ describe('TeacherCard', () => {
     expect(screen.getByText('Nguyen Van A')).toBeInTheDocument();
     
     // In compact mode, we might only show 1 subject or abbreviate
-    expect(screen.getByText('Toán, Lý')).toBeInTheDocument();
+    expect(screen.getByText('Toán')).toBeInTheDocument();
+    expect(screen.getByText('Lý')).toBeInTheDocument();
     
     // Rating
     expect(screen.getByText('4.8')).toBeInTheDocument();

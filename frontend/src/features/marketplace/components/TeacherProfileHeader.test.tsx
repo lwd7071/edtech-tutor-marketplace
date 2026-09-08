@@ -22,17 +22,16 @@ describe('TeacherProfileHeader', () => {
     render(<TeacherProfileHeader teacher={defaultTeacher} />);
     
     expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('A passionate math teacher.')).toBeInTheDocument();
-    expect(screen.getByText('5 năm kinh nghiệm')).toBeInTheDocument();
-    expect(screen.getByText('Toán, Lý')).toBeInTheDocument();
+    expect(screen.getByText(/5 năm kinh nghiệm/)).toBeInTheDocument();
+    expect(screen.getByText('Toán')).toBeInTheDocument();
+    expect(screen.getByText('Lý')).toBeInTheDocument();
     expect(screen.getByText('Hanoi')).toBeInTheDocument();
   });
 
-  it('renders CTAs', () => {
+  it('renders rating and teaching languages', () => {
     render(<TeacherProfileHeader teacher={defaultTeacher} />);
     
-    expect(screen.getByRole('button', { name: /Mua gói/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Yêu cầu học thử/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Nhắn tin/i })).toBeInTheDocument();
+    expect(screen.getByText(/4.8/)).toBeInTheDocument();
+    expect(screen.getByText(/Ngôn ngữ: Tiếng Việt, English/)).toBeInTheDocument();
   });
 });

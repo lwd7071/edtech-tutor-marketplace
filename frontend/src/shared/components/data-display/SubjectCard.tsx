@@ -41,7 +41,7 @@ export default function SubjectCard({
       
       <div className="teacher-count">
         <TeamOutlined />
-        <span>{teacherCount > 0 ? `${teacherCount} giáo viên` : 'Chưa có giáo viên'}</span>
+        <span>{teacherCount > 0 ? `${teacherCount} gia sư` : 'Chưa có gia sư'}</span>
       </div>
 
       <style>{`

@@ -50,13 +50,12 @@ export default function ForgotPasswordPage() {
       </div>
 
       {errorMsg && (
-        <Alert message={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
+        <Alert title={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
       )}
 
       {success ? (
         <div aria-live="polite" style={{ textAlign: 'center' }}>
           <Alert 
-            message={undefined}
             title="Đã gửi email khôi phục" 
             description="Nếu email này có trong hệ thống, bạn sẽ nhận được một liên kết để khôi phục mật khẩu. Vui lòng kiểm tra hộp thư đến (và thư mục rác)."
             type="success" 

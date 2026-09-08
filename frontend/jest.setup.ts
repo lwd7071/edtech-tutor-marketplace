@@ -1,5 +1,10 @@
 import '@testing-library/jest-dom';
 
+// JSDOM throws when Ant Design measures a pseudo-element scrollbar.
+// Browsers support this call, so tests can safely fall back to the element style.
+const getComputedStyle = window.getComputedStyle.bind(window);
+window.getComputedStyle = (element: Element) => getComputedStyle(element);
+
 // Mock matchMedia for Ant Design
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

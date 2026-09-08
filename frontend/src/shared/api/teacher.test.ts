@@ -11,7 +11,7 @@ describe('teacherApi', () => {
   describe('Availabilities API', () => {
     it('should get availabilities successfully', async () => {
       const mockData = [{ id: '1', dayOfWeek: 'MONDAY', startTime: '08:00:00', endTime: '10:00:00' }];
-      (axiosClient.get as jest.Mock).mockResolvedValueOnce({ data: mockData });
+      (axiosClient.get as jest.Mock).mockResolvedValueOnce({ data: { data: mockData } });
 
       const result = await teacherApi.getAvailabilities();
 
@@ -25,25 +25,25 @@ describe('teacherApi', () => {
 
       await teacherApi.replaceAvailabilities(mockPayload);
 
-      expect(axiosClient.put).toHaveBeenCalledWith('/api/teacher/availability', mockPayload);
+      expect(axiosClient.put).toHaveBeenCalledWith('/api/teacher/availability', { availabilities: mockPayload.items });
     });
   });
 
   describe('Packages API', () => {
     it('should get packages successfully', async () => {
       const mockData = [{ id: '1', name: 'Basic' }];
-      (axiosClient.get as jest.Mock).mockResolvedValueOnce({ data: mockData });
+      (axiosClient.get as jest.Mock).mockResolvedValueOnce({ data: { data: mockData } });
 
       const result = await teacherApi.getPackages();
 
-      expect(axiosClient.get).toHaveBeenCalledWith('/api/teacher/packages');
+      expect(axiosClient.get).toHaveBeenCalledWith('/api/teacher/packages', { params: { size: 100 } });
       expect(result).toEqual(mockData);
     });
 
     it('should create package successfully', async () => {
       const mockPayload = { name: 'Basic', priceVnd: 500000, subjectId: 'subj1', description: 'desc', sessionCount: 10, durationMonths: 1, trialEnabled: false };
       const mockData = { id: '1', ...mockPayload };
-      (axiosClient.post as jest.Mock).mockResolvedValueOnce({ data: mockData });
+      (axiosClient.post as jest.Mock).mockResolvedValueOnce({ data: { data: mockData } });
 
       const result = await teacherApi.createPackage(mockPayload);
 
@@ -54,7 +54,7 @@ describe('teacherApi', () => {
     it('should update package successfully', async () => {
       const mockPayload = { name: 'Pro', priceVnd: 600000, description: 'new desc', sessionCount: 12, durationMonths: 2, trialEnabled: true };
       const mockData = { id: '1', ...mockPayload };
-      (axiosClient.put as jest.Mock).mockResolvedValueOnce({ data: mockData });
+      (axiosClient.put as jest.Mock).mockResolvedValueOnce({ data: { data: mockData } });
 
       const result = await teacherApi.updatePackage('1', mockPayload);
 

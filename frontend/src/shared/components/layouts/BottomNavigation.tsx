@@ -30,7 +30,7 @@ export default function BottomNavigation() {
   const teacherItems = [
     { key: '/teacher/dashboard', icon: <AppstoreOutlined />, label: 'Tổng quan' },
     { key: '/teacher/schedule', icon: <CalendarOutlined />, label: 'Lịch dạy' },
-    { key: '/teacher/students', icon: <TeamOutlined />, label: 'Học sinh' },
+    { key: '/teacher/students', icon: <TeamOutlined />, label: 'Học viên' },
     { key: '/teacher/wallet', icon: <WalletOutlined />, label: 'Ví' },
     { key: '/teacher/more', icon: <MenuOutlined />, label: 'Thêm', hasBadge: true }, // mocked badge
   ];
