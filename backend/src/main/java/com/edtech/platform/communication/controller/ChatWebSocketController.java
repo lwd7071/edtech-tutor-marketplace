@@ -5,7 +5,7 @@ import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.communication.dto.chat.ChatMessageRequest;
 import com.edtech.platform.communication.dto.chat.ChatReadRequest;
-import com.edtech.platform.communication.service.ChatService;
+import com.edtech.platform.communication.service.ChatCommandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
@@ -23,7 +23,7 @@ import java.util.Map;
 @Slf4j
 public class ChatWebSocketController {
 
-    private final ChatService chatService;
+    private final ChatCommandService chatCommands;
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/chat.send")
@@ -31,7 +31,7 @@ public class ChatWebSocketController {
         AuthenticatedUser user = getAuthenticatedUser(principal);
         if (user == null) return;
 
-        chatService.sendMessage(user.getId(), request);
+        chatCommands.sendMessage(user.getId(), request);
     }
 
     @MessageMapping("/chat.read")
@@ -39,7 +39,7 @@ public class ChatWebSocketController {
         AuthenticatedUser user = getAuthenticatedUser(principal);
         if (user == null) return;
 
-        chatService.readMessages(request.getConversationId(), user.getId());
+        chatCommands.readMessages(request.getConversationId(), user.getId());
     }
 
     @MessageExceptionHandler
