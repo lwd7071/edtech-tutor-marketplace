@@ -3,7 +3,7 @@ spring:
     name: edtech-api
 
   profiles:
-    default: local
+    default: cloud
 
   # Connection details are always injected by the active environment/profile.
   # Do not add cloud credentials or production-safe-looking fallbacks here.
