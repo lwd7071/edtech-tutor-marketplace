@@ -38,9 +38,7 @@ export const NotificationBell: React.FC = () => {
     try {
       await notificationApi.markAllAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    } catch (e) {
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    }
+    } catch {}
   };
 
   const handleClick = async (notification: NotificationView) => {
@@ -50,7 +48,7 @@ export const NotificationBell: React.FC = () => {
         setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, isRead: true } : n));
       } catch (e) {}
     }
-    if (notification.referenceUrl) {
+    if (notification.referenceUrl?.startsWith('/')) {
       router.push(notification.referenceUrl);
     }
   };

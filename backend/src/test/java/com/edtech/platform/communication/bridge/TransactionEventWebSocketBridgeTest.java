@@ -29,11 +29,14 @@ class TransactionEventWebSocketBridgeTest {
     @Mock
     private SimpMessagingTemplate messagingTemplate;
 
+    @Mock private com.edtech.platform.teacher.facade.TeacherFacade teachers;
+    private final UUID teacherAccountId = UUID.randomUUID();
     private TransactionEventWebSocketBridge bridge;
 
     @BeforeEach
     void setUp() {
-        bridge = new TransactionEventWebSocketBridge(messagingTemplate);
+        bridge = new TransactionEventWebSocketBridge(messagingTemplate, teachers);
+        org.mockito.Mockito.when(teachers.getTeacher(org.mockito.ArgumentMatchers.any())).thenAnswer(inv -> new com.edtech.platform.teacher.facade.dto.TeacherSnapshot(inv.getArgument(0), teacherAccountId, "APPROVED", true, true, "Teacher", null, null, 1, true, false, java.util.List.of(), null, null));
     }
 
     @Test
@@ -52,7 +55,7 @@ class TransactionEventWebSocketBridgeTest {
         bridge.handleBookingCreated(event);
 
         ArgumentCaptor<TransactionNotificationMessage> msgCaptor = ArgumentCaptor.forClass(TransactionNotificationMessage.class);
-        verify(messagingTemplate).convertAndSend(eq("/topic/bookings." + teacherId), msgCaptor.capture());
+        verify(messagingTemplate).convertAndSend(eq("/topic/bookings." + teacherAccountId), msgCaptor.capture());
         verify(messagingTemplate).convertAndSend(eq("/topic/bookings." + studentId), msgCaptor.capture());
 
         assertThat(msgCaptor.getValue().getEventType()).isEqualTo("BOOKING_CREATED");
@@ -72,7 +75,7 @@ class TransactionEventWebSocketBridgeTest {
 
         ArgumentCaptor<TransactionNotificationMessage> msgCaptor = ArgumentCaptor.forClass(TransactionNotificationMessage.class);
         verify(messagingTemplate).convertAndSend(eq("/topic/bookings." + studentId), msgCaptor.capture());
-        verify(messagingTemplate).convertAndSend(eq("/topic/wallet." + teacherId), msgCaptor.capture());
+        verify(messagingTemplate).convertAndSend(eq("/topic/wallet." + teacherAccountId), msgCaptor.capture());
 
         assertThat(msgCaptor.getValue().getEventType()).isEqualTo("BOOKING_COMPLETED");
         assertThat(msgCaptor.getValue().getReferenceId()).isEqualTo(bookingId);
@@ -94,7 +97,7 @@ class TransactionEventWebSocketBridgeTest {
 
         ArgumentCaptor<TransactionNotificationMessage> msgCaptor = ArgumentCaptor.forClass(TransactionNotificationMessage.class);
         verify(messagingTemplate).convertAndSend(eq("/topic/invoices." + studentId), msgCaptor.capture());
-        verify(messagingTemplate).convertAndSend(eq("/topic/wallet." + teacherId), msgCaptor.capture());
+        verify(messagingTemplate).convertAndSend(eq("/topic/wallet." + teacherAccountId), msgCaptor.capture());
 
         assertThat(msgCaptor.getValue().getEventType()).isEqualTo("PAYMENT_SUCCEEDED");
         assertThat(msgCaptor.getValue().getReferenceId()).isEqualTo(invoiceId);
@@ -111,10 +114,11 @@ class TransactionEventWebSocketBridgeTest {
         bridge.handlePayoutProcessed(event);
 
         ArgumentCaptor<TransactionNotificationMessage> msgCaptor = ArgumentCaptor.forClass(TransactionNotificationMessage.class);
-        verify(messagingTemplate, times(1)).convertAndSend(eq("/topic/wallet." + teacherId), msgCaptor.capture());
+        verify(messagingTemplate, times(1)).convertAndSend(eq("/topic/wallet." + teacherAccountId), msgCaptor.capture());
 
         assertThat(msgCaptor.getValue().getEventType()).isEqualTo("PAYOUT_PROCESSED");
         assertThat(msgCaptor.getValue().getReferenceId()).isEqualTo(payoutId);
     }
 }
+
 

@@ -1,6 +1,6 @@
 export interface ConversationView {
   id: string;
-  participantId: string; // The ID of the other user
+  participantId: string;
   participantName: string;
   participantAvatar: string | null;
   lastMessagePreview: string | null;
@@ -12,12 +12,14 @@ export interface MessageView {
   id: string;
   conversationId: string;
   senderId: string;
-  senderName: string;
-  senderAvatar: string | null;
+  senderName?: string;
+  senderAvatar?: string | null;
   content: string;
   createdAt: string;
-  isOwnMessage: boolean; // Computed on frontend or provided by backend
-  status?: 'SENDING' | 'SENT' | 'FAILED'; // Local state
+  sentAt?: string;
+  clientMessageId?: string;
+  isOwnMessage: boolean;
+  status?: 'SENDING' | 'SENT' | 'FAILED';
 }
 
 export interface SendMessageRequest {

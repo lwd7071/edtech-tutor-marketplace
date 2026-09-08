@@ -20,6 +20,7 @@ public class NotificationEventListener {
     private final NotificationService notificationService;
     private final EmailService emailService;
     private final IdentityFacade identityFacade;
+    private final com.edtech.platform.teacher.facade.TeacherFacade teacherFacade;
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -41,7 +42,7 @@ public class NotificationEventListener {
 
         // Notify Teacher
         notificationService.createNotification(
-                event.getTeacherId(),
+                teacherFacade.getTeacher(event.getTeacherId()).userId(),
                 "PAYMENT_SUCCEEDED",
                 title,
                 content,
@@ -51,7 +52,7 @@ public class NotificationEventListener {
 
         // Send Email to Parent if needed
         identityFacade.getIdentity(event.getStudentId()).ifPresent(student -> {
-            if (Boolean.TRUE.equals(student.notifyParent()) && student.parentEmail() != null) {
+            if (Boolean.TRUE.equals(student.notifyParent()) && student.parentEmail() != null && !student.parentEmail().isBlank()) {
                 emailService.sendNotificationEmail(student.parentEmail(), title, content);
             }
         });
@@ -106,9 +107,10 @@ public class NotificationEventListener {
             if (student.email() != null) {
                 emailService.sendNotificationEmail(student.email(), title, content);
             }
-            if (Boolean.TRUE.equals(student.notifyParent()) && student.parentEmail() != null) {
+            if (Boolean.TRUE.equals(student.notifyParent()) && student.parentEmail() != null && !student.parentEmail().isBlank()) {
                 emailService.sendNotificationEmail(student.parentEmail(), title, content);
             }
         });
     }
 }
+

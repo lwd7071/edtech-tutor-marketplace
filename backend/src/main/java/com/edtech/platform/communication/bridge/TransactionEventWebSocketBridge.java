@@ -17,9 +17,11 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@org.springframework.scheduling.annotation.Async
 public class TransactionEventWebSocketBridge {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final com.edtech.platform.teacher.facade.TeacherFacade teacherFacade;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleBookingCreated(BookingCreatedEvent event) {
@@ -29,7 +31,7 @@ public class TransactionEventWebSocketBridge {
                 "Lịch học mới đã được đặt thành công",
                 event.getBookingId()
         );
-        messagingTemplate.convertAndSend("/topic/bookings." + event.getTeacherId(), msg);
+        messagingTemplate.convertAndSend("/topic/bookings." + teacherFacade.getTeacher(event.getTeacherId()).userId(), msg);
         messagingTemplate.convertAndSend("/topic/bookings." + event.getStudentId(), msg);
     }
 
@@ -42,7 +44,7 @@ public class TransactionEventWebSocketBridge {
                 event.getBookingId()
         );
         messagingTemplate.convertAndSend("/topic/bookings." + event.getStudentId(), msg);
-        messagingTemplate.convertAndSend("/topic/wallet." + event.getTeacherId(), msg);
+        messagingTemplate.convertAndSend("/topic/wallet." + teacherFacade.getTeacher(event.getTeacherId()).userId(), msg);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -54,7 +56,7 @@ public class TransactionEventWebSocketBridge {
                 event.getInvoiceId()
         );
         messagingTemplate.convertAndSend("/topic/invoices." + event.getStudentId(), msg);
-        messagingTemplate.convertAndSend("/topic/wallet." + event.getTeacherId(), msg);
+        messagingTemplate.convertAndSend("/topic/wallet." + teacherFacade.getTeacher(event.getTeacherId()).userId(), msg);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -72,14 +74,15 @@ public class TransactionEventWebSocketBridge {
                 "Yêu cầu rút tiền đã được cập nhật trạng thái: " + event.getStatus(),
                 event.getPayoutRequestId()
         );
-        messagingTemplate.convertAndSend("/topic/wallet." + event.getTeacherId(), msg);
+        messagingTemplate.convertAndSend("/topic/wallet." + teacherFacade.getTeacher(event.getTeacherId()).userId(), msg);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePayoutApproved(PayoutApprovedEvent event) {
         TransactionNotificationMessage msg = new TransactionNotificationMessage(
                 "PAYOUT_APPROVED", "Yêu cầu rút tiền đã được duyệt", event.getPayoutRequestId());
-        messagingTemplate.convertAndSend("/topic/wallet." + event.getTeacherId(), msg);
+        messagingTemplate.convertAndSend("/topic/wallet." + teacherFacade.getTeacher(event.getTeacherId()).userId(), msg);
     }
 }
+
 

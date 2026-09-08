@@ -16,6 +16,7 @@ public class NotificationView {
     private String content;
     private String referenceType;
     private UUID referenceId;
+    private String referenceUrl;
     private boolean isRead;
     private Instant createdAt;
 }

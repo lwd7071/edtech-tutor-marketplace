@@ -3,10 +3,8 @@ package com.edtech.platform.communication.controller;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.common.security.AuthenticatedUser;
-import com.edtech.platform.communication.domain.Conversation;
 import com.edtech.platform.communication.dto.chat.ChatMessageRequest;
 import com.edtech.platform.communication.dto.chat.ChatReadRequest;
-import com.edtech.platform.communication.repository.ConversationRepository;
 import com.edtech.platform.communication.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,35 +24,20 @@ import java.util.Map;
 public class ChatWebSocketController {
 
     private final ChatService chatService;
-    private final ConversationRepository conversationRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/chat.send")
-    public void sendMessage(@Payload ChatMessageRequest request, Principal principal) {
+    public void sendMessage(@jakarta.validation.Valid @Payload ChatMessageRequest request, Principal principal) {
         AuthenticatedUser user = getAuthenticatedUser(principal);
         if (user == null) return;
-
-        Conversation conversation = conversationRepository.findById(request.getConversationId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.CONVERSATION_NOT_FOUND));
-
-        if (!conversation.getTeacherId().equals(user.getId()) && !conversation.getStudentId().equals(user.getId())) {
-            throw new BusinessException(ErrorCode.CONVERSATION_NOT_FOUND);
-        }
 
         chatService.sendMessage(user.getId(), request);
     }
 
     @MessageMapping("/chat.read")
-    public void readMessages(@Payload ChatReadRequest request, Principal principal) {
+    public void readMessages(@jakarta.validation.Valid @Payload ChatReadRequest request, Principal principal) {
         AuthenticatedUser user = getAuthenticatedUser(principal);
         if (user == null) return;
-
-        Conversation conversation = conversationRepository.findById(request.getConversationId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.CONVERSATION_NOT_FOUND));
-
-        if (!conversation.getTeacherId().equals(user.getId()) && !conversation.getStudentId().equals(user.getId())) {
-            throw new BusinessException(ErrorCode.CONVERSATION_NOT_FOUND);
-        }
 
         chatService.readMessages(request.getConversationId(), user.getId());
     }
@@ -70,6 +53,12 @@ public class ChatWebSocketController {
         }
     }
 
+    @MessageExceptionHandler(org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException.class)
+    public void handleValidationException(Principal principal) {
+        if (principal != null) messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/errors",
+                Map.of("errorCode", ErrorCode.VALIDATION_ERROR.name(), "message", "Dữ liệu tin nhắn không hợp lệ"));
+    }
+
     private AuthenticatedUser getAuthenticatedUser(Principal principal) {
         if (principal instanceof UsernamePasswordAuthenticationToken token) {
             Object configUser = token.getPrincipal();
@@ -80,3 +69,4 @@ public class ChatWebSocketController {
         return null;
     }
 }
+

@@ -21,6 +21,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final com.edtech.platform.auth.facade.IdentityFacade identityFacade;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createNotification(UUID userId, String type, String title, String content, String referenceType, UUID referenceId) {
@@ -37,7 +38,7 @@ public class NotificationService {
         notificationRepository.save(notification);
         
         NotificationView view = mapToView(notification);
-        messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/notifications", view);
+        com.edtech.platform.common.transaction.AfterCommit.run(() -> messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/notifications", view));
     }
     
     @Transactional(readOnly = true)
@@ -48,7 +49,8 @@ public class NotificationService {
         } else {
             page = notificationRepository.findByUserId(userId, pageable);
         }
-        return page.map(this::mapToView);
+        String role = identityFacade.getIdentity(userId).map(i -> i.roleName()).orElse(null);
+        return page.map(n -> mapToView(n, role));
     }
     
     @Transactional
@@ -70,6 +72,10 @@ public class NotificationService {
     }
     
     private NotificationView mapToView(Notification n) {
+        return mapToView(n, identityFacade.getIdentity(n.getUserId()).map(i -> i.roleName()).orElse(null));
+    }
+
+    private NotificationView mapToView(Notification n, String role) {
         return NotificationView.builder()
                 .id(n.getId())
                 .userId(n.getUserId())
@@ -78,6 +84,7 @@ public class NotificationService {
                 .content(n.getContent())
                 .referenceType(n.getReferenceType())
                 .referenceId(n.getReferenceId())
+                .referenceUrl(NotificationRoutes.resolve(role, n.getReferenceType(), n.getReferenceId()))
                 .isRead(n.isRead())
                 .createdAt(n.getCreatedAt())
                 .build();

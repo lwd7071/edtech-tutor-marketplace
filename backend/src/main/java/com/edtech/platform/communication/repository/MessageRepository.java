@@ -13,8 +13,10 @@ import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
     Optional<Message> findBySenderIdAndClientMessageId(UUID senderId, UUID clientMessageId);
+    Optional<Message> findFirstByConversationIdAndDeletedFalseOrderBySentAtDesc(UUID conversationId);
+    long countByConversationIdAndSenderIdNotAndReadAtIsNullAndDeletedFalse(UUID conversationId, UUID readerId);
 
-    @Query("SELECT m FROM Message m WHERE m.conversationId = :conversationId AND m.deleted = false ORDER BY m.sentAt DESC")
+    @Query("SELECT m FROM Message m WHERE m.conversationId = :conversationId AND m.deleted = false ORDER BY m.sentAt DESC, m.id DESC")
     Page<Message> findByConversationId(@Param("conversationId") UUID conversationId, Pageable pageable);
 
     @Modifying

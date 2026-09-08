@@ -17,6 +17,7 @@ public class CommunicationFacadeImpl implements CommunicationFacade {
 
     private final NotificationService notifications;
     private final ApplicationEventPublisher publisher;
+    private final com.edtech.platform.teacher.facade.TeacherFacade teacherFacade;
 
     @Override
     public void publishAfterCommit(BookingEvent event) {
@@ -30,6 +31,6 @@ public class CommunicationFacadeImpl implements CommunicationFacade {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onBookingEvent(BookingEvent e) {
-        notifications.createNotification(e.teacherId(), e.type(), "Booking update", "Booking status changed", "BOOKING", e.bookingId());
+        notifications.createNotification(teacherFacade.getTeacher(e.teacherId()).userId(), e.type(), "Booking update", "Booking status changed", "BOOKING", e.bookingId());
     }
 }
