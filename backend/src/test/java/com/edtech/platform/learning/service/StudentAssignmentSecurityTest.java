@@ -13,7 +13,8 @@ import java.util.UUID;
 class StudentAssignmentSecurityTest {
     private final AssignmentRepository assignments = mock(AssignmentRepository.class);
     private final SubmissionRepository submissions = mock(SubmissionRepository.class);
-    private final StudentAssignmentService service = new StudentAssignmentService(assignments, submissions, null, null, null);
+    private final StudentAssignmentService service = new StudentAssignmentService(
+            assignments, submissions, null, null, null, null, null);
 
     @Test void draftFilterNeverQueriesPrivateDrafts() {
         assertTrue(service.getAssignments(UUID.randomUUID(), AssignmentStatus.DRAFT, Pageable.unpaged()).isEmpty());

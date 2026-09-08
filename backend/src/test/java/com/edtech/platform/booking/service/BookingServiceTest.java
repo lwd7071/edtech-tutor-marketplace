@@ -15,6 +15,7 @@ import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.finance.facade.FinanceFacade;
 import com.edtech.platform.teacher.facade.TeacherFacade;
 import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
+import com.edtech.platform.subject.facade.SubjectFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,8 +49,10 @@ class BookingServiceTest {
     @Mock private CommunicationFacade communicationFacade;
     @Mock private TeacherFacade teacherFacade;
     @Mock private IdentityFacade identityFacade;
+    @Mock private SubjectFacade subjectFacade;
 
     private BookingService bookingService;
+    private BookingReadService bookingReadService;
 
     private final UUID teacherUserId = UUID.randomUUID();
     private final UUID teacherId = UUID.randomUUID();
@@ -65,7 +69,15 @@ class BookingServiceTest {
                 financeFacade,
                 communicationFacade,
                 teacherFacade,
-                identityFacade
+                identityFacade,
+                Clock.systemUTC()
+        );
+        bookingReadService = new BookingReadService(
+                bookingRepository,
+                sessionReportRepository,
+                teacherFacade,
+                identityFacade,
+                subjectFacade
         );
     }
 
@@ -241,7 +253,7 @@ class BookingServiceTest {
         when(bookingRepository.findAllById(List.of(bookingId)))
                 .thenReturn(List.of(booking));
 
-        Page<SessionReportView> result = bookingService.findStudentSessionReports(studentId, PageRequest.of(0, 20));
+        Page<SessionReportView> result = bookingReadService.findStudentSessionReports(studentId, PageRequest.of(0, 20));
 
         assertThat(result.getContent()).hasSize(1);
         SessionReportView view = result.getContent().get(0);

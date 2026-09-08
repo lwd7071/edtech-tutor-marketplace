@@ -26,12 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.time.Clock;
 
 @Slf4j
 @Service
@@ -45,6 +42,7 @@ public class BookingService {
     private final CommunicationFacade communicationFacade;
     private final TeacherFacade teacherFacade;
     private final IdentityFacade identityFacade;
+    private final Clock clock;
 
     @Transactional
     public BookingDetail create(UUID teacherUserId, CreateBookingRequest request) {
@@ -57,7 +55,7 @@ public class BookingService {
         if (start == null || end == null || !start.isBefore(end)) {
             throw new BusinessException(ErrorCode.BOOKING_INVALID_TIME_RANGE);
         }
-        if (start.isBefore(Instant.now())) {
+        if (start.isBefore(clock.instant())) {
             throw new BusinessException(ErrorCode.BOOKING_IN_PAST);
         }
 
@@ -156,7 +154,7 @@ public class BookingService {
         if (booking.getStatus() != BookingStatus.SCHEDULED) {
             throw new BusinessException(ErrorCode.BOOKING_INVALID_STATE);
         }
-        if (booking.getEndTime().isAfter(Instant.now())) {
+        if (booking.getEndTime().isAfter(clock.instant())) {
             throw new BusinessException(ErrorCode.BOOKING_NOT_ENDED);
         }
         if (request.report() == null) {
@@ -174,12 +172,12 @@ public class BookingService {
                 request.report().feedback(),
                 request.report().followUpNote(),
                 request.report().teacherSelfRating(),
-                Instant.now()
+                clock.instant()
         );
         sessionReportRepository.save(report);
 
         // 2. Complete Booking
-        booking.complete(Instant.now());
+        booking.complete(clock.instant());
 
         // 3. Settle Package & Finance if official booking
         if (!booking.isTrial()) {
@@ -239,7 +237,7 @@ public class BookingService {
         }
 
         // 1. Cancel Booking
-        booking.cancel(request.reason(), request.initiatedBy(), Instant.now());
+        booking.cancel(request.reason(), request.initiatedBy(), clock.instant());
 
         // 2. Release reserved session if official
         if (!booking.isTrial()) {
@@ -254,22 +252,4 @@ public class BookingService {
         return BookingDetail.from(booking);
     }
 
-    @Transactional(readOnly = true)
-    public Page<BookingDetail> findStudent(UUID studentId, BookingStatus status, Instant from, Instant to, Pageable pageable) {
-        return bookingRepository.findStudent(studentId, status, from, to, pageable)
-                .map(BookingDetail::from);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<SessionReportView> findStudentSessionReports(UUID studentId, Pageable pageable) {
-        Page<SessionReport> reports = sessionReportRepository.findByStudentId(studentId, pageable);
-        if (reports.isEmpty()) {
-            return Page.empty(pageable);
-        }
-        List<UUID> bookingIds = reports.map(SessionReport::getBookingId).getContent();
-        Map<UUID, Booking> bookingMap = bookingRepository.findAllById(bookingIds).stream()
-                .collect(Collectors.toMap(Booking::getId, Function.identity()));
-
-        return reports.map(report -> SessionReportView.from(report, bookingMap.get(report.getBookingId())));
-    }
 }

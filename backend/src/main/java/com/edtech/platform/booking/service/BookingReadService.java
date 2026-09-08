@@ -15,6 +15,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import com.edtech.platform.booking.dto.response.SessionReportView;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +40,16 @@ public class BookingReadService {
         if (teacherRole ? !b.getTeacherId().equals(teacherId(userId)) : !b.getStudentId().equals(userId))
             throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
         return view(b);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<SessionReportView> findStudentSessionReports(UUID studentId, Pageable pageable) {
+        Page<SessionReport> page = reports.findByStudentId(studentId, pageable);
+        if (page.isEmpty()) return Page.empty(pageable);
+        Map<UUID, Booking> bookingById = bookings.findAllById(
+                        page.map(SessionReport::getBookingId).getContent()).stream()
+                .collect(Collectors.toMap(Booking::getId, Function.identity()));
+        return page.map(report -> SessionReportView.from(report, bookingById.get(report.getBookingId())));
     }
 
     private UUID teacherId(UUID userId) {

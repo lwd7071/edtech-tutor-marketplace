@@ -1,7 +1,7 @@
 package com.edtech.platform.booking.controller;
 
 import com.edtech.platform.booking.dto.response.SessionReportView;
-import com.edtech.platform.booking.service.BookingService;
+import com.edtech.platform.booking.service.BookingReadService;
 import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.common.security.AuthenticatedUser;
@@ -24,7 +24,7 @@ import java.util.List;
 @RequireRole("STUDENT")
 public class StudentSessionReportController {
 
-    private final BookingService bookingService;
+    private final BookingReadService bookingReads;
 
     @GetMapping
     public ApiResponse<List<SessionReportView>> list(
@@ -33,7 +33,7 @@ public class StudentSessionReportController {
             @RequestParam(defaultValue = "20") int size
     ) {
         size = Math.min(size, 100);
-        Page<SessionReportView> result = bookingService.findStudentSessionReports(
+        Page<SessionReportView> result = bookingReads.findStudentSessionReports(
                 user.id(),
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "submittedAt"))
         );

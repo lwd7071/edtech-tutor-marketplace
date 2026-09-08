@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,7 +18,7 @@ import static org.mockito.Mockito.*;
 
 class TeacherAssignmentLifecycleTest {
     @Test void rejectsScoresOutsideTenPointScaleBeforeAccessingData() {
-        var service = new TeacherAssignmentService(null,null,null,null,null,null,null,null);
+        var service = new TeacherAssignmentService(null,null,null,null,null,null,null,null,null,null);
         for (String score : new String[]{"-0.1", "10.1"}) {
             var request = new GradeSubmissionRequest(); request.setScore(new BigDecimal(score));
             assertThrows(BusinessException.class, () -> service.gradeSubmission(UUID.randomUUID(), UUID.randomUUID(), request));
@@ -34,7 +35,9 @@ class TeacherAssignmentLifecycleTest {
                 .status(AssignmentStatus.DRAFT).dueAt(Instant.now().plusSeconds(3600)).build();
         when(repository.findByIdForUpdate(id)).thenReturn(Optional.of(assignment));
         when(repository.save(assignment)).thenReturn(assignment);
-        var service = new TeacherAssignmentService(repository,null,teachers,null,null,null,null,new ObjectMapper());
+        var objectMapper = new ObjectMapper();
+        var service = new TeacherAssignmentService(repository,null,teachers,null,null,null,objectMapper,null,
+                new AssignmentViewMapper(objectMapper), Clock.systemUTC());
         service.transition(user,id,AssignmentStatus.PUBLISHED);
         assertEquals(AssignmentStatus.PUBLISHED, assignment.getStatus());
         service.transition(user,id,AssignmentStatus.CLOSED);
@@ -49,7 +52,9 @@ class TeacherAssignmentLifecycleTest {
         when(teacher.id()).thenReturn(UUID.randomUUID());
         when(teachers.getTeacherByUserId(user)).thenReturn(teacher);
         when(repository.findByIdForUpdate(id)).thenReturn(Optional.of(Assignment.builder().teacherId(UUID.randomUUID()).status(AssignmentStatus.DRAFT).build()));
-        var service = new TeacherAssignmentService(repository,null,teachers,null,null,null,null,new ObjectMapper());
+        var objectMapper = new ObjectMapper();
+        var service = new TeacherAssignmentService(repository,null,teachers,null,null,null,objectMapper,null,
+                new AssignmentViewMapper(objectMapper), Clock.systemUTC());
         assertThrows(BusinessException.class, () -> service.transition(user,id,AssignmentStatus.PUBLISHED));
         verify(repository,never()).save(any());
     }

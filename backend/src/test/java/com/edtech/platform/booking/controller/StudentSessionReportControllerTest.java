@@ -2,7 +2,7 @@ package com.edtech.platform.booking.controller;
 
 import com.edtech.platform.booking.domain.DeliveryMode;
 import com.edtech.platform.booking.dto.response.SessionReportView;
-import com.edtech.platform.booking.service.BookingService;
+import com.edtech.platform.booking.service.BookingReadService;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ class StudentSessionReportControllerTest {
     private MockMvc mockMvc;
 
     @Mock
-    private BookingService bookingService;
+    private BookingReadService bookingReadService;
 
     @InjectMocks
     private StudentSessionReportController controller;
@@ -78,7 +78,7 @@ class StudentSessionReportControllerTest {
                 (short) 5, now
         );
 
-        when(bookingService.findStudentSessionReports(eq(studentUserId), any()))
+        when(bookingReadService.findStudentSessionReports(eq(studentUserId), any()))
                 .thenReturn(new PageImpl<>(List.of(view)));
 
         mockMvc.perform(get("/api/student/session-reports")
