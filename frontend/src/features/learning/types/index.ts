@@ -11,7 +11,7 @@ export interface AssignmentDetail {
   studentId: string;
   subjectId: string;
   title: string;
-  assignmentType: string;
+  assignmentType: 'FREEFORM' | 'SYSTEM_QUIZ';
   contentBlocks: ContentBlock[];
   quizSchema?: any;
   dueAt: string;
@@ -34,7 +34,7 @@ export interface CreateAssignmentRequest {
   studentId: string;
   subjectId: string;
   title: string;
-  assignmentType: string;
+  assignmentType: 'FREEFORM' | 'SYSTEM_QUIZ';
   contentBlocks: ContentBlock[];
   quizSchema?: any;
   dueAt: string;

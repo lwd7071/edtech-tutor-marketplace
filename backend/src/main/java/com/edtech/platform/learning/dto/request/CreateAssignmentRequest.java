@@ -21,7 +21,8 @@ public class CreateAssignmentRequest {
     @NotNull
     private UUID subjectId;
     
-    @NotNull
+    @jakarta.validation.constraints.NotBlank
+    @jakarta.validation.constraints.Size(max = 255)
     private String title;
     
     @NotNull

@@ -43,17 +43,21 @@ public class StudentAssignmentService {
     @Transactional(readOnly = true)
     public Page<AssignmentDetail> getAssignments(UUID studentId, AssignmentStatus status, Pageable pageable) {
         Page<Assignment> assignments;
+        if (status == AssignmentStatus.DRAFT) return Page.empty(pageable);
         if (status != null) {
             assignments = assignmentRepository.findByStudentIdAndStatus(studentId, status, pageable);
         } else {
-            assignments = assignmentRepository.findByStudentId(studentId, pageable);
+            assignments = assignmentRepository.findByStudentIdAndStatusIn(studentId, List.of(AssignmentStatus.PUBLISHED, AssignmentStatus.CLOSED), pageable);
         }
         return assignments.map(this::toAssignmentDetail);
     }
 
     @Transactional
     public SubmissionDetail createOrUpdateSubmission(UUID studentId, UUID assignmentId, CreateSubmissionRequest request) {
-        Assignment assignment = assignmentRepository.findById(assignmentId)
+        if (request.getStatus() != SubmissionStatus.DRAFT && request.getStatus() != SubmissionStatus.SUBMITTED) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Trạng thái bài nộp không hợp lệ");
+        }
+        Assignment assignment = assignmentRepository.findByIdForUpdate(assignmentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ASSIGNMENT_NOT_FOUND));
 
         if (!assignment.getStudentId().equals(studentId)) {
@@ -84,6 +88,8 @@ public class StudentAssignmentService {
             submission.setStatus(request.getStatus());
             if (request.getStatus() == SubmissionStatus.SUBMITTED) {
                 submission.setSubmittedAt(Instant.now());
+            } else {
+                submission.setSubmittedAt(null);
             }
         } else {
             submission = Submission.builder()

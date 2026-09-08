@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class GradeSubmissionRequest {
     @NotNull
+    @jakarta.validation.constraints.DecimalMin("0")
+    @jakarta.validation.constraints.DecimalMax("10")
     private BigDecimal score;
     
     private String feedbackText;

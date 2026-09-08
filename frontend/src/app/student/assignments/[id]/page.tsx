@@ -9,7 +9,7 @@ export default function StudentAssignmentDetailPage() {
   const id = params?.id as string;
 
   return (
-    <div className="py-6">
+    <div style={{ paddingBlock: 24 }}>
       <StudentAssignmentDetail assignmentId={id} />
     </div>
   );

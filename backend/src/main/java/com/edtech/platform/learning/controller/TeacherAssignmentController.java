@@ -28,6 +28,25 @@ public class TeacherAssignmentController {
 
     private final TeacherAssignmentService teacherAssignmentService;
 
+    @org.springframework.web.bind.annotation.PutMapping("/assignments/{id}")
+    @RequireRole("TEACHER")
+    public ApiResponse<AssignmentDetail> update(@AuthenticationPrincipal AuthenticatedUser user, @PathVariable UUID id,
+            @Valid @RequestBody CreateAssignmentRequest request) {
+        return ApiResponse.ok(teacherAssignmentService.updateDraft(user.id(), id, request));
+    }
+
+    @PostMapping("/assignments/{id}/publish")
+    @RequireRole("TEACHER")
+    public ApiResponse<AssignmentDetail> publish(@AuthenticationPrincipal AuthenticatedUser user, @PathVariable UUID id) {
+        return ApiResponse.ok(teacherAssignmentService.transition(user.id(), id, com.edtech.platform.learning.domain.AssignmentStatus.PUBLISHED));
+    }
+
+    @PostMapping("/assignments/{id}/close")
+    @RequireRole("TEACHER")
+    public ApiResponse<AssignmentDetail> close(@AuthenticationPrincipal AuthenticatedUser user, @PathVariable UUID id) {
+        return ApiResponse.ok(teacherAssignmentService.transition(user.id(), id, com.edtech.platform.learning.domain.AssignmentStatus.CLOSED));
+    }
+
     @PostMapping("/assignments")
     @RequireRole("TEACHER")
     @org.springframework.web.bind.annotation.ResponseStatus(HttpStatus.CREATED)

@@ -17,6 +17,7 @@ export const StudentAssignmentList: React.FC = () => {
   const [activeTab, setActiveTab] = useState('to_do');
   
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
+  const { current, pageSize } = pagination;
 
   const fetchAssignments = async (page: number, size: number, tab: string) => {
     try {
@@ -40,8 +41,8 @@ export const StudentAssignmentList: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchAssignments(pagination.current - 1, pagination.pageSize, activeTab);
-  }, [pagination.current, pagination.pageSize, activeTab]);
+    fetchAssignments(current - 1, pageSize, activeTab);
+  }, [current, pageSize, activeTab]);
 
   const isOverdue = (dueAt: string) => {
     return new Date(dueAt).getTime() < new Date().getTime();

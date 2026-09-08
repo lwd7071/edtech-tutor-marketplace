@@ -45,9 +45,10 @@ public class TeacherAssignmentService {
 
     @Transactional
     public AssignmentDetail createAssignment(UUID teacherUserId, CreateAssignmentRequest request) {
+        validateRequest(request);
         var teacher = teacherFacade.getTeacherByUserId(teacherUserId);
 
-        if (!identityFacade.existsById(request.getStudentId())) {
+        if (identityFacade.getIdentity(request.getStudentId()).filter(i -> "STUDENT".equals(i.roleName())).isEmpty()) {
             throw new BusinessException(ErrorCode.STUDENT_NOT_FOUND);
         }
 
@@ -80,10 +81,15 @@ public class TeacherAssignmentService {
 
     @Transactional
     public SubmissionDetail gradeSubmission(UUID teacherUserId, UUID submissionId, GradeSubmissionRequest request) {
-        Submission submission = submissionRepository.findById(submissionId)
+        if (request.getScore() == null || request.getScore().signum() < 0 || request.getScore().compareTo(java.math.BigDecimal.TEN) > 0)
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Điểm phải nằm trong khoảng 0 đến 10");
+        UUID assignmentId = submissionRepository.findAssignmentId(submissionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SUBMISSION_NOT_FOUND));
 
         var teacher = teacherFacade.getTeacherByUserId(teacherUserId);
+        assignmentRepository.findByIdForUpdate(assignmentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ASSIGNMENT_NOT_FOUND));
+        Submission submission = submissionRepository.findById(submissionId).orElseThrow();
         if (!submission.getAssignment().getTeacherId().equals(teacher.id())) {
             throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE);
         }
@@ -102,6 +108,58 @@ public class TeacherAssignmentService {
         submission.setGradedAt(Instant.now());
 
         return toSubmissionDetail(submissionRepository.save(submission));
+    }
+
+    @Transactional
+    public AssignmentDetail updateDraft(UUID userId, UUID id, CreateAssignmentRequest request) {
+        Assignment assignment = ownedForUpdate(userId, id);
+        if (assignment.getStatus() != com.edtech.platform.learning.domain.AssignmentStatus.DRAFT
+                || request.getStatus() != com.edtech.platform.learning.domain.AssignmentStatus.DRAFT)
+            throw new BusinessException(ErrorCode.ASSIGNMENT_INVALID_STATE);
+        validateRequest(request);
+        if (!assignment.getStudentId().equals(request.getStudentId()) || !assignment.getSubjectId().equals(request.getSubjectId()))
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Không thể đổi học viên hoặc môn học của bài tập");
+        assignment.setTitle(request.getTitle());
+        assignment.setAssignmentType(request.getAssignmentType());
+        assignment.setContentBlocks(objectMapper.valueToTree(request.getContentBlocks()));
+        assignment.setQuizSchema(null);
+        assignment.setDueAt(request.getDueAt());
+        if (request.getContentBlocks() != null) validateAndLinkAttachments(userId, "ASSIGNMENT", request.getContentBlocks(), id);
+        return toAssignmentDetail(assignmentRepository.save(assignment));
+    }
+
+    @Transactional
+    public AssignmentDetail transition(UUID userId, UUID id, com.edtech.platform.learning.domain.AssignmentStatus target) {
+        Assignment assignment = ownedForUpdate(userId, id);
+        var source = assignment.getStatus();
+        if (!(source == com.edtech.platform.learning.domain.AssignmentStatus.DRAFT && target == com.edtech.platform.learning.domain.AssignmentStatus.PUBLISHED)
+                && !(source == com.edtech.platform.learning.domain.AssignmentStatus.PUBLISHED && target == com.edtech.platform.learning.domain.AssignmentStatus.CLOSED))
+            throw new BusinessException(ErrorCode.ASSIGNMENT_INVALID_STATE);
+        if (target == com.edtech.platform.learning.domain.AssignmentStatus.PUBLISHED) {
+            if (assignment.getAssignmentType() != com.edtech.platform.learning.domain.AssignmentType.FREEFORM)
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR, "MVP chỉ hỗ trợ bài tập tự luận và file");
+            if (assignment.getDueAt() != null && !assignment.getDueAt().isAfter(Instant.now()))
+                throw new BusinessException(ErrorCode.ASSIGNMENT_DUE_DATE_PASSED);
+        }
+        assignment.setStatus(target);
+        return toAssignmentDetail(assignmentRepository.save(assignment));
+    }
+
+    private Assignment ownedForUpdate(UUID userId, UUID id) {
+        var teacher = teacherFacade.getTeacherByUserId(userId);
+        Assignment assignment = assignmentRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ASSIGNMENT_NOT_FOUND));
+        if (!assignment.getTeacherId().equals(teacher.id())) throw new BusinessException(ErrorCode.ASSIGNMENT_NOT_FOUND);
+        return assignment;
+    }
+
+    private void validateRequest(CreateAssignmentRequest request) {
+        if (request.getAssignmentType() != com.edtech.platform.learning.domain.AssignmentType.FREEFORM || request.getQuizSchema() != null)
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "MVP chỉ hỗ trợ bài tập tự luận và file");
+        if (request.getStatus() != com.edtech.platform.learning.domain.AssignmentStatus.DRAFT && request.getStatus() != com.edtech.platform.learning.domain.AssignmentStatus.PUBLISHED)
+            throw new BusinessException(ErrorCode.ASSIGNMENT_INVALID_STATE);
+        if (request.getDueAt() != null && !request.getDueAt().isAfter(Instant.now()))
+            throw new BusinessException(ErrorCode.ASSIGNMENT_DUE_DATE_PASSED);
     }
 
     private void validateAndLinkAttachments(UUID currentUserId, String attachableType, List<ContentBlock> contentBlocks, UUID attachableId) {

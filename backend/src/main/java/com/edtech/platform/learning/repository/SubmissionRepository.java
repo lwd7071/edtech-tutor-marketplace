@@ -9,5 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
+    @org.springframework.data.jpa.repository.Query("select s.assignment.id from Submission s where s.id = :id")
+    Optional<UUID> findAssignmentId(UUID id);
     Optional<Submission> findByAssignmentIdAndStudentId(UUID assignmentId, UUID studentId);
 }
