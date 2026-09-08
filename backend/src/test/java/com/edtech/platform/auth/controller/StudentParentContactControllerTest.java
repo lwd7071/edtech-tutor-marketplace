@@ -1,9 +1,8 @@
 package com.edtech.platform.auth.controller;
 
-import com.edtech.platform.auth.domain.Role;
 import com.edtech.platform.auth.dto.request.UpdateParentContactRequest;
 import com.edtech.platform.auth.dto.response.ParentContactResponse;
-import com.edtech.platform.auth.service.AuthService;
+import com.edtech.platform.auth.service.ParentContactService;
 import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,8 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -27,7 +24,7 @@ import static org.mockito.Mockito.when;
 public class StudentParentContactControllerTest {
 
     @Mock
-    private AuthService authService;
+    private ParentContactService parentContacts;
 
     @InjectMocks
     private StudentParentContactController controller;
@@ -48,7 +45,7 @@ public class StudentParentContactControllerTest {
                 "Parent Name", "0123456789", "parent@test.com", true, Instant.now()
         );
 
-        when(authService.updateParentContact(eq(mockUser.id()), any())).thenReturn(expectedResponse);
+        when(parentContacts.update(eq(mockUser.id()), any())).thenReturn(expectedResponse);
 
         ApiResponse<ParentContactResponse> response = controller.updateParentContact(mockUser, request);
 

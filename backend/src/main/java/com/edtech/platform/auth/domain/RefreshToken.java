@@ -53,7 +53,7 @@ public class RefreshToken extends BaseEntity {
         this.ipAddress = ipAddress;
     }
 
-    public void revoke() {
-        this.revokedAt = Instant.now();
+    public void revoke(Instant revokedAt) {
+        this.revokedAt = revokedAt;
     }
 }

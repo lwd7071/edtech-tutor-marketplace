@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.util.Date;
 import java.util.UUID;
 
@@ -16,14 +17,16 @@ public class JwtTokenProvider {
 
     private final SecretKey key;
     private final long accessExpirationMs;
+    private final Clock clock;
 
-    public JwtTokenProvider(JwtProperties properties) {
+    public JwtTokenProvider(JwtProperties properties, Clock clock) {
         this.key = Keys.hmacShaKeyFor(properties.secret().getBytes(StandardCharsets.UTF_8));
         this.accessExpirationMs = properties.accessExpirationMs();
+        this.clock = clock;
     }
 
     public String generateAccessToken(AuthenticatedUser user) {
-        Date now = new Date();
+        Date now = Date.from(clock.instant());
         Date expiryDate = new Date(now.getTime() + accessExpirationMs);
 
         return Jwts.builder()
