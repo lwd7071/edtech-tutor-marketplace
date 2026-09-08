@@ -32,7 +32,7 @@ Dự án sử dụng `docker-compose.yml` có sẵn ở thư mục gốc để k
 
 Tại thư mục gốc của dự án, chạy lệnh:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 *Lệnh này sẽ tải image và chạy ngầm 2 container (edtech_postgres và edtech_redis).*
 
@@ -62,6 +62,16 @@ Thông tin cấu hình mặc định (xem trong `docker-compose.yml`):
 - Bấm nút **Run** (mũi tên xanh) hoặc **Debug** (hình con bọ) bên cạnh class này để khởi động.
 - Backend sẽ chạy ở cổng **8080** (`http://localhost:8080`). 
 - *Lưu ý:* Khi chạy lần đầu, Flyway sẽ tự động chạy các file migration (nếu có) để tạo bảng trong Database PostgreSQL.
+
+Chạy nhanh bằng Maven từ thư mục `backend`:
+
+```powershell
+mvn spring-boot:run
+```
+
+Profile mặc định là `cloud` và đọc `.env.cloud` ở thư mục `backend` hoặc thư mục gốc. Để chạy hạ tầng local, đặt `SPRING_PROFILES_ACTIVE=local`. Sao chép `.env.example` thành file môi trường riêng; không commit secret.
+
+Google OAuth dùng `GOOGLE_OAUTH_REDIRECT_URI` cho callback Backend và `APP_OAUTH2_FRONTEND_CALLBACK_URI` cho callback FE. Profile cloud không khởi động nếu thiếu `GOOGLE_CLIENT_ID` hoặc `GOOGLE_CLIENT_SECRET`.
 
 ---
 
@@ -98,7 +108,7 @@ npm run dev
   - Nếu báo lỗi cổng `5432` hoặc `6379` khi chạy Docker, hãy chắc chắn máy bạn chưa chạy sẵn PostgreSQL/Redis nào khác.
   - Nếu báo lỗi cổng `8080` ở Backend, kiểm tra xem có ứng dụng web nào khác đang dùng port này không.
 - **Lỗi Flyway migration (Backend):**
-  - Nếu thay đổi cấu trúc bảng, đôi khi Flyway sẽ báo lỗi sai Checksum. Trong môi trường dev, bạn có thể xóa toàn bộ database (xóa volume trong docker) và chạy lại. 
-  - Lệnh xóa data cũ của Docker: `docker-compose down -v`
+  - Không sửa migration đã áp dụng, không chạy `flyway repair` và không xóa database để bỏ qua checksum mismatch.
+  - Đối chiếu migration với lịch sử Git, sửa nguyên nhân và tạo migration mới cho thay đổi schema tiếp theo.
 - **Không Import được class trong IntelliJ:**
   - Chạy lại lệnh cập nhật Maven (Chuột phải vào `pom.xml` -> `Maven` -> `Reload project`).
