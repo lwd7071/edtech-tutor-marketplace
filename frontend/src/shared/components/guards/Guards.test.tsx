@@ -6,8 +6,9 @@ import { TeacherApprovalGuard } from './TeacherApprovalGuard';
 import { useAuthStore } from '@/features/auth';
 
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace }),
   usePathname: () => '/student/bookings',
 }));
 
@@ -67,7 +68,8 @@ describe('Route Guards & Access Control (TDD)', () => {
         </RoleGuard>
       );
 
-      expect(screen.getByText('Bạn không có quyền truy cập')).toBeInTheDocument();
+      expect(mockReplace).toHaveBeenCalledWith('/forbidden');
+      expect(screen.getByText('Đang chuyển đến trang báo lỗi quyền truy cập')).toBeInTheDocument();
       expect(screen.queryByText('Khu vực Giáo viên & Admin')).not.toBeInTheDocument();
     });
 

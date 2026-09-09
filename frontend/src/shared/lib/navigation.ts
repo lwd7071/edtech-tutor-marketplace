@@ -23,3 +23,8 @@ export const workspaceLinks: Record<UserRole, { href: string; label: string }[]>
  ].map(([href,label]) => ({href,label})),
 };
 
+export function isWorkspaceLinkActive(pathname: string, href: string): boolean {
+  if (pathname === href) return true;
+  return href.split('/').length > 2 && pathname.startsWith(`${href}/`);
+}
+
