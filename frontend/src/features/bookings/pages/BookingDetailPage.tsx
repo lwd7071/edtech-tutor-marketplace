@@ -4,13 +4,14 @@ import {useParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {Alert,Button,Skeleton} from 'antd';
 import {bookingApi} from '../api/bookingApi';
+import {bookingKeys} from '../data/bookingKeys';
 import {SessionReportModal} from '../components/SessionReportModal';
 import {CancelBookingModal} from '../components/CancelBookingModal';
 import {ReviewBookingModal} from '../components/ReviewBookingModal';
 import {BackLink} from '@/shared/components/navigation/NavigationLinks';
 export default function BookingDetailPage({role}:{role:'student'|'teacher'}){
  const {id}=useParams<{id:string}>();const [action,setAction]=useState<string>();
- const q=useQuery({queryKey:['workspace-booking',role,id],queryFn:()=>bookingApi.getBookingDetail(role,id)});
+ const q=useQuery({queryKey:bookingKeys.detail(role,id),queryFn:()=>bookingApi.getBookingDetail(role,id)});
  if(q.isLoading)return <Skeleton active/>;
  if(q.isError||!q.data?.data)return <Alert type="error" title="Chưa đọc được buổi học" description="Buổi học có thể không tồn tại hoặc không thuộc tài khoản của bạn." action={<Button onClick={()=>q.refetch()}>Thử lại</Button>}/>;
  const b=q.data.data;const close=()=>{setAction(undefined);q.refetch();};

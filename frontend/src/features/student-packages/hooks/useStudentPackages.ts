@@ -1,15 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { studentPackageApi } from '../api/studentPackageApi';
 import { StudentPackageStatus } from '../types';
+import { studentPackageKeys } from '../data/studentPackageKeys';
 
-export const STUDENT_PACKAGE_KEYS = {
-  all: ['student-packages'] as const,
-  lists: () => [...STUDENT_PACKAGE_KEYS.all, 'list'] as const,
-  list: (status?: StudentPackageStatus, page?: number, size?: number) =>
-    [...STUDENT_PACKAGE_KEYS.lists(), { status, page, size }] as const,
-  details: () => [...STUDENT_PACKAGE_KEYS.all, 'detail'] as const,
-  detail: (id: string) => [...STUDENT_PACKAGE_KEYS.details(), id] as const,
-};
+export const STUDENT_PACKAGE_KEYS = studentPackageKeys;
 
 /**
  * Hook lấy danh sách gói học của học sinh
@@ -21,7 +15,7 @@ export function useStudentPackages(
   sort: string = 'createdAt,desc'
 ) {
   return useQuery({
-    queryKey: STUDENT_PACKAGE_KEYS.list(status, page, size),
+    queryKey: studentPackageKeys.list(status, page, size, sort),
     queryFn: () => studentPackageApi.getStudentPackages(status, page, size, sort),
   });
 }
@@ -31,7 +25,7 @@ export function useStudentPackages(
  */
 export function useStudentPackageDetail(id: string) {
   return useQuery({
-    queryKey: STUDENT_PACKAGE_KEYS.detail(id),
+    queryKey: studentPackageKeys.detail(id),
     queryFn: () => studentPackageApi.getStudentPackageDetail(id),
     enabled: !!id,
   });

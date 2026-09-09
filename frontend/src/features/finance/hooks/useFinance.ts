@@ -7,17 +7,9 @@ import {
   CreateRefundRequest,
   CreateExtensionRequest,
 } from '../types';
+import { financeKeys } from '../data/financeKeys';
 
-export const FINANCE_KEYS = {
-  all: ['finance'] as const,
-  wallet: () => [...FINANCE_KEYS.all, 'wallet'] as const,
-  ledger: (page: number, size: number) => [...FINANCE_KEYS.all, 'ledger', page, size] as const,
-  bankAccounts: () => [...FINANCE_KEYS.all, 'bankAccounts'] as const,
-  payouts: (status?: PayoutStatus, page?: number, size?: number) =>
-    [...FINANCE_KEYS.all, 'payouts', status, page, size] as const,
-  refunds: (page: number, size: number) => [...FINANCE_KEYS.all, 'refunds', page, size] as const,
-  extensions: (page: number, size: number) => [...FINANCE_KEYS.all, 'extensions', page, size] as const,
-};
+export const FINANCE_KEYS = financeKeys;
 
 // ---- Teacher Wallet Hooks ----
 export function useTeacherWallet() {

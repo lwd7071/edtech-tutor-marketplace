@@ -9,20 +9,18 @@ import {
   AcceptTrialRequest,
   RejectTrialRequest,
 } from '../types';
+import { bookingKeys } from '../data/bookingKeys';
+import { studentPackageKeys } from '@/features/student-packages/data/studentPackageKeys';
+import { financeKeys } from '@/features/finance/data/financeKeys';
 
-export const BOOKING_KEYS = {
-  all: ['bookings'] as const,
-  studentList: (params?: BookingFilterParams) => [...BOOKING_KEYS.all, 'student', params] as const,
-  trialRequests: (status?: string, page?: number) =>
-    [...BOOKING_KEYS.all, 'trial-requests', { status, page }] as const,
-};
+export const BOOKING_KEYS = bookingKeys;
 
 /**
  * Hook lấy danh sách buổi học của học sinh
  */
 export function useStudentBookings(params?: BookingFilterParams) {
   return useQuery({
-    queryKey: BOOKING_KEYS.studentList(params),
+    queryKey: bookingKeys.list('student', params),
     queryFn: () => bookingApi.getStudentBookings(params),
   });
 }
@@ -36,8 +34,8 @@ export function useCreateBooking() {
   return useMutation({
     mutationFn: (data: CreateBookingRequest) => bookingApi.createTeacherBooking(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: BOOKING_KEYS.all });
-      queryClient.invalidateQueries({ queryKey: ['student-packages'] });
+      queryClient.invalidateQueries({ queryKey: bookingKeys.all });
+      queryClient.invalidateQueries({ queryKey: studentPackageKeys.all });
     },
   });
 }
@@ -52,9 +50,9 @@ export function useCompleteBooking() {
     mutationFn: ({ id, data }: { id: string; data: CompleteBookingRequest }) =>
       bookingApi.completeBooking(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: BOOKING_KEYS.all });
-      queryClient.invalidateQueries({ queryKey: ['student-packages'] });
-      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      queryClient.invalidateQueries({ queryKey: bookingKeys.all });
+      queryClient.invalidateQueries({ queryKey: studentPackageKeys.all });
+      queryClient.invalidateQueries({ queryKey: financeKeys.wallet() });
     },
   });
 }
@@ -69,8 +67,8 @@ export function useCancelBooking() {
     mutationFn: ({ id, data }: { id: string; data: CancelBookingRequest }) =>
       bookingApi.cancelBooking(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: BOOKING_KEYS.all });
-      queryClient.invalidateQueries({ queryKey: ['student-packages'] });
+      queryClient.invalidateQueries({ queryKey: bookingKeys.all });
+      queryClient.invalidateQueries({ queryKey: studentPackageKeys.all });
     },
   });
 }
@@ -80,7 +78,7 @@ export function useCancelBooking() {
  */
 export function useTeacherTrialRequests(status?: string, page?: number, size?: number) {
   return useQuery({
-    queryKey: BOOKING_KEYS.trialRequests(status, page),
+    queryKey: bookingKeys.trialRequests(status, page, size),
     queryFn: () => bookingApi.getTeacherTrialRequests(status, page, size),
   });
 }
