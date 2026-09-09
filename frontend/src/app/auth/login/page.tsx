@@ -9,7 +9,7 @@ import { GoogleOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
-import { BASE_API_URL } from '@/shared/api/axiosClient';
+import { BASE_API_URL } from '@/shared/backend';
 import { useAuthStore } from '@/features/auth';
 import { ErrorState } from '@/shared/components/feedback/ErrorState';
 import { roleHome, safeReturnTo } from '@/shared/lib/navigation';

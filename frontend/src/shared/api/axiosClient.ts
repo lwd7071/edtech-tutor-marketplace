@@ -1,8 +1,9 @@
 import axios, { AxiosInstance } from 'axios';
 import Cookies from 'js-cookie';
 import { useAuthStore } from '@/features/auth';
+import { BASE_API_URL } from '@/shared/backend/config';
 
-export const BASE_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+export { BASE_API_URL };
 
 export const axiosClient = axios.create({
   baseURL: BASE_API_URL,

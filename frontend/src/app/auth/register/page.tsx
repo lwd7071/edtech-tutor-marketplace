@@ -9,7 +9,7 @@ import { GoogleOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
-import { BASE_API_URL } from '@/shared/api/axiosClient';
+import { BASE_API_URL } from '@/shared/backend';
 import RadioCard from '@/shared/components/ui/RadioCard';
 
 const { Title, Text } = Typography;
