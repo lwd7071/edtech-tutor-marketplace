@@ -6,6 +6,18 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
+    files: [
+      "src/features/auth/**/*.{ts,tsx}",
+      "src/shared/backend/**/*.{ts,tsx}",
+      "src/features/finance/**/*.{ts,tsx}",
+      "src/features/chat/**/*.{ts,tsx}",
+      "src/features/notifications/**/*.{ts,tsx}",
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+    },
+  },
+  {
     rules: {
       "react-hooks/set-state-in-effect": "off",
       "@typescript-eslint/no-unused-vars": "off",

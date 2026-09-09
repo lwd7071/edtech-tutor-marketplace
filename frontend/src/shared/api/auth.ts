@@ -19,13 +19,20 @@ export interface AuthResult {
   user: UserSummary;
 }
 
+export interface LoginRequest { email: string; password: string; deviceInfo?: string }
+export interface RegisterRequest { fullName: string; email: string; password: string; role: 'STUDENT' | 'TEACHER' }
+export interface ResetPasswordRequest { token: string; newPassword: string }
+export interface OAuthExchangeRequest { exchangeCode: string }
+export interface CompleteOAuthRegistrationRequest { registrationToken: string; role: 'STUDENT' | 'TEACHER' }
+export interface ParentContactRequest { parentFullName: string; parentPhone: string; parentEmail: string; notifyParent: boolean }
+
 export const authApi = {
-  login: async (data: any): Promise<ApiResponse<AuthResult>> => {
+  login: async (data: LoginRequest): Promise<ApiResponse<AuthResult>> => {
     const response = await axiosClient.post('/api/auth/login', data);
     return response.data;
   },
 
-  register: async (data: any): Promise<ApiResponse<AuthResult>> => {
+  register: async (data: RegisterRequest): Promise<ApiResponse<AuthResult>> => {
     const response = await axiosClient.post('/api/auth/register', data);
     return response.data;
   },
@@ -56,22 +63,22 @@ export const authApi = {
     return response.data;
   },
 
-  resetPassword: async (data: any): Promise<ApiResponse<void>> => {
+  resetPassword: async (data: ResetPasswordRequest): Promise<ApiResponse<void>> => {
     const response = await axiosClient.post('/api/auth/reset-password', data);
     return response.data;
   },
 
-  exchangeOAuthToken: async (data: any): Promise<ApiResponse<AuthResult>> => {
+  exchangeOAuthToken: async (data: OAuthExchangeRequest): Promise<ApiResponse<AuthResult>> => {
     const response = await axiosClient.post('/api/auth/oauth2/exchange', data);
     return response.data;
   },
 
-  completeOAuthRegistration: async (data: any): Promise<ApiResponse<AuthResult>> => {
+  completeOAuthRegistration: async (data: CompleteOAuthRegistrationRequest): Promise<ApiResponse<AuthResult>> => {
     const response = await axiosClient.post('/api/auth/oauth2/complete-registration', data);
     return response.data;
   },
 
-  updateParentContact: async (data: any): Promise<ApiResponse<any>> => {
+  updateParentContact: async (data: ParentContactRequest): Promise<ApiResponse<unknown>> => {
     const response = await axiosClient.put('/api/student/parent-contact', data);
     return response.data;
   },

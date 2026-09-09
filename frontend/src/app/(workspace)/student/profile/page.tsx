@@ -4,14 +4,14 @@ import React, { useState } from 'react';
 import { Card, Typography, Form, Input, Button, message, Avatar, Space, Divider, Switch } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/features/auth';
-import { authApi } from '@/shared/api/auth';
+import { authApi, type ParentContactRequest } from '@/shared/api/auth';
 
 export default function StudentProfilePage() {
   const { user } = useAuthStore();
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
 
-  const handleFinish = async (values: any) => {
+  const handleFinish = async (values: ParentContactRequest) => {
     try {
       setSubmitting(true);
       await authApi.updateParentContact(values);

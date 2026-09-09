@@ -23,6 +23,7 @@ import { BankAccountList } from '../components/BankAccountList';
 import { CreatePayoutModal } from '../components/CreatePayoutModal';
 import { PayoutListTable } from '../components/PayoutListTable';
 import { CreatePayoutRequest } from '../types';
+import { parseApiError } from '@/shared/backend';
 
 export const TeacherWalletPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -54,8 +55,8 @@ export const TeacherWalletPage: React.FC = () => {
       await createPayoutMutation.mutateAsync(values);
       message.success('Tạo yêu cầu rút tiền thành công. Ban quản trị sẽ sớm duyệt và chuyển khoản.');
       setPayoutModalOpen(false);
-    } catch (err: any) {
-      message.error(err?.response?.data?.message || 'Không thể tạo yêu cầu rút tiền. Vui lòng thử lại.');
+    } catch (err: unknown) {
+      message.error(parseApiError(err).message || 'Không thể tạo yêu cầu rút tiền. Vui lòng thử lại.');
     }
   };
 

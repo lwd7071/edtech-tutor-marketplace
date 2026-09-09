@@ -35,7 +35,7 @@ export default function RegisterPage() {
 
   const { control, handleSubmit, setValue, formState: { errors } } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { fullName: '', email: '', password: '', role: 'STUDENT' as any },
+    defaultValues: { fullName: '', email: '', password: '', role: 'STUDENT' },
   });
 
   useEffect(() => {
