@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Typography, Spin, message, Alert, List, Card, Button, Popconfirm, Tag } from 'antd';
+import { Typography, Spin, message, Alert, Empty, Card, Button, Popconfirm, Tag } from 'antd';
 import { DeleteOutlined, BookOutlined } from '@ant-design/icons';
 import { TeacherSubject, teacherApi } from '@/shared/api/teacher';
 import SubjectSelector from './SubjectSelector';
@@ -67,33 +67,22 @@ export default function SubjectsPage() {
       </Card>
       
       <Card title="Danh sách môn học đang dạy">
-        <List
-          dataSource={subjects}
-          renderItem={(item) => (
-            <List.Item
-              actions={[
-                <Popconfirm
+        {subjects.length === 0 ? <Empty description="Chưa có môn học nào." /> : (
+          <div role="list">{subjects.map((item) => (
+            <div key={item.id} role="listitem" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 0', borderBottom: '1px solid var(--color-border)' }}>
+              <BookOutlined style={{ fontSize: 24, color: 'var(--color-success-500)' }} />
+              <div style={{ flex: 1 }}><Text strong>{item.name}</Text><div><Tag>{item.category}</Tag></div></div>
+              <Popconfirm
                   key="delete"
                   title="Xóa môn học"
                   description="Bạn có chắc chắn muốn xóa môn này không?"
                   onConfirm={() => handleDelete(item.id)}
                   okText="Đồng ý"
                   cancelText="Hủy"
-                >
-                  <Button danger type="text" icon={<DeleteOutlined />}>
-                    Xóa
-                  </Button>
-                </Popconfirm>,
-              ]}
-            >
-              <List.Item.Meta
-                avatar={<BookOutlined style={{ fontSize: 24, color: '#52c41a' }} />}
-                title={item.name}
-                description={<Tag>{item.category}</Tag>}
-              />
-            </List.Item>
-          )}
-        />
+              ><Button danger type="text" icon={<DeleteOutlined />}>Xóa</Button></Popconfirm>
+            </div>
+          ))}</div>
+        )}
       </Card>
     </div>
   );

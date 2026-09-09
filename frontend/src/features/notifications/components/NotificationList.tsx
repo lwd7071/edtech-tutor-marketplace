@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, App, Badge, Button, List, Skeleton, Space, Tabs, Typography } from 'antd';
+import { Alert, App, Badge, Button, Empty, Skeleton, Space, Tabs, Typography } from 'antd';
 import { BookOutlined, CheckOutlined, DollarOutlined, InfoCircleOutlined, ProfileOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import { DateTimeText } from '@/shared/components/data-display/DateTimeText';
@@ -69,11 +69,15 @@ export const NotificationList: React.FC = () => {
       {loading ? <Skeleton active /> : !error && (
         <section className="tm-panel">
           <Tabs activeKey={activeTab} onChange={setActiveTab} items={[{ key: 'ALL', label: 'Tất cả' }, { key: 'UNREAD', label: 'Chưa đọc' }, { key: 'BOOKING', label: 'Lịch học' }, { key: 'ASSIGNMENT', label: 'Bài tập' }, { key: 'SYSTEM', label: 'Hệ thống' }]} />
-          <List itemLayout="horizontal" dataSource={filteredNotifications} locale={{ emptyText: 'Không có thông báo trong mục này.' }} renderItem={(item) => (
-            <List.Item onClick={() => void handleClick(item)} style={{ cursor: item.referenceUrl ? 'pointer' : 'default', background: item.isRead ? 'transparent' : 'var(--color-primary-50)', paddingInline: 16, borderRadius: 8, marginBottom: 8 }} extra={!item.isRead && <Button type="link" onClick={(event) => { event.stopPropagation(); void markAsRead(item.id); }}>Đánh dấu đã đọc</Button>}>
-              <List.Item.Meta avatar={<div className="tm-notification-icon">{icon(item.type)}</div>} title={<Space><Typography.Text strong>{item.title}</Typography.Text>{!item.isRead && <Badge status="processing" />}</Space>} description={<div><p style={{ margin: '0 0 4px', color: 'var(--color-text-secondary)' }}>{item.content}</p><DateTimeText value={item.createdAt} variant="relative" /></div>} />
-            </List.Item>
-          )} />
+          {filteredNotifications.length === 0 ? <Empty description="Không có thông báo trong mục này." /> : (
+            <div role="list">{filteredNotifications.map((item) => (
+              <article key={item.id} role="listitem" onClick={() => void handleClick(item)} style={{ cursor: item.referenceUrl ? 'pointer' : 'default', background: item.isRead ? 'transparent' : 'var(--color-primary-50)', padding: 16, borderRadius: 8, marginBottom: 8, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <div className="tm-notification-icon">{icon(item.type)}</div>
+                <div style={{ flex: 1 }}><Space><Typography.Text strong>{item.title}</Typography.Text>{!item.isRead && <Badge status="processing" />}</Space><p style={{ margin: '4px 0', color: 'var(--color-text-secondary)' }}>{item.content}</p><DateTimeText value={item.createdAt} variant="relative" /></div>
+                {!item.isRead && <Button type="link" onClick={(event) => { event.stopPropagation(); void markAsRead(item.id); }}>Đánh dấu đã đọc</Button>}
+              </article>
+            ))}</div>
+          )}
         </section>
       )}
     </div>

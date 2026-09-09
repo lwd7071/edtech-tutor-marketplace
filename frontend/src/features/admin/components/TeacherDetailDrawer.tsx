@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Drawer, Descriptions, Tag, Button, Space, Typography, List, Input, Divider, message, Card } from 'antd';
+import { Drawer, Descriptions, Tag, Button, Space, Typography, Empty, Input, Divider, message, Card } from 'antd';
 import { TeacherApprovalSnapshot } from '../types';
 import { useApproveTeacher, useRejectTeacher } from '../hooks/useAdminApprovals';
 import { parseApiError } from '@/shared/backend';
@@ -111,24 +111,14 @@ export function TeacherDetailDrawer({ open, teacher, onClose }: TeacherDetailDra
       )}
 
       <Divider titlePlacement="left">Danh sách Bằng cấp & Chứng chỉ</Divider>
-      <List
-        dataSource={teacher.documents}
-        renderItem={(doc) => (
-          <List.Item
-            actions={[
-              <Button type="link" key="view" href={doc.secureUrl} target="_blank" rel="noopener noreferrer">
-                Xem tài liệu
-              </Button>,
-            ]}
-          >
-            <List.Item.Meta
-              title={doc.title}
-              description={`Loại: ${doc.type} · Dung lượng: ${(doc.fileSize / 1024).toFixed(0)} KB`}
-            />
-          </List.Item>
-        )}
-        locale={{ emptyText: 'Chưa có chứng chỉ hoặc tài liệu nào được đính kèm.' }}
-      />
+      {teacher.documents.length === 0 ? <Empty description="Chưa có chứng chỉ hoặc tài liệu nào được đính kèm." /> : (
+        <div role="list">{teacher.documents.map((doc) => (
+          <div key={doc.id} role="listitem" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '12px 0', borderBottom: '1px solid var(--color-border)' }}>
+            <div><Typography.Text strong>{doc.title}</Typography.Text><div><Typography.Text type="secondary">Loại: {doc.type} · Dung lượng: {(doc.fileSize / 1024).toFixed(0)} KB</Typography.Text></div></div>
+            <Button type="link" href={doc.secureUrl} target="_blank" rel="noopener noreferrer">Xem tài liệu</Button>
+          </div>
+        ))}</div>
+      )}
 
       {showRejectInput && (
         <div style={{ marginTop: 'var(--space-6)', padding: 'var(--space-4)', background: 'var(--color-surface-hover)', borderRadius: 'var(--radius-md)' }}>
