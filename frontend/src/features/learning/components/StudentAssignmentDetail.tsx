@@ -3,8 +3,9 @@ import {useEffect,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {Alert,App,Button,Form,Input,Skeleton} from 'antd';
 import {learningApi} from '../api/learningApi';
+import {learningKeys} from '../data/learningKeys';
 export function StudentAssignmentDetail({assignmentId}:{assignmentId:string}){
- const q=useQuery({queryKey:['student-assignment',assignmentId],queryFn:()=>learningApi.getStudentAssignmentDetail(assignmentId)});const [busy,setBusy]=useState(false);const [currentTime,setCurrentTime]=useState<number|null>(null);const {message}=App.useApp();
+ const q=useQuery({queryKey:learningKeys.studentAssignment(assignmentId),queryFn:()=>learningApi.getStudentAssignmentDetail(assignmentId)});const [busy,setBusy]=useState(false);const [currentTime,setCurrentTime]=useState<number|null>(null);const {message}=App.useApp();
  useEffect(()=>setCurrentTime(Date.now()),[]);
  if(q.isLoading)return <Skeleton active/>;
  if(q.isError||!q.data?.data)return <Alert type="error" title="Chưa đọc được bài tập" action={<Button onClick={()=>q.refetch()}>Thử lại</Button>}/>;

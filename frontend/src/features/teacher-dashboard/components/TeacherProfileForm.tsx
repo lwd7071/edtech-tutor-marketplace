@@ -3,10 +3,11 @@ import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useState} from 'react';
 import {Form,Input,InputNumber,Switch,Select,Button,Alert,App,Skeleton} from 'antd';
 import {teacherApi,type TeacherProfile} from '@/shared/api/teacher';
+import {teacherDashboardKeys} from '../data/teacherDashboardKeys';
 export function TeacherProfileForm(){
  const {message}=App.useApp();const client=useQueryClient();const [busy,setBusy]=useState(false);
- const query=useQuery({queryKey:['teacher-profile'],queryFn:teacherApi.getProfile});
- const save=async(values:TeacherProfile)=>{setBusy(true);try{await teacherApi.updateProfile(values);await client.invalidateQueries({queryKey:['teacher-profile']});message.success('Đã lưu hồ sơ.');}catch{message.error('Chưa lưu được hồ sơ. Kiểm tra thông tin và thử lại.');}finally{setBusy(false);}};
+ const query=useQuery({queryKey:teacherDashboardKeys.profile(),queryFn:teacherApi.getProfile});
+ const save=async(values:TeacherProfile)=>{setBusy(true);try{await teacherApi.updateProfile(values);await client.invalidateQueries({queryKey:teacherDashboardKeys.profile()});message.success('Đã lưu hồ sơ.');}catch{message.error('Chưa lưu được hồ sơ. Kiểm tra thông tin và thử lại.');}finally{setBusy(false);}};
  if(query.isLoading)return <Skeleton active/>;
  if(query.isError||!query.data)return <Alert type="error" title="Chưa tải được hồ sơ" action={<Button onClick={()=>query.refetch()}>Thử lại</Button>}/>;
  const p=query.data;const status=p.approvalStatus||'DRAFT';

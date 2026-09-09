@@ -3,7 +3,7 @@ import {useState} from 'react';
 import {usePathname,useRouter} from 'next/navigation';
 import {App,Button,Form,Input,Select,Alert} from 'antd';
 import {useAuthStore} from '@/features/auth';
-import {bookingApi} from '@/features/bookings/api/bookingApi';
+import {bookingApi} from '@/features/bookings';
 export default function TrialRequestForm({teacherId,subjects}:{teacherId:string;subjects:{id:string;name:string}[]}){
  const {user}=useAuthStore();const router=useRouter();const path=usePathname();const {message}=App.useApp();const [busy,setBusy]=useState(false);const [sent,setSent]=useState(false);
  if(user&&user.role!=='STUDENT')return <p>Yêu cầu học thử dành cho tài khoản học viên.</p>;

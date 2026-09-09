@@ -4,9 +4,10 @@ import {useQuery} from '@tanstack/react-query';
 import {Alert,App,Button,Form,Input,InputNumber,Select,Skeleton} from 'antd';
 import {teacherApi,type CreatePackageRequest} from '@/shared/api/teacher';
 import type {PricingPackageView} from '@/shared/api/public';
+import {teacherDashboardKeys} from '../data/teacherDashboardKeys';
 export function PackageForm({mode,packageId,initialValues,onSave,onCancel}:{mode:'create'|'edit';packageId?:string;initialValues?:Partial<PricingPackageView>;onSave:()=>void;onCancel:()=>void}){
- const subjects=useQuery({queryKey:['teacher-subjects'],queryFn:teacherApi.getSubjects});
- const pkg=useQuery({queryKey:['teacher-package',packageId],queryFn:()=>teacherApi.getPackage(packageId!),enabled:mode==='edit'&&!!packageId});
+ const subjects=useQuery({queryKey:teacherDashboardKeys.subjects(),queryFn:teacherApi.getSubjects});
+ const pkg=useQuery({queryKey:teacherDashboardKeys.package(packageId ?? ''),queryFn:()=>teacherApi.getPackage(packageId!),enabled:mode==='edit'&&!!packageId});
  const [busy,setBusy]=useState(false);const {message}=App.useApp();
  if(subjects.isLoading||(mode==='edit'&&pkg.isLoading))return <Skeleton active/>;
  if(subjects.isError||pkg.isError)return <Alert type="error" title="Chưa tải được dữ liệu gói" action={<Button onClick={()=>{subjects.refetch();if(packageId)pkg.refetch();}}>Thử lại</Button>}/>;

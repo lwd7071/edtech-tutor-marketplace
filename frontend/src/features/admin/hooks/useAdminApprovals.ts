@@ -8,6 +8,9 @@ import {
 } from '../types';
 
 export const ADMIN_QUERY_KEYS = {
+  all: ['admin'] as const,
+  teacherApprovalsRoot: ['admin', 'teacher-approvals'] as const,
+  subjectProposalsRoot: ['admin', 'subject-proposals'] as const,
   teacherApprovals: (status?: string, page?: number, size?: number) => [
     'admin',
     'teacher-approvals',
@@ -48,7 +51,7 @@ export function useApproveTeacher() {
     mutationFn: ({ teacherId, data }: { teacherId: string; data: ApproveTeacherRequest }) =>
       adminApi.approveTeacher(teacherId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'teacher-approvals'] });
+      queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.teacherApprovalsRoot });
     },
   });
 }
@@ -63,7 +66,7 @@ export function useRejectTeacher() {
     mutationFn: ({ teacherId, data }: { teacherId: string; data: RejectRequest }) =>
       adminApi.rejectTeacher(teacherId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'teacher-approvals'] });
+      queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.teacherApprovalsRoot });
     },
   });
 }
@@ -93,7 +96,7 @@ export function useApproveSubjectProposal() {
       data: ApproveSubjectProposalRequest;
     }) => adminApi.approveSubjectProposal(proposalId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'subject-proposals'] });
+      queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.subjectProposalsRoot });
     },
   });
 }
@@ -108,7 +111,7 @@ export function useRejectSubjectProposal() {
     mutationFn: ({ proposalId, data }: { proposalId: string; data: RejectRequest }) =>
       adminApi.rejectSubjectProposal(proposalId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'subject-proposals'] });
+      queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.subjectProposalsRoot });
     },
   });
 }
@@ -123,7 +126,7 @@ export function useChangeUserStatus() {
     mutationFn: ({ userId, data }: { userId: string; data: ChangeUserStatusRequest }) =>
       adminApi.changeUserStatus(userId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin'] });
+      queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.all });
     },
   });
 }

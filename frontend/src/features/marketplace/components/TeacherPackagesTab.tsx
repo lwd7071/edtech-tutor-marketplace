@@ -4,7 +4,7 @@ import {usePathname,useRouter} from 'next/navigation';
 import {App,Button,Modal} from 'antd';
 import type {PricingPackageView} from '@/shared/api/public';
 import {useAuthStore} from '@/features/auth';
-import {paymentApi} from '@/features/payments/api/paymentApi';
+import {paymentApi} from '@/features/payments';
 export function TeacherPackagesTab({packages}:{packages:PricingPackageView[]}){
  const {user}=useAuthStore();const router=useRouter();const pathname=usePathname();const {message}=App.useApp();const [selected,setSelected]=useState<PricingPackageView|null>(null);const [busy,setBusy]=useState(false);const key=useRef<string|null>(null);
  const choose=(pkg:PricingPackageView)=>{if(!user){router.push('/auth/login?redirect='+encodeURIComponent(pathname+'?packageId='+pkg.id+'#packages'));return;}if(user.role!=='STUDENT')return;key.current=crypto.randomUUID();setSelected(pkg);};
