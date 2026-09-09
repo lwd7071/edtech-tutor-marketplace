@@ -1,0 +1,28 @@
+services:
+  frontend-check:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.test
+      target: frontend-check
+    environment:
+      NEXT_PUBLIC_API_URL: http://host.docker.internal:8080
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.test
+      target: frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://host.docker.internal:8080
+    ports:
+      - "3000:3000"
+
+  frontend-e2e:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.test
+      target: frontend-e2e
+    depends_on:
+      - frontend
+    environment:
+      PLAYWRIGHT_BASE_URL: http://frontend:3000
