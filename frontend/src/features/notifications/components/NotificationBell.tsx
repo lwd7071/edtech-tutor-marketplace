@@ -21,8 +21,8 @@ export const NotificationBell: React.FC = () => {
       setLoading(true);
       const res = await notificationApi.getNotifications(undefined, 0, 8); // top 8
       setNotifications(res.data || []);
-    } catch (e) {
-      // Ignore errors for bell silently, or mock
+    } catch (error) {
+      console.error('Failed to load notification bell', { error });
     } finally {
       setLoading(false);
     }
@@ -38,7 +38,9 @@ export const NotificationBell: React.FC = () => {
     try {
       await notificationApi.markAllAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    } catch {}
+    } catch (error) {
+      console.error('Failed to mark all notifications as read', { error });
+    }
   };
 
   const handleClick = async (notification: NotificationView) => {
@@ -46,7 +48,9 @@ export const NotificationBell: React.FC = () => {
       try {
         await notificationApi.markAsRead(notification.id);
         setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, isRead: true } : n));
-      } catch (e) {}
+      } catch (error) {
+        console.error('Failed to mark notification as read', { notificationId: notification.id, error });
+      }
     }
     if (notification.referenceUrl?.startsWith('/')) {
       router.push(notification.referenceUrl);

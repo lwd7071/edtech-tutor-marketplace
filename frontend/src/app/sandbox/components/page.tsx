@@ -13,7 +13,7 @@ import TeacherCard from '@/shared/components/data-display/TeacherCard';
 import SubjectCard from '@/shared/components/data-display/SubjectCard';
 import PackageCard from '@/shared/components/data-display/PackageCard';
 import { StatusTag } from '@/shared/components/data-display/StatusTag';
-import NotificationBell from '@/shared/components/feedback/NotificationBell';
+import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import ChatBubble from '@/shared/components/feedback/ChatBubble';
 import TeacherApprovalBanner from '@/shared/components/ui/TeacherApprovalBanner';
 import WeeklyScheduleGrid from '@/shared/components/data-display/WeeklyScheduleGrid';
@@ -22,7 +22,6 @@ import { useState } from 'react';
 const { Title, Text } = Typography;
 
 const MOCK_TIME_NOW = new Date().toISOString();
-const MOCK_TIME_PAST = new Date(Date.now() - 3600000).toISOString();
 
 export default function ComponentSandbox() {
   const { message } = App.useApp();
@@ -217,13 +216,7 @@ export default function ComponentSandbox() {
 
       <Card title="9. Notification & Chat" style={{ marginBottom: 'var(--space-6)' }}>
         <Space size="large" align="start">
-          <NotificationBell 
-            unreadCount={2}
-            notifications={[
-              { id: '1', title: 'Thông báo 1', message: 'Bạn có tin nhắn', timestamp: MOCK_TIME_NOW, isRead: false },
-              { id: '2', title: 'Thông báo 2', message: 'Đã duyệt', timestamp: MOCK_TIME_PAST, isRead: true }
-            ]}
-          />
+          <NotificationBell />
           <div style={{ width: 400, border: '1px solid var(--color-border)', padding: 16, borderRadius: 8 }}>
             <ChatBubble variant="other" content="Chào bạn, mình muốn hỏi về khóa học" timestamp={MOCK_TIME_NOW} />
             <ChatBubble variant="own" content="Vâng, bạn cần hỏi gì ạ?\nKhóa học có giá 500k." timestamp={MOCK_TIME_NOW} status="sent" />

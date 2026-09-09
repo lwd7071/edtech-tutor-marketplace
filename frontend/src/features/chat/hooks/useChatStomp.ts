@@ -1,17 +1,17 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Client, IMessage } from '@stomp/stompjs';
+import { Client, IMessage, type StompSubscription } from '@stomp/stompjs';
 import { useAuthStore } from '@/features/auth';
-import Cookies from 'js-cookie';
+import { parseIncomingMessage, type IncomingMessage } from '../model/messageSchema';
 
 export function useChatStomp() {
   const [client, setClient] = useState<Client | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
-  const [lastMessage, setLastMessage] = useState<any>(null);
-  const subscriptionRef = useRef<any>(null);
+  const [lastMessage, setLastMessage] = useState<IncomingMessage | null>(null);
+  const subscriptionRef = useRef<StompSubscription | null>(null);
+  const token = useAuthStore((state) => state.accessToken);
 
   useEffect(() => {
-    const token = Cookies.get('accessToken') || useAuthStore.getState().accessToken;
     if (!token) return;
 
     // We assume backend WebSocket is on /ws of the same domain, or from environment variable
@@ -29,16 +29,15 @@ export function useChatStomp() {
     });
 
     stompClient.onConnect = (frame) => {
-      console.log('Connected to STOMP');
       setIsConnected(true);
       setReconnecting(false);
 
       // Subscribe to user specific queue
+      subscriptionRef.current?.unsubscribe();
       subscriptionRef.current = stompClient.subscribe('/user/queue/messages', (message: IMessage) => {
-        if (message.body) {
-          const parsed = JSON.parse(message.body);
-          setLastMessage(parsed);
-        }
+        const parsed = parseIncomingMessage(message.body);
+        if (parsed) setLastMessage(parsed);
+        else console.error('Invalid STOMP message payload', { destination: message.headers.destination });
       });
     };
 
@@ -61,9 +60,9 @@ export function useChatStomp() {
       }
       stompClient.deactivate();
     };
-  }, []);
+  }, [token]);
 
-  const sendMessage = useCallback((destination: string, body: any) => {
+  const sendMessage = useCallback((destination: string, body: Record<string, unknown>) => {
     if (client && isConnected) {
       client.publish({
         destination,

@@ -9,6 +9,7 @@ import { chatApi } from '../api/chatApi';
 import { ConversationView, MessageView } from '../types';
 import { useChatStomp } from '../hooks/useChatStomp';
 import { useAuthStore } from '@/features/auth';
+import { mergeIncomingMessage } from '../model/messageReducer';
 
 function ChatPageContent() {
   const router = useRouter();
@@ -80,12 +81,7 @@ function ChatPageContent() {
   useEffect(() => {
     if (lastMessage) {
       if (lastMessage.conversationId === activeConversationId) {
-        setMessages(prev => {
-          const received = { ...lastMessage, createdAt: lastMessage.sentAt || new Date().toISOString(), isOwnMessage: lastMessage.senderId === user?.id, status: 'SENT' as const };
-          const optimisticIndex = prev.findIndex(message => message.id === lastMessage.clientMessageId);
-          if (optimisticIndex < 0) return [...prev, received];
-          return prev.map((message, index) => index === optimisticIndex ? received : message);
-        });
+        setMessages(prev => mergeIncomingMessage(prev, lastMessage, user?.id));
       }
       
       // Update last message in conversation list
