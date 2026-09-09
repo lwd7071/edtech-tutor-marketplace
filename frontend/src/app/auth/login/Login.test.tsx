@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import LoginPage from './page';
 import { authApi } from '@/shared/api/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { BASE_API_URL } from '@/shared/backend';
 
 jest.mock('@/shared/api/auth');
 jest.mock('next/navigation', () => ({
@@ -26,7 +27,7 @@ describe('LoginPage', () => {
     expect(screen.getByPlaceholderText('Nhập email của bạn')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Nhập mật khẩu')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Đăng nhập bằng Google/i }))
-      .toHaveAttribute('href', 'http://localhost:8080/oauth2/authorization/google');
+      .toHaveAttribute('href', `${BASE_API_URL}/oauth2/authorization/google`);
   });
 
   it('shows validation errors for empty fields', async () => {

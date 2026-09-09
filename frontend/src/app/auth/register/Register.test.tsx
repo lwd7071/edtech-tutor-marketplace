@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import RegisterPage from './page';
 import { authApi } from '@/shared/api/auth';
 import { useRouter } from 'next/navigation';
+import { BASE_API_URL } from '@/shared/backend';
 
 jest.mock('@/shared/api/auth');
 jest.mock('next/navigation', () => ({
@@ -23,7 +24,7 @@ describe('RegisterPage', () => {
     expect(screen.getByText('Học viên / Phụ huynh')).toBeInTheDocument();
     expect(screen.getByText('Gia sư')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Đăng ký bằng Google/i }))
-      .toHaveAttribute('href', 'http://localhost:8080/oauth2/authorization/google');
+      .toHaveAttribute('href', `${BASE_API_URL}/oauth2/authorization/google`);
   });
 
   it('shows validation error for weak password', async () => {
