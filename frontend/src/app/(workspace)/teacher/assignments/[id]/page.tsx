@@ -4,10 +4,11 @@ import {useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {Alert,App,Button,Form,Input,Skeleton} from 'antd';
 import {learningApi} from '@/features/learning/api/learningApi';
+import {learningKeys} from '@/features/learning/data/learningKeys';
 import {BackLink, InlineActionLink} from '@/shared/components/navigation/NavigationLinks';
 export default function Page(){
  const [busy,setBusy]=useState(false);const {message}=App.useApp();
- const {id}=useParams<{id:string}>();const q=useQuery({queryKey:['teacher-assignment',id],queryFn:()=>learningApi.getTeacherAssignmentDetail(id)});
+ const {id}=useParams<{id:string}>();const q=useQuery({queryKey:learningKeys.teacherAssignment(id),queryFn:()=>learningApi.getTeacherAssignmentDetail(id)});
  if(q.isLoading)return <Skeleton active/>;
  if(q.isError||!q.data?.data)return <Alert type="error" title="Chưa đọc được bài tập" action={<Button onClick={()=>q.refetch()}>Thử lại</Button>}/>;
  const a=q.data.data;
