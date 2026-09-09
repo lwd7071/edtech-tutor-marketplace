@@ -3,16 +3,14 @@ import {useState} from 'react';
 import {useParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {Alert,Button,Skeleton} from 'antd';
-import {axiosClient} from '@/shared/api/axiosClient';
-import type {ApiResponse} from '@/shared/backend';
-import type {BookingDetail} from '../types';
+import {bookingApi} from '../api/bookingApi';
 import {SessionReportModal} from '../components/SessionReportModal';
 import {CancelBookingModal} from '../components/CancelBookingModal';
 import {ReviewBookingModal} from '../components/ReviewBookingModal';
 import {BackLink} from '@/shared/components/navigation/NavigationLinks';
 export default function BookingDetailPage({role}:{role:'student'|'teacher'}){
  const {id}=useParams<{id:string}>();const [action,setAction]=useState<string>();
- const q=useQuery({queryKey:['workspace-booking',role,id],queryFn:async()=>(await axiosClient.get<ApiResponse<BookingDetail>>('/api/'+role+'/bookings/'+id)).data});
+ const q=useQuery({queryKey:['workspace-booking',role,id],queryFn:()=>bookingApi.getBookingDetail(role,id)});
  if(q.isLoading)return <Skeleton active/>;
  if(q.isError||!q.data?.data)return <Alert type="error" title="Chưa đọc được buổi học" description="Buổi học có thể không tồn tại hoặc không thuộc tài khoản của bạn." action={<Button onClick={()=>q.refetch()}>Thử lại</Button>}/>;
  const b=q.data.data;const close=()=>{setAction(undefined);q.refetch();};

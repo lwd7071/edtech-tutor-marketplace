@@ -4,10 +4,10 @@ import { App } from 'antd';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PackageList } from './PackageList';
 import { teacherApi } from '@/shared/api/teacher';
-import { axiosClient } from '@/shared/api/axiosClient';
+import { teacherDashboardApi } from '../api/teacherDashboardApi';
 
 jest.mock('@/shared/api/teacher', () => ({ teacherApi: { getProfile: jest.fn(), updatePackageStatus: jest.fn() } }));
-jest.mock('@/shared/api/axiosClient', () => ({ axiosClient: { get: jest.fn() } }));
+jest.mock('../api/teacherDashboardApi', () => ({ teacherDashboardApi: { getPackages: jest.fn() } }));
 
 const packages = [
   { id: '1', name: 'Toán cơ bản', subjectName: 'Toán', priceVnd: 500000, totalSessions: 10, sessionDurationMinutes: 60, durationDays: 60, status: 'ACTIVE' },
@@ -19,7 +19,7 @@ describe('PackageList', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (teacherApi.getProfile as jest.Mock).mockResolvedValue({ approvalStatus: 'APPROVED' });
-    (axiosClient.get as jest.Mock).mockResolvedValue({ data: { data: packages, meta: { page: 0, size: 12, totalElements: 2, totalPages: 1 } } });
+    (teacherDashboardApi.getPackages as jest.Mock).mockResolvedValue({ data: packages, meta: { page: 0, size: 12, totalElements: 2, totalPages: 1 } });
   });
 
   it('renders packages and enables creation for an approved tutor', async () => {

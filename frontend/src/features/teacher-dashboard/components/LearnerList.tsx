@@ -3,11 +3,9 @@ import {useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import Link from 'next/link';
 import {Alert,Button,Pagination,Skeleton} from 'antd';
-import {axiosClient} from '@/shared/api/axiosClient';
-import type {ApiResponse} from '@/shared/backend';
+import {teacherDashboardApi,type LearnerPackage} from '../api/teacherDashboardApi';
 import {CreateBookingModal} from '@/features/bookings/components/CreateBookingModal';
-export interface LearnerPackage {studentId:string;studentName:string;subjectName:string;studentPackage:{id:string;subjectId:string;packageName:string;remainingSessions:number;expiresAt:string;status:string}}
-export async function getLearners(page=0,size=12,studentId?:string){return (await axiosClient.get<ApiResponse<LearnerPackage[]>>('/api/teacher/students',{params:{page,size,studentId}})).data;}
+export async function getLearners(page=0,size=12,studentId?:string){return teacherDashboardApi.getLearners(page,size,studentId);}
 export default function LearnerList({studentId}:{studentId?:string}){
  const [page,setPage]=useState(0);const [pkg,setPkg]=useState<string|null>(null);
  const q=useQuery({queryKey:['teacher-learners',page,studentId],queryFn:()=>getLearners(page,12,studentId)});

@@ -13,6 +13,22 @@ import {
 } from '../types';
 
 export const bookingApi = {
+  getBookings: async (
+    role: 'student' | 'teacher',
+    params?: BookingFilterParams,
+  ): Promise<ApiResponse<BookingDetail[]>> => {
+    const response = await axiosClient.get<ApiResponse<BookingDetail[]>>(`/api/${role}/bookings`, { params });
+    return response.data;
+  },
+
+  getBookingDetail: async (
+    role: 'student' | 'teacher',
+    id: string,
+  ): Promise<ApiResponse<BookingDetail>> => {
+    const response = await axiosClient.get<ApiResponse<BookingDetail>>(`/api/${role}/bookings/${id}`);
+    return response.data;
+  },
+
   /**
    * Lấy danh sách lịch học của học sinh đang đăng nhập
    */

@@ -100,4 +100,5 @@ export interface BookingFilterParams {
   to?: string;
   page?: number;
   size?: number;
+  sort?: string;
 }
