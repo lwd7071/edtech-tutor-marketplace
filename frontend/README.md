@@ -30,28 +30,48 @@ Hai biến trên là tùy chọn. WebSocket mặc định dùng `/ws` trên host
 
 ```bash
 npm run lint
-npx tsc --noEmit
-npm test
+npm run typecheck
+npm run test:ci
 npm run build
 ```
 
-Baseline hiện tại: 96 test suites, 245 tests và 54 routes build thành công.
+Hoặc chạy toàn bộ kiểm tra nhẹ trong Docker từ thư mục gốc:
+
+```powershell
+.\scripts\test-frontend-docker.ps1
+```
+
+Smoke test bằng Chromium được tách riêng vì image Playwright khá lớn:
+
+```powershell
+.\scripts\test-frontend-docker.ps1 -IncludeE2E
+```
+
+Baseline hiện tại: 97 test suites, 248 tests và 55 routes build thành công.
 
 ## Cấu trúc
 
 ```text
 src/
-├── app/          Route, layout và guard theo vai trò
-├── features/     Nghiệp vụ theo domain
-└── shared/       API client, component, store và tiện ích dùng chung
+├── app/
+│   ├── (public)/       Marketplace công khai
+│   ├── (auth)/         Đăng nhập, đăng ký và OAuth
+│   └── (workspace)/    Student, Teacher và Admin; URL không chứa tên group
+├── features/           API, data/query, model và UI theo nghiệp vụ
+└── shared/
+    ├── backend/        Contract, error parser và cấu hình Backend
+    └── components/     UI và shell dùng chung
 ```
 
 Các domain chính gồm `auth`, `marketplace`, `teacher-dashboard`, `student-packages`, `bookings`, `learning`, `chat`, `notifications`, `payments`, `finance`, `ranking` và `admin`.
 
 ## Quy ước
 
-- Page trong `app` chỉ ghép layout, guard và feature component; nghiệp vụ đặt trong `features`.
-- API dùng `shared/api/axiosClient.ts`; không tạo Axios client riêng trong component.
+- Page trong `app` chỉ ghép layout và feature component; guard vai trò đặt tại workspace layout.
+- Component/page không import Axios trực tiếp. Mọi request đi qua API của feature.
+- Query key được sở hữu bởi feature và phải chứa đủ filter, pagination và sort.
+- Session chỉ dùng `hydrate`, `establish`, `rotate`, `clear` từ `features/auth`.
+- Module khác chỉ import Finance qua public entrypoint `@/features/finance`.
 - DTO và payload phải khớp Backend. Không dùng dữ liệu giả để che response thiếu trường.
 - Trang lấy dữ liệu phải có loading, error/retry và empty state.
 - UI ẩn hành động sai quyền; route vẫn phải có guard khi truy cập URL trực tiếp.

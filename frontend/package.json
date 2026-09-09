@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "jest --watchAll=false --forceExit",
-    "test:ci": "jest --runInBand --forceExit",
+    "test": "jest --watchAll=false",
+    "test:ci": "jest --runInBand",
     "test:e2e": "playwright test",
     "check": "npm run typecheck && npm run lint && npm run test:ci && npm run build"
   },
