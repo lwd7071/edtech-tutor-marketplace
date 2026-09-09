@@ -25,7 +25,7 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useAuthStore.getState().logout();
+    useAuthStore.getState().clear();
 
     // Setup interceptors capture
     const mockClient = axios.create();
@@ -39,7 +39,7 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
   });
 
   it('should attach Bearer token to request headers when user is authenticated', () => {
-    useAuthStore.getState().setTokens('valid-access-token', 'valid-refresh-token');
+    useAuthStore.getState().rotate('valid-access-token', 'valid-refresh-token');
 
     const config = { headers: {} };
     const modifiedConfig = requestInterceptor(config);
@@ -48,7 +48,7 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
   });
 
   it('should not attach Authorization header if accessToken is null', () => {
-    useAuthStore.getState().logout();
+    useAuthStore.getState().clear();
 
     const config = { headers: {} };
     const modifiedConfig = requestInterceptor(config);
@@ -57,7 +57,7 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
   });
 
   it('should handle concurrent 401s: refresh token once and retry all queued requests', async () => {
-    useAuthStore.getState().setTokens('expired-access-token', 'valid-refresh-token');
+    useAuthStore.getState().rotate('expired-access-token', 'valid-refresh-token');
 
     const mockClient = axios.create();
     const mockPost = mockClient.post as jest.Mock;
@@ -106,7 +106,7 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
   });
 
   it('should clear tokens and logout when refresh token fails', async () => {
-    useAuthStore.getState().setTokens('expired-access-token', 'invalid-refresh-token');
+    useAuthStore.getState().rotate('expired-access-token', 'invalid-refresh-token');
 
     const mockClient = axios.create();
     const mockPost = mockClient.post as jest.Mock;

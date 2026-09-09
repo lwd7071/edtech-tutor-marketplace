@@ -72,7 +72,7 @@ export function setupAxiosInterceptors(client: AxiosInstance) {
         if (!refreshToken) {
           isRefreshing = false;
           processQueue(error, null);
-          useAuthStore.getState().logout();
+          useAuthStore.getState().clear();
           return Promise.reject(error);
         }
 
@@ -84,7 +84,7 @@ export function setupAxiosInterceptors(client: AxiosInstance) {
             const newRefreshToken = data.data.refreshToken;
             
             // Set in store (will handle cookie if merged store handles it)
-            useAuthStore.getState().setTokens(newAccessToken, newRefreshToken);
+            useAuthStore.getState().rotate(newAccessToken, newRefreshToken);
             
             processQueue(null, newAccessToken);
             originalRequest.headers.Authorization = 'Bearer ' + newAccessToken;
@@ -94,7 +94,7 @@ export function setupAxiosInterceptors(client: AxiosInstance) {
           }
         } catch (refreshError) {
           processQueue(refreshError, null);
-          useAuthStore.getState().logout();
+          useAuthStore.getState().clear();
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;

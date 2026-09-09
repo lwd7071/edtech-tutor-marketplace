@@ -3,7 +3,7 @@ import { Inter, Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import './tutor-match.css';
 import { AppThemeProvider } from "@/shared/components/AppThemeProvider";
-import AuthProvider from "@/shared/components/auth/AuthProvider";
+import { SessionHydrator } from "@/features/auth";
 import { AppProviders } from '@/shared/components/AppProviders';
 
 // Cấu hình webfont tối ưu từ Google Fonts hỗ trợ đầy đủ tiếng Việt
@@ -43,9 +43,9 @@ export default function RootLayout({
       <body className="antialiased" suppressHydrationWarning>
         <AppThemeProvider>
           <AppProviders>
-            <AuthProvider>
+            <SessionHydrator>
               {children}
-            </AuthProvider>
+            </SessionHydrator>
           </AppProviders>
         </AppThemeProvider>
       </body>

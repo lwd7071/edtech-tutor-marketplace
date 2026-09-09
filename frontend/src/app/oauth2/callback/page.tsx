@@ -5,13 +5,13 @@ import { Alert, Spin } from 'antd';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
-import { useAuthStore } from '@/shared/store/useAuthStore';
+import { useAuthStore } from '@/features/auth';
 import { roleHome } from '@/shared/lib/navigation';
 
 function OAuthCallbackContent() {
   const router = useRouter();
   const params = useSearchParams();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const establish = useAuthStore((state) => state.establish);
   const handled = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,13 +39,13 @@ function OAuthCallbackContent() {
     authApi.exchangeOAuthToken({ exchangeCode })
       .then((result) => {
         if (!result.data) throw new Error('OAuth response has no data');
-        setAuth(result.data.user, result.data.accessToken, result.data.refreshToken, true);
+        establish(result.data, true);
         router.replace(roleHome(result.data.user.role));
       })
       .catch((requestError) => {
         setError(requestError.response?.data?.message || 'Khong the hoan tat dang nhap Google.');
       });
-  }, [params, router, setAuth]);
+  }, [params, router, establish]);
 
   if (error) {
     return (

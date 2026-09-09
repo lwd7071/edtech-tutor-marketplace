@@ -4,7 +4,7 @@ import React, { useState, Suspense } from 'react';
 import { Button, Typography, Alert, Space } from 'antd';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
-import { useAuthStore } from '@/shared/store/useAuthStore';
+import { useAuthStore } from '@/features/auth';
 import RadioCard from '@/shared/components/ui/RadioCard';
 import { roleHome } from '@/shared/lib/navigation';
 
@@ -14,7 +14,7 @@ function OAuthRoleContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const registrationToken = searchParams.get('registrationToken');
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const establish = useAuthStore((state) => state.establish);
 
   const [role, setRole] = useState<'STUDENT' | 'TEACHER'>('STUDENT');
   const [loading, setLoading] = useState(false);
@@ -34,7 +34,7 @@ function OAuthRoleContent() {
       const res = await authApi.completeOAuthRegistration(payload);
       
       if (res.data) {
-        setAuth(res.data.user, res.data.accessToken, res.data.refreshToken, true);
+        establish(res.data, true);
         router.push(roleHome(res.data.user.role));
       }
     } catch (error: any) {

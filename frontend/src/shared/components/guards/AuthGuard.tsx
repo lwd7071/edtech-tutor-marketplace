@@ -14,18 +14,18 @@ interface AuthGuardProps {
  * Nếu chưa đăng nhập, tự động chuyển hướng về /auth/login kèm tham số redirect
  */
 export function AuthGuard({ children, fallback }: AuthGuardProps) {
-  const { isAuthenticated } = useAuthStore();
+  const { status, isAuthenticated } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (status === 'anonymous') {
       const redirectUrl = pathname ? `/auth/login?redirect=${encodeURIComponent(pathname)}` : '/auth/login';
       router.push(redirectUrl);
     }
-  }, [isAuthenticated, router, pathname]);
+  }, [status, router, pathname]);
 
-  if (!isAuthenticated) {
+  if (status === 'booting' || !isAuthenticated) {
     return fallback ? <>{fallback}</> : null;
   }
 

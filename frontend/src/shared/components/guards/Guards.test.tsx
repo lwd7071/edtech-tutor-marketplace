@@ -14,7 +14,7 @@ jest.mock('next/navigation', () => ({
 describe('Route Guards & Access Control (TDD)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    useAuthStore.getState().logout();
+    useAuthStore.getState().clear();
   });
 
   describe('AuthGuard', () => {
@@ -30,14 +30,14 @@ describe('Route Guards & Access Control (TDD)', () => {
     });
 
     it('should render children when user is authenticated', () => {
-      useAuthStore.getState().setUser({
+      useAuthStore.getState().establish({ user: {
         id: '1',
         email: 'user@test.com',
         fullName: 'Test User',
         role: 'STUDENT',
         status: 'ACTIVE',
         avatarUrl: null,
-      });
+      }, accessToken: 'test-token' });
 
       render(
         <AuthGuard>
@@ -52,14 +52,14 @@ describe('Route Guards & Access Control (TDD)', () => {
 
   describe('RoleGuard', () => {
     it('should block access when user role is not in allowedRoles', () => {
-      useAuthStore.getState().setUser({
+      useAuthStore.getState().establish({ user: {
         id: '1',
         email: 'student@test.com',
         fullName: 'Student User',
         role: 'STUDENT',
         status: 'ACTIVE',
         avatarUrl: null,
-      });
+      }, accessToken: 'test-token' });
 
       render(
         <RoleGuard allowedRoles={['TEACHER', 'ADMIN']}>
@@ -72,14 +72,14 @@ describe('Route Guards & Access Control (TDD)', () => {
     });
 
     it('should allow access when user role is in allowedRoles', () => {
-      useAuthStore.getState().setUser({
+      useAuthStore.getState().establish({ user: {
         id: '2',
         email: 'teacher@test.com',
         fullName: 'Teacher User',
         role: 'TEACHER',
         status: 'APPROVED',
         avatarUrl: null,
-      });
+      }, accessToken: 'test-token' });
 
       render(
         <RoleGuard allowedRoles={['TEACHER']}>
@@ -93,14 +93,14 @@ describe('Route Guards & Access Control (TDD)', () => {
 
   describe('TeacherApprovalGuard', () => {
     it('should show pending approval warning when teacher status is PENDING', () => {
-      useAuthStore.getState().setUser({
+      useAuthStore.getState().establish({ user: {
         id: '2',
         email: 'teacher@test.com',
         fullName: 'Teacher User',
         role: 'TEACHER',
         status: 'PENDING',
         avatarUrl: null,
-      });
+      }, accessToken: 'test-token' });
 
       render(
         <TeacherApprovalGuard>
@@ -113,14 +113,14 @@ describe('Route Guards & Access Control (TDD)', () => {
     });
 
     it('should render children when teacher is APPROVED', () => {
-      useAuthStore.getState().setUser({
+      useAuthStore.getState().establish({ user: {
         id: '2',
         email: 'teacher@test.com',
         fullName: 'Teacher User',
         role: 'TEACHER',
         status: 'APPROVED',
         avatarUrl: null,
-      });
+      }, accessToken: 'test-token' });
 
       render(
         <TeacherApprovalGuard>

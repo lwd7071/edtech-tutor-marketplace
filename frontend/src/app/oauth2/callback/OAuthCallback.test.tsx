@@ -8,8 +8,8 @@ jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
   useSearchParams: jest.fn(),
 }));
-jest.mock('@/shared/store/useAuthStore', () => ({
-  useAuthStore: jest.fn((selector) => selector({ setAuth: jest.fn() })),
+jest.mock('@/features/auth', () => ({
+  useAuthStore: jest.fn((selector) => selector({ establish: jest.fn() })),
 }));
 
 describe('OAuthCallbackPage', () => {

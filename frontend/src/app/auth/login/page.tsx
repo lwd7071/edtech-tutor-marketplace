@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
 import { BASE_API_URL } from '@/shared/api/axiosClient';
-import { useAuthStore } from '@/shared/store/useAuthStore';
+import { useAuthStore } from '@/features/auth';
 import { ErrorState } from '@/shared/components/feedback/ErrorState';
 import { roleHome, safeReturnTo } from '@/shared/lib/navigation';
 
@@ -27,7 +27,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const establish = useAuthStore((state) => state.establish);
   
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -52,7 +52,7 @@ function LoginForm() {
       const res = await authApi.login(payload);
       
       if (res.data) {
-        setAuth(res.data.user, res.data.accessToken, res.data.refreshToken, values.remember);
+        establish(res.data, values.remember);
         const redirectPath = safeReturnTo(searchParams.get('redirect'), roleHome(res.data.user.role));
         router.push(redirectPath);
       }

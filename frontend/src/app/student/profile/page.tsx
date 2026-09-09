@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Card, Typography, Form, Input, Button, message, Avatar, Space, Divider, Switch } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { useAuthStore } from '@/features/auth';
 import { authApi } from '@/shared/api/auth';
 
 export default function StudentProfilePage() {

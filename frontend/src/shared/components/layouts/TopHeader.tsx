@@ -14,7 +14,7 @@ interface TopHeaderProps {
 }
 
 export default function TopHeader({ onMenuClick }: TopHeaderProps) {
-  const { user, logout } = useAuthStore();
+  const { user, clear } = useAuthStore();
   const pathname = usePathname();
 
   const userMenu = {
@@ -22,7 +22,7 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
       { key: 'profile', icon: <UserOutlined />, label: <Link href="/profile">Hồ sơ</Link> },
       { key: 'settings', icon: <SettingOutlined />, label: <Link href="/settings">Cài đặt</Link> },
       { type: 'divider' as const },
-      { key: 'logout', icon: <LogoutOutlined style={{ color: 'var(--color-error-600)' }} />, label: <span style={{ color: 'var(--color-error-600)' }}>Đăng xuất</span>, onClick: logout },
+      { key: 'logout', icon: <LogoutOutlined style={{ color: 'var(--color-error-600)' }} />, label: <span style={{ color: 'var(--color-error-600)' }}>Đăng xuất</span>, onClick: clear },
     ],
   };
 

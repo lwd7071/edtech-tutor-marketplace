@@ -15,7 +15,9 @@ interface TeacherApprovalGuardProps {
  * Nếu giáo viên đang ở trạng thái DRAFT hoặc PENDING, chặn các tính năng yêu cầu hồ sơ đã duyệt
  */
 export function TeacherApprovalGuard({ children, fallback }: TeacherApprovalGuardProps) {
-  const { user, isAuthenticated } = useAuthStore();
+  const { status, user, isAuthenticated } = useAuthStore();
+
+  if (status === 'booting') return null;
 
   if (isAuthenticated && user?.role === 'TEACHER' && user?.status !== 'APPROVED') {
     if (fallback) return <>{fallback}</>;
