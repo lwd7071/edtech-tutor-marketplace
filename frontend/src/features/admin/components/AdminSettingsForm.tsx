@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { Card, Form, InputNumber, Button, Typography, Space, Alert } from 'antd';
 import { SettingOutlined, SaveOutlined } from '@ant-design/icons';
 import { PlatformSettingsView, UpdatePlatformSettingsRequest } from '../types';
-import { formatLedgerTime } from '@/features/finance/components/LedgerTable';
+import { formatLedgerTime } from '@/features/finance';
 
 interface AdminSettingsFormProps {
   settings?: PlatformSettingsView | null;

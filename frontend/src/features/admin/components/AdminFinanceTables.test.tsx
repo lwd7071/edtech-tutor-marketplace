@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { AdminPayoutTable } from './AdminPayoutTable';
 import { AdminRefundTable } from './AdminRefundTable';
 import { AdminExtensionTable } from './AdminExtensionTable';
-import { PayoutRequestView, RefundRequestView, ExtensionRequestView } from '@/features/finance/types';
+import { PayoutRequestView, RefundRequestView, ExtensionRequestView } from '@/features/finance';
 
 describe('AdminFinanceTables', () => {
   it('renders AdminPayoutTable with tabs and payout row', () => {

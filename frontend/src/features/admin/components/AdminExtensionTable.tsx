@@ -6,9 +6,9 @@ import type { ColumnsType } from 'antd/es/table';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { ExtensionRequestView, ExtensionStatus } from '@/features/finance/types';
-import { formatLedgerTime } from '@/features/finance/components/LedgerTable';
-import { getExtensionStatusTag } from '@/features/finance/components/StudentRequestsTable';
+import { ExtensionRequestView, ExtensionStatus } from '@/features/finance';
+import { formatLedgerTime } from '@/features/finance';
+import { getExtensionStatusTag } from '@/features/finance';
 import { ApproveExtensionRequest, RejectRequest } from '../types';
 
 interface AdminExtensionTableProps {

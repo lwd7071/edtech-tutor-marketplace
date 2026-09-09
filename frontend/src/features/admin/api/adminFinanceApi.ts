@@ -4,7 +4,7 @@ import {
   PayoutRequestView,
   RefundRequestView,
   ExtensionRequestView,
-} from '@/features/finance/types';
+} from '@/features/finance';
 import {
   AdminDashboardView,
   PlatformSettingsView,

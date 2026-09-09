@@ -3,7 +3,6 @@
  * Khớp 100% với Admin Controllers trong Backend
  */
 
-import { PayoutRequestView, RefundRequestView, ExtensionRequestView } from '@/features/finance/types';
 
 export interface AdminDashboardView {
   totalGmvVnd: number;

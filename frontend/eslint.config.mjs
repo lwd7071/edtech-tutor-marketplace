@@ -33,6 +33,22 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    files: ["src/features/admin/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/features/finance/*"],
+              message: "Admin may depend only on the public Finance entrypoint.",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

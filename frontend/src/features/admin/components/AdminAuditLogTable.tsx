@@ -5,7 +5,7 @@ import { Table, Tag, Typography, Button, Modal } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { EyeOutlined } from '@ant-design/icons';
 import { AuditLogView, AuditAction } from '../types';
-import { formatLedgerTime } from '@/features/finance/components/LedgerTable';
+import { formatLedgerTime } from '@/features/finance';
 
 interface AdminAuditLogTableProps {
   logs?: AuditLogView[];

@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import { Table, Tag, Typography, Button, Space, Modal, Form, Input, Tabs, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { CheckOutlined, CloseOutlined, SyncOutlined, EyeOutlined } from '@ant-design/icons';
-import { RefundRequestView, RefundStatus } from '@/features/finance/types';
-import { formatLedgerTime } from '@/features/finance/components/LedgerTable';
-import { getRefundStatusTag } from '@/features/finance/components/StudentRequestsTable';
+import { RefundRequestView, RefundStatus } from '@/features/finance';
+import { formatLedgerTime } from '@/features/finance';
+import { getRefundStatusTag } from '@/features/finance';
 import { ProcessRefundRequest, RejectRequest } from '../types';
 
 interface AdminRefundTableProps {
