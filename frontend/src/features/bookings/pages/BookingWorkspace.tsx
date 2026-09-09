@@ -4,7 +4,7 @@ import {useQuery} from '@tanstack/react-query';
 import Link from 'next/link';
 import {Alert,Button,Select,Pagination,Skeleton,Input} from 'antd';
 import {axiosClient} from '@/shared/api/axiosClient';
-import type {ApiResponse} from '@/shared/api/types';
+import type {ApiResponse} from '@/shared/backend';
 import type {BookingDetail} from '../types';
 export default function BookingWorkspace({role}:{role:'student'|'teacher'}){
  const [page,setPage]=useState(0);const [status,setStatus]=useState<string>();const [date,setDate]=useState('');

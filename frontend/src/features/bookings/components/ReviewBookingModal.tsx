@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, Button, message, Rate } from 'antd';
 import { bookingApi } from '@/features/bookings/api/bookingApi';
-import { parseApiError } from '@/shared/api/types';
+import { parseApiError } from '@/shared/backend';
 
 interface ReviewBookingModalProps {
   bookingId: string;

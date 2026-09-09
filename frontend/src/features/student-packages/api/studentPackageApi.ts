@@ -1,5 +1,5 @@
 import {axiosClient} from '@/shared/api/axiosClient';
-import type {ApiResponse} from '@/shared/api/types';
+import type {ApiResponse} from '@/shared/backend';
 import {getTeacherDetail,getPublicSubjects} from '@/shared/api/public';
 import type {StudentPackageSummary,StudentPackageDetail,StudentPackageStatus} from '../types';
 type Wire=Omit<StudentPackageSummary,'teacher'|'subject'>&{teacherId:string;subjectId:string};

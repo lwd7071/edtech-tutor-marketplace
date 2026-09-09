@@ -4,7 +4,7 @@ import {useParams} from 'next/navigation';
 import {useQuery} from '@tanstack/react-query';
 import {Alert,Button,Skeleton} from 'antd';
 import {axiosClient} from '@/shared/api/axiosClient';
-import type {ApiResponse} from '@/shared/api/types';
+import type {ApiResponse} from '@/shared/backend';
 import type {BookingDetail} from '../types';
 import {SessionReportModal} from '../components/SessionReportModal';
 import {CancelBookingModal} from '../components/CancelBookingModal';

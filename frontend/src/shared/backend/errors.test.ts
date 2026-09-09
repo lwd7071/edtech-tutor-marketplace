@@ -1,4 +1,4 @@
-import { parseApiError, ApiResponse, ApiErrorDetail } from './types';
+import { parseApiError, ApiResponse, ApiErrorDetail } from '@/shared/backend';
 
 describe('API Types and Error Envelope Parser (TDD)', () => {
   it('should correctly parse standard validation error with field mapping', () => {

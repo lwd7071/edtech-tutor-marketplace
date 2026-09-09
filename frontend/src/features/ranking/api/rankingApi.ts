@@ -1,5 +1,5 @@
 import { axiosClient } from '@/shared/api/axiosClient';
-import { ApiResponse } from '@/shared/api/types';
+import { ApiResponse } from '@/shared/backend';
 import { TeacherStatsView, TeacherRankingItem } from '../types';
 
 export const rankingApi = {

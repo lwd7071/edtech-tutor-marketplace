@@ -1,4 +1,5 @@
 import axiosClient from './axiosClient';
+import type { ApiResponse } from '@/shared/backend';
 
 // Types mapping backend DTOs
 export interface UserSummary {
@@ -16,13 +17,6 @@ export interface AuthResult {
   tokenType: string;
   accessTokenExpiresIn: number;
   user: UserSummary;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data: T;
-  errorCode?: string;
 }
 
 export const authApi = {

@@ -1,5 +1,5 @@
 import { axiosClient } from '@/shared/api/axiosClient';
-import { ApiResponse } from '@/shared/api/types';
+import { ApiResponse } from '@/shared/backend';
 import {
   TeacherApprovalSnapshot,
   SubjectProposalSnapshot,

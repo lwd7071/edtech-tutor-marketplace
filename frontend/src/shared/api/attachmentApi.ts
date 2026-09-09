@@ -1,5 +1,5 @@
 import { axiosClient } from './axiosClient';
-import { ApiResponse } from './types';
+import { ApiResponse } from '@/shared/backend';
 
 export interface AttachmentView {
   id: string;

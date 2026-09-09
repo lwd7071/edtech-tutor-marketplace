@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Drawer, Descriptions, Tag, Button, Space, Typography, List, Input, Divider, message, Card } from 'antd';
 import { TeacherApprovalSnapshot } from '../types';
 import { useApproveTeacher, useRejectTeacher } from '../hooks/useAdminApprovals';
-import { parseApiError } from '@/shared/api/types';
+import { parseApiError } from '@/shared/backend';
 
 interface TeacherDetailDrawerProps {
   open: boolean;

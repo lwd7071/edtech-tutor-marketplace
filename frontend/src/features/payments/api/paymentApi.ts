@@ -1,5 +1,5 @@
 import {axiosClient} from '@/shared/api/axiosClient';
-import type {ApiResponse} from '@/shared/api/types';
+import type {ApiResponse} from '@/shared/backend';
 import type {CreateInvoiceRequest,InvoiceDetail} from '../types';
 export const paymentApi = {
  async createInvoice(data:CreateInvoiceRequest,idempotencyKey:string=crypto.randomUUID()):Promise<ApiResponse<InvoiceDetail>> {

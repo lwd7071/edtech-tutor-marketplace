@@ -4,7 +4,7 @@ import {useQuery} from '@tanstack/react-query';
 import Link from 'next/link';
 import {Alert,Button,Pagination,Skeleton} from 'antd';
 import {axiosClient} from '@/shared/api/axiosClient';
-import type {ApiResponse} from '@/shared/api/types';
+import type {ApiResponse} from '@/shared/backend';
 import {CreateBookingModal} from '@/features/bookings/components/CreateBookingModal';
 export interface LearnerPackage {studentId:string;studentName:string;subjectName:string;studentPackage:{id:string;subjectId:string;packageName:string;remainingSessions:number;expiresAt:string;status:string}}
 export async function getLearners(page=0,size=12,studentId?:string){return (await axiosClient.get<ApiResponse<LearnerPackage[]>>('/api/teacher/students',{params:{page,size,studentId}})).data;}

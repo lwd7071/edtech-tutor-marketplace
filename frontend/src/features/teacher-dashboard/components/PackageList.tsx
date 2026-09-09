@@ -4,7 +4,7 @@ import {useQuery} from '@tanstack/react-query';
 import {Alert,App,Button,Tag,Skeleton,Pagination} from 'antd';
 import {teacherApi} from '@/shared/api/teacher';
 import {axiosClient} from '@/shared/api/axiosClient';
-import type {ApiResponse} from '@/shared/api/types';
+import type {ApiResponse} from '@/shared/backend';
 import type {PricingPackageView} from '@/shared/api/public';
 export function PackageList({onCreate,onEdit}:{onCreate:()=>void;onEdit:(id:string)=>void}){
  const [page,setPage]=useState(0);const [busy,setBusy]=useState<string|null>(null);const {message}=App.useApp();

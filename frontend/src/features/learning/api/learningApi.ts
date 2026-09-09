@@ -1,5 +1,5 @@
 import {axiosClient} from '@/shared/api/axiosClient';
-import type {ApiResponse} from '@/shared/api/types';
+import type {ApiResponse} from '@/shared/backend';
 import type {CreateAssignmentRequest,AssignmentDetail,GradeSubmissionRequest,SubmissionDetail,TeacherAssignmentListItem,TeacherAssignmentDetail,CreateSubmissionRequest} from '../types';
 export const learningApi={
  async updateDraft(id:string,data:CreateAssignmentRequest){return (await axiosClient.put<ApiResponse<AssignmentDetail>>('/api/teacher/assignments/'+id,data)).data;},

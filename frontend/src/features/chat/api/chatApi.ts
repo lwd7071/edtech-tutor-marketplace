@@ -1,5 +1,5 @@
 import { axiosClient } from '@/shared/api/axiosClient';
-import { ApiResponse, PaginationMeta } from '@/shared/api/types';
+import { ApiResponse, PaginationMeta } from '@/shared/backend';
 import { ConversationView, MessageView } from '../types';
 
 export const chatApi = {
