@@ -49,7 +49,7 @@ export default function PackageCard({
           <div className="progress-text">
             <span>Đã học: {completedSessions}/{sessionCount} buổi</span>
           </div>
-          <Progress percent={progressPercent} strokeColor="var(--color-primary-600)" trailColor="var(--color-disabled-bg)" size="small" />
+          <Progress percent={progressPercent} strokeColor="var(--color-primary-600)" railColor="var(--color-disabled-bg)" size="small" />
           <div className="play-cta">
             <PlayCircleOutlined /> Tiếp tục học
           </div>

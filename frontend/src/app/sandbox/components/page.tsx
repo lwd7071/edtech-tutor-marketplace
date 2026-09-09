@@ -54,7 +54,7 @@ export default function ComponentSandbox() {
       </Card>
 
       <Card title="2. Inputs & Form Controls" style={{ marginBottom: 'var(--space-6)' }}>
-        <Space direction="vertical" style={{ width: '100%', maxWidth: 400 }}>
+        <Space orientation="vertical" style={{ width: '100%', maxWidth: 400 }}>
           <Input placeholder="Default Input" />
           <Input prefix={<UserOutlined />} placeholder="With Prefix" />
           <Input.Password placeholder="Password Input" />
@@ -93,7 +93,7 @@ export default function ComponentSandbox() {
           <Switch defaultChecked />
         </Space>
         <Divider />
-        <Space direction="vertical" style={{ width: 300 }}>
+        <Space orientation="vertical" style={{ width: 300 }}>
           <RadioCard 
             value="1" 
             checked={radioCardVal === '1'} 
@@ -146,11 +146,11 @@ export default function ComponentSandbox() {
 
         <Divider />
 
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <Alert message="Informational Notes" type="info" showIcon />
-          <Alert message="Success message" type="success" showIcon />
-          <Alert message="Warning message" type="warning" showIcon />
-          <Alert message="Error message" type="error" showIcon />
+        <Space orientation="vertical" style={{ width: '100%' }}>
+          <Alert title="Informational Notes" type="info" showIcon />
+          <Alert title="Success message" type="success" showIcon />
+          <Alert title="Warning message" type="warning" showIcon />
+          <Alert title="Error message" type="error" showIcon />
           <Tooltip title="This is a tooltip explaining the reason">
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'help' }}>
               Hover over me <QuestionCircleOutlined />
@@ -176,7 +176,7 @@ export default function ComponentSandbox() {
           ]}
           rowKey="id"
           mobileCardRender={(record: { id: number; name: string; role: string; }) => (
-            <Space direction="vertical">
+            <Space orientation="vertical">
               <Text strong>{record.name}</Text>
               <Text type="secondary">{record.role}</Text>
             </Space>

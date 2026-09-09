@@ -112,7 +112,7 @@ export function TeacherApprovalTable() {
           },
         }}
         mobileCardRender={(record: TeacherApprovalSnapshot) => (
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space orientation="vertical" style={{ width: '100%' }}>
             <Typography.Text strong>{record.fullName}</Typography.Text>
             <Typography.Text type="secondary">{record.email}</Typography.Text>
             <div>Hình thức: {[record.supportsOnline && 'Online', record.supportsOffline && 'Trực tiếp'].filter(Boolean).join(', ') || 'Chưa cập nhật'}</div>

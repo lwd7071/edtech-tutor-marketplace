@@ -18,14 +18,14 @@ export default function NotificationBell({
   onViewAll,
   viewAllLink = '/notifications',
 }: NotificationBellProps) {
-  
+
   const dropdownContent = (
     <div className="noti-dropdown-menu">
       <div className="noti-dropdown-header">
         <h3 className="noti-dropdown-title">Thông báo</h3>
         {unreadCount > 0 && <span className="noti-dropdown-meta">{unreadCount} chưa đọc</span>}
       </div>
-      
+
       <div className="noti-dropdown-list">
         {notifications.length > 0 ? (
           notifications.map(noti => (
@@ -35,10 +35,10 @@ export default function NotificationBell({
           <div className="noti-empty">Bạn không có thông báo nào.</div>
         )}
       </div>
-      
+
       <div className="noti-dropdown-footer">
-        <Link 
-          href={viewAllLink} 
+        <Link
+          href={viewAllLink}
           className="view-all-link"
           onClick={(e) => {
             if (onViewAll) {
@@ -121,16 +121,16 @@ export default function NotificationBell({
   );
 
   return (
-    <Dropdown 
-      dropdownRender={() => dropdownContent} 
-      trigger={['click']} 
+    <Dropdown
+      popupRender={() => dropdownContent}
+      trigger={['click']}
       placement="bottomRight"
     >
       <Badge count={unreadCount} overflowCount={99}>
-        <Button 
-          type="text" 
-          icon={<BellOutlined style={{ fontSize: 20 }} />} 
-          style={{ width: 40, height: 40, borderRadius: 'var(--radius-full)' }} 
+        <Button
+          type="text"
+          icon={<BellOutlined style={{ fontSize: 20 }} />}
+          style={{ width: 40, height: 40, borderRadius: 'var(--radius-full)' }}
         />
       </Badge>
     </Dropdown>

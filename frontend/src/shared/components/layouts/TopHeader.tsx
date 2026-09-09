@@ -29,15 +29,7 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
   const getBreadcrumb = () => {
     const paths = pathname.split('/').filter(p => p);
     if (paths.length === 0) return null;
-    return (
-      <Breadcrumb className="desktop-breadcrumb">
-        {paths.map((p) => (
-          <Breadcrumb.Item key={p} style={{ textTransform: 'capitalize' }}>
-            {p}
-          </Breadcrumb.Item>
-        ))}
-      </Breadcrumb>
-    );
+    return <Breadcrumb className="desktop-breadcrumb" items={paths.map((path) => ({ title: path }))} />;
   };
 
   return (

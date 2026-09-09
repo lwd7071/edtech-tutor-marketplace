@@ -46,7 +46,7 @@ export default function ResponsiveTable<RecordType extends object>({
             : index;
           return (
             <Card key={key as React.Key} size="small" style={{ borderRadius: 'var(--radius-md)' }}>
-              <Space direction="vertical" style={{ width: '100%' }}>
+              <Space orientation="vertical" style={{ width: '100%' }}>
                 {columns.map((col: import('antd/es/table').ColumnType<RecordType>, colIdx) => (
                   <div key={colIdx} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border)', paddingBottom: '4px' }}>
                     <Text type="secondary">{col.title as React.ReactNode}:</Text>

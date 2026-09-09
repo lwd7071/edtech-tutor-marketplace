@@ -98,7 +98,7 @@ export const AvailabilityEditor: React.FC = () => {
       {loadError && <Alert title="Chưa tải được lịch rảnh" description="Tải lại trang trước khi chỉnh sửa để tránh ghi đè lịch hiện có." type="error" showIcon />}
       
       <Alert
-        message="Lịch đã xác nhận không thay đổi"
+        title="Lịch đã xác nhận không thay đổi"
         description="Các khung giờ mới chỉ áp dụng cho những lịch học được tạo sau khi bạn lưu."
         type="warning"
         showIcon

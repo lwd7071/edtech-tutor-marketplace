@@ -120,7 +120,7 @@ export const NotificationBell: React.FC = () => {
       menu={{ items }} 
       trigger={['click']} 
       placement="bottomRight"
-      overlayClassName="rounded-xl shadow-lg border border-border"
+      classNames={{ root: 'rounded-xl shadow-lg border border-border' }}
     >
       <div className="cursor-pointer p-2 hover:bg-neutral-100 rounded-full transition-colors relative">
         <Badge count={unreadCount} size="small" offset={[2, 0]}>

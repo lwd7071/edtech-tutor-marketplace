@@ -27,6 +27,15 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 };
 
+Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+  value: jest.fn(() => ({
+    scale: jest.fn(),
+    fill: jest.fn(),
+    fillRect: jest.fn(),
+    drawImage: jest.fn(),
+  })),
+});
+
 // Mock MessageChannel
 global.MessageChannel = class MessageChannel {
   port1 = {

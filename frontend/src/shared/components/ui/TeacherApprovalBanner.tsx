@@ -72,7 +72,7 @@ export default function TeacherApprovalBanner({
   return (
     <div className={`teacher-approval-banner ${className}`}>
       <Alert
-        message={getMessage()}
+        title={getMessage()}
         description={renderDescription()}
         type={getType()}
         showIcon

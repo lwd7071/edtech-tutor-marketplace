@@ -29,10 +29,10 @@ function OAuthRoleContent() {
     try {
       setLoading(true);
       setErrorMsg(null);
-      
+
       const payload = { registrationToken, role };
       const res = await authApi.completeOAuthRegistration(payload);
-      
+
       if (res.data) {
         establish(res.data, true);
         router.push(roleHome(res.data.user.role));
@@ -53,28 +53,28 @@ function OAuthRoleContent() {
         </Text>
       </div>
 
-      <Alert 
-        message="Lưu ý quan trọng" 
+      <Alert
+        title="Lưu ý quan trọng"
         description="Vai trò này không thể thay đổi sau khi bạn hoàn tất đăng ký."
-        type="warning" 
-        showIcon 
-        style={{ marginBottom: 'var(--space-6)', textAlign: 'left' }} 
+        type="warning"
+        showIcon
+        style={{ marginBottom: 'var(--space-6)', textAlign: 'left' }}
       />
 
       {errorMsg && (
         <Alert title={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
       )}
 
-      <Space direction="vertical" style={{ width: '100%', marginBottom: 'var(--space-8)' }} size="middle">
-        <RadioCard 
+      <Space orientation="vertical" style={{ width: '100%', marginBottom: 'var(--space-8)' }} size="middle">
+        <RadioCard
           title="Học viên / Phụ huynh"
           description="Tìm kiếm gia sư và tham gia các khóa học"
           value="STUDENT"
           checked={role === 'STUDENT'}
           onChange={() => setRole('STUDENT')}
         />
-        <RadioCard 
-          title="Gia sư" 
+        <RadioCard
+          title="Gia sư"
           description="Trở thành người giảng dạy và tạo thu nhập"
           value="TEACHER"
           checked={role === 'TEACHER'}
@@ -82,10 +82,10 @@ function OAuthRoleContent() {
         />
       </Space>
 
-      <Button 
-        type="primary" 
-        size="large" 
-        block 
+      <Button
+        type="primary"
+        size="large"
+        block
         loading={loading}
         onClick={onSubmit}
       >

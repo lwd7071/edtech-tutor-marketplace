@@ -54,7 +54,7 @@ export default function SubjectSelector({ onAdd }: SubjectSelectorProps) {
   };
 
   return (
-    <Space style={{ width: '100%' }} direction="vertical" size="middle">
+    <Space style={{ width: '100%' }} orientation="vertical" size="middle">
       <div style={{ display: 'flex', gap: 16 }}>
         <Select
           showSearch

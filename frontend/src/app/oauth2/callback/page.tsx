@@ -52,13 +52,13 @@ function OAuthCallbackContent() {
       <Alert
         type="error"
         showIcon
-        message={error}
+        title={error}
         action={<Link href="/auth/login">Quay lai dang nhap</Link>}
       />
     );
   }
 
-  return <Spin tip="Dang hoan tat dang nhap Google..." />;
+  return <Spin description="Đang hoàn tất đăng nhập Google..." />;
 }
 
 export default function OAuthCallbackPage() {
