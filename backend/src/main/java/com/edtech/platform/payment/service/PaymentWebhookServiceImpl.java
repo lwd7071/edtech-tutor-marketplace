@@ -92,7 +92,7 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
         paymentTransactionRepository.append(tx);
 
         // 6. Fetch Pricing Package Snapshot
-        PricingPackageSnapshot pkg = pricingPackageFacade.getPurchasablePackage(invoice.getPricingPackageId());
+        PricingPackageSnapshot pkg = pricingPackageFacade.getPackageForPaymentFulfillment(invoice.getPricingPackageId());
         if (pkg == null) {
             log.error("Pricing package {} not found for invoice {}", invoice.getPricingPackageId(), invoice.getInvoiceNumber());
             throw new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND);

@@ -6,4 +6,5 @@ import java.util.UUID;
 
 public interface PricingPackageFacade {
     PricingPackageSnapshot getPurchasablePackage(UUID pricingPackageId);
+    PricingPackageSnapshot getPackageForPaymentFulfillment(UUID pricingPackageId);
 }

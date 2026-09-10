@@ -86,7 +86,7 @@ class PaymentWebhookServiceTest {
         PricingPackageSnapshot pkg = new PricingPackageSnapshot(
                 packageId, teacherId, subjectId, "Advanced Java", 20, 90, amount, 60, "ACTIVE"
         );
-        when(pricingPackageFacade.getPurchasablePackage(packageId)).thenReturn(pkg);
+        when(pricingPackageFacade.getPackageForPaymentFulfillment(packageId)).thenReturn(pkg);
         when(platformSettingsFacade.getCommissionRate()).thenReturn(new BigDecimal("5.00")); // 5% commission
 
         // Act
@@ -107,6 +107,7 @@ class PaymentWebhookServiceTest {
         verify(financeFacade).creditTeacherPendingBalance(
                 eq(teacherId), eq(950000L), eq(invoiceId), eq("INV-1")
         );
+        verify(pricingPackageFacade, never()).getPurchasablePackage(any());
     }
 
     @Test
@@ -158,7 +159,7 @@ class PaymentWebhookServiceTest {
                 UUID.randomUUID(), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"));
         when(invoice.getId()).thenReturn(invoiceId);
         when(invoiceCommandRepository.findByPayosOrderCodeForUpdate(orderCode)).thenReturn(Optional.of(invoice));
-        when(pricingPackageFacade.getPurchasablePackage(packageId)).thenReturn(new PricingPackageSnapshot(
+        when(pricingPackageFacade.getPackageForPaymentFulfillment(packageId)).thenReturn(new PricingPackageSnapshot(
                 packageId, teacherId, subjectId, "Package", 10, 30, amount, 60, "ACTIVE"));
         when(platformSettingsFacade.getCommissionRate()).thenReturn(new BigDecimal("100"));
 

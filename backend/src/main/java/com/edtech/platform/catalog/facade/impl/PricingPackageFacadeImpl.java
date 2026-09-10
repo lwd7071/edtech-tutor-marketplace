@@ -35,6 +35,18 @@ public class PricingPackageFacadeImpl implements PricingPackageFacade {
                 || !teacher.isVisible()) {
             throw new BusinessException(ErrorCode.PACKAGE_NOT_ACTIVE);
         }
+        return toSnapshot(pricingPackage);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PricingPackageSnapshot getPackageForPaymentFulfillment(UUID pricingPackageId) {
+        PricingPackage pricingPackage = pricingPackageRepository.findById(pricingPackageId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND));
+        return toSnapshot(pricingPackage);
+    }
+
+    private PricingPackageSnapshot toSnapshot(PricingPackage pricingPackage) {
         return new PricingPackageSnapshot(
                 pricingPackage.getId(), pricingPackage.getTeacherId(), pricingPackage.getSubjectId(),
                 pricingPackage.getName(), pricingPackage.getTotalSessions(), pricingPackage.getDurationDays(),

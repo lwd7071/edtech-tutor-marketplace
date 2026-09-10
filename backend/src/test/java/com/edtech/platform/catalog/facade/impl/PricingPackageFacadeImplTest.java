@@ -66,7 +66,7 @@ class PricingPackageFacadeImplTest {
 
     @Test
     void rejectsActivePackage_whenTeacherIsNotApproved() {
-        for (String status : java.util.List.of("DRAFT", "PENDING", "REJECTED")) {
+        for (String status : java.util.List.of("DRAFT", "PENDING_APPROVAL", "REJECTED")) {
             UUID id = UUID.randomUUID();
             PricingPackage pricingPackage = packageWithStatus(PackageStatus.ACTIVE);
             when(repository.findById(id)).thenReturn(Optional.of(pricingPackage));
@@ -99,6 +99,19 @@ class PricingPackageFacadeImplTest {
         assertThatThrownBy(() -> facade.getPurchasablePackage(missingId))
                 .isInstanceOfSatisfying(BusinessException.class,
                         ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PACKAGE_NOT_ACTIVE));
+    }
+
+    @Test
+    void returnsInactivePackageForExistingInvoiceFulfillment_withoutRecheckingSaleEligibility() {
+        UUID id = UUID.randomUUID();
+        PricingPackage pricingPackage = packageWithStatus(PackageStatus.INACTIVE);
+        when(repository.findById(id)).thenReturn(Optional.of(pricingPackage));
+
+        var snapshot = facade.getPackageForPaymentFulfillment(id);
+
+        assertThat(snapshot.status()).isEqualTo("INACTIVE");
+        assertThat(snapshot.teacherId()).isEqualTo(pricingPackage.getTeacherId());
+        org.mockito.Mockito.verifyNoInteractions(teacherFacade);
     }
 
     private PricingPackage packageWithStatus(PackageStatus status) {
