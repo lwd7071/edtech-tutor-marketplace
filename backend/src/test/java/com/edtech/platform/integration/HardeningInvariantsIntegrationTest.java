@@ -1,6 +1,10 @@
 package com.edtech.platform.integration;
 
 import com.edtech.platform.common.AbstractIntegrationTest;
+import com.edtech.platform.common.exception.BusinessException;
+import com.edtech.platform.common.exception.ErrorCode;
+import com.edtech.platform.finance.command.CompleteTransferCommand;
+import com.edtech.platform.finance.service.RefundService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,6 +26,9 @@ class HardeningInvariantsIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private RefundService refundService;
 
     @Test
     @DisplayName("Invariant 1: Ledger Integrity - Sum(ledger_entries) == Wallet bucket balances")
@@ -226,6 +234,71 @@ class HardeningInvariantsIntegrationTest extends AbstractIntegrationTest {
             assertThat(columns)
                     .as("Table %s must have created_at timestamp", table)
                     .contains("created_at");
+        }
+    }
+
+    @Test
+    @DisplayName("Invariant 8: Insufficient refund balance rolls back package, wallet and ledger")
+    void invariant8_insufficientRefundBalance_shouldRollbackEveryMutationAndRemainRetrySafe() {
+        UUID refundId = UUID.randomUUID();
+        String packageId = "40000000-0000-0000-0000-000000000002";
+        String walletId = "20000000-0000-0000-0000-000000000002";
+        long originalPending = jdbcTemplate.queryForObject(
+                "SELECT pending_balance_vnd FROM wallets WHERE id = ?::uuid", Long.class, walletId);
+        String originalStatus = jdbcTemplate.queryForObject(
+                "SELECT status FROM student_packages WHERE id = ?::uuid", String.class, packageId);
+        int originalRemaining = jdbcTemplate.queryForObject(
+                "SELECT remaining_sessions FROM student_packages WHERE id = ?::uuid", Integer.class, packageId);
+        int originalRefunded = jdbcTemplate.queryForObject(
+                "SELECT refunded_sessions FROM student_packages WHERE id = ?::uuid", Integer.class, packageId);
+        UUID studentId = jdbcTemplate.queryForObject(
+                "SELECT student_id FROM student_packages WHERE id = ?::uuid", UUID.class, packageId);
+        UUID adminId = jdbcTemplate.queryForObject(
+                "SELECT id FROM users WHERE role = 'ADMIN' ORDER BY created_at LIMIT 1", UUID.class);
+
+        try {
+            jdbcTemplate.update(
+                    "UPDATE student_packages SET status = 'REFUND_PENDING' WHERE id = ?::uuid", packageId);
+            jdbcTemplate.update(
+                    "UPDATE wallets SET pending_balance_vnd = 1 WHERE id = ?::uuid", walletId);
+            jdbcTemplate.update("""
+                    INSERT INTO refund_requests (
+                        id, student_package_id, student_id, reason, requested_sessions,
+                        approved_sessions, refund_amount_vnd, status, version
+                    ) VALUES (?::uuid, ?::uuid, ?::uuid, 'rollback test', 2, 2, 640000, 'APPROVED', 0)
+                    """, refundId, packageId, studentId);
+
+            CompleteTransferCommand command = new CompleteTransferCommand(
+                    "TEST-REF", Instant.now(), "test-proof", "https://example.test/proof", 0L);
+
+            for (int attempt = 0; attempt < 2; attempt++) {
+                assertThatThrownBy(() -> refundService.completeRefund(adminId, refundId, command))
+                        .isInstanceOfSatisfying(BusinessException.class,
+                                ex -> assertThat(ex.getErrorCode())
+                                        .isEqualTo(ErrorCode.REFUND_WALLET_INSUFFICIENT));
+
+                assertThat(jdbcTemplate.queryForObject(
+                        "SELECT status FROM refund_requests WHERE id = ?::uuid", String.class, refundId))
+                        .isEqualTo("APPROVED");
+                assertThat(jdbcTemplate.queryForObject(
+                        "SELECT remaining_sessions FROM student_packages WHERE id = ?::uuid",
+                        Integer.class, packageId)).isEqualTo(originalRemaining);
+                assertThat(jdbcTemplate.queryForObject(
+                        "SELECT refunded_sessions FROM student_packages WHERE id = ?::uuid",
+                        Integer.class, packageId)).isEqualTo(originalRefunded);
+                assertThat(jdbcTemplate.queryForObject(
+                        "SELECT pending_balance_vnd FROM wallets WHERE id = ?::uuid", Long.class, walletId))
+                        .isEqualTo(1L);
+                assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM ledger_entries WHERE reference_id = ?::uuid",
+                        Long.class, refundId)).isZero();
+            }
+        } finally {
+            jdbcTemplate.update("DELETE FROM refund_requests WHERE id = ?::uuid", refundId);
+            jdbcTemplate.update(
+                    "UPDATE student_packages SET status = ? WHERE id = ?::uuid", originalStatus, packageId);
+            jdbcTemplate.update(
+                    "UPDATE wallets SET pending_balance_vnd = ? WHERE id = ?::uuid", originalPending, walletId);
         }
     }
 }
