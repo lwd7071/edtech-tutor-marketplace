@@ -5,6 +5,8 @@ import com.edtech.platform.catalog.domain.PricingPackage;
 import com.edtech.platform.catalog.repository.PricingPackageRepository;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
+import com.edtech.platform.teacher.facade.TeacherFacade;
+import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,6 +24,8 @@ import static org.mockito.Mockito.when;
 class PricingPackageFacadeImplTest {
     @Mock
     private PricingPackageRepository repository;
+    @Mock
+    private TeacherFacade teacherFacade;
     @InjectMocks
     private PricingPackageFacadeImpl facade;
 
@@ -30,6 +34,8 @@ class PricingPackageFacadeImplTest {
         UUID id = UUID.randomUUID();
         PricingPackage pricingPackage = packageWithStatus(PackageStatus.ACTIVE);
         when(repository.findById(id)).thenReturn(Optional.of(pricingPackage));
+        when(teacherFacade.getTeacher(pricingPackage.getTeacherId()))
+                .thenReturn(teacher("APPROVED", true));
 
         var snapshot = facade.getPurchasablePackage(id);
 
@@ -58,10 +64,53 @@ class PricingPackageFacadeImplTest {
                         ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PRICING_PACKAGE_NOT_FOUND));
     }
 
+    @Test
+    void rejectsActivePackage_whenTeacherIsNotApproved() {
+        for (String status : java.util.List.of("DRAFT", "PENDING", "REJECTED")) {
+            UUID id = UUID.randomUUID();
+            PricingPackage pricingPackage = packageWithStatus(PackageStatus.ACTIVE);
+            when(repository.findById(id)).thenReturn(Optional.of(pricingPackage));
+            when(teacherFacade.getTeacher(pricingPackage.getTeacherId()))
+                    .thenReturn(teacher(status, true));
+
+            assertThatThrownBy(() -> facade.getPurchasablePackage(id))
+                    .isInstanceOfSatisfying(BusinessException.class,
+                            ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PACKAGE_NOT_ACTIVE));
+        }
+    }
+
+    @Test
+    void rejectsActivePackage_whenApprovedTeacherIsHiddenOrMissing() {
+        UUID hiddenId = UUID.randomUUID();
+        PricingPackage hiddenPackage = packageWithStatus(PackageStatus.ACTIVE);
+        when(repository.findById(hiddenId)).thenReturn(Optional.of(hiddenPackage));
+        when(teacherFacade.getTeacher(hiddenPackage.getTeacherId()))
+                .thenReturn(teacher("APPROVED", false));
+
+        assertThatThrownBy(() -> facade.getPurchasablePackage(hiddenId))
+                .isInstanceOfSatisfying(BusinessException.class,
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PACKAGE_NOT_ACTIVE));
+
+        UUID missingId = UUID.randomUUID();
+        PricingPackage missingTeacherPackage = packageWithStatus(PackageStatus.ACTIVE);
+        when(repository.findById(missingId)).thenReturn(Optional.of(missingTeacherPackage));
+        when(teacherFacade.getTeacher(missingTeacherPackage.getTeacherId())).thenReturn(null);
+
+        assertThatThrownBy(() -> facade.getPurchasablePackage(missingId))
+                .isInstanceOfSatisfying(BusinessException.class,
+                        ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PACKAGE_NOT_ACTIVE));
+    }
+
     private PricingPackage packageWithStatus(PackageStatus status) {
         return PricingPackage.builder()
                 .teacherId(UUID.randomUUID()).subjectId(UUID.randomUUID()).name("Gói học")
                 .totalSessions(10).durationDays(30).priceVnd(500_000L)
                 .sessionDurationMinutes(60).status(status).build();
+    }
+
+    private TeacherSnapshot teacher(String status, boolean visible) {
+        return new TeacherSnapshot(
+                UUID.randomUUID(), UUID.randomUUID(), status, false, visible,
+                "Teacher", null, null, 0, true, false, java.util.List.of(), null, null);
     }
 }

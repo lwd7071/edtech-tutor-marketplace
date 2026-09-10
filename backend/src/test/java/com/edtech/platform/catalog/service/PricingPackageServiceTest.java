@@ -17,6 +17,8 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -67,9 +69,10 @@ class PricingPackageServiceTest {
 
     // ── Slice 1: createPackage — teacher not approved → throws ────────────────
 
-    @Test
-    void createPackage_throwsTeacherNotApproved_whenStatusNotApproved() {
-        when(teacherFacade.getTeacherByUserId(userId)).thenReturn(notApprovedTeacher);
+    @ParameterizedTest
+    @ValueSource(strings = {"DRAFT", "PENDING", "REJECTED"})
+    void createPackage_throwsTeacherNotApproved_whenStatusNotApproved(String status) {
+        when(teacherFacade.getTeacherByUserId(userId)).thenReturn(teacherWithStatus(status));
 
         UpsertPricingPackageRequest request = new UpsertPricingPackageRequest(
                 subjectId, "Basic Pack", "desc", 10, 30, 500000L, 60, PackageStatus.ACTIVE);
@@ -78,6 +81,18 @@ class PricingPackageServiceTest {
                 () -> pricingPackageService.createPackage(userId, request));
 
         assertEquals(ErrorCode.TEACHER_NOT_APPROVED, ex.getErrorCode());
+    }
+
+    @Test
+    void createPackage_throwsProfileNotFound_whenTeacherProfileIsMissing() {
+        when(teacherFacade.getTeacherByUserId(userId)).thenReturn(null);
+        UpsertPricingPackageRequest request = packageRequest(PackageStatus.ACTIVE);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> pricingPackageService.createPackage(userId, request));
+
+        assertEquals(ErrorCode.TEACHER_PROFILE_NOT_FOUND, ex.getErrorCode());
+        verifyNoInteractions(pricingPackageRepository);
     }
 
     // ── Slice 2: createPackage — subject not assigned → throws ────────────────
@@ -182,7 +197,7 @@ class PricingPackageServiceTest {
                 .build();
         ReflectionTestUtils.setField(pkg, "id", packageId);
 
-        when(teacherFacade.getTeacherByUserId(userId)).thenReturn(approvedTeacher);
+        when(teacherFacade.getTeacherByUserId(userId)).thenReturn(notApprovedTeacher);
         when(pricingPackageRepository.findById(packageId)).thenReturn(Optional.of(pkg));
         when(enrollmentFacade.hasStudentPackage(packageId)).thenReturn(true);
         when(pricingPackageRepository.save(any())).thenReturn(pkg);
@@ -192,5 +207,73 @@ class PricingPackageServiceTest {
 
         assertDoesNotThrow(() -> pricingPackageService.changeStatus(userId, packageId, req));
         verify(pricingPackageRepository).save(pkg);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DRAFT", "PENDING", "REJECTED"})
+    void updatePackage_throwsTeacherNotApproved_beforeMutatingPackage(String status) {
+        UUID packageId = UUID.randomUUID();
+        when(teacherFacade.getTeacherByUserId(userId)).thenReturn(teacherWithStatus(status));
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> pricingPackageService.updatePackage(userId, packageId, packageRequest(PackageStatus.INACTIVE)));
+
+        assertEquals(ErrorCode.TEACHER_NOT_APPROVED, ex.getErrorCode());
+        verify(pricingPackageRepository, never()).save(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DRAFT", "PENDING", "REJECTED"})
+    void changeStatus_blocksActivation_whenTeacherNotApproved(String status) {
+        UUID packageId = UUID.randomUUID();
+        PricingPackage pkg = ownedPackage(packageId, PackageStatus.INACTIVE);
+        when(teacherFacade.getTeacherByUserId(userId)).thenReturn(teacherWithStatus(status));
+        when(pricingPackageRepository.findById(packageId)).thenReturn(Optional.of(pkg));
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> pricingPackageService.changeStatus(
+                        userId, packageId, new ChangePackageStatusRequest(PackageStatus.ACTIVE)));
+
+        assertEquals(ErrorCode.TEACHER_NOT_APPROVED, ex.getErrorCode());
+        assertEquals(PackageStatus.INACTIVE, pkg.getStatus());
+        verify(pricingPackageRepository, never()).save(any());
+    }
+
+    @Test
+    void changeStatus_throwsProfileNotFound_whenTeacherProfileIsMissing() {
+        when(teacherFacade.getTeacherByUserId(userId)).thenReturn(null);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> pricingPackageService.changeStatus(
+                        userId, UUID.randomUUID(), new ChangePackageStatusRequest(PackageStatus.INACTIVE)));
+
+        assertEquals(ErrorCode.TEACHER_PROFILE_NOT_FOUND, ex.getErrorCode());
+    }
+
+    private UpsertPricingPackageRequest packageRequest(PackageStatus status) {
+        return new UpsertPricingPackageRequest(
+                subjectId, "Basic Pack", "desc", 10, 30, 500000L, 60, status);
+    }
+
+    private PricingPackage ownedPackage(UUID packageId, PackageStatus status) {
+        PricingPackage pkg = PricingPackage.builder()
+                .teacherId(teacherId)
+                .subjectId(subjectId)
+                .name("Pack")
+                .description("")
+                .totalSessions(5)
+                .durationDays(30)
+                .priceVnd(100000L)
+                .sessionDurationMinutes(45)
+                .status(status)
+                .build();
+        ReflectionTestUtils.setField(pkg, "id", packageId);
+        return pkg;
+    }
+
+    private TeacherSnapshot teacherWithStatus(String status) {
+        return new TeacherSnapshot(
+                teacherId, userId, status, false, false, "Teacher", null, null, 0,
+                true, false, java.util.List.of(), null, null);
     }
 }

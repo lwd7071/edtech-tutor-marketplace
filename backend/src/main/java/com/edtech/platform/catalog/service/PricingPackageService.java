@@ -38,11 +38,7 @@ public class PricingPackageService {
 
     @Transactional
     public PricingPackageView createPackage(UUID userId, UpsertPricingPackageRequest request) {
-        TeacherSnapshot profile = teacherFacade.getTeacherByUserId(userId);
-
-        if (!"APPROVED".equals(profile.status())) {
-            throw new BusinessException(ErrorCode.TEACHER_NOT_APPROVED);
-        }
+        TeacherSnapshot profile = requireApprovedTeacher(userId);
 
         SubjectSnapshot subject = subjectFacade.getSubject(request.subjectId());
 
@@ -88,7 +84,7 @@ public class PricingPackageService {
 
     @Transactional
     public PricingPackageView updatePackage(UUID userId, UUID packageId, UpsertPricingPackageRequest request) {
-        TeacherSnapshot profile = teacherFacade.getTeacherByUserId(userId);
+        TeacherSnapshot profile = requireApprovedTeacher(userId);
 
         PricingPackage pkg = pricingPackageRepository.findById(packageId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND));
@@ -125,13 +121,17 @@ public class PricingPackageService {
 
     @Transactional
     public PricingPackageView changeStatus(UUID userId, UUID packageId, ChangePackageStatusRequest request) {
-        TeacherSnapshot profile = teacherFacade.getTeacherByUserId(userId);
+        TeacherSnapshot profile = requireTeacher(userId);
 
         PricingPackage pkg = pricingPackageRepository.findById(packageId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND));
 
         if (!pkg.getTeacherId().equals(profile.id())) {
             throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE);
+        }
+
+        if (request.status() == PackageStatus.ACTIVE) {
+            requireApproved(profile);
         }
 
         if (enrollmentFacade.hasStudentPackage(packageId)) {
@@ -174,6 +174,26 @@ public class PricingPackageService {
     private void evictTeacherProfileCache(UUID teacherId) {
         if (cacheManager.getCache("TEACHER_PUBLIC_PROFILE") != null) {
             cacheManager.getCache("TEACHER_PUBLIC_PROFILE").evict(teacherId);
+        }
+    }
+
+    private TeacherSnapshot requireTeacher(UUID userId) {
+        TeacherSnapshot profile = teacherFacade.getTeacherByUserId(userId);
+        if (profile == null) {
+            throw new BusinessException(ErrorCode.TEACHER_PROFILE_NOT_FOUND);
+        }
+        return profile;
+    }
+
+    private TeacherSnapshot requireApprovedTeacher(UUID userId) {
+        TeacherSnapshot profile = requireTeacher(userId);
+        requireApproved(profile);
+        return profile;
+    }
+
+    private void requireApproved(TeacherSnapshot profile) {
+        if (!"APPROVED".equalsIgnoreCase(profile.status())) {
+            throw new BusinessException(ErrorCode.TEACHER_NOT_APPROVED);
         }
     }
 
