@@ -5,6 +5,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -79,5 +80,30 @@ class PackageMoneyAllocatorTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> allocator.allocationForRange(1, 2, 1, 2))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void randomizedPartitions_preserveEveryVndAndRangeAdditivity() {
+        Random random = new Random(20260910L);
+        for (int sample = 0; sample < 1_000; sample++) {
+            long totalAmount = random.nextLong(0, 1_000_000_000_001L);
+            int totalSessions = random.nextInt(1, 101);
+            int firstRange = random.nextInt(0, totalSessions + 1);
+            int secondRange = random.nextInt(0, totalSessions - firstRange + 1);
+
+            long sum = 0;
+            for (int index = 0; index < totalSessions; index++) {
+                sum += allocator.allocationForRange(totalAmount, totalSessions, index, 1);
+            }
+            assertThat(sum).isEqualTo(totalAmount);
+
+            long combined = allocator.allocationForRange(
+                    totalAmount, totalSessions, 0, firstRange + secondRange);
+            long partitioned = allocator.allocationForRange(
+                    totalAmount, totalSessions, 0, firstRange)
+                    + allocator.allocationForRange(
+                    totalAmount, totalSessions, firstRange, secondRange);
+            assertThat(partitioned).isEqualTo(combined);
+        }
     }
 }

@@ -61,7 +61,7 @@ class PricingPackageServiceTest {
         subjectId = UUID.randomUUID();
 
         approvedTeacher = new TeacherSnapshot(teacherId, userId, "APPROVED", true, true, "Teacher A", null, null, 0, true, false, java.util.List.of(), null, null);
-        notApprovedTeacher = new TeacherSnapshot(teacherId, userId, "PENDING", false, false, "Teacher B", null, null, 0, true, false, java.util.List.of(), null, null);
+        notApprovedTeacher = new TeacherSnapshot(teacherId, userId, "PENDING_APPROVAL", false, false, "Teacher B", null, null, 0, true, false, java.util.List.of(), null, null);
         activeSubject = new SubjectSnapshot(subjectId, "MATH01", "Mathematics", "HIGH_SCHOOL", true);
 
         lenient().when(cacheManager.getCache("TEACHER_PUBLIC_PROFILE")).thenReturn(cache);
@@ -70,7 +70,7 @@ class PricingPackageServiceTest {
     // ── Slice 1: createPackage — teacher not approved → throws ────────────────
 
     @ParameterizedTest
-    @ValueSource(strings = {"DRAFT", "PENDING", "REJECTED"})
+    @ValueSource(strings = {"DRAFT", "PENDING_APPROVAL", "REJECTED"})
     void createPackage_throwsTeacherNotApproved_whenStatusNotApproved(String status) {
         when(teacherFacade.getTeacherByUserId(userId)).thenReturn(teacherWithStatus(status));
 
@@ -210,7 +210,7 @@ class PricingPackageServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"DRAFT", "PENDING", "REJECTED"})
+    @ValueSource(strings = {"DRAFT", "PENDING_APPROVAL", "REJECTED"})
     void updatePackage_throwsTeacherNotApproved_beforeMutatingPackage(String status) {
         UUID packageId = UUID.randomUUID();
         when(teacherFacade.getTeacherByUserId(userId)).thenReturn(teacherWithStatus(status));
@@ -223,7 +223,7 @@ class PricingPackageServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"DRAFT", "PENDING", "REJECTED"})
+    @ValueSource(strings = {"DRAFT", "PENDING_APPROVAL", "REJECTED"})
     void changeStatus_blocksActivation_whenTeacherNotApproved(String status) {
         UUID packageId = UUID.randomUUID();
         PricingPackage pkg = ownedPackage(packageId, PackageStatus.INACTIVE);
