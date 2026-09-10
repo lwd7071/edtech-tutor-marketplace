@@ -9,6 +9,7 @@ import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.enrollment.facade.EnrollmentFacade;
 import com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot;
 import com.edtech.platform.finance.domain.*;
+import com.edtech.platform.finance.facade.PackageMoneyAllocator;
 import com.edtech.platform.finance.dto.request.CreateRefundRequest;
 import com.edtech.platform.finance.dto.response.RefundRequestView;
 import com.edtech.platform.finance.mapper.RefundRequestViewMapper;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -38,6 +38,7 @@ public class RefundService {
     private final LedgerEntryRepository ledgerEntryRepository;
     private final AccountNumberProtector accountNumbers;
     private final RefundRequestViewMapper views;
+    private final PackageMoneyAllocator packageMoneyAllocator;
 
     @Transactional
     public RefundRequestView createRefund(UUID studentId, CreateRefundRequest request) {
@@ -135,16 +136,9 @@ public class RefundService {
             throw new BusinessException(ErrorCode.REFUND_AMOUNT_EXCEEDED);
         }
 
-        // Calculate cumulative refund amount
-        int totalSessions = Math.max(1, pkg.totalSessions());
-        long purchasePrice = pkg.purchasePriceVnd();
         int resolvedBefore = pkg.completedSessions() + pkg.refundedSessions();
-        int resolvedAfter = resolvedBefore + request.approvedSessions();
-
-        long refundAmountVnd = BigDecimal.valueOf(resolvedAfter).multiply(BigDecimal.valueOf(purchasePrice))
-                .divide(BigDecimal.valueOf(totalSessions), 0, RoundingMode.FLOOR).longValue()
-                - BigDecimal.valueOf(resolvedBefore).multiply(BigDecimal.valueOf(purchasePrice))
-                .divide(BigDecimal.valueOf(totalSessions), 0, RoundingMode.FLOOR).longValue();
+        long refundAmountVnd = packageMoneyAllocator.allocationForRange(
+                pkg.purchasePriceVnd(), pkg.totalSessions(), resolvedBefore, request.approvedSessions());
 
         refund.approve(adminId, request.approvedSessions(), refundAmountVnd, request.adminNote(), Instant.now());
         return views.toView(refund);
@@ -158,7 +152,6 @@ public class RefundService {
         if (refund.getVersion() != request.version()) {
             throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
         }
-
         refund.reject(adminId, request.reason(), Instant.now());
 
         // Restore package status
@@ -175,6 +168,9 @@ public class RefundService {
         if (refund.getVersion() != request.version()) {
             throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
         }
+        if (refund.getStatus() != RefundStatus.APPROVED) {
+            throw new BusinessException(ErrorCode.REFUND_INVALID_STATE);
+        }
 
         EnrollmentPackageSnapshot pkg = enrollmentFacade.inspect(refund.getStudentPackageId(), null);
         if (pkg == null) {
@@ -185,29 +181,19 @@ public class RefundService {
         enrollmentFacade.applyRefund(pkg.id(), refund.getApprovedSessions());
 
         // 2. Deduct Teacher Wallet Pending balance
-        long purchasePrice = pkg.purchasePriceVnd();
         BigDecimal commRate = pkg.commissionRate() != null ? pkg.commissionRate() : BigDecimal.ZERO;
-        BigDecimal feeRate = commRate.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
-        long commissionTotal = new BigDecimal(purchasePrice).multiply(feeRate).setScale(0, RoundingMode.HALF_UP).longValue();
-        long teacherNetTotal = purchasePrice - commissionTotal;
-
-        int totalSessions = Math.max(1, pkg.totalSessions());
+        long teacherNetTotal = packageMoneyAllocator.teacherNetTotal(pkg.purchasePriceVnd(), commRate);
         int resolvedBefore = pkg.completedSessions() + pkg.refundedSessions();
-        int resolvedAfter = resolvedBefore + refund.getApprovedSessions();
-
-        long teacherRefundNet = BigDecimal.valueOf(resolvedAfter).multiply(BigDecimal.valueOf(teacherNetTotal))
-                .divide(BigDecimal.valueOf(totalSessions), 0, RoundingMode.FLOOR).longValue()
-                - BigDecimal.valueOf(resolvedBefore).multiply(BigDecimal.valueOf(teacherNetTotal))
-                .divide(BigDecimal.valueOf(totalSessions), 0, RoundingMode.FLOOR).longValue();
+        long teacherRefundNet = packageMoneyAllocator.allocationForRange(
+                teacherNetTotal, pkg.totalSessions(), resolvedBefore, refund.getApprovedSessions());
 
         if (teacherRefundNet > 0) {
             Wallet wallet = walletRepository.findByTeacherIdForUpdate(pkg.teacherId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.WALLET_NOT_FOUND));
-            if (wallet.getPendingBalanceVnd() >= teacherRefundNet) {
-                wallet.debitPending(teacherRefundNet);
-            } else {
-                wallet.debitPending(wallet.getPendingBalanceVnd());
+            if (wallet.getPendingBalanceVnd() < teacherRefundNet) {
+                throw new BusinessException(ErrorCode.REFUND_WALLET_INSUFFICIENT);
             }
+            wallet.debitPending(teacherRefundNet);
 
             ledgerEntryRepository.append(new LedgerEntry(
                     wallet.getId(),
