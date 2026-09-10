@@ -14,6 +14,7 @@ import com.edtech.platform.booking.repository.SessionReportRepository;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.finance.facade.FinanceFacade;
+import com.edtech.platform.finance.facade.PackageMoneyAllocator;
 import com.edtech.platform.teacher.facade.TeacherFacade;
 import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -39,6 +38,7 @@ public class BookingService {
     private final EnrollmentBookingFacade enrollmentBookingFacade;
     private final SessionReportRepository sessionReportRepository;
     private final FinanceFacade financeFacade;
+    private final PackageMoneyAllocator packageMoneyAllocator;
     private final CommunicationFacade communicationFacade;
     private final TeacherFacade teacherFacade;
     private final IdentityFacade identityFacade;
@@ -184,22 +184,16 @@ public class BookingService {
             BookingPackageSnapshot pkg = enrollmentBookingFacade.inspect(booking.getStudentPackageId(), booking.getStudentId());
             enrollmentBookingFacade.completeReservedSession(booking.getStudentPackageId());
 
-            // Cumulative integer allocation
-            long purchasePrice = pkg.purchasePriceVnd();
-            BigDecimal commRate = pkg.commissionRate() != null ? pkg.commissionRate() : BigDecimal.ZERO;
-            BigDecimal feeRate = commRate.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
-            long commissionTotal = new BigDecimal(purchasePrice).multiply(feeRate).setScale(0, RoundingMode.HALF_UP).longValue();
-            long teacherNetTotal = purchasePrice - commissionTotal;
-
-            int totalSessions = Math.max(1, pkg.totalSessions());
+            long teacherNetTotal = packageMoneyAllocator.teacherNetTotal(
+                    pkg.purchasePriceVnd(),
+                    pkg.commissionRate() != null ? pkg.commissionRate() : java.math.BigDecimal.ZERO
+            );
             int resolvedBefore = pkg.completedSessions() + pkg.refundedSessions();
-            long sessionNet = BigDecimal.valueOf(resolvedBefore + 1).multiply(BigDecimal.valueOf(teacherNetTotal))
-                    .divide(BigDecimal.valueOf(totalSessions), 0, RoundingMode.FLOOR).longValue()
-                    - BigDecimal.valueOf(resolvedBefore).multiply(BigDecimal.valueOf(teacherNetTotal))
-                    .divide(BigDecimal.valueOf(totalSessions), 0, RoundingMode.FLOOR).longValue();
-            sessionNet = Math.max(1, sessionNet);
-
-            financeFacade.settleBookingSession(booking.getTeacherId(), bookingId, sessionNet);
+            long sessionNet = packageMoneyAllocator.allocationForRange(
+                    teacherNetTotal, pkg.totalSessions(), resolvedBefore, 1);
+            if (sessionNet > 0) {
+                financeFacade.settleBookingSession(booking.getTeacherId(), bookingId, sessionNet);
+            }
             booking.markSettlementProcessed();
         }
 

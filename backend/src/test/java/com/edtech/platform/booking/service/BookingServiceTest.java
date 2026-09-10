@@ -13,6 +13,7 @@ import com.edtech.platform.booking.repository.SessionReportRepository;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.finance.facade.FinanceFacade;
+import com.edtech.platform.finance.facade.PackageMoneyAllocator;
 import com.edtech.platform.teacher.facade.TeacherFacade;
 import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import com.edtech.platform.subject.facade.SubjectFacade;
@@ -67,6 +68,7 @@ class BookingServiceTest {
                 enrollmentBookingFacade,
                 sessionReportRepository,
                 financeFacade,
+                new PackageMoneyAllocator(),
                 communicationFacade,
                 teacherFacade,
                 identityFacade,
@@ -193,6 +195,32 @@ class BookingServiceTest {
         // Teacher Net Total = 1,000,000 - 5% (50,000) = 950,000. Session Net = floor(1 * 950,000 / 10) = 95,000
         verify(financeFacade).settleBookingSession(eq(teacherId), eq(bookingId), eq(95000L));
         verify(communicationFacade).publishAfterCommit(any());
+    }
+
+    @Test
+    void complete_shouldMarkSettlementProcessed_withoutLedgerMovement_whenAllocationIsZero() {
+        UUID bookingId = UUID.randomUUID();
+        Instant start = Instant.now().minusSeconds(7200);
+        Instant end = Instant.now().minusSeconds(3600);
+        Booking booking = spy(Booking.scheduleOfficial(
+                teacherId, studentId, packageId, subjectId, start, end,
+                DeliveryMode.ONLINE, null, null, false));
+
+        when(teacherFacade.getTeacherByUserId(teacherUserId)).thenReturn(mockTeacherSnapshot());
+        when(bookingRepository.findByIdForUpdate(bookingId)).thenReturn(Optional.of(booking));
+        when(sessionReportRepository.existsByBookingId(bookingId)).thenReturn(false);
+        when(enrollmentBookingFacade.inspect(packageId, studentId)).thenReturn(new BookingPackageSnapshot(
+                packageId, studentId, teacherId, subjectId, "ACTIVE",
+                9, 1, 0, 0, 10, 1L, BigDecimal.ZERO,
+                Instant.now().plusSeconds(86400), 0));
+
+        bookingService.complete(teacherUserId, bookingId, new CompleteBookingRequest(
+                0L, new SessionReportRequest(null, "Content", null, null, 5)));
+
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.COMPLETED);
+        assertThat(booking.isSettlementProcessed()).isTrue();
+        verify(enrollmentBookingFacade).completeReservedSession(packageId);
+        verifyNoInteractions(financeFacade);
     }
 
     @Test

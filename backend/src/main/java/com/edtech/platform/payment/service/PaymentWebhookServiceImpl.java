@@ -7,6 +7,7 @@ import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.enrollment.facade.EnrollmentFacade;
 import com.edtech.platform.finance.facade.FinanceFacade;
+import com.edtech.platform.finance.facade.PackageMoneyAllocator;
 import com.edtech.platform.payment.domain.Invoice;
 import com.edtech.platform.payment.domain.InvoiceStatus;
 import com.edtech.platform.payment.domain.PaymentTransaction;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -34,6 +34,7 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
     private final PlatformSettingsFacade platformSettingsFacade;
     private final EnrollmentFacade enrollmentFacade;
     private final FinanceFacade financeFacade;
+    private final PackageMoneyAllocator packageMoneyAllocator;
 
     @Override
     @Transactional
@@ -124,18 +125,17 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
         );
 
         // 9. Calculate net amount for teacher
-        long amount = invoice.getAmountVnd();
-        BigDecimal feeRate = commissionRate.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
-        long fee = new BigDecimal(amount).multiply(feeRate).setScale(0, RoundingMode.HALF_UP).longValue();
-        long netAmount = amount - fee;
+        long netAmount = packageMoneyAllocator.teacherNetTotal(invoice.getAmountVnd(), commissionRate);
 
         // 10. Update Teacher Wallet via FinanceFacade
-        financeFacade.creditTeacherPendingBalance(
-                invoice.getTeacherId(),
-                netAmount,
-                invoice.getId(),
-                invoice.getInvoiceNumber()
-        );
+        if (netAmount > 0) {
+            financeFacade.creditTeacherPendingBalance(
+                    invoice.getTeacherId(),
+                    netAmount,
+                    invoice.getId(),
+                    invoice.getInvoiceNumber()
+            );
+        }
 
         log.info("Successfully processed payment webhook for invoice {}", invoice.getInvoiceNumber());
     }

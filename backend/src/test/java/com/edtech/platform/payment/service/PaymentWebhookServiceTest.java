@@ -7,6 +7,7 @@ import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.enrollment.facade.EnrollmentFacade;
 import com.edtech.platform.finance.facade.FinanceFacade;
+import com.edtech.platform.finance.facade.PackageMoneyAllocator;
 import com.edtech.platform.payment.domain.Invoice;
 import com.edtech.platform.payment.domain.InvoiceStatus;
 import com.edtech.platform.payment.domain.PaymentTransaction;
@@ -50,7 +51,8 @@ class PaymentWebhookServiceTest {
                 pricingPackageFacade,
                 platformSettingsFacade,
                 enrollmentFacade,
-                financeFacade
+                financeFacade,
+                new PackageMoneyAllocator()
         );
     }
 
@@ -139,5 +141,33 @@ class PaymentWebhookServiceTest {
         assertThatThrownBy(() -> webhookService.processWebhook(payment))
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> assertThat(((BusinessException) e).getErrorCode()).isEqualTo(ErrorCode.PAYMENT_AMOUNT_MISMATCH));
+    }
+
+    @Test
+    void processWebhook_shouldActivatePackage_withoutWalletEntry_whenCommissionIsOneHundredPercent() {
+        long orderCode = 456L;
+        long amount = 1L;
+        Instant paidAt = Instant.now();
+        UUID studentId = UUID.randomUUID();
+        UUID teacherId = UUID.randomUUID();
+        UUID subjectId = UUID.randomUUID();
+        UUID packageId = UUID.randomUUID();
+        UUID invoiceId = UUID.randomUUID();
+        Invoice invoice = spy(Invoice.pending(
+                "INV-ZERO-NET", orderCode, studentId, teacherId, packageId, amount,
+                UUID.randomUUID(), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"));
+        when(invoice.getId()).thenReturn(invoiceId);
+        when(invoiceCommandRepository.findByPayosOrderCodeForUpdate(orderCode)).thenReturn(Optional.of(invoice));
+        when(pricingPackageFacade.getPurchasablePackage(packageId)).thenReturn(new PricingPackageSnapshot(
+                packageId, teacherId, subjectId, "Package", 10, 30, amount, 60, "ACTIVE"));
+        when(platformSettingsFacade.getCommissionRate()).thenReturn(new BigDecimal("100"));
+
+        webhookService.processWebhook(new VerifiedPayment(
+                "REF-ZERO-NET", orderCode, amount, paidAt, new ObjectMapper().createObjectNode()));
+
+        verify(enrollmentFacade).activateStudentPackage(
+                eq(studentId), eq(teacherId), eq(subjectId), eq(packageId), eq(invoiceId),
+                eq("Package"), eq(10), eq(30), eq(amount), eq(new BigDecimal("100")), eq(paidAt));
+        verifyNoInteractions(financeFacade);
     }
 }
