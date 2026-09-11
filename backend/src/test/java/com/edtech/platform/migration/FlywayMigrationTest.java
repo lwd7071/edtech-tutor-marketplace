@@ -21,13 +21,13 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    @DisplayName("Tất cả 28 file migration V1-V28 phải được apply và validate thành công")
+    @DisplayName("Tất cả 29 file migration V1-V29 phải được apply và validate thành công")
     void flyway_shouldApplyAllMigrationsSuccessfully() {
         assertThat(flyway).isNotNull();
         MigrationInfo[] appliedMigrations = flyway.info().applied();
 
         assertThat(appliedMigrations)
-                .hasSize(28)
+                .hasSize(29)
                 .allSatisfy(info -> {
                     assertThat(info.getState().isApplied()).isTrue();
                     assertThat(info.getVersion()).isNotNull();
@@ -75,7 +75,35 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Database đang ở V27 phải nâng cấp lên V28 thành công")
+    @DisplayName("V29 phải tạo finance receipts và trạng thái workflow tối giản")
+    void financeHardeningMigrationShouldExposeExpectedMetadata() {
+        assertThat(jdbcTemplate).isNotNull();
+        Integer transferredAt = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM information_schema.columns WHERE table_schema = 'public' " +
+                        "AND table_name = 'refund_requests' AND column_name = 'transferred_at'",
+                Integer.class);
+        assertThat(transferredAt).isEqualTo(1);
+        Integer receipts = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' " +
+                        "AND table_name = 'finance_command_receipts'",
+                Integer.class);
+        assertThat(receipts).isEqualTo(1);
+        List<String> indexes = jdbcTemplate.queryForList("""
+                SELECT indexname FROM pg_indexes
+                WHERE schemaname = 'public' AND indexname IN (
+                  'ux_refund_requests_active_package',
+                  'ux_extension_requests_pending_package',
+                  'ux_payout_requests_active_teacher'
+                )
+                """, String.class);
+        assertThat(indexes).containsExactlyInAnyOrder(
+                "ux_refund_requests_active_package",
+                "ux_extension_requests_pending_package",
+                "ux_payout_requests_active_teacher");
+    }
+
+    @Test
+    @DisplayName("Database đang ở V27 phải nâng cấp lên V29 thành công")
     void teacherSearchMigrationShouldUpgradeASeparateV27Database() {
         String databaseName = "edtech_v27_upgrade";
         jdbcTemplate.execute("CREATE DATABASE " + databaseName);
@@ -93,7 +121,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword())
                 .load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("28");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("29");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
