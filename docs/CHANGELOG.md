@@ -2,6 +2,12 @@
 
 Các entry dưới đây ghi hành vi và bằng chứng quan trọng. Danh sách file đầy đủ nằm trong Git history.
 
+## 2026-09-11 — Re-check sau khi Docker Engine hoạt động
+
+- Chạy lại vòng diagnose cho scheduler toggle, Teacher Search và CI hardening.
+- Full backend suite với PostgreSQL/Redis Testcontainers: `341/341` pass; scheduler config `3/3`; Teacher Search repository `4/4`.
+- Xác nhận container Testcontainers được Ryuk tự dọn sau test; cloud smoke và load benchmark vẫn chưa chạy.
+
 ## 2026-09-11 — Hardening cloud smoke và CI runtime
 
 - Thêm `APP_SCHEDULING_ENABLED`, mặc định `true`, để chạy cloud servlet smoke mà không kích hoạt scheduled jobs; focused config test `3/3` pass.

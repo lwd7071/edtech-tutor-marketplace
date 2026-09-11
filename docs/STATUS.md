@@ -81,7 +81,7 @@
 - CI regression focused suite (`StudentInvoiceControllerTest`, `ArchitectureTest`, `SolidGuardrailsArchitectureTest`): `9/9` pass sau khi bỏ mapping assignment trùng, sửa principal test và chuyển package read controller về module enrollment.
 - GitHub Backend CI full Maven/Testcontainers: `325/325` pass, `0` failure, `0` error, `0` skipped tại run `34558136980`.
 - Docker image build validation trong cùng run: pass.
-- Full backend suite local với PostgreSQL 16/Redis Testcontainers: `338/338` pass, `0` failure, `0` error, `0` skipped.
+- Full backend suite local với PostgreSQL 16/Redis Testcontainers: `341/341` pass, `0` failure, `0` error, `0` skipped; đã re-check sau khi Docker Engine hoạt động.
 - Scheduler toggle focused test: `3/3` pass. Lần `mvn clean verify` sau thay đổi không được ghi nhận là pass do Maven kết thúc exit code `1`; lần chạy lại các test Testcontainers bị chặn vì Docker Desktop mất Docker socket.
 - Jest/Playwright cho Student Journey: **chưa xác minh trong lượt này**.
 - Teacher-search focused validation/cache/serialization + architecture guardrails: pass local (`15/15`).
