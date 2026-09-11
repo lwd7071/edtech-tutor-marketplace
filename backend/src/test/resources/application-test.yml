@@ -19,6 +19,8 @@ spring:
       enabled: false
 
 app:
+  scheduling:
+    enabled: false
   jwt:
     secret: test-jwt-secret-minimum-256-bit-key-for-integration-tests-32chars
     access-expiration-ms: 900000

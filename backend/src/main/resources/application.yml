@@ -78,6 +78,8 @@ server:
 
 # --- Custom App Configuration ---
 app:
+  scheduling:
+    enabled: ${APP_SCHEDULING_ENABLED:true}
   email:
     provider: ${APP_EMAIL_PROVIDER:smtp}
     from: ${APP_EMAIL_FROM:noreply@tutormatch.local}
