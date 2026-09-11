@@ -5,13 +5,14 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.AssertTrue;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.UUID;
 
 public record TeacherSearchParams(
-        String keyword,
+        @Size(max = 100, message = "Từ khóa không được vượt quá 100 ký tự") String keyword,
         UUID subjectId,
         DayOfWeek dayOfWeek,
         LocalTime startTime,

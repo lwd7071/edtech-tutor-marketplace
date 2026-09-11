@@ -29,12 +29,10 @@ public class TeacherMarketplaceService {
     private final TeacherStatsFacade teacherStatsFacade;
     private final SubjectFacade subjectFacade;
     private final PricingPackageService pricingPackageService;
-    private final com.edtech.platform.catalog.repository.TeacherSearchRepository teacherSearchRepository;
+    private final TeacherSearchCache teacherSearchCache;
 
     public org.springframework.data.domain.Page<TeacherCard> searchTeachers(TeacherSearchParams params) {
-        int page = params.page() != null ? params.page() : 0;
-        int size = params.size() != null ? params.size() : 20;
-        return teacherSearchRepository.searchTeachers(params, org.springframework.data.domain.PageRequest.of(page, size));
+        return teacherSearchCache.search(params).toPage();
     }
 
     @Cacheable(value = "TEACHER_PUBLIC_PROFILE", key = "#teacherId")

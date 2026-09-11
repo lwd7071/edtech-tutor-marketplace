@@ -25,6 +25,30 @@ public class TeacherSearchRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
+    private static final String PRICE_JOIN = """
+            LEFT JOIN LATERAL (
+                SELECT MIN(pp.price_vnd) AS min_price
+                FROM pricing_packages pp
+                WHERE pp.teacher_id = tp.id
+                  AND pp.status = 'ACTIVE'
+                  AND pp.is_deleted = false
+            ) price ON true
+            """;
+
+    private static final String BASE_FROM = """
+            FROM teacher_profiles tp
+            JOIN users u ON tp.user_id = u.id
+            LEFT JOIN teacher_stats ts ON ts.teacher_id = tp.id
+            """;
+
+    private static final String BASE_WHERE = """
+            WHERE tp.profile_status = 'APPROVED'
+              AND tp.is_visible = true
+              AND tp.is_deleted = false
+              AND u.status = 'ACTIVE'
+              AND u.is_deleted = false
+            """;
+
     public Page<TeacherCard> searchTeachers(TeacherSearchParams params, PageRequest pageRequest) {
         StringBuilder sql = new StringBuilder("""
             SELECT 
@@ -40,22 +64,62 @@ public class TeacherSearchRepository {
                 COALESCE(ts.bayesian_rating, 0.0) AS bayesian_rating,
                 COALESCE(ts.review_count, 0) AS review_count,
                 COALESCE(ts.global_rank, 999999) AS global_rank,
-                (SELECT MIN(pp.price_vnd) FROM pricing_packages pp WHERE pp.teacher_id = tp.id AND pp.status = 'ACTIVE' AND pp.is_deleted = false) AS min_price
-            FROM teacher_profiles tp
-            JOIN users u ON tp.user_id = u.id
-            LEFT JOIN teacher_stats ts ON ts.teacher_id = tp.id
-            WHERE tp.profile_status = 'APPROVED'
-            AND tp.is_visible = true
-            AND tp.is_deleted = false
-            AND u.status = 'ACTIVE'
-            AND u.is_deleted = false
+                price.min_price
         """);
+        sql.append(BASE_FROM).append(PRICE_JOIN).append(BASE_WHERE);
 
         MapSqlParameterSource sqlParams = new MapSqlParameterSource();
 
+        appendFilters(sql, params, sqlParams);
+
+        boolean filtersByPrice = params.minPrice() != null || params.maxPrice() != null;
+        StringBuilder countSql = new StringBuilder("SELECT COUNT(*) ").append(BASE_FROM);
+        if (filtersByPrice) {
+            countSql.append(PRICE_JOIN);
+        }
+        countSql.append(BASE_WHERE);
+        appendFilters(countSql, params, sqlParams);
+
+        Long totalElements = jdbcTemplate.queryForObject(countSql.toString(), sqlParams, Long.class);
+        if (totalElements == null) totalElements = 0L;
+
+        appendSorting(sql, params);
+        sql.append(" LIMIT :limit OFFSET :offset");
+        sqlParams.addValue("limit", pageRequest.getPageSize());
+        sqlParams.addValue("offset", pageRequest.getOffset());
+
+        List<TeacherCard> cards = queryCards(sql, sqlParams);
+        populateSubjects(cards);
+
+        return new PageImpl<>(cards, pageRequest, totalElements);
+    }
+
+    private void appendFilters(StringBuilder sql, TeacherSearchParams params, MapSqlParameterSource sqlParams) {
+
         if (params.keyword() != null && !params.keyword().isBlank()) {
-            sql.append(" AND (u.full_name ILIKE :keyword OR tp.bio ILIKE :keyword)");
-            sqlParams.addValue("keyword", "%" + params.keyword() + "%");
+            sql.append("""
+                    AND tp.id IN (
+                        SELECT keyword_tp.id
+                        FROM teacher_profiles keyword_tp
+                        JOIN users keyword_u ON keyword_tp.user_id = keyword_u.id
+                        WHERE keyword_tp.profile_status = 'APPROVED'
+                          AND keyword_tp.is_visible = true
+                          AND keyword_tp.is_deleted = false
+                          AND keyword_u.status = 'ACTIVE'
+                          AND keyword_u.is_deleted = false
+                          AND public.f_unaccent_immutable(keyword_u.full_name)
+                              LIKE '%' || public.f_unaccent_immutable(:keyword) || '%'
+                        UNION
+                        SELECT keyword_tp.id
+                        FROM teacher_profiles keyword_tp
+                        WHERE keyword_tp.profile_status = 'APPROVED'
+                          AND keyword_tp.is_visible = true
+                          AND keyword_tp.is_deleted = false
+                          AND public.f_unaccent_immutable(keyword_tp.bio)
+                              LIKE '%' || public.f_unaccent_immutable(:keyword) || '%'
+                    )
+                    """);
+            sqlParams.addValue("keyword", params.keyword().trim());
         }
 
         if (params.subjectId() != null) {
@@ -64,12 +128,12 @@ public class TeacherSearchRepository {
         }
 
         if (params.minPrice() != null) {
-            sql.append(" AND (SELECT MIN(pp.price_vnd) FROM pricing_packages pp WHERE pp.teacher_id = tp.id AND pp.status = 'ACTIVE' AND pp.is_deleted = false) >= :minPrice");
+            sql.append(" AND price.min_price >= :minPrice");
             sqlParams.addValue("minPrice", params.minPrice());
         }
 
         if (params.maxPrice() != null) {
-            sql.append(" AND (SELECT MIN(pp.price_vnd) FROM pricing_packages pp WHERE pp.teacher_id = tp.id AND pp.status = 'ACTIVE' AND pp.is_deleted = false) <= :maxPrice");
+            sql.append(" AND price.min_price <= :maxPrice");
             sqlParams.addValue("maxPrice", params.maxPrice());
         }
 
@@ -104,18 +168,16 @@ public class TeacherSearchRepository {
             }
         }
 
-        String countSql = "SELECT COUNT(*) FROM (" + sql.toString() + ") AS count_query";
-        Long totalElements = jdbcTemplate.queryForObject(countSql, sqlParams, Long.class);
-        if (totalElements == null) totalElements = 0L;
+    }
 
-        // Apply sorting
+    private void appendSorting(StringBuilder sql, TeacherSearchParams params) {
         if (params.sort() != null) {
             switch (params.sort().toLowerCase()) {
                 case "price_asc":
-                    sql.append(" ORDER BY (SELECT MIN(pp.price_vnd) FROM pricing_packages pp WHERE pp.teacher_id = tp.id AND pp.status = 'ACTIVE' AND pp.is_deleted = false) ASC, tp.id ASC ");
+                    sql.append(" ORDER BY price.min_price ASC, tp.id ASC ");
                     break;
                 case "price_desc":
-                    sql.append(" ORDER BY (SELECT MIN(pp.price_vnd) FROM pricing_packages pp WHERE pp.teacher_id = tp.id AND pp.status = 'ACTIVE' AND pp.is_deleted = false) DESC, tp.id ASC ");
+                    sql.append(" ORDER BY price.min_price DESC, tp.id ASC ");
                     break;
                 case "rating_desc":
                     sql.append(" ORDER BY COALESCE(ts.average_rating, 0.0) DESC, tp.id ASC ");
@@ -129,11 +191,10 @@ public class TeacherSearchRepository {
         } else {
             sql.append(" ORDER BY COALESCE(ts.global_rank, 999999) ASC, tp.id ASC ");
         }
-        sql.append(" LIMIT :limit OFFSET :offset");
-        sqlParams.addValue("limit", pageRequest.getPageSize());
-        sqlParams.addValue("offset", pageRequest.getOffset());
+    }
 
-        List<TeacherCard> cards = jdbcTemplate.query(sql.toString(), sqlParams, (rs, rowNum) -> {
+    private List<TeacherCard> queryCards(StringBuilder sql, MapSqlParameterSource sqlParams) {
+        return jdbcTemplate.query(sql.toString(), sqlParams, (rs, rowNum) -> {
             UUID teacherId = (UUID) rs.getObject("id");
             return new TeacherCard(
                     teacherId,
@@ -152,7 +213,9 @@ public class TeacherSearchRepository {
                     rs.getInt("global_rank")
             );
         });
+    }
 
+    private void populateSubjects(List<TeacherCard> cards) {
         if (!cards.isEmpty()) {
             List<UUID> teacherIds = cards.stream().map(TeacherCard::id).collect(Collectors.toList());
             String subjectSql = """
@@ -186,7 +249,5 @@ public class TeacherSearchRepository {
                 ));
             }
         }
-
-        return new PageImpl<>(cards, pageRequest, totalElements);
     }
 }

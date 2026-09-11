@@ -21,13 +21,13 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    @DisplayName("Tất cả 27 file migration V1-V27 phải được apply và validate thành công")
+    @DisplayName("Tất cả 28 file migration V1-V28 phải được apply và validate thành công")
     void flyway_shouldApplyAllMigrationsSuccessfully() {
         assertThat(flyway).isNotNull();
         MigrationInfo[] appliedMigrations = flyway.info().applied();
 
         assertThat(appliedMigrations)
-                .hasSize(27)
+                .hasSize(28)
                 .allSatisfy(info -> {
                     assertThat(info.getState().isApplied()).isTrue();
                     assertThat(info.getVersion()).isNotNull();
@@ -36,15 +36,65 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Các extension pgcrypto và btree_gist phải tồn tại")
+    @DisplayName("Các extension PostgreSQL bắt buộc phải tồn tại")
     void database_shouldHaveRequiredExtensions() {
         assertThat(jdbcTemplate).isNotNull();
         List<String> extensions = jdbcTemplate.query(
-                "SELECT extname FROM pg_extension WHERE extname IN ('pgcrypto', 'btree_gist')",
+                "SELECT extname FROM pg_extension WHERE extname IN ('pgcrypto', 'btree_gist', 'unaccent', 'pg_trgm')",
                 (rs, rowNum) -> rs.getString("extname")
         );
 
-        assertThat(extensions).contains("pgcrypto", "btree_gist");
+        assertThat(extensions).contains("pgcrypto", "btree_gist", "unaccent", "pg_trgm");
+    }
+
+    @Test
+    @DisplayName("V28 phải tạo immutable search normalizer và các index marketplace")
+    void teacherSearchOptimizationShouldExposeExpectedMetadata() {
+        assertThat(jdbcTemplate).isNotNull();
+
+        String volatility = jdbcTemplate.queryForObject("""
+                SELECT p.provolatile::text
+                FROM pg_proc p
+                JOIN pg_namespace n ON n.oid = p.pronamespace
+                WHERE n.nspname = 'public' AND p.proname = 'f_unaccent_immutable'
+                """, String.class);
+        assertThat(volatility).isEqualTo("i");
+
+        List<String> indexes = jdbcTemplate.queryForList("""
+                SELECT indexname FROM pg_indexes
+                WHERE schemaname = 'public' AND indexname IN (
+                    'ix_users_search_full_name_trgm',
+                    'ix_teacher_profiles_search_bio_trgm',
+                    'ix_pricing_packages_active_teacher_price'
+                )
+                """, String.class);
+        assertThat(indexes).containsExactlyInAnyOrder(
+                "ix_users_search_full_name_trgm",
+                "ix_teacher_profiles_search_bio_trgm",
+                "ix_pricing_packages_active_teacher_price");
+    }
+
+    @Test
+    @DisplayName("Database đang ở V27 phải nâng cấp lên V28 thành công")
+    void teacherSearchMigrationShouldUpgradeASeparateV27Database() {
+        String databaseName = "edtech_v27_upgrade";
+        jdbcTemplate.execute("CREATE DATABASE " + databaseName);
+        String upgradeUrl = POSTGRES_CONTAINER.getJdbcUrl().replace(
+                "/" + POSTGRES_CONTAINER.getDatabaseName(),
+                "/" + databaseName
+        );
+
+        Flyway v27 = Flyway.configure()
+                .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword())
+                .target("27")
+                .load();
+        assertThat(v27.migrate().targetSchemaVersion.toString()).isEqualTo("27");
+
+        Flyway latest = Flyway.configure()
+                .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword())
+                .load();
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("28");
+        assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
     @Test
