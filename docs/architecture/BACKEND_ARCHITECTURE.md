@@ -13,6 +13,7 @@ Backend là modular monolith Spring Boot. Mỗi module trong `com.edtech.platfor
 | `booking` | Tạo, hoàn thành, hủy và đọc lịch học | command service và `BookingReadService` |
 | `learning` | Assignment, submission, attachment và mapping view | `AssignmentAttachmentBinder`, `AssignmentViewMapper` |
 | `communication` | Chat, notification và realtime | command/query service, event `AFTER_COMMIT` |
+| `catalog` | Public teacher search/profile và subject catalog | SQL projection, `TeacherSearchCache`, cache configuration contributor |
 
 Các side effect ra SMTP, WebSocket và notification chỉ chạy sau khi transaction nghiệp vụ commit. Các invariant về tiền, ledger, lượt học và lock order vẫn nằm trong transaction của module sở hữu.
 
@@ -39,6 +40,8 @@ Google redirect có hai URL khác nhau:
 Cấu hình ứng dụng được bind qua các `@ConfigurationProperties` có validation: JWT, mail, OAuth, payment, mã hóa tài khoản, CORS và Cloudinary. Domain/application code không đọc trực tiếp environment hoặc system property. Secret chỉ đặt trong `.env.cloud` hoặc secret store và không commit.
 
 Mail dùng `APP_EMAIL_PROVIDER=logging` khi phát triển không cần SMTP và `smtp` khi kiểm thử Mailpit/Gmail test. Outbox luôn được ghi trong transaction; delivery job claim bằng lease, gửi ngoài transaction giữ database lock rồi đánh dấu thành công hoặc retry.
+
+Teacher search dùng SQL projection và batch query cho subject, không hydrate entity graph. Keyword được normalize bằng functional indexes PostgreSQL theo quyết định tại [ADR-0004](../adr/0004-accent-insensitive-teacher-search.md). Cache search là tối ưu tùy chọn: Redis lỗi phải fallback về PostgreSQL, chỉ cache page 0–2 với size tối đa 50 và không thay đổi response contract.
 
 ## Kiểm thử và guardrail
 

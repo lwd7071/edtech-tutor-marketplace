@@ -246,6 +246,8 @@ deliveryMode=ONLINE|OFFLINE, dayOfWeek=MONDAY..SUNDAY,
 startTime=HH:mm:ss, endTime=HH:mm:ss, page, size, sort
 ```
 
+`keyword` dài tối đa 100 ký tự, được trim và tìm kiếm không phân biệt hoa/thường hoặc dấu tiếng Việt. Ví dụ `Toan`, `toán` và ` TOÁN ` có cùng semantics. Với `sort=rating_desc`, giáo viên chưa có rating được xem là `0` và đứng sau giáo viên có rating dương; `id` là tie-breaker ổn định.
+
 Khi filter giờ rảnh, phải truyền đủ `dayOfWeek`, `startTime`, `endTime`. Khớp khi `availability.startTime <= startTime AND availability.endTime >= endTime`.
 
 ```json

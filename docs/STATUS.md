@@ -6,7 +6,7 @@
 ## Mốc kỹ thuật
 
 - Backend modular monolith đã có các seam chính cho auth, mail, payment, finance, booking, learning và communication.
-- Migration mới nhất trong working tree: `V27__backfill_learning_conversations.sql` (sau `V26__snapshot_invoice_purchase_terms.sql`).
+- Migration mới nhất trong working tree: `V28__optimize_teacher_marketplace_search.sql` (V26/V27 thuộc Student Journey).
 - Không dùng Flyway `repair()`, không sửa migration đã áp dụng và không reset database người dùng.
 
 ## Trạng thái theo luồng
@@ -18,6 +18,7 @@
 | Trial/package/booking/review | Đã triển khai phần Student Journey | Cần kiểm thử xuyên luồng |
 | Assignment/attachment | Đã triển khai endpoint và view mới | Cần kiểm thử file thật |
 | Chat/notification/events | Đã triển khai event và mở conversation | Smoke test local đã xác nhận gửi/nhận giữa Student và Teacher qua STOMP tới backend `:8080`; cảnh báo browser extension không thuộc ứng dụng |
+| Teacher search/catalog | Đã triển khai V28, query/count/cache/config | Focused tests và PostgreSQL Testcontainers pass; Supabase preflight/load test chưa xác minh |
 | Parent contact/requests/reports | Đã triển khai UI/API liên quan | Cần smoke test theo role |
 | Frontend Student Journey | Đã có route/component/API thay đổi | Playwright chưa chạy |
 
@@ -61,6 +62,14 @@
 - Có các trang `/student/requests`, `/student/session-reports`, `/terms`, `/privacy` và `/support`.
 - Workspace guard, typed API boundary, feature query keys và file viewer/upload đã được chuẩn hóa theo frontend architecture.
 
+### Teacher search/catalog
+
+- Keyword public search được trim, giới hạn 100 ký tự và normalize không phân biệt dấu/hoa thường.
+- Data query tính `min_price` một lần bằng lateral aggregate; count query bỏ projection, subject hydration và sort.
+- V28 thêm immutable unaccent wrapper, hai partial GIN trigram indexes và partial package-price index.
+- Search cache TTL 5 phút, chỉ áp dụng page 0–2 và `size <= 50`; profile cache TTL 30 phút; Redis lỗi fallback PostgreSQL.
+- Hikari có các timeout cố định và `DB_POOL_MAX_SIZE` cấu hình được. Giá trị mặc định 10 chỉ là candidate, chưa phải kết quả capacity planning.
+
 ## Bằng chứng kiểm thử gần nhất
 
 - Backend focused Student tests: `36/36` pass.
@@ -70,8 +79,13 @@
 - CI regression focused suite (`StudentInvoiceControllerTest`, `ArchitectureTest`, `SolidGuardrailsArchitectureTest`): `9/9` pass sau khi bỏ mapping assignment trùng, sửa principal test và chuyển package read controller về module enrollment.
 - GitHub Backend CI full Maven/Testcontainers: `325/325` pass, `0` failure, `0` error, `0` skipped tại run `34558136980`.
 - Docker image build validation trong cùng run: pass.
-- Full suite local: chưa chạy vì Docker Desktop trên máy đang tắt; bằng chứng CI dùng PostgreSQL 16/Testcontainers.
+- Full backend suite local với PostgreSQL 16/Redis Testcontainers: `338/338` pass, `0` failure, `0` error, `0` skipped.
 - Jest/Playwright cho Student Journey: **chưa xác minh trong lượt này**.
+- Teacher-search focused validation/cache/serialization + architecture guardrails: pass local (`15/15`).
+- Teacher-search PostgreSQL 16 Testcontainers: repository regression + EXPLAIN/index assertions `4/4` pass; Flyway clean schema, metadata và V27 → V28 upgrade `9/9` pass.
+- Supabase V28 migration bằng đúng Flyway connection/user: pass; Flyway validated 28 migrations, current version V27 và apply V28 thành công trên PostgreSQL 17.6. Migration DO preflight xác nhận `unaccent`/`pg_trgm` ở `public`. Standalone SQL preflight chưa chạy.
+- Cloud application HTTP smoke sau migration: **chưa xác minh** vì context dừng ở thiếu `ClientRegistrationRepository` trong SecurityConfig; đây là lỗi boot OAuth, không phải lỗi V28.
+- Cold-cache load test 25/50/80/100 users với pool 5/8/10 và warm-cache benchmark: **chưa chạy**; chưa có bằng chứng đạt các p95 mục tiêu.
 
 Các con số trên chỉ là bằng chứng gần nhất đã có; không suy ra full suite xanh.
 
@@ -81,6 +95,8 @@ Các con số trên chỉ là bằng chứng gần nhất đã có; không suy r
 2. Xác nhận V26/V27 trên bản sao Supabase test; DB sạch đã được CI áp dụng tới V27.
 3. Chạy smoke test các role Student, Teacher và Admin.
 4. Cập nhật bảng này bằng số liệu thật sau mỗi lần chạy.
+5. Chạy `scripts/preflight-teacher-search-extensions.sql` bằng Flyway user trước khi deploy V28.
+6. Benchmark bằng `node scripts/benchmark-teacher-search.mjs` với từng pool candidate; ghi riêng cold-cache và warm-cache.
 
 ## Provider chưa xác minh
 
