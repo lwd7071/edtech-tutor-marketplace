@@ -2,6 +2,12 @@
 
 Các entry dưới đây ghi hành vi và bằng chứng quan trọng. Danh sách file đầy đủ nằm trong Git history.
 
+## 2026-09-11 — Sửa cấu hình WebSocket local cho chat
+
+- Thêm `NEXT_PUBLIC_WS_URL=ws://localhost:8080/ws` vào overlay local frontend để STOMP kết nối trực tiếp backend thay vì fallback sang Next.js tại cổng `3000`.
+- Bổ sung `frontend/.env.example` và cập nhật hướng dẫn frontend cho trường hợp Next.js và backend chạy khác origin/port.
+- Smoke test thủ công: gửi/nhận tin nhắn thành công giữa Student và Teacher sau khi restart Next.js. Cảnh báo do browser extension không thuộc ứng dụng.
+
 ## 2026-09-11 — Sửa regression CI Student Journey
 
 - Loại mapping trùng `GET /api/student/assignments/{id}` để Spring context khởi động được.

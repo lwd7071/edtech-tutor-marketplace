@@ -24,7 +24,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8080
 NEXT_PUBLIC_WS_URL=ws://localhost:8080/ws
 ```
 
-Hai biến trên là tùy chọn. WebSocket mặc định dùng `/ws` trên host hiện tại.
+Sao chép `.env.example` thành `.env.local` trước khi chạy local. `NEXT_PUBLIC_API_URL` là tùy chọn khi backend chạy ở `http://localhost:8080`. Khi Next.js và backend chạy khác origin/port (ví dụ local `3000` và `8080`), phải đặt `NEXT_PUBLIC_WS_URL`; nếu không, frontend sẽ thử kết nối `/ws` trên Next.js (`localhost:3000`) thay vì backend.
 
 ## Kiểm tra trước khi bàn giao
 

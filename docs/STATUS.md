@@ -17,7 +17,7 @@
 | Invoice snapshot/payment | Đã triển khai V26 | Chưa nghiệm thu DB sạch và DB nâng cấp |
 | Trial/package/booking/review | Đã triển khai phần Student Journey | Cần kiểm thử xuyên luồng |
 | Assignment/attachment | Đã triển khai endpoint và view mới | Cần kiểm thử file thật |
-| Chat/notification/events | Đã triển khai event và mở conversation | Cần kiểm tra realtime sau commit |
+| Chat/notification/events | Đã triển khai event và mở conversation | Smoke test local đã xác nhận gửi/nhận giữa Student và Teacher qua STOMP tới backend `:8080`; cảnh báo browser extension không thuộc ứng dụng |
 | Parent contact/requests/reports | Đã triển khai UI/API liên quan | Cần smoke test theo role |
 | Frontend Student Journey | Đã có route/component/API thay đổi | Playwright chưa chạy |
 
