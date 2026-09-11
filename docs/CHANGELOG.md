@@ -2,6 +2,13 @@
 
 Các entry dưới đây ghi hành vi và bằng chứng quan trọng. Danh sách file đầy đủ nằm trong Git history.
 
+## 2026-09-11 — Sửa regression CI Student Journey
+
+- Loại mapping trùng `GET /api/student/assignments/{id}` để Spring context khởi động được.
+- Chuyển endpoint đọc StudentPackage về controller của module enrollment, loại dependency payment → enrollment domain.
+- Sửa controller test dùng Spring Security context và assertion đúng response envelope.
+- Focused suite: `9/9` pass; full Testcontainers tiếp tục được xác nhận bằng GitHub Actions.
+
 ## 2026-09-11 — Đồng bộ context với working tree
 
 - Cập nhật `STATUS.md` để liệt kê các endpoint, route và invariant đã có trong Student Journey.

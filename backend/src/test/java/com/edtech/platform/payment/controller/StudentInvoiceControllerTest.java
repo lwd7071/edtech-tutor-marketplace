@@ -7,6 +7,7 @@ import com.edtech.platform.payment.service.InvoiceService;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +16,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 
 import java.util.UUID;
 
@@ -43,7 +47,14 @@ class StudentInvoiceControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(controller)
+                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+                .build();
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -62,14 +73,16 @@ class StudentInvoiceControllerTest {
         when(invoiceService.createInvoiceAndPaymentLink(eq(studentId), eq(packageId), eq(idempotencyKey), any(), any()))
                 .thenReturn(mockInvoice);
 
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        new AuthenticatedUser(studentId, "student@test", "STUDENT"), null));
+
         mockMvc.perform(post("/api/student/invoices")
                 .header("Idempotency-Key", idempotencyKey.toString())
-                .principal(() -> "student")
-                .requestAttr("org.springframework.security.core.annotation.AuthenticationPrincipal", new AuthenticatedUser(studentId, "student@test", "STUDENT"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.invoiceNumber").value("INV-123"))
-                .andExpect(jsonPath("$.checkoutUrl").value("https://payos.vn/pay/123"));
+                .andExpect(jsonPath("$.data.invoiceNumber").value("INV-123"))
+                .andExpect(jsonPath("$.data.checkoutUrl").value("https://payos.vn/pay/123"));
     }
 }

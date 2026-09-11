@@ -67,6 +67,7 @@
 - Frontend typecheck: pass.
 - Frontend lint: pass.
 - Frontend build: pass.
+- CI regression focused suite (`StudentInvoiceControllerTest`, `ArchitectureTest`, `SolidGuardrailsArchitectureTest`): `9/9` pass sau khi bỏ mapping assignment trùng, sửa principal test và chuyển package read controller về module enrollment.
 - Full Maven/Testcontainers: **chưa chạy trong lượt này vì Docker chưa mở**.
 - Jest/Playwright cho Student Journey: **chưa xác minh trong lượt này**.
 
