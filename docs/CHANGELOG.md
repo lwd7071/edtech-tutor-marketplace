@@ -7,7 +7,7 @@ Các entry dưới đây ghi hành vi và bằng chứng quan trọng. Danh sác
 - Loại mapping trùng `GET /api/student/assignments/{id}` để Spring context khởi động được.
 - Chuyển endpoint đọc StudentPackage về controller của module enrollment, loại dependency payment → enrollment domain.
 - Sửa controller test dùng Spring Security context và assertion đúng response envelope.
-- Focused suite: `9/9` pass; full Testcontainers tiếp tục được xác nhận bằng GitHub Actions.
+- Focused suite: `9/9` pass. GitHub Actions full Maven/Testcontainers: `325/325` pass; Docker image build validation pass.
 
 ## 2026-09-11 — Đồng bộ context với working tree
 

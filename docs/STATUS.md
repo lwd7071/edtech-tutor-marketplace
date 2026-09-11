@@ -68,15 +68,17 @@
 - Frontend lint: pass.
 - Frontend build: pass.
 - CI regression focused suite (`StudentInvoiceControllerTest`, `ArchitectureTest`, `SolidGuardrailsArchitectureTest`): `9/9` pass sau khi bỏ mapping assignment trùng, sửa principal test và chuyển package read controller về module enrollment.
-- Full Maven/Testcontainers: **chưa chạy trong lượt này vì Docker chưa mở**.
+- GitHub Backend CI full Maven/Testcontainers: `325/325` pass, `0` failure, `0` error, `0` skipped tại run `34558136980`.
+- Docker image build validation trong cùng run: pass.
+- Full suite local: chưa chạy vì Docker Desktop trên máy đang tắt; bằng chứng CI dùng PostgreSQL 16/Testcontainers.
 - Jest/Playwright cho Student Journey: **chưa xác minh trong lượt này**.
 
 Các con số trên chỉ là bằng chứng gần nhất đã có; không suy ra full suite xanh.
 
 ## Việc đang chờ
 
-1. Mở Docker và chạy `scripts/test-student-journey-docker.ps1`.
-2. Xác nhận V26/V27 trên database sạch và bản sao Supabase test.
+1. Khi cần đối chiếu local, mở Docker và chạy `scripts/test-student-journey-docker.ps1`.
+2. Xác nhận V26/V27 trên bản sao Supabase test; DB sạch đã được CI áp dụng tới V27.
 3. Chạy smoke test các role Student, Teacher và Admin.
 4. Cập nhật bảng này bằng số liệu thật sau mỗi lần chạy.
 
