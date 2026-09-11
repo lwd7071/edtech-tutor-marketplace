@@ -8,5 +8,10 @@ import java.util.UUID;
 public record CreateExtensionRequest(
         @NotNull UUID studentPackageId,
         @NotBlank String reason,
-        @NotNull Instant requestedExpiryDate
-) {}
+        @NotNull Instant requestedExpiryDate,
+        long packageVersion
+) {
+    public CreateExtensionRequest(UUID studentPackageId, String reason, Instant requestedExpiryDate) {
+        this(studentPackageId, reason, requestedExpiryDate, 0L);
+    }
+}

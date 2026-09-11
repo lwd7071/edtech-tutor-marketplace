@@ -90,7 +90,7 @@ public class PayoutRequest extends BaseEntity {
     }
 
     public void complete(UUID adminId, String bankReference, Instant transferredAt, String proofPublicId, String proofUrl, Instant at) {
-        if (status != PayoutStatus.PENDING && status != PayoutStatus.PROCESSING) {
+        if (status != PayoutStatus.PROCESSING) {
             throw new BusinessException(ErrorCode.PAYOUT_INVALID_STATE);
         }
         this.status = PayoutStatus.SUCCEEDED;

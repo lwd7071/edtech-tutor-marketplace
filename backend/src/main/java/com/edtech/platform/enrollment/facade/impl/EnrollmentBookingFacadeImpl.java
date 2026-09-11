@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.Clock;
 import java.util.UUID;
 
 @Service
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class EnrollmentBookingFacadeImpl implements EnrollmentBookingFacade {
 
     private final StudentPackageRepository repo;
+    private final Clock clock;
 
     private StudentPackage get(UUID id) {
         return repo.findByIdForUpdate(id).orElseThrow();
@@ -72,8 +74,8 @@ public class EnrollmentBookingFacadeImpl implements EnrollmentBookingFacade {
     @Override
     @Transactional
     public void lockExpiredPackages(Instant cutoff, Pageable pageable) {
-        repo.findExpired(cutoff, pageable).forEach(p -> {
-            repo.findByIdForUpdate(p.getId()).ifPresent(StudentPackage::lockExpired);
+        repo.findExpired(cutoff, pageable).forEach(candidate -> {
+            repo.findByIdForUpdate(candidate.getId()).ifPresent(pkg -> pkg.lockExpired(clock.instant()));
         });
     }
 }

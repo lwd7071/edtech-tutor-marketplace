@@ -68,6 +68,9 @@ public class RefundRequest extends BaseEntity {
     @Column(name = "proof_url", length = 500)
     private String proofUrl;
 
+    @Column(name = "transferred_at")
+    private Instant transferredAt;
+
     @Column(name = "processed_by")
     private UUID processedBy;
 
@@ -118,7 +121,7 @@ public class RefundRequest extends BaseEntity {
     }
 
     public void reject(UUID adminId, String adminNote, Instant at) {
-        if (status != RefundStatus.PENDING && status != RefundStatus.APPROVED) {
+        if (status != RefundStatus.PENDING) {
             throw new BusinessException(ErrorCode.REFUND_INVALID_STATE);
         }
         this.status = RefundStatus.REJECTED;
@@ -127,12 +130,14 @@ public class RefundRequest extends BaseEntity {
         this.processedAt = Objects.requireNonNull(at);
     }
 
-    public void complete(UUID adminId, String bankReference, String proofPublicId, String proofUrl, Instant at) {
-        if (status != RefundStatus.APPROVED && status != RefundStatus.PENDING) {
+    public void complete(UUID adminId, String bankReference, Instant transferredAt,
+                         String proofPublicId, String proofUrl, Instant at) {
+        if (status != RefundStatus.APPROVED) {
             throw new BusinessException(ErrorCode.REFUND_INVALID_STATE);
         }
         this.status = RefundStatus.REFUNDED;
         this.bankReference = bankReference;
+        this.transferredAt = transferredAt != null ? transferredAt : at;
         this.proofPublicId = proofPublicId;
         this.proofUrl = proofUrl;
         this.processedBy = Objects.requireNonNull(adminId);

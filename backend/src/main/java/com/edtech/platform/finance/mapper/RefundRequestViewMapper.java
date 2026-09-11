@@ -17,7 +17,7 @@ public class RefundRequestViewMapper {
                 refund.getReason(), refund.getRequestedSessions(), refund.getApprovedSessions(),
                 refund.getRefundAmountVnd(), refund.getStatus(), refund.getAdminNote(), refund.getBankName(),
                 refund.getBankBin(), masked, refund.getAccountHolderName(), refund.getBankReference(),
-                refund.getProofUrl(), refund.getProcessedBy(), refund.getProcessedAt(), refund.getVersion(),
+                refund.getProofUrl(), refund.getTransferredAt(), refund.getProcessedBy(), refund.getProcessedAt(), refund.getVersion(),
                 refund.getCreatedAt());
     }
 }

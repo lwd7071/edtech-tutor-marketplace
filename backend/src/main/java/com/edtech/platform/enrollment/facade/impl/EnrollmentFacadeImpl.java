@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.edtech.platform.enrollment.domain.StudentPackageStatus;
+import java.time.Clock;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ import com.edtech.platform.enrollment.domain.StudentPackageStatus;
 public class EnrollmentFacadeImpl implements EnrollmentFacade {
 
     private final com.edtech.platform.enrollment.repository.StudentPackageRepository studentPackageRepository;
+    private final Clock clock;
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
@@ -91,6 +93,21 @@ public class EnrollmentFacadeImpl implements EnrollmentFacade {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
+    public com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot lockForFinanceAction(UUID packageId, UUID studentId, long expectedVersion) {
+        var pkg = studentPackageRepository.findByIdForUpdate(packageId)
+                .orElseThrow(() -> new IllegalArgumentException("package not found: " + packageId));
+        if (studentId != null && !pkg.getStudentId().equals(studentId)) {
+            throw new IllegalArgumentException("ownership mismatch");
+        }
+        if (pkg.getVersion() != expectedVersion) {
+            throw new com.edtech.platform.common.exception.BusinessException(
+                    com.edtech.platform.common.exception.ErrorCode.CONCURRENT_MODIFICATION);
+        }
+        return com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot.from(pkg);
+    }
+
+    @Override
     public void markRefundPending(UUID packageId) {
         var pkg = studentPackageRepository.findByIdForUpdate(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("package not found: " + packageId));
@@ -101,20 +118,20 @@ public class EnrollmentFacadeImpl implements EnrollmentFacade {
     public void restoreFromRefundPending(UUID packageId) {
         var pkg = studentPackageRepository.findByIdForUpdate(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("package not found: " + packageId));
-        pkg.restoreFromRefundPending();
+        pkg.restoreFromRefundPending(clock.instant());
     }
 
     @Override
     public void applyRefund(UUID packageId, int approvedSessions) {
         var pkg = studentPackageRepository.findByIdForUpdate(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("package not found: " + packageId));
-        pkg.applyRefund(approvedSessions);
+        pkg.applyRefund(approvedSessions, clock.instant());
     }
 
     @Override
     public void extendPackage(UUID packageId, java.time.Instant newExpiryDate) {
         var pkg = studentPackageRepository.findByIdForUpdate(packageId)
                 .orElseThrow(() -> new IllegalArgumentException("package not found: " + packageId));
-        pkg.extendExpiry(newExpiryDate);
+        pkg.extendExpiry(newExpiryDate, clock.instant());
     }
 }

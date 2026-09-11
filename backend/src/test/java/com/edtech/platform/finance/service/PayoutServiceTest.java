@@ -104,6 +104,7 @@ class PayoutServiceTest {
 
         PayoutRequest payout = PayoutRequest.create(teacherId, walletId, bankAccountId, 500000L, "Rut tien");
         ReflectionTestUtils.setField(payout, "id", payoutId);
+        payout.process(adminId, Instant.now());
         when(payoutRequestRepository.findByIdForUpdate(payoutId)).thenReturn(Optional.of(payout));
 
         Wallet wallet = Wallet.forTeacher(teacherId);

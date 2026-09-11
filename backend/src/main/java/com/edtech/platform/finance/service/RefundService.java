@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.Clock;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import com.edtech.platform.common.event.StudentLifecycleEvent;
@@ -42,6 +43,16 @@ public class RefundService {
     private final RefundRequestViewMapper views;
     private final PackageMoneyAllocator packageMoneyAllocator;
     private final ApplicationEventPublisher events;
+    private final Clock clock;
+
+    public RefundService(RefundRequestRepository refundRequestRepository, EnrollmentFacade enrollmentFacade,
+                         BookingEligibilityFacade bookingEligibilityFacade, WalletRepository walletRepository,
+                         LedgerEntryRepository ledgerEntryRepository, AccountNumberProtector accountNumbers,
+                         RefundRequestViewMapper views, PackageMoneyAllocator packageMoneyAllocator,
+                         ApplicationEventPublisher events) {
+        this(refundRequestRepository, enrollmentFacade, bookingEligibilityFacade, walletRepository,
+                ledgerEntryRepository, accountNumbers, views, packageMoneyAllocator, events, Clock.systemUTC());
+    }
 
     @Transactional
     public RefundRequestView createRefund(UUID studentId, CreateRefundRequest request) {
@@ -49,7 +60,8 @@ public class RefundService {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         }
 
-        EnrollmentPackageSnapshot pkg = enrollmentFacade.inspect(request.studentPackageId(), studentId);
+        EnrollmentPackageSnapshot pkg = enrollmentFacade.lockForFinanceAction(
+                request.studentPackageId(), studentId, request.packageVersion());
         if (pkg == null) {
             throw new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND);
         }
@@ -143,7 +155,7 @@ public class RefundService {
         long refundAmountVnd = packageMoneyAllocator.allocationForRange(
                 pkg.purchasePriceVnd(), pkg.totalSessions(), resolvedBefore, request.approvedSessions());
 
-        refund.approve(adminId, request.approvedSessions(), refundAmountVnd, request.adminNote(), Instant.now());
+        refund.approve(adminId, request.approvedSessions(), refundAmountVnd, request.adminNote(), clock.instant());
         notifyStudent(refund, "REFUND_APPROVED", "Yêu cầu hoàn tiền đã được duyệt");
         return views.toView(refund);
     }
@@ -156,7 +168,7 @@ public class RefundService {
         if (refund.getVersion() != request.version()) {
             throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
         }
-        refund.reject(adminId, request.reason(), Instant.now());
+        refund.reject(adminId, request.reason(), clock.instant());
 
         // Restore package status
         enrollmentFacade.restoreFromRefundPending(refund.getStudentPackageId());
@@ -177,15 +189,14 @@ public class RefundService {
             throw new BusinessException(ErrorCode.REFUND_INVALID_STATE);
         }
 
-        EnrollmentPackageSnapshot pkg = enrollmentFacade.inspect(refund.getStudentPackageId(), null);
-        if (pkg == null) {
+        EnrollmentPackageSnapshot inspected = enrollmentFacade.inspect(refund.getStudentPackageId(), null);
+        if (inspected == null) {
             throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
         }
+        EnrollmentPackageSnapshot pkg = enrollmentFacade.lockForFinanceAction(
+                inspected.id(), null, inspected.version());
 
-        // 1. Apply refund to package
-        enrollmentFacade.applyRefund(pkg.id(), refund.getApprovedSessions());
-
-        // 2. Deduct Teacher Wallet Pending balance
+        // 1. Calculate and validate the wallet debit before mutating the package.
         BigDecimal commRate = pkg.commissionRate() != null ? pkg.commissionRate() : BigDecimal.ZERO;
         long teacherNetTotal = packageMoneyAllocator.teacherNetTotal(pkg.purchasePriceVnd(), commRate);
         int resolvedBefore = pkg.completedSessions() + pkg.refundedSessions();
@@ -198,6 +209,7 @@ public class RefundService {
             if (wallet.getPendingBalanceVnd() < teacherRefundNet) {
                 throw new BusinessException(ErrorCode.REFUND_WALLET_INSUFFICIENT);
             }
+            enrollmentFacade.applyRefund(pkg.id(), refund.getApprovedSessions());
             wallet.debitPending(teacherRefundNet);
 
             ledgerEntryRepository.append(new LedgerEntry(
@@ -213,8 +225,13 @@ public class RefundService {
             ));
         }
 
-        // 3. Complete refund
-        refund.complete(adminId, request.bankReference(), request.proofPublicId(), request.proofUrl(), Instant.now());
+        if (teacherRefundNet == 0) {
+            enrollmentFacade.applyRefund(pkg.id(), refund.getApprovedSessions());
+        }
+
+        // 2. Complete refund
+        refund.complete(adminId, request.bankReference(), request.transferredAt(), request.proofPublicId(),
+                request.proofUrl(), clock.instant());
         notifyStudent(refund, "REFUND_COMPLETED", "Khoản hoàn tiền đã được xử lý");
 
         return views.toView(refund);

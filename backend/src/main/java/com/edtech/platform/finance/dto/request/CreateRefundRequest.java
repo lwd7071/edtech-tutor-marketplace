@@ -12,5 +12,13 @@ public record CreateRefundRequest(
         String bankName,
         String bankBin,
         String accountNumber,
-        String accountHolderName
-) {}
+        String accountHolderName,
+        long packageVersion
+) {
+    public CreateRefundRequest(UUID studentPackageId, String reason, int requestedSessions,
+                               String bankName, String bankBin, String accountNumber,
+                               String accountHolderName) {
+        this(studentPackageId, reason, requestedSessions, bankName, bankBin, accountNumber,
+                accountHolderName, 0L);
+    }
+}

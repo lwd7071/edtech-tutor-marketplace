@@ -78,9 +78,16 @@ public class StudentPackage extends BaseEntity {
     }
 
     public void reserveSession() { if (status != StudentPackageStatus.ACTIVE || remainingSessions <= 0) throw new IllegalStateException("package cannot reserve"); remainingSessions--; reservedSessions++; }
-    public void releaseReservedSession() { if (reservedSessions <= 0) return; reservedSessions--; remainingSessions++; }
+    public void releaseReservedSession() {
+        if (reservedSessions <= 0) throw new IllegalStateException("no reserved session");
+        reservedSessions--; remainingSessions++; validateCounterTotal();
+    }
     public void completeReservedSession() { if (reservedSessions <= 0) throw new IllegalStateException("no reserved session"); reservedSessions--; completedSessions++; if (completedSessions + refundedSessions == totalSessions) status = StudentPackageStatus.COMPLETED; }
-    public void lockExpired() { if (status == StudentPackageStatus.ACTIVE && expiresAt != null && !expiresAt.isAfter(Instant.now())) { status = StudentPackageStatus.LOCKED_EXPIRED; lockedReason = "SYSTEM_EXPIRY"; } }
+    public void lockExpired(Instant now) {
+        if (status == StudentPackageStatus.ACTIVE && expiresAt != null && !expiresAt.isAfter(Objects.requireNonNull(now))) {
+            status = StudentPackageStatus.LOCKED_EXPIRED; lockedReason = "SYSTEM_EXPIRY";
+        }
+    }
 
     public void markRefundPending() {
         if (status != StudentPackageStatus.ACTIVE && status != StudentPackageStatus.LOCKED_EXPIRED) {
@@ -92,15 +99,14 @@ public class StudentPackage extends BaseEntity {
         this.status = StudentPackageStatus.REFUND_PENDING;
     }
 
-    public void restoreFromRefundPending() {
-        if (status == StudentPackageStatus.REFUND_PENDING) {
-            this.status = (expiresAt != null && expiresAt.isAfter(Instant.now()))
-                    ? StudentPackageStatus.ACTIVE
-                    : StudentPackageStatus.LOCKED_EXPIRED;
-        }
+    public void restoreFromRefundPending(Instant now) {
+        if (status != StudentPackageStatus.REFUND_PENDING) throw new IllegalStateException("package is not refund pending");
+        this.status = (expiresAt != null && expiresAt.isAfter(Objects.requireNonNull(now)))
+                ? StudentPackageStatus.ACTIVE : StudentPackageStatus.LOCKED_EXPIRED;
     }
 
-    public void applyRefund(int approvedSessions) {
+    public void applyRefund(int approvedSessions, Instant now) {
+        if (status != StudentPackageStatus.REFUND_PENDING) throw new IllegalStateException("package is not refund pending");
         if (approvedSessions <= 0 || approvedSessions > remainingSessions) {
             throw new IllegalArgumentException("invalid approved sessions: " + approvedSessions);
         }
@@ -109,15 +115,16 @@ public class StudentPackage extends BaseEntity {
         if (this.remainingSessions == 0 && this.reservedSessions == 0) {
             this.status = (this.completedSessions == 0) ? StudentPackageStatus.REFUNDED : StudentPackageStatus.COMPLETED;
         } else {
-            this.status = (expiresAt != null && expiresAt.isAfter(Instant.now()))
+            this.status = (expiresAt != null && expiresAt.isAfter(Objects.requireNonNull(now)))
                     ? StudentPackageStatus.ACTIVE
                     : StudentPackageStatus.LOCKED_EXPIRED;
         }
         validateCounterTotal();
     }
 
-    public void extendExpiry(Instant newExpiryDate) {
-        if (newExpiryDate == null || !newExpiryDate.isAfter(Instant.now())) {
+    public void extendExpiry(Instant newExpiryDate, Instant now) {
+        if (status != StudentPackageStatus.LOCKED_EXPIRED) throw new IllegalStateException("package is not locked expired");
+        if (newExpiryDate == null || !newExpiryDate.isAfter(Objects.requireNonNull(now))) {
             throw new IllegalArgumentException("new expiry date must be in the future");
         }
         this.expiresAt = newExpiryDate;

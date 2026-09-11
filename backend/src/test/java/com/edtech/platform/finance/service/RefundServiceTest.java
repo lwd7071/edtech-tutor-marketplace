@@ -84,7 +84,7 @@ class RefundServiceTest {
     @Test
     void createRefund_shouldSucceed_andMarkRefundPending() {
         EnrollmentPackageSnapshot pkg = mockPackage(10, 10, 0, 0, 1000000L);
-        when(enrollmentFacade.inspect(packageId, studentId)).thenReturn(pkg);
+        when(enrollmentFacade.lockForFinanceAction(packageId, studentId, 0L)).thenReturn(pkg);
         when(bookingEligibilityFacade.hasScheduledBookingForPackage(packageId)).thenReturn(false);
         when(refundRequestRepository.existsByStudentPackageIdAndStatus(packageId, RefundStatus.PENDING)).thenReturn(false);
 
@@ -119,6 +119,7 @@ class RefundServiceTest {
 
         EnrollmentPackageSnapshot pkg = mockPackage(10, 8, 2, 0, 1000000L);
         when(enrollmentFacade.inspect(packageId, null)).thenReturn(pkg);
+        when(enrollmentFacade.lockForFinanceAction(packageId, null, 0L)).thenReturn(pkg);
 
         ApproveRefundCommand req = new ApproveRefundCommand(3, "Duyet 3 buoi", 0L);
 
@@ -142,6 +143,7 @@ class RefundServiceTest {
 
         EnrollmentPackageSnapshot pkg = mockPackage(10, 8, 2, 0, 1000000L);
         when(enrollmentFacade.inspect(packageId, null)).thenReturn(pkg);
+        when(enrollmentFacade.lockForFinanceAction(packageId, null, 0L)).thenReturn(pkg);
 
         Wallet wallet = Wallet.forTeacher(teacherId);
         ReflectionTestUtils.setField(wallet, "id", UUID.randomUUID());
@@ -164,7 +166,9 @@ class RefundServiceTest {
         UUID refundId = UUID.randomUUID();
         RefundRequest refund = approvedRefund(refundId, 3, 300000L);
         when(refundRequestRepository.findByIdForUpdate(refundId)).thenReturn(Optional.of(refund));
-        when(enrollmentFacade.inspect(packageId, null)).thenReturn(mockPackage(10, 8, 2, 0, 1000000L));
+        EnrollmentPackageSnapshot pkg = mockPackage(10, 8, 2, 0, 1000000L);
+        when(enrollmentFacade.inspect(packageId, null)).thenReturn(pkg);
+        when(enrollmentFacade.lockForFinanceAction(packageId, null, 0L)).thenReturn(pkg);
         Wallet wallet = walletWithPending(285000L);
         when(walletRepository.findByTeacherIdForUpdate(teacherId)).thenReturn(Optional.of(wallet));
 
@@ -181,7 +185,9 @@ class RefundServiceTest {
         UUID refundId = UUID.randomUUID();
         RefundRequest refund = approvedRefund(refundId, 3, 300000L);
         when(refundRequestRepository.findByIdForUpdate(refundId)).thenReturn(Optional.of(refund));
-        when(enrollmentFacade.inspect(packageId, null)).thenReturn(mockPackage(10, 8, 2, 0, 1000000L));
+        EnrollmentPackageSnapshot pkg = mockPackage(10, 8, 2, 0, 1000000L);
+        when(enrollmentFacade.inspect(packageId, null)).thenReturn(pkg);
+        when(enrollmentFacade.lockForFinanceAction(packageId, null, 0L)).thenReturn(pkg);
         Wallet wallet = walletWithPending(100000L);
         when(walletRepository.findByTeacherIdForUpdate(teacherId)).thenReturn(Optional.of(wallet));
 
@@ -191,7 +197,7 @@ class RefundServiceTest {
 
         assertThat(wallet.getPendingBalanceVnd()).isEqualTo(100000L);
         assertThat(refund.getStatus()).isEqualTo(RefundStatus.APPROVED);
-        verify(enrollmentFacade).applyRefund(packageId, 3);
+        verify(enrollmentFacade, never()).applyRefund(packageId, 3);
         verifyNoInteractions(ledgerEntryRepository);
     }
 
@@ -200,7 +206,9 @@ class RefundServiceTest {
         UUID refundId = UUID.randomUUID();
         RefundRequest refund = approvedRefund(refundId, 3, 300000L);
         when(refundRequestRepository.findByIdForUpdate(refundId)).thenReturn(Optional.of(refund));
-        when(enrollmentFacade.inspect(packageId, null)).thenReturn(mockPackage(10, 8, 2, 0, 1000000L));
+        EnrollmentPackageSnapshot pkg = mockPackage(10, 8, 2, 0, 1000000L);
+        when(enrollmentFacade.inspect(packageId, null)).thenReturn(pkg);
+        when(enrollmentFacade.lockForFinanceAction(packageId, null, 0L)).thenReturn(pkg);
         Wallet wallet = walletWithPending(0L);
         when(walletRepository.findByTeacherIdForUpdate(teacherId)).thenReturn(Optional.of(wallet));
 
@@ -216,8 +224,9 @@ class RefundServiceTest {
         UUID refundId = UUID.randomUUID();
         RefundRequest refund = approvedRefund(refundId, 1, 1L);
         when(refundRequestRepository.findByIdForUpdate(refundId)).thenReturn(Optional.of(refund));
-        when(enrollmentFacade.inspect(packageId, null)).thenReturn(
-                mockPackage(10, 10, 0, 0, 1L, new BigDecimal("100")));
+        EnrollmentPackageSnapshot pkg = mockPackage(10, 10, 0, 0, 1L, new BigDecimal("100"));
+        when(enrollmentFacade.inspect(packageId, null)).thenReturn(pkg);
+        when(enrollmentFacade.lockForFinanceAction(packageId, null, 0L)).thenReturn(pkg);
 
         RefundRequestView result = refundService.completeRefund(adminId, refundId, transferCommand());
 

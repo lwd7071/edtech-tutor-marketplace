@@ -36,4 +36,21 @@ class StudentPackageTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThat(StudentPackageStatus.PENDING_PAYMENT).isNotEqualTo(StudentPackageStatus.ACTIVE);
     }
+
+    @Test
+    void refundAndExtensionRequireTheirSourceStates() {
+        Instant now = Instant.parse("2026-09-11T00:00:00Z");
+        StudentPackage active = StudentPackage.activateAfterPayment(
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                "Math", 3, 30, 300_000L, new BigDecimal("5.00"), now);
+
+        assertThatThrownBy(() -> active.applyRefund(1, now))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> active.extendExpiry(now.plusSeconds(86_400), now))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> active.restoreFromRefundPending(now))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(active::releaseReservedSession)
+                .isInstanceOf(IllegalStateException.class);
+    }
 }

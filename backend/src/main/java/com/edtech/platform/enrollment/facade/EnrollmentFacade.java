@@ -47,6 +47,7 @@ public interface EnrollmentFacade {
     java.util.Optional<StudentPackage> findStudentPackage(UUID packageId, UUID studentId);
 
     com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot inspect(UUID packageId, UUID studentId);
+    com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot lockForFinanceAction(UUID packageId, UUID studentId, long expectedVersion);
     void markRefundPending(UUID packageId);
     void restoreFromRefundPending(UUID packageId);
     void applyRefund(UUID packageId, int approvedSessions);
