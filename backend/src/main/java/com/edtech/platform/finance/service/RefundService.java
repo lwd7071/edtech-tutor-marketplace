@@ -17,7 +17,7 @@ import com.edtech.platform.finance.repository.LedgerEntryRepository;
 import com.edtech.platform.finance.repository.RefundRequestRepository;
 import com.edtech.platform.finance.repository.WalletRepository;
 import com.edtech.platform.finance.security.AccountNumberProtector;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import com.edtech.platform.common.event.StudentLifecycleEvent;
 
 @Service
-@RequiredArgsConstructor
 public class RefundService {
 
     private final RefundRequestRepository refundRequestRepository;
@@ -44,6 +43,24 @@ public class RefundService {
     private final PackageMoneyAllocator packageMoneyAllocator;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+
+    @Autowired
+    public RefundService(RefundRequestRepository refundRequestRepository, EnrollmentFacade enrollmentFacade,
+                         BookingEligibilityFacade bookingEligibilityFacade, WalletRepository walletRepository,
+                         LedgerEntryRepository ledgerEntryRepository, AccountNumberProtector accountNumbers,
+                         RefundRequestViewMapper views, PackageMoneyAllocator packageMoneyAllocator,
+                         ApplicationEventPublisher events, Clock clock) {
+        this.refundRequestRepository = refundRequestRepository;
+        this.enrollmentFacade = enrollmentFacade;
+        this.bookingEligibilityFacade = bookingEligibilityFacade;
+        this.walletRepository = walletRepository;
+        this.ledgerEntryRepository = ledgerEntryRepository;
+        this.accountNumbers = accountNumbers;
+        this.views = views;
+        this.packageMoneyAllocator = packageMoneyAllocator;
+        this.events = events;
+        this.clock = clock;
+    }
 
     public RefundService(RefundRequestRepository refundRequestRepository, EnrollmentFacade enrollmentFacade,
                          BookingEligibilityFacade bookingEligibilityFacade, WalletRepository walletRepository,

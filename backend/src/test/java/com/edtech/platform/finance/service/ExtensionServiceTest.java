@@ -57,7 +57,7 @@ class ExtensionServiceTest {
     @Test
     void createExtension_shouldSucceed_whenLockedExpired() {
         EnrollmentPackageSnapshot pkg = mockPackage("LOCKED_EXPIRED");
-        when(enrollmentFacade.inspect(packageId, studentId)).thenReturn(pkg);
+        when(enrollmentFacade.lockForFinanceAction(packageId, studentId, 0L)).thenReturn(pkg);
         when(extensionRequestRepository.existsByStudentPackageIdAndStatus(packageId, ExtensionStatus.PENDING)).thenReturn(false);
 
         when(extensionRequestRepository.save(any(PackageExtensionRequest.class))).thenAnswer(inv -> {
@@ -80,7 +80,7 @@ class ExtensionServiceTest {
     void approveExtension_shouldExtendPackage_andSetApproved() {
         UUID extensionId = UUID.randomUUID();
         Instant requested = Instant.now().plusSeconds(86400 * 30);
-        PackageExtensionRequest extension = PackageExtensionRequest.create(packageId, studentId, "Reason", requested);
+        PackageExtensionRequest extension = PackageExtensionRequest.create(packageId, studentId, "Reason", requested, Instant.now());
         ReflectionTestUtils.setField(extension, "id", extensionId);
         when(extensionRequestRepository.findByIdForUpdate(extensionId)).thenReturn(Optional.of(extension));
 
@@ -98,7 +98,7 @@ class ExtensionServiceTest {
     void rejectExtension_shouldSetRejected() {
         UUID extensionId = UUID.randomUUID();
         Instant requested = Instant.now().plusSeconds(86400 * 30);
-        PackageExtensionRequest extension = PackageExtensionRequest.create(packageId, studentId, "Reason", requested);
+        PackageExtensionRequest extension = PackageExtensionRequest.create(packageId, studentId, "Reason", requested, Instant.now());
         ReflectionTestUtils.setField(extension, "id", extensionId);
         when(extensionRequestRepository.findByIdForUpdate(extensionId)).thenReturn(Optional.of(extension));
 

@@ -119,7 +119,6 @@ class RefundServiceTest {
 
         EnrollmentPackageSnapshot pkg = mockPackage(10, 8, 2, 0, 1000000L);
         when(enrollmentFacade.inspect(packageId, null)).thenReturn(pkg);
-        when(enrollmentFacade.lockForFinanceAction(packageId, null, 0L)).thenReturn(pkg);
 
         ApproveRefundCommand req = new ApproveRefundCommand(3, "Duyet 3 buoi", 0L);
 

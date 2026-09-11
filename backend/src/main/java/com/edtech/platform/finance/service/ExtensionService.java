@@ -11,32 +11,52 @@ import com.edtech.platform.finance.domain.PackageExtensionRequest;
 import com.edtech.platform.finance.dto.request.CreateExtensionRequest;
 import com.edtech.platform.finance.dto.response.ExtensionRequestView;
 import com.edtech.platform.finance.repository.PackageExtensionRequestRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.Clock;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import com.edtech.platform.common.event.StudentLifecycleEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
-@RequiredArgsConstructor
 public class ExtensionService {
 
     private final PackageExtensionRequestRepository extensionRequestRepository;
     private final EnrollmentFacade enrollmentFacade;
     private final ApplicationEventPublisher events;
+    private final Clock clock;
+
+    @Autowired
+    public ExtensionService(PackageExtensionRequestRepository extensionRequestRepository,
+                             EnrollmentFacade enrollmentFacade,
+                             ApplicationEventPublisher events,
+                             Clock clock) {
+        this.extensionRequestRepository = extensionRequestRepository;
+        this.enrollmentFacade = enrollmentFacade;
+        this.events = events;
+        this.clock = clock;
+    }
+
+    public ExtensionService(PackageExtensionRequestRepository extensionRequestRepository,
+                             EnrollmentFacade enrollmentFacade,
+                             ApplicationEventPublisher events) {
+        this(extensionRequestRepository, enrollmentFacade, events, Clock.systemUTC());
+    }
 
     @Transactional
     public ExtensionRequestView createExtension(UUID studentId, CreateExtensionRequest request) {
-        if (request == null || request.requestedExpiryDate() == null || !request.requestedExpiryDate().isAfter(Instant.now())) {
+        Instant now = clock.instant();
+        if (request == null || request.requestedExpiryDate() == null || !request.requestedExpiryDate().isAfter(now)) {
             throw new BusinessException(ErrorCode.PACKAGE_EXTENSION_DATE_INVALID);
         }
 
-        EnrollmentPackageSnapshot pkg = enrollmentFacade.inspect(request.studentPackageId(), studentId);
+        EnrollmentPackageSnapshot pkg = enrollmentFacade.lockForFinanceAction(
+                request.studentPackageId(), studentId, request.packageVersion());
         if (pkg == null) {
             throw new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND);
         }
@@ -53,7 +73,8 @@ public class ExtensionService {
                 pkg.id(),
                 studentId,
                 request.reason(),
-                request.requestedExpiryDate()
+                request.requestedExpiryDate(),
+                now
         );
         extension = extensionRequestRepository.save(extension);
 
@@ -89,7 +110,8 @@ public class ExtensionService {
             throw new BusinessException(ErrorCode.EXTENSION_INVALID_STATE);
         }
 
-        if (request.approvedExpiryDate() == null || !request.approvedExpiryDate().isAfter(Instant.now())) {
+        Instant now = clock.instant();
+        if (request.approvedExpiryDate() == null || !request.approvedExpiryDate().isAfter(now)) {
             throw new BusinessException(ErrorCode.PACKAGE_EXTENSION_DATE_INVALID);
         }
 
@@ -97,7 +119,7 @@ public class ExtensionService {
         enrollmentFacade.extendPackage(extension.getStudentPackageId(), request.approvedExpiryDate());
 
         // 2. Approve extension
-        extension.approve(adminId, request.approvedExpiryDate(), request.adminNote(), Instant.now());
+        extension.approve(adminId, request.approvedExpiryDate(), request.adminNote(), now, now);
         notifyStudent(extension, "EXTENSION_APPROVED", "Yêu cầu gia hạn đã được duyệt");
 
         return ExtensionRequestView.from(extension);
@@ -112,7 +134,7 @@ public class ExtensionService {
             throw new BusinessException(ErrorCode.EXTENSION_INVALID_STATE);
         }
 
-        extension.reject(adminId, request.reason(), Instant.now());
+        extension.reject(adminId, request.reason(), clock.instant());
         notifyStudent(extension, "EXTENSION_REJECTED", "Yêu cầu gia hạn bị từ chối");
         return ExtensionRequestView.from(extension);
     }

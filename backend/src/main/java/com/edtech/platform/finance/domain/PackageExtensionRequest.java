@@ -54,9 +54,10 @@ public class PackageExtensionRequest extends BaseEntity {
             UUID studentPackageId,
             UUID studentId,
             String reason,
-            Instant requestedExpiryDate
+            Instant requestedExpiryDate,
+            Instant now
     ) {
-        if (requestedExpiryDate == null || !requestedExpiryDate.isAfter(Instant.now())) {
+        if (requestedExpiryDate == null || now == null || !requestedExpiryDate.isAfter(now)) {
             throw new BusinessException(ErrorCode.PACKAGE_EXTENSION_DATE_INVALID);
         }
         PackageExtensionRequest req = new PackageExtensionRequest();
@@ -68,11 +69,11 @@ public class PackageExtensionRequest extends BaseEntity {
         return req;
     }
 
-    public void approve(UUID adminId, Instant approvedExpiryDate, String adminNote, Instant at) {
+    public void approve(UUID adminId, Instant approvedExpiryDate, String adminNote, Instant now, Instant at) {
         if (status != ExtensionStatus.PENDING) {
             throw new BusinessException(ErrorCode.EXTENSION_INVALID_STATE);
         }
-        if (approvedExpiryDate == null || !approvedExpiryDate.isAfter(Instant.now())) {
+        if (approvedExpiryDate == null || now == null || !approvedExpiryDate.isAfter(now)) {
             throw new BusinessException(ErrorCode.PACKAGE_EXTENSION_DATE_INVALID);
         }
         this.status = ExtensionStatus.APPROVED;
