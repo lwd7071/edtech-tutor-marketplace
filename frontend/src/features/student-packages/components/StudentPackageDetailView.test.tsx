@@ -3,6 +3,11 @@ import { render, screen } from '@testing-library/react';
 import { StudentPackageDetailView } from './StudentPackageDetailView';
 import { StudentPackageDetail } from '../types';
 
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  usePathname: () => '/student/packages/pkg-1',
+}));
+
 describe('StudentPackageDetailView (TDD)', () => {
   const activePackage: StudentPackageDetail = {
     id: 'pkg-1',

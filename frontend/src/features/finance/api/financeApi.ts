@@ -14,6 +14,10 @@ import {
   CreateExtensionRequest,
 } from '../types';
 
+const idempotencyConfig = (key?: string) => ({
+  headers: { 'Idempotency-Key': key ?? globalThis.crypto.randomUUID() },
+});
+
 export const financeApi = {
   // ---- Teacher Wallet & Ledger ----
   getWallet: async (): Promise<ApiResponse<WalletView>> => {
@@ -34,8 +38,8 @@ export const financeApi = {
     return response.data;
   },
 
-  createBankAccount: async (data: UpsertBankAccountRequest): Promise<ApiResponse<BankAccountView>> => {
-    const response = await axiosClient.post<ApiResponse<BankAccountView>>('/api/teacher/bank-accounts', data);
+  createBankAccount: async (data: UpsertBankAccountRequest, idempotencyKey?: string): Promise<ApiResponse<BankAccountView>> => {
+    const response = await axiosClient.post<ApiResponse<BankAccountView>>('/api/teacher/bank-accounts', data, idempotencyConfig(idempotencyKey));
     return response.data;
   },
 
@@ -60,8 +64,8 @@ export const financeApi = {
     return response.data;
   },
 
-  createPayoutRequest: async (data: CreatePayoutRequest): Promise<ApiResponse<PayoutRequestView>> => {
-    const response = await axiosClient.post<ApiResponse<PayoutRequestView>>('/api/teacher/payout-requests', data);
+  createPayoutRequest: async (data: CreatePayoutRequest, idempotencyKey?: string): Promise<ApiResponse<PayoutRequestView>> => {
+    const response = await axiosClient.post<ApiResponse<PayoutRequestView>>('/api/teacher/payout-requests', data, idempotencyConfig(idempotencyKey));
     return response.data;
   },
 
@@ -73,8 +77,8 @@ export const financeApi = {
     return response.data;
   },
 
-  createRefundRequest: async (data: CreateRefundRequest): Promise<ApiResponse<RefundRequestView>> => {
-    const response = await axiosClient.post<ApiResponse<RefundRequestView>>('/api/student/refund-requests', data);
+  createRefundRequest: async (data: CreateRefundRequest, idempotencyKey?: string): Promise<ApiResponse<RefundRequestView>> => {
+    const response = await axiosClient.post<ApiResponse<RefundRequestView>>('/api/student/refund-requests', data, idempotencyConfig(idempotencyKey));
     return response.data;
   },
 
@@ -86,8 +90,8 @@ export const financeApi = {
     return response.data;
   },
 
-  createExtensionRequest: async (data: CreateExtensionRequest): Promise<ApiResponse<ExtensionRequestView>> => {
-    const response = await axiosClient.post<ApiResponse<ExtensionRequestView>>('/api/student/extension-requests', data);
+  createExtensionRequest: async (data: CreateExtensionRequest, idempotencyKey?: string): Promise<ApiResponse<ExtensionRequestView>> => {
+    const response = await axiosClient.post<ApiResponse<ExtensionRequestView>>('/api/student/extension-requests', data, idempotencyConfig(idempotencyKey));
     return response.data;
   },
 };

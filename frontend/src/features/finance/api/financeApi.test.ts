@@ -44,7 +44,8 @@ describe('Finance & Admin APIs', () => {
       (axiosClient.post as jest.Mock).mockResolvedValueOnce({ data: { success: true, data: { id: 'payout-1' } } });
 
       const result = await financeApi.createPayoutRequest(payload);
-      expect(axiosClient.post).toHaveBeenCalledWith('/api/teacher/payout-requests', payload);
+      expect(axiosClient.post).toHaveBeenCalledWith('/api/teacher/payout-requests', payload,
+        expect.objectContaining({ headers: expect.objectContaining({ 'Idempotency-Key': expect.any(String) }) }));
       expect(result.data.id).toBe('payout-1');
     });
 
@@ -62,7 +63,8 @@ describe('Finance & Admin APIs', () => {
       (axiosClient.post as jest.Mock).mockResolvedValueOnce({ data: { success: true, data: { id: 'ref-1' } } });
 
       const result = await financeApi.createRefundRequest(payload);
-      expect(axiosClient.post).toHaveBeenCalledWith('/api/student/refund-requests', payload);
+      expect(axiosClient.post).toHaveBeenCalledWith('/api/student/refund-requests', payload,
+        expect.objectContaining({ headers: expect.objectContaining({ 'Idempotency-Key': expect.any(String) }) }));
       expect(result.data.id).toBe('ref-1');
     });
   });
@@ -91,7 +93,8 @@ describe('Finance & Admin APIs', () => {
       (axiosClient.post as jest.Mock).mockResolvedValueOnce({ data: { success: true, data: { id: 'p-1', status: 'SUCCEEDED' } } });
 
       const result = await adminFinanceApi.completePayout('p-1', payload);
-      expect(axiosClient.post).toHaveBeenCalledWith('/api/admin/payout-requests/p-1/complete', payload);
+      expect(axiosClient.post).toHaveBeenCalledWith('/api/admin/payout-requests/p-1/complete', payload,
+        expect.objectContaining({ headers: expect.objectContaining({ 'Idempotency-Key': expect.any(String) }) }));
       expect(result.data.status).toBe('SUCCEEDED');
     });
   });

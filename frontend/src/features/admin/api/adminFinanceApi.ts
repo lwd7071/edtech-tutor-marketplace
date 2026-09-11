@@ -19,6 +19,10 @@ import {
   RejectRequest,
 } from '../types';
 
+const idempotencyConfig = (key?: string) => ({
+  headers: { 'Idempotency-Key': key ?? globalThis.crypto.randomUUID() },
+});
+
 export const adminFinanceApi = {
   // ---- Admin Payout Queue ----
   getPayouts: async (status?: string, page = 0, size = 20): Promise<ApiResponse<PayoutRequestView[]>> => {
@@ -28,26 +32,26 @@ export const adminFinanceApi = {
     return response.data;
   },
 
-  processPayout: async (id: string, data: ProcessPayoutRequest): Promise<ApiResponse<PayoutRequestView>> => {
+  processPayout: async (id: string, data: ProcessPayoutRequest, key?: string): Promise<ApiResponse<PayoutRequestView>> => {
     const response = await axiosClient.post<ApiResponse<PayoutRequestView>>(
       `/api/admin/payout-requests/${id}/process`,
-      data
+      data, idempotencyConfig(key)
     );
     return response.data;
   },
 
-  completePayout: async (id: string, data: CompleteTransferRequest): Promise<ApiResponse<PayoutRequestView>> => {
+  completePayout: async (id: string, data: CompleteTransferRequest, key?: string): Promise<ApiResponse<PayoutRequestView>> => {
     const response = await axiosClient.post<ApiResponse<PayoutRequestView>>(
       `/api/admin/payout-requests/${id}/complete`,
-      data
+      data, idempotencyConfig(key)
     );
     return response.data;
   },
 
-  rejectPayout: async (id: string, data: RejectFinanceRequest): Promise<ApiResponse<PayoutRequestView>> => {
+  rejectPayout: async (id: string, data: RejectFinanceRequest, key?: string): Promise<ApiResponse<PayoutRequestView>> => {
     const response = await axiosClient.post<ApiResponse<PayoutRequestView>>(
       `/api/admin/payout-requests/${id}/reject`,
-      data
+      data, idempotencyConfig(key)
     );
     return response.data;
   },
@@ -60,26 +64,26 @@ export const adminFinanceApi = {
     return response.data;
   },
 
-  approveRefund: async (id: string, data: ApproveRefundRequest): Promise<ApiResponse<RefundRequestView>> => {
+  approveRefund: async (id: string, data: ApproveRefundRequest, key?: string): Promise<ApiResponse<RefundRequestView>> => {
     const response = await axiosClient.post<ApiResponse<RefundRequestView>>(
       `/api/admin/refund-requests/${id}/approve`,
-      data
+      data, idempotencyConfig(key)
     );
     return response.data;
   },
 
-  completeRefund: async (id: string, data: CompleteTransferRequest): Promise<ApiResponse<RefundRequestView>> => {
+  completeRefund: async (id: string, data: CompleteTransferRequest, key?: string): Promise<ApiResponse<RefundRequestView>> => {
     const response = await axiosClient.post<ApiResponse<RefundRequestView>>(
       `/api/admin/refund-requests/${id}/complete`,
-      data
+      data, idempotencyConfig(key)
     );
     return response.data;
   },
 
-  rejectRefund: async (id: string, data: RejectFinanceRequest): Promise<ApiResponse<RefundRequestView>> => {
+  rejectRefund: async (id: string, data: RejectFinanceRequest, key?: string): Promise<ApiResponse<RefundRequestView>> => {
     const response = await axiosClient.post<ApiResponse<RefundRequestView>>(
       `/api/admin/refund-requests/${id}/reject`,
-      data
+      data, idempotencyConfig(key)
     );
     return response.data;
   },
@@ -92,18 +96,18 @@ export const adminFinanceApi = {
     return response.data;
   },
 
-  approveExtension: async (id: string, data: ApproveExtensionRequest): Promise<ApiResponse<ExtensionRequestView>> => {
+  approveExtension: async (id: string, data: ApproveExtensionRequest, key?: string): Promise<ApiResponse<ExtensionRequestView>> => {
     const response = await axiosClient.post<ApiResponse<ExtensionRequestView>>(
       `/api/admin/extension-requests/${id}/approve`,
-      data
+      data, idempotencyConfig(key)
     );
     return response.data;
   },
 
-  rejectExtension: async (id: string, data: RejectRequest): Promise<ApiResponse<ExtensionRequestView>> => {
+  rejectExtension: async (id: string, data: RejectRequest, key?: string): Promise<ApiResponse<ExtensionRequestView>> => {
     const response = await axiosClient.post<ApiResponse<ExtensionRequestView>>(
       `/api/admin/extension-requests/${id}/reject`,
-      data
+      data, idempotencyConfig(key)
     );
     return response.data;
   },

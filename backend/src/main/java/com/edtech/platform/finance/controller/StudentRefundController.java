@@ -7,6 +7,7 @@ import com.edtech.platform.common.security.RequireRole;
 import com.edtech.platform.finance.dto.request.CreateRefundRequest;
 import com.edtech.platform.finance.dto.response.RefundRequestView;
 import com.edtech.platform.finance.service.RefundService;
+import com.edtech.platform.finance.idempotency.FinanceIdempotent;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,7 @@ public class StudentRefundController {
     private final RefundService refundService;
 
     @PostMapping
+    @FinanceIdempotent(operation = "STUDENT_REFUND_CREATE", responseType = RefundRequestView.class)
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<RefundRequestView> create(
             @AuthenticationPrincipal AuthenticatedUser user,

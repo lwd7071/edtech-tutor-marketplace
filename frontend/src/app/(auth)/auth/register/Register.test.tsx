@@ -45,7 +45,7 @@ describe('RegisterPage', () => {
   });
 
   it('submits form successfully', async () => {
-    (authApi.register as jest.Mock).mockResolvedValueOnce({ data: { success: true } });
+    (authApi.register as jest.Mock).mockResolvedValueOnce({ data: { success: true, email: 'test@example.com' } });
 
     render(<RegisterPage />);
     
@@ -59,7 +59,7 @@ describe('RegisterPage', () => {
 
     await waitFor(() => {
       expect(authApi.register).toHaveBeenCalled();
-      expect(mockPush).toHaveBeenCalledWith('/auth/verify-email');
+      expect(mockPush).toHaveBeenCalledWith('/auth/verify-email?email=test%40example.com');
     });
   });
 });

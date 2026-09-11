@@ -6,7 +6,7 @@
 ## Mốc kỹ thuật
 
 - Backend modular monolith đã có các seam chính cho auth, mail, payment, finance, booking, learning và communication.
-- Migration mới nhất trong working tree: `V28__optimize_teacher_marketplace_search.sql` (V26/V27 thuộc Student Journey).
+- Migration mới nhất trong working tree: `V29__harden_finance_workflows.sql` (V26/V27 thuộc Student Journey).
 - Không dùng Flyway `repair()`, không sửa migration đã áp dụng và không reset database người dùng.
 
 ## Trạng thái theo luồng
@@ -19,7 +19,7 @@
 | Assignment/attachment | Đã triển khai endpoint và view mới | Cần kiểm thử file thật |
 | Chat/notification/events | Đã triển khai event và mở conversation | Smoke test local đã xác nhận gửi/nhận giữa Student và Teacher qua STOMP tới backend `:8080`; cảnh báo browser extension không thuộc ứng dụng |
 | Teacher search/catalog | Đã triển khai V28, query/count/cache/config | Focused tests và PostgreSQL Testcontainers pass; V28 đã áp dụng trên Supabase; cloud smoke và load test chưa xác minh |
-| Finance/refund/payout/package | Đã harden domain, contract/UI và V29 local | Domain/backend focused `20/20`, frontend finance Jest `6 suites/22 tests`, typecheck pass; Flyway V1→V29 và V27→V29 pass trên PostgreSQL Testcontainers; V29 Supabase, idempotency executor, concurrency/rollback và full suite chưa xác minh |
+| Finance/refund/payout/package | Đã harden domain, contract/UI, V29 và idempotency | Domain/backend focused `20/20`, idempotency focused `2/2`, frontend finance/admin `42/42`, full frontend `248/248`, typecheck pass; Flyway V1→V29 và V27→V29 pass trên Testcontainers; V29 đã apply Supabase bằng cloud Flyway user; full backend `348/348` pass; concurrency/rollback/reconciliation finance integration chưa bổ sung |
 | Parent contact/requests/reports | Đã triển khai UI/API liên quan | Cần smoke test theo role |
 | Frontend Student Journey | Đã có route/component/API thay đổi | Playwright chưa chạy |
 
@@ -88,6 +88,10 @@
 - Teacher-search focused validation/cache/serialization + architecture guardrails: pass local (`15/15`).
 - Teacher-search PostgreSQL 16 Testcontainers: repository regression + EXPLAIN/index assertions `4/4` pass; Flyway clean schema, metadata và V27 → V28 upgrade `9/9` pass.
 - Supabase V28 migration bằng đúng Flyway connection/user: pass; Flyway validated 28 migrations, current version V27 và apply V28 thành công trên PostgreSQL 17.6. Migration DO preflight xác nhận `unaccent`/`pg_trgm` ở `public`.
+- Supabase V29 preflight bằng đúng Flyway user: current version V28, extensions `unaccent`/`pg_trgm` ở `public`, không có duplicate active refund/extension/payout hoặc legacy status; cloud servlet startup đã validate 29 migrations và apply V29 thành công trên PostgreSQL 17.6, sau đó process đã được dừng.
+- Finance idempotency executor, aspect wiring cho toàn bộ Finance POST và scheduled receipt cleanup đã compile; focused executor `2/2` pass. Frontend API tạo key và hook giữ key qua retry cùng command; focused finance/admin Jest `42/42` và typecheck pass.
+- Full backend Maven/Testcontainers sau thay đổi idempotency: `348/348` pass, `0` failure/error/skipped.
+- Full frontend Jest sau khi cập nhật fixtures/router mocks và idempotency assertions: `97/97` suites, `248/248` tests pass.
 - Cloud application HTTP smoke sau migration: **chưa xác minh**. Cách chạy `web-application-type=none` trước đây không hợp lệ cho OAuth servlet; smoke script mới yêu cầu chạy web mode với `APP_SCHEDULING_ENABLED=false`.
 - Cold-cache load test 25/50/80/100 users với pool 5/8/10 và warm-cache benchmark: **chưa chạy**; chưa có bằng chứng đạt các p95 mục tiêu.
 
@@ -96,10 +100,11 @@ Các con số trên chỉ là bằng chứng gần nhất đã có; benchmark v�
 ## Việc đang chờ
 
 1. Khi cần đối chiếu local, mở Docker và chạy `scripts/test-student-journey-docker.ps1`.
-2. Nếu cần kiểm thử nâng cấp riêng, xác nhận V26/V27 trên bản sao Supabase test; Supabase chính đã ở V28.
+2. Nếu cần kiểm thử nâng cấp riêng, xác nhận V26/V27 trên bản sao Supabase test; Supabase chính đã ở V29.
 3. Chạy smoke test các role Student, Teacher và Admin.
 4. Cập nhật bảng này bằng số liệu thật sau mỗi lần chạy.
-5. Có thể chạy lại `scripts/preflight-teacher-search-extensions.sql` bằng Flyway user để bổ sung bằng chứng standalone; không deploy lại V28.
+5. Có thể chạy lại `scripts/preflight-teacher-search-extensions.sql` bằng Flyway user để bổ sung bằng chứng standalone; không deploy lại V28/V29.
+6. Bổ sung PostgreSQL concurrency/rollback/reconciliation integration tests trước khi tuyên bố finance acceptance hoàn tất; hiện phần này **chưa xác minh**.
 6. Benchmark bằng `node scripts/benchmark-teacher-search.mjs` với từng pool candidate; ghi riêng cold-cache và warm-cache.
 
 ## Provider chưa xác minh

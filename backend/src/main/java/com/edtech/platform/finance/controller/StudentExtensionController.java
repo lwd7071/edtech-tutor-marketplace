@@ -7,6 +7,7 @@ import com.edtech.platform.common.security.RequireRole;
 import com.edtech.platform.finance.dto.request.CreateExtensionRequest;
 import com.edtech.platform.finance.dto.response.ExtensionRequestView;
 import com.edtech.platform.finance.service.ExtensionService;
+import com.edtech.platform.finance.idempotency.FinanceIdempotent;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,7 @@ public class StudentExtensionController {
     private final ExtensionService extensionService;
 
     @PostMapping
+    @FinanceIdempotent(operation = "STUDENT_EXTENSION_CREATE", responseType = ExtensionRequestView.class)
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<ExtensionRequestView> create(
             @AuthenticationPrincipal AuthenticatedUser user,

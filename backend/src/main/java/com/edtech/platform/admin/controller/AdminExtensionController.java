@@ -10,6 +10,7 @@ import com.edtech.platform.finance.dto.response.ExtensionRequestView;
 import com.edtech.platform.finance.command.ApproveExtensionCommand;
 import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.finance.service.ExtensionService;
+import com.edtech.platform.finance.idempotency.FinanceIdempotent;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -40,6 +41,7 @@ public class AdminExtensionController {
     }
 
     @PostMapping("/{id}/approve")
+    @FinanceIdempotent(operation = "ADMIN_EXTENSION_APPROVE", responseType = ExtensionRequestView.class)
     public ApiResponse<ExtensionRequestView> approve(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,
@@ -50,6 +52,7 @@ public class AdminExtensionController {
     }
 
     @PostMapping("/{id}/reject")
+    @FinanceIdempotent(operation = "ADMIN_EXTENSION_REJECT", responseType = ExtensionRequestView.class)
     public ApiResponse<ExtensionRequestView> reject(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,

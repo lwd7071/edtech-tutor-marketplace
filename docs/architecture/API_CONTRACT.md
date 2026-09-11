@@ -629,7 +629,7 @@ Tất cả endpoint yêu cầu role `ADMIN`. Mọi action thay đổi trạng th
 | GET | `/api/admin/payout-requests` | `status?`, pagination | `PayoutRequestView[]` |
 | POST | `/api/admin/payout-requests/{id}/process` | `{ "version": n }` | `PayoutRequestView` |
 | POST | `/api/admin/payout-requests/{id}/complete` | `CompleteTransferRequest` | `PayoutRequestView` |
-| POST | `/api/admin/payout-requests/{id}/reject` | `RejectRequest` | `PayoutRequestView` |
+| POST | `/api/admin/payout-requests/{id}/reject` | `RejectFinanceRequest` | `PayoutRequestView` |
 | PATCH | `/api/admin/users/{id}/status` | `ChangeUserStatusRequest` | `IdentitySnapshot` |
 | GET | `/api/admin/dashboard` | `from?`, `to?` | `AdminDashboardView` |
 | GET | `/api/admin/audit-logs` | filters, pagination | `AuditLogView[]` |
@@ -837,8 +837,8 @@ Backend validate field theo `type`; không chấp nhận attachment không thu�
 | StudentPackage | `PENDING_PAYMENT`, `ACTIVE`, `COMPLETED`, `REFUND_PENDING`, `REFUNDED`, `LOCKED_EXPIRED` |
 | Booking | `SCHEDULED`, `COMPLETED`, `CANCELLED`, `EXPIRED` |
 | Delivery | `ONLINE`, `OFFLINE` |
-| Payout | `PENDING`, `PROCESSING`, `SUCCEEDED`, `REJECTED`, `FAILED` |
-| Refund | `PENDING`, `APPROVED`, `PROCESSING`, `REFUNDED`, `REJECTED`, `FAILED` |
+| Payout | `PENDING`, `PROCESSING`, `SUCCEEDED`, `REJECTED` |
+| Refund | `PENDING`, `APPROVED`, `REFUNDED`, `REJECTED` |
 | Assignment | `DRAFT`, `PUBLISHED`, `CLOSED` |
 | Submission | `DRAFT`, `SUBMITTED`, `GRADED` |
 

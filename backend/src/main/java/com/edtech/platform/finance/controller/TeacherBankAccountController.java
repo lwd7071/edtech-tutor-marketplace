@@ -6,6 +6,7 @@ import com.edtech.platform.common.security.RequireRole;
 import com.edtech.platform.finance.dto.request.UpsertBankAccountRequest;
 import com.edtech.platform.finance.dto.response.BankAccountView;
 import com.edtech.platform.finance.service.BankAccountService;
+import com.edtech.platform.finance.idempotency.FinanceIdempotent;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ public class TeacherBankAccountController {
     }
 
     @PostMapping
+    @FinanceIdempotent(operation = "TEACHER_BANK_ACCOUNT_CREATE", responseType = BankAccountView.class)
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<BankAccountView> create(
             @AuthenticationPrincipal AuthenticatedUser user,

@@ -9,6 +9,7 @@ import com.edtech.platform.finance.domain.PayoutStatus;
 import com.edtech.platform.finance.dto.request.CreatePayoutRequest;
 import com.edtech.platform.finance.dto.response.PayoutRequestView;
 import com.edtech.platform.finance.service.PayoutService;
+import com.edtech.platform.finance.idempotency.FinanceIdempotent;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,7 @@ public class TeacherPayoutController {
     private final RateLimiterService rateLimiterService;
 
     @PostMapping
+    @FinanceIdempotent(operation = "TEACHER_PAYOUT_CREATE", responseType = PayoutRequestView.class)
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<PayoutRequestView> create(
             @AuthenticationPrincipal AuthenticatedUser user,

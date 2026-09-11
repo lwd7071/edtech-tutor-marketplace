@@ -11,6 +11,15 @@ import { financeKeys } from '../data/financeKeys';
 
 export const FINANCE_KEYS = financeKeys;
 
+const commandKeys = new WeakMap<object, string>();
+const keyFor = (command: object) => {
+  const existing = commandKeys.get(command);
+  if (existing) return existing;
+  const key = globalThis.crypto.randomUUID();
+  commandKeys.set(command, key);
+  return key;
+};
+
 // ---- Teacher Wallet Hooks ----
 export function useTeacherWallet() {
   return useQuery({
@@ -37,7 +46,7 @@ export function useTeacherBankAccounts() {
 export function useCreateBankAccount() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpsertBankAccountRequest) => financeApi.createBankAccount(data),
+    mutationFn: (data: UpsertBankAccountRequest) => financeApi.createBankAccount(data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.bankAccounts() });
     },
@@ -76,7 +85,7 @@ export function useTeacherPayouts(status?: PayoutStatus, page = 0, size = 20) {
 export function useCreatePayout() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreatePayoutRequest) => financeApi.createPayoutRequest(data),
+    mutationFn: (data: CreatePayoutRequest) => financeApi.createPayoutRequest(data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.payouts() });
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.wallet() });
@@ -95,7 +104,7 @@ export function useStudentRefunds(page = 0, size = 20) {
 export function useCreateRefund() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateRefundRequest) => financeApi.createRefundRequest(data),
+    mutationFn: (data: CreateRefundRequest) => financeApi.createRefundRequest(data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.refunds(0, 20) });
     },
@@ -113,7 +122,7 @@ export function useStudentExtensions(page = 0, size = 20) {
 export function useCreateExtension() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateExtensionRequest) => financeApi.createExtensionRequest(data),
+    mutationFn: (data: CreateExtensionRequest) => financeApi.createExtensionRequest(data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.extensions(0, 20) });
     },

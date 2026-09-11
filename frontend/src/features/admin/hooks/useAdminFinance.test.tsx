@@ -66,7 +66,9 @@ describe('useAdminFinance hooks', () => {
     completeMutation.current.mutate({ id: 'p-1', data: { bankReference: 'REF-123', version: 1 } });
 
     await waitFor(() => expect(completeMutation.current.isSuccess).toBe(true));
-    expect(adminFinanceApi.completePayout).toHaveBeenCalledWith('p-1', { bankReference: 'REF-123', version: 1 });
+    expect(adminFinanceApi.completePayout).toHaveBeenCalledWith(
+      'p-1', { bankReference: 'REF-123', version: 1 }, expect.any(String)
+    );
   });
 
   it('usePlatformSettings and useUpdatePlatformSettings work', async () => {

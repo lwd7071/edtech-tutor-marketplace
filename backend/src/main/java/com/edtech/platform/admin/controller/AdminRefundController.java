@@ -13,6 +13,7 @@ import com.edtech.platform.finance.command.ApproveRefundCommand;
 import com.edtech.platform.finance.command.CompleteTransferCommand;
 import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.finance.service.RefundService;
+import com.edtech.platform.finance.idempotency.FinanceIdempotent;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -43,6 +44,7 @@ public class AdminRefundController {
     }
 
     @PostMapping("/{id}/approve")
+    @FinanceIdempotent(operation = "ADMIN_REFUND_APPROVE", responseType = RefundRequestView.class)
     public ApiResponse<RefundRequestView> approve(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,
@@ -53,6 +55,7 @@ public class AdminRefundController {
     }
 
     @PostMapping("/{id}/reject")
+    @FinanceIdempotent(operation = "ADMIN_REFUND_REJECT", responseType = RefundRequestView.class)
     public ApiResponse<RefundRequestView> reject(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,
@@ -63,6 +66,7 @@ public class AdminRefundController {
     }
 
     @PostMapping("/{id}/complete")
+    @FinanceIdempotent(operation = "ADMIN_REFUND_COMPLETE", responseType = RefundRequestView.class)
     public ApiResponse<RefundRequestView> complete(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,

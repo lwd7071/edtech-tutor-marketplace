@@ -13,6 +13,7 @@ import com.edtech.platform.finance.command.CompleteTransferCommand;
 import com.edtech.platform.finance.command.ProcessPayoutCommand;
 import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.finance.service.PayoutService;
+import com.edtech.platform.finance.idempotency.FinanceIdempotent;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -43,6 +44,7 @@ public class AdminPayoutController {
     }
 
     @PostMapping("/{id}/process")
+    @FinanceIdempotent(operation = "ADMIN_PAYOUT_PROCESS", responseType = PayoutRequestView.class)
     public ApiResponse<PayoutRequestView> process(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,
@@ -53,6 +55,7 @@ public class AdminPayoutController {
     }
 
     @PostMapping("/{id}/complete")
+    @FinanceIdempotent(operation = "ADMIN_PAYOUT_COMPLETE", responseType = PayoutRequestView.class)
     public ApiResponse<PayoutRequestView> complete(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,
@@ -64,6 +67,7 @@ public class AdminPayoutController {
     }
 
     @PostMapping("/{id}/reject")
+    @FinanceIdempotent(operation = "ADMIN_PAYOUT_REJECT", responseType = PayoutRequestView.class)
     public ApiResponse<PayoutRequestView> reject(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,

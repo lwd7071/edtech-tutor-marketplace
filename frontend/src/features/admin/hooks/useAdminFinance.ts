@@ -25,6 +25,15 @@ export const ADMIN_FINANCE_KEYS = {
     [...ADMIN_FINANCE_KEYS.all, 'auditLogs', actorId, action, targetType, page, size] as const,
 };
 
+const commandKeys = new WeakMap<object, string>();
+const keyFor = (command: object) => {
+  const existing = commandKeys.get(command);
+  if (existing) return existing;
+  const key = globalThis.crypto.randomUUID();
+  commandKeys.set(command, key);
+  return key;
+};
+
 // ---- Admin Payout Queue Hooks ----
 export function useAdminPayouts(status?: string, page = 0, size = 20) {
   return useQuery({
@@ -37,7 +46,7 @@ export function useProcessPayout() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: ProcessPayoutRequest }) =>
-      adminFinanceApi.processPayout(id, data),
+      adminFinanceApi.processPayout(id, data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.payouts() });
     },
@@ -48,7 +57,7 @@ export function useCompletePayout() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: CompleteTransferRequest }) =>
-      adminFinanceApi.completePayout(id, data),
+      adminFinanceApi.completePayout(id, data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.payouts() });
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.dashboard() });
@@ -60,7 +69,7 @@ export function useRejectPayout() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: RejectFinanceRequest }) =>
-      adminFinanceApi.rejectPayout(id, data),
+      adminFinanceApi.rejectPayout(id, data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.payouts() });
     },
@@ -78,7 +87,7 @@ export function useAdminRefunds(status?: string, page = 0, size = 20) {
 export function useApproveRefund() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ApproveRefundRequest }) => adminFinanceApi.approveRefund(id, data),
+    mutationFn: ({ id, data }: { id: string; data: ApproveRefundRequest }) => adminFinanceApi.approveRefund(id, data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.refunds() });
     },
@@ -89,7 +98,7 @@ export function useCompleteRefund() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: CompleteTransferRequest }) =>
-      adminFinanceApi.completeRefund(id, data),
+      adminFinanceApi.completeRefund(id, data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.refunds() });
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.dashboard() });
@@ -101,7 +110,7 @@ export function useRejectRefund() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: RejectFinanceRequest }) =>
-      adminFinanceApi.rejectRefund(id, data),
+      adminFinanceApi.rejectRefund(id, data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.refunds() });
     },
@@ -120,7 +129,7 @@ export function useApproveExtension() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: ApproveExtensionRequest }) =>
-      adminFinanceApi.approveExtension(id, data),
+      adminFinanceApi.approveExtension(id, data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.extensions() });
     },
@@ -131,7 +140,7 @@ export function useRejectExtension() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: RejectRequest }) =>
-      adminFinanceApi.rejectExtension(id, data),
+      adminFinanceApi.rejectExtension(id, data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.extensions() });
     },

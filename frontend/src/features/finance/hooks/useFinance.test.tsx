@@ -109,7 +109,9 @@ describe('useFinance hooks', () => {
     result.current.mutate({ bankAccountId: 'b-1', amountVnd: 500000, walletVersion: 1 });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(financeApi.createPayoutRequest).toHaveBeenCalledWith({ bankAccountId: 'b-1', amountVnd: 500000, walletVersion: 1 });
+    expect(financeApi.createPayoutRequest).toHaveBeenCalledWith(
+      { bankAccountId: 'b-1', amountVnd: 500000, walletVersion: 1 }, expect.any(String)
+    );
   });
 
   it('useStudentRefunds and useStudentExtensions fetch lists', async () => {
