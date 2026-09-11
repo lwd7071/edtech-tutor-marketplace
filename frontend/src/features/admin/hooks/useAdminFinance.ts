@@ -4,7 +4,8 @@ import {
   AuditAction,
   ProcessPayoutRequest,
   CompleteTransferRequest,
-  ProcessRefundRequest,
+  ApproveRefundRequest,
+  RejectFinanceRequest,
   ApproveExtensionRequest,
   RejectRequest,
   UpdatePlatformSettingsRequest,
@@ -35,7 +36,7 @@ export function useAdminPayouts(status?: string, page = 0, size = 20) {
 export function useProcessPayout() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data?: ProcessPayoutRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: ProcessPayoutRequest }) =>
       adminFinanceApi.processPayout(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.payouts() });
@@ -58,7 +59,7 @@ export function useCompletePayout() {
 export function useRejectPayout() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: RejectRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: RejectFinanceRequest }) =>
       adminFinanceApi.rejectPayout(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.payouts() });
@@ -77,18 +78,18 @@ export function useAdminRefunds(status?: string, page = 0, size = 20) {
 export function useApproveRefund() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => adminFinanceApi.approveRefund(id),
+    mutationFn: ({ id, data }: { id: string; data: ApproveRefundRequest }) => adminFinanceApi.approveRefund(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.refunds() });
     },
   });
 }
 
-export function useProcessRefund() {
+export function useCompleteRefund() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ProcessRefundRequest }) =>
-      adminFinanceApi.processRefund(id, data),
+    mutationFn: ({ id, data }: { id: string; data: CompleteTransferRequest }) =>
+      adminFinanceApi.completeRefund(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.refunds() });
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.dashboard() });
@@ -99,7 +100,7 @@ export function useProcessRefund() {
 export function useRejectRefund() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: RejectRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: RejectFinanceRequest }) =>
       adminFinanceApi.rejectRefund(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.refunds() });

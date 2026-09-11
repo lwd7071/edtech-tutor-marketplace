@@ -13,6 +13,7 @@ describe('StudentFinanceComponents', () => {
         packageName="Toán 12 VIP"
         remainingSessions={5}
         estimatedPricePerSession={200000}
+        packageVersion={1}
         onCancel={jest.fn()}
         onSubmit={jest.fn()}
       />

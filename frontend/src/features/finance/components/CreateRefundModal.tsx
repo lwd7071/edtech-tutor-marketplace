@@ -7,6 +7,7 @@ import { CreateRefundRequest } from '../types';
 interface CreateRefundModalProps {
   open: boolean;
   packageId: string;
+  packageVersion: number;
   packageName: string;
   remainingSessions: number;
   estimatedPricePerSession?: number;
@@ -29,6 +30,7 @@ const POPULAR_BANKS = [
 export const CreateRefundModal: React.FC<CreateRefundModalProps> = ({
   open,
   packageId,
+  packageVersion,
   packageName,
   remainingSessions,
   estimatedPricePerSession = 0,
@@ -45,10 +47,11 @@ export const CreateRefundModal: React.FC<CreateRefundModalProps> = ({
       form.resetFields();
       form.setFieldsValue({
         studentPackageId: packageId,
+        packageVersion,
         requestedSessions: Math.min(1, remainingSessions),
       });
     }
-  }, [open, packageId, remainingSessions, form]);
+  }, [open, packageId, packageVersion, remainingSessions, form]);
 
   const handleBankChange = (bin: string) => {
     const selected = POPULAR_BANKS.find((b) => b.bin === bin);

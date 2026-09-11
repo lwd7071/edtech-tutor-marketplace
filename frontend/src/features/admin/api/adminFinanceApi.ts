@@ -13,7 +13,8 @@ import {
   AuditAction,
   ProcessPayoutRequest,
   CompleteTransferRequest,
-  ProcessRefundRequest,
+  ApproveRefundRequest,
+  RejectFinanceRequest,
   ApproveExtensionRequest,
   RejectRequest,
 } from '../types';
@@ -27,10 +28,10 @@ export const adminFinanceApi = {
     return response.data;
   },
 
-  processPayout: async (id: string, data?: ProcessPayoutRequest): Promise<ApiResponse<PayoutRequestView>> => {
+  processPayout: async (id: string, data: ProcessPayoutRequest): Promise<ApiResponse<PayoutRequestView>> => {
     const response = await axiosClient.post<ApiResponse<PayoutRequestView>>(
       `/api/admin/payout-requests/${id}/process`,
-      data || {}
+      data
     );
     return response.data;
   },
@@ -43,7 +44,7 @@ export const adminFinanceApi = {
     return response.data;
   },
 
-  rejectPayout: async (id: string, data: RejectRequest): Promise<ApiResponse<PayoutRequestView>> => {
+  rejectPayout: async (id: string, data: RejectFinanceRequest): Promise<ApiResponse<PayoutRequestView>> => {
     const response = await axiosClient.post<ApiResponse<PayoutRequestView>>(
       `/api/admin/payout-requests/${id}/reject`,
       data
@@ -59,22 +60,23 @@ export const adminFinanceApi = {
     return response.data;
   },
 
-  approveRefund: async (id: string): Promise<ApiResponse<RefundRequestView>> => {
+  approveRefund: async (id: string, data: ApproveRefundRequest): Promise<ApiResponse<RefundRequestView>> => {
     const response = await axiosClient.post<ApiResponse<RefundRequestView>>(
-      `/api/admin/refund-requests/${id}/approve`
-    );
-    return response.data;
-  },
-
-  processRefund: async (id: string, data: ProcessRefundRequest): Promise<ApiResponse<RefundRequestView>> => {
-    const response = await axiosClient.post<ApiResponse<RefundRequestView>>(
-      `/api/admin/refund-requests/${id}/process`,
+      `/api/admin/refund-requests/${id}/approve`,
       data
     );
     return response.data;
   },
 
-  rejectRefund: async (id: string, data: RejectRequest): Promise<ApiResponse<RefundRequestView>> => {
+  completeRefund: async (id: string, data: CompleteTransferRequest): Promise<ApiResponse<RefundRequestView>> => {
+    const response = await axiosClient.post<ApiResponse<RefundRequestView>>(
+      `/api/admin/refund-requests/${id}/complete`,
+      data
+    );
+    return response.data;
+  },
+
+  rejectRefund: async (id: string, data: RejectFinanceRequest): Promise<ApiResponse<RefundRequestView>> => {
     const response = await axiosClient.post<ApiResponse<RefundRequestView>>(
       `/api/admin/refund-requests/${id}/reject`,
       data

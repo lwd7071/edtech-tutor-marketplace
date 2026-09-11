@@ -106,10 +106,10 @@ describe('useFinance hooks', () => {
 
     const { result } = renderHook(() => useCreatePayout(), { wrapper: createWrapper() });
 
-    result.current.mutate({ bankAccountId: 'b-1', amountVnd: 500000 });
+    result.current.mutate({ bankAccountId: 'b-1', amountVnd: 500000, walletVersion: 1 });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(financeApi.createPayoutRequest).toHaveBeenCalledWith({ bankAccountId: 'b-1', amountVnd: 500000 });
+    expect(financeApi.createPayoutRequest).toHaveBeenCalledWith({ bankAccountId: 'b-1', amountVnd: 500000, walletVersion: 1 });
   });
 
   it('useStudentRefunds and useStudentExtensions fetch lists', async () => {

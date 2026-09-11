@@ -58,7 +58,7 @@ describe('AdminFinanceTables', () => {
         refunds={mockRefunds}
         total={1}
         onApproveRefund={jest.fn()}
-        onProcessRefund={jest.fn()}
+        onCompleteRefund={jest.fn()}
         onRejectRefund={jest.fn()}
       />
     );

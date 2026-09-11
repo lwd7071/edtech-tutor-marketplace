@@ -5,7 +5,7 @@ import { Typography, message } from 'antd';
 import {
   useAdminRefunds,
   useApproveRefund,
-  useProcessRefund,
+  useCompleteRefund,
   useRejectRefund,
 } from '../hooks/useAdminFinance';
 import { AdminRefundTable } from '../components/AdminRefundTable';
@@ -17,7 +17,7 @@ export const AdminRefundsPage: React.FC = () => {
 
   const { data: refundsRes, isLoading } = useAdminRefunds(statusFilter, page, pageSize);
   const approveMutation = useApproveRefund();
-  const processMutation = useProcessRefund();
+  const completeMutation = useCompleteRefund();
   const rejectMutation = useRejectRefund();
 
   const refunds = refundsRes?.data || [];
@@ -48,12 +48,12 @@ export const AdminRefundsPage: React.FC = () => {
           setStatusFilter(st);
           setPage(0);
         }}
-        onApproveRefund={async (id) => {
-          await approveMutation.mutateAsync(id);
+        onApproveRefund={async (id, data) => {
+          await approveMutation.mutateAsync({ id, data });
           message.success('Đã duyệt yêu cầu hoàn tiền');
         }}
-        onProcessRefund={async (id, data) => {
-          await processMutation.mutateAsync({ id, data });
+        onCompleteRefund={async (id, data) => {
+          await completeMutation.mutateAsync({ id, data });
           message.success('Xác nhận hoàn tiền thành công');
         }}
         onRejectRefund={async (id, data) => {

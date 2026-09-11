@@ -6,7 +6,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { CheckOutlined, CloseOutlined, SyncOutlined, EyeOutlined } from '@ant-design/icons';
 import { PayoutRequestView, PayoutStatus } from '@/features/finance';
 import { formatLedgerTime } from '@/features/finance';
-import { CompleteTransferRequest, RejectRequest } from '../types';
+import { CompleteTransferRequest, ProcessPayoutRequest, RejectFinanceRequest } from '../types';
 
 interface AdminPayoutTableProps {
   payouts?: PayoutRequestView[];
@@ -16,9 +16,9 @@ interface AdminPayoutTableProps {
   pageSize?: number;
   onPageChange?: (page: number, size: number) => void;
   onFilterStatus?: (status?: string) => void;
-  onProcessPayout: (id: string) => Promise<void> | void;
+  onProcessPayout: (id: string, data: ProcessPayoutRequest) => Promise<void> | void;
   onCompletePayout: (id: string, data: CompleteTransferRequest) => Promise<void> | void;
-  onRejectPayout: (id: string, data: RejectRequest) => Promise<void> | void;
+  onRejectPayout: (id: string, data: RejectFinanceRequest) => Promise<void> | void;
 }
 
 export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
@@ -38,8 +38,8 @@ export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
   const [selectedPayout, setSelectedPayout] = useState<PayoutRequestView | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const [completeForm] = Form.useForm<CompleteTransferRequest>();
-  const [rejectForm] = Form.useForm<RejectRequest>();
+  const [completeForm] = Form.useForm<Omit<CompleteTransferRequest, 'version'>>();
+  const [rejectForm] = Form.useForm<Omit<RejectFinanceRequest, 'version'>>();
 
   const handleOpenComplete = (payout: PayoutRequestView) => {
     setSelectedPayout(payout);
@@ -58,7 +58,7 @@ export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
     try {
       const values = await completeForm.validateFields();
       setActionLoading(true);
-      await onCompletePayout(selectedPayout.id, values);
+      await onCompletePayout(selectedPayout.id, { ...values, version: selectedPayout.version });
       setCompleteModalOpen(false);
     } finally {
       setActionLoading(false);
@@ -70,7 +70,7 @@ export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
     try {
       const values = await rejectForm.validateFields();
       setActionLoading(true);
-      await onRejectPayout(selectedPayout.id, values);
+      await onRejectPayout(selectedPayout.id, { ...values, version: selectedPayout.version });
       setRejectModalOpen(false);
     } finally {
       setActionLoading(false);
@@ -177,7 +177,7 @@ export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
                 description="Lệnh rút sẽ chuyển sang PROCESSING để kế toán chuyển khoản ngân hàng."
                 okText="Xử lý"
                 cancelText="Hủy"
-                onConfirm={() => onProcessPayout(record.id)}
+                onConfirm={() => onProcessPayout(record.id, { version: record.version })}
               >
                 <Button type="primary" size="small" icon={<SyncOutlined />}>
                   Xử lý

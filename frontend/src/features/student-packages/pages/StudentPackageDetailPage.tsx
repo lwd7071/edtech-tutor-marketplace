@@ -83,6 +83,7 @@ export const StudentPackageDetailPage: React.FC = () => {
       <CreateRefundModal
         open={refundOpen}
         packageId={packageData.id}
+        packageVersion={packageData.version}
         packageName={packageData.packageName}
         remainingSessions={packageData.remainingSessions}
         estimatedPricePerSession={packageData.totalSessions ? Math.round(packageData.purchasePriceVnd / packageData.totalSessions) : 0}
@@ -94,6 +95,7 @@ export const StudentPackageDetailPage: React.FC = () => {
       <CreateExtensionModal
         open={extensionOpen}
         packageId={packageData.id}
+        packageVersion={packageData.version}
         packageName={packageData.packageName}
         currentExpiryDate={packageData.expiresAt}
         loading={createExtensionMutation.isPending}

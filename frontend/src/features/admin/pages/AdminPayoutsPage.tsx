@@ -48,8 +48,8 @@ export const AdminPayoutsPage: React.FC = () => {
           setStatusFilter(st);
           setPage(0);
         }}
-        onProcessPayout={async (id) => {
-          await processMutation.mutateAsync({ id });
+        onProcessPayout={async (id, data) => {
+          await processMutation.mutateAsync({ id, data });
           message.success('Đã chuyển lệnh rút sang trạng thái đang xử lý');
         }}
         onCompletePayout={async (id, data) => {

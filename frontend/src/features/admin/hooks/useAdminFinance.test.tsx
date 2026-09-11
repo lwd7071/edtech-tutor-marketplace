@@ -63,10 +63,10 @@ describe('useAdminFinance hooks', () => {
     await waitFor(() => expect(listRes.current.isSuccess).toBe(true));
 
     const { result: completeMutation } = renderHook(() => useCompletePayout(), { wrapper });
-    completeMutation.current.mutate({ id: 'p-1', data: { bankReference: 'REF-123' } });
+    completeMutation.current.mutate({ id: 'p-1', data: { bankReference: 'REF-123', version: 1 } });
 
     await waitFor(() => expect(completeMutation.current.isSuccess).toBe(true));
-    expect(adminFinanceApi.completePayout).toHaveBeenCalledWith('p-1', { bankReference: 'REF-123' });
+    expect(adminFinanceApi.completePayout).toHaveBeenCalledWith('p-1', { bankReference: 'REF-123', version: 1 });
   });
 
   it('usePlatformSettings and useUpdatePlatformSettings work', async () => {

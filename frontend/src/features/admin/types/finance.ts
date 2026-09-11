@@ -59,19 +59,26 @@ export interface AuditLogView {
 }
 
 export interface ProcessPayoutRequest {
-  adminNote?: string;
+  version: number;
 }
 
 export interface CompleteTransferRequest {
   bankReference: string;
+  transferredAt?: string;
+  proofPublicId?: string;
   proofUrl?: string;
-  adminNote?: string;
+  version: number;
 }
 
-export interface ProcessRefundRequest {
-  bankReference: string;
-  proofUrl?: string;
+export interface ApproveRefundRequest {
+  approvedSessions: number;
   adminNote?: string;
+  version: number;
+}
+
+export interface RejectFinanceRequest {
+  reason: string;
+  version: number;
 }
 
 export interface ApproveExtensionRequest {

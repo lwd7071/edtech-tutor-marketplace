@@ -10,6 +10,7 @@ import { formatLedgerTime } from './LedgerTable';
 interface CreateExtensionModalProps {
   open: boolean;
   packageId: string;
+  packageVersion: number;
   packageName: string;
   currentExpiryDate?: string;
   loading?: boolean;
@@ -20,6 +21,7 @@ interface CreateExtensionModalProps {
 export const CreateExtensionModal: React.FC<CreateExtensionModalProps> = ({
   open,
   packageId,
+  packageVersion,
   packageName,
   currentExpiryDate,
   loading = false,
@@ -32,7 +34,7 @@ export const CreateExtensionModal: React.FC<CreateExtensionModalProps> = ({
     if (open) {
       form.resetFields();
     }
-  }, [open, form]);
+  }, [open, packageVersion, form]);
 
   const handleOk = async () => {
     try {
@@ -41,6 +43,7 @@ export const CreateExtensionModal: React.FC<CreateExtensionModalProps> = ({
         studentPackageId: packageId,
         requestedExpiryDate: values.requestedDate.toISOString(),
         reason: values.reason,
+        packageVersion,
       });
     } catch {
       // Form validation error

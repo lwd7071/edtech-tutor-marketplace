@@ -40,7 +40,7 @@ describe('Finance & Admin APIs', () => {
     });
 
     it('calls createPayoutRequest', async () => {
-      const payload = { bankAccountId: 'bank-1', amountVnd: 500000 };
+      const payload = { bankAccountId: 'bank-1', amountVnd: 500000, walletVersion: 1 };
       (axiosClient.post as jest.Mock).mockResolvedValueOnce({ data: { success: true, data: { id: 'payout-1' } } });
 
       const result = await financeApi.createPayoutRequest(payload);
@@ -57,6 +57,7 @@ describe('Finance & Admin APIs', () => {
         bankBin: '970422',
         accountNumber: '0123456789',
         accountHolderName: 'NGUYEN VAN A',
+        packageVersion: 1,
       };
       (axiosClient.post as jest.Mock).mockResolvedValueOnce({ data: { success: true, data: { id: 'ref-1' } } });
 
@@ -86,7 +87,7 @@ describe('Finance & Admin APIs', () => {
     });
 
     it('calls completePayout with bankReference and proofUrl', async () => {
-      const payload = { bankReference: 'FT123456', proofUrl: 'https://proof.png', adminNote: 'Done' };
+      const payload = { bankReference: 'FT123456', proofUrl: 'https://proof.png', adminNote: 'Done', version: 1 };
       (axiosClient.post as jest.Mock).mockResolvedValueOnce({ data: { success: true, data: { id: 'p-1', status: 'SUCCEEDED' } } });
 
       const result = await adminFinanceApi.completePayout('p-1', payload);

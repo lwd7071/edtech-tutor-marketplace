@@ -52,7 +52,7 @@ export const TeacherWalletPage: React.FC = () => {
 
   const handleCreatePayoutSubmit = async (values: CreatePayoutRequest) => {
     try {
-      await createPayoutMutation.mutateAsync(values);
+      await createPayoutMutation.mutateAsync({ ...values, walletVersion: wallet?.version ?? 0 });
       message.success('Tạo yêu cầu rút tiền thành công. Ban quản trị sẽ sớm duyệt và chuyển khoản.');
       setPayoutModalOpen(false);
     } catch (err: unknown) {
@@ -166,6 +166,7 @@ export const TeacherWalletPage: React.FC = () => {
       <CreatePayoutModal
         open={payoutModalOpen}
         availableBalanceVnd={wallet?.availableBalanceVnd ?? 0}
+        walletVersion={wallet?.version ?? 0}
         bankAccounts={bankAccounts}
         loading={createPayoutMutation.isPending}
         onCancel={() => setPayoutModalOpen(false)}

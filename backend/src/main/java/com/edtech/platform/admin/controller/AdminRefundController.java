@@ -3,6 +3,7 @@ package com.edtech.platform.admin.controller;
 import com.edtech.platform.admin.dto.request.ApproveRefundRequest;
 import com.edtech.platform.admin.dto.request.CompleteTransferRequest;
 import com.edtech.platform.admin.dto.request.RejectRequest;
+import com.edtech.platform.admin.dto.request.RejectFinanceRequest;
 import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.common.security.AuthenticatedUser;
@@ -55,11 +56,10 @@ public class AdminRefundController {
     public ApiResponse<RefundRequestView> reject(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,
-            @RequestParam(defaultValue = "0") long version,
-            @Valid @RequestBody RejectRequest request
+            @Valid @RequestBody RejectFinanceRequest request
     ) {
         return ApiResponse.ok(refundService.rejectRefund(user.id(), id,
-                new RejectFinanceCommand(request.reason(), version)));
+                new RejectFinanceCommand(request.reason(), request.version())));
     }
 
     @PostMapping("/{id}/complete")

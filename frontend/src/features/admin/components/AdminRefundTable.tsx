@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import { Table, Tag, Typography, Button, Space, Modal, Form, Input, Tabs, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { CheckOutlined, CloseOutlined, SyncOutlined, EyeOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloseOutlined, EyeOutlined } from '@ant-design/icons';
 import { RefundRequestView, RefundStatus } from '@/features/finance';
 import { formatLedgerTime } from '@/features/finance';
 import { getRefundStatusTag } from '@/features/finance';
-import { ProcessRefundRequest, RejectRequest } from '../types';
+import { ApproveRefundRequest, CompleteTransferRequest, RejectFinanceRequest } from '../types';
 
 interface AdminRefundTableProps {
   refunds?: RefundRequestView[];
@@ -17,9 +17,9 @@ interface AdminRefundTableProps {
   pageSize?: number;
   onPageChange?: (page: number, size: number) => void;
   onFilterStatus?: (status?: string) => void;
-  onApproveRefund: (id: string) => Promise<void> | void;
-  onProcessRefund: (id: string, data: ProcessRefundRequest) => Promise<void> | void;
-  onRejectRefund: (id: string, data: RejectRequest) => Promise<void> | void;
+  onApproveRefund: (id: string, data: ApproveRefundRequest) => Promise<void> | void;
+  onCompleteRefund: (id: string, data: CompleteTransferRequest) => Promise<void> | void;
+  onRejectRefund: (id: string, data: RejectFinanceRequest) => Promise<void> | void;
 }
 
 export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
@@ -31,21 +31,30 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
   onPageChange,
   onFilterStatus,
   onApproveRefund,
-  onProcessRefund,
+  onCompleteRefund,
   onRejectRefund,
 }) => {
-  const [processModalOpen, setProcessModalOpen] = useState(false);
+  const [approveModalOpen, setApproveModalOpen] = useState(false);
+  const [completeModalOpen, setCompleteModalOpen] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [selectedRefund, setSelectedRefund] = useState<RefundRequestView | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const [processForm] = Form.useForm<ProcessRefundRequest>();
-  const [rejectForm] = Form.useForm<RejectRequest>();
+  const [approveForm] = Form.useForm<Omit<ApproveRefundRequest, 'version'>>();
+  const [completeForm] = Form.useForm<Omit<CompleteTransferRequest, 'version'>>();
+  const [rejectForm] = Form.useForm<Omit<RejectFinanceRequest, 'version'>>();
 
-  const handleOpenProcess = (refund: RefundRequestView) => {
+  const handleOpenApprove = (refund: RefundRequestView) => {
     setSelectedRefund(refund);
-    processForm.resetFields();
-    setProcessModalOpen(true);
+    approveForm.resetFields();
+    approveForm.setFieldsValue({ approvedSessions: refund.requestedSessions });
+    setApproveModalOpen(true);
+  };
+
+  const handleOpenComplete = (refund: RefundRequestView) => {
+    setSelectedRefund(refund);
+    completeForm.resetFields();
+    setCompleteModalOpen(true);
   };
 
   const handleOpenReject = (refund: RefundRequestView) => {
@@ -54,13 +63,25 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
     setRejectModalOpen(true);
   };
 
-  const handleProcessSubmit = async () => {
+  const handleApproveSubmit = async () => {
     if (!selectedRefund) return;
     try {
-      const values = await processForm.validateFields();
+      const values = await approveForm.validateFields();
       setActionLoading(true);
-      await onProcessRefund(selectedRefund.id, values);
-      setProcessModalOpen(false);
+      await onApproveRefund(selectedRefund.id, { ...values, version: selectedRefund.version });
+      setApproveModalOpen(false);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCompleteSubmit = async () => {
+    if (!selectedRefund) return;
+    try {
+      const values = await completeForm.validateFields();
+      setActionLoading(true);
+      await onCompleteRefund(selectedRefund.id, { ...values, version: selectedRefund.version });
+      setCompleteModalOpen(false);
     } finally {
       setActionLoading(false);
     }
@@ -71,7 +92,7 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
     try {
       const values = await rejectForm.validateFields();
       setActionLoading(true);
-      await onRejectRefund(selectedRefund.id, values);
+      await onRejectRefund(selectedRefund.id, { ...values, version: selectedRefund.version });
       setRejectModalOpen(false);
     } finally {
       setActionLoading(false);
@@ -153,7 +174,7 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
                 description="Hệ thống sẽ tính toán số tiền hoàn dựa trên số buổi chưa học."
                 okText="Duyệt"
                 cancelText="Hủy"
-                onConfirm={() => onApproveRefund(record.id)}
+                onConfirm={() => handleOpenApprove(record)}
               >
                 <Button type="primary" size="small" icon={<CheckOutlined />}>
                   Duyệt
@@ -166,7 +187,7 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
           );
         }
 
-        if (record.status === 'APPROVED' || record.status === 'PROCESSING') {
+        if (record.status === 'APPROVED') {
           return (
             <Space size={8}>
               <Button
@@ -174,12 +195,9 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
                 size="small"
                 style={{ background: 'var(--color-success-600, #15803D)' }}
                 icon={<CheckOutlined />}
-                onClick={() => handleOpenProcess(record)}
+                onClick={() => handleOpenComplete(record)}
               >
                 Xác nhận hoàn
-              </Button>
-              <Button danger size="small" icon={<CloseOutlined />} onClick={() => handleOpenReject(record)}>
-                Từ chối
               </Button>
             </Space>
           );
@@ -199,7 +217,6 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
           { key: 'ALL', label: 'Tất cả' },
           { key: 'PENDING', label: 'Chờ duyệt' },
           { key: 'APPROVED', label: 'Đã duyệt' },
-          { key: 'PROCESSING', label: 'Đang chuyển' },
           { key: 'REFUNDED', label: 'Đã hoàn tiền' },
           { key: 'REJECTED', label: 'Bị từ chối' },
         ]}
@@ -222,15 +239,38 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
 
       {/* Modal Xác nhận đã chuyển tiền hoàn */}
       <Modal
-        open={processModalOpen}
+        open={approveModalOpen}
+        title={`Duyệt yêu cầu hoàn tiền #${selectedRefund?.id.slice(0, 8)}`}
+        okText="Duyệt"
+        cancelText="Hủy"
+        confirmLoading={actionLoading}
+        onCancel={() => setApproveModalOpen(false)}
+        onOk={handleApproveSubmit}
+      >
+        <Form form={approveForm} layout="vertical" style={{ marginTop: 16 }}>
+          <Form.Item
+            label="Số buổi duyệt hoàn"
+            name="approvedSessions"
+            rules={[{ required: true, type: 'number', min: 1, max: selectedRefund?.requestedSessions }]}
+          >
+            <Input type="number" min={1} max={selectedRefund?.requestedSessions} />
+          </Form.Item>
+          <Form.Item label="Ghi chú admin" name="adminNote">
+            <Input.TextArea rows={2} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        open={completeModalOpen}
         title={`Xác nhận chuyển tiền hoàn #${selectedRefund?.id.slice(0, 8)}`}
         okText="Xác nhận hoàn tất"
         cancelText="Hủy"
         confirmLoading={actionLoading}
-        onCancel={() => setProcessModalOpen(false)}
-        onOk={handleProcessSubmit}
+        onCancel={() => setCompleteModalOpen(false)}
+        onOk={handleCompleteSubmit}
       >
-        <Form form={processForm} layout="vertical" style={{ marginTop: 16 }}>
+        <Form form={completeForm} layout="vertical" style={{ marginTop: 16 }}>
           <Form.Item
             label="Mã giao dịch ngân hàng"
             name="bankReference"
@@ -243,9 +283,6 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
             <Input placeholder="https://..." />
           </Form.Item>
 
-          <Form.Item label="Ghi chú admin" name="adminNote">
-            <Input.TextArea rows={2} placeholder="Đã hoàn tiền thành công vào tài khoản học viên..." />
-          </Form.Item>
         </Form>
       </Modal>
 

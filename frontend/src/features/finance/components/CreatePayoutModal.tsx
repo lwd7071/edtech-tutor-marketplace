@@ -7,6 +7,7 @@ import { CreatePayoutRequest, BankAccountView } from '../types';
 interface CreatePayoutModalProps {
   open: boolean;
   availableBalanceVnd: number;
+  walletVersion: number;
   bankAccounts?: BankAccountView[];
   loading?: boolean;
   onCancel: () => void;
@@ -16,6 +17,7 @@ interface CreatePayoutModalProps {
 export const CreatePayoutModal: React.FC<CreatePayoutModalProps> = ({
   open,
   availableBalanceVnd,
+  walletVersion,
   bankAccounts = [],
   loading = false,
   onCancel,
@@ -28,10 +30,10 @@ export const CreatePayoutModal: React.FC<CreatePayoutModalProps> = ({
     if (open) {
       form.resetFields();
       if (defaultAccount) {
-        form.setFieldsValue({ bankAccountId: defaultAccount.id });
+        form.setFieldsValue({ bankAccountId: defaultAccount.id, walletVersion });
       }
     }
-  }, [open, defaultAccount, form]);
+  }, [open, defaultAccount, walletVersion, form]);
 
   const watchedAmount = Form.useWatch('amountVnd', form) || 0;
 

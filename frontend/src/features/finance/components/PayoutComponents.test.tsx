@@ -26,6 +26,7 @@ describe('CreatePayoutModal & PayoutListTable', () => {
         bankAccounts={mockAccounts}
         onCancel={jest.fn()}
         onSubmit={jest.fn()}
+        walletVersion={1}
       />
     );
 

@@ -81,6 +81,7 @@ export interface CreatePayoutRequest {
   bankAccountId: string;
   amountVnd: number;
   teacherNote?: string;
+  walletVersion: number;
 }
 
 export type RefundStatus = 'PENDING' | 'APPROVED' | 'PROCESSING' | 'REFUNDED' | 'REJECTED' | 'FAILED';
@@ -115,6 +116,7 @@ export interface CreateRefundRequest {
   bankBin: string;
   accountNumber: string;
   accountHolderName: string;
+  packageVersion: number;
 }
 
 export type ExtensionStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -137,4 +139,5 @@ export interface CreateExtensionRequest {
   studentPackageId: string;
   reason: string;
   requestedExpiryDate: string;
+  packageVersion: number;
 }
