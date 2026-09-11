@@ -6,11 +6,12 @@ export const notificationApi = {
   getNotifications: async (
     isRead?: boolean,
     page: number = 0,
-    size: number = 20
+    size: number = 20,
+    referenceType?: string,
   ): Promise<ApiResponse<NotificationView[]>> => {
     const response = await axiosClient.get<ApiResponse<NotificationView[]>>(
       '/api/notifications',
-      { params: { isRead, page, size } }
+      { params: { isRead, page, size, referenceType } }
     );
     return response.data;
   },

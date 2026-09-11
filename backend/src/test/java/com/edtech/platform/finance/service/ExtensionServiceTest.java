@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -32,6 +33,7 @@ class ExtensionServiceTest {
 
     @Mock private PackageExtensionRequestRepository extensionRequestRepository;
     @Mock private EnrollmentFacade enrollmentFacade;
+    @Mock private ApplicationEventPublisher events;
 
     private ExtensionService extensionService;
 
@@ -41,7 +43,7 @@ class ExtensionServiceTest {
 
     @BeforeEach
     void setUp() {
-        extensionService = new ExtensionService(extensionRequestRepository, enrollmentFacade);
+        extensionService = new ExtensionService(extensionRequestRepository, enrollmentFacade, events);
     }
 
     private EnrollmentPackageSnapshot mockPackage(String status) {

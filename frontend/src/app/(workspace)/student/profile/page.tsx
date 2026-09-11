@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, Typography, Form, Input, Button, message, Avatar, Space, Divider, Switch } from 'antd';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert, Card, Typography, Form, Input, Button, message, Avatar, Space, Divider, Switch, Skeleton } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/features/auth';
 import { authApi, type ParentContactRequest } from '@/shared/api/auth';
@@ -10,11 +10,29 @@ export default function StudentProfilePage() {
   const { user } = useAuthStore();
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const parentEmail = Form.useWatch('parentEmail', form);
+
+  const loadContact = useCallback(async () => {
+    setLoading(true); setLoadError(false);
+    try { const result = await authApi.getParentContact(); form.setFieldsValue(result.data); }
+    catch { setLoadError(true); }
+    finally { setLoading(false); }
+  }, [form]);
+  useEffect(() => { void loadContact(); }, [loadContact]);
 
   const handleFinish = async (values: ParentContactRequest) => {
     try {
       setSubmitting(true);
-      await authApi.updateParentContact(values);
+      const normalized = {
+        parentFullName: values.parentFullName?.trim() || null,
+        parentPhone: values.parentPhone?.trim() || null,
+        parentEmail: values.parentEmail?.trim() || null,
+        notifyParent: Boolean(values.parentEmail?.trim()) && Boolean(values.notifyParent),
+      };
+      const result = await authApi.updateParentContact(normalized);
+      form.setFieldsValue(result.data);
       message.success('Cập nhật thông tin phụ huynh thành công!');
     } catch (error) {
       console.error('Lỗi khi cập nhật thông tin:', error);
@@ -63,23 +81,22 @@ export default function StudentProfilePage() {
 
       <Card style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', borderRadius: 12 }} title="Thông tin liên hệ phụ huynh">
         <div style={{ marginBottom: 24, color: 'var(--color-text-secondary, #4B5563)' }}>
-          Vui lòng cung cấp thông tin liên hệ của phụ huynh để chúng tôi có thể cập nhật kết quả học tập và thông báo quan trọng.
+          Thông tin này không bắt buộc. Khi bật nhận email, hệ thống gửi các cập nhật học tập quan trọng tới địa chỉ phụ huynh.
         </div>
+        {loadError && <Alert type="error" showIcon title="Chưa tải được thông tin phụ huynh" action={<Button onClick={() => void loadContact()}>Thử lại</Button>} style={{marginBottom:16}} />}
+        {loading ? <Skeleton active /> :
         
         <Form 
           form={form} 
           layout="vertical" 
           onFinish={handleFinish}
-          initialValues={{ notifyParent: true }}
+          initialValues={{ notifyParent: false }}
           style={{ maxWidth: 576 }}
         >
           <Form.Item
             label="Họ và tên phụ huynh"
             name="parentFullName"
-            rules={[
-              { required: true, message: 'Vui lòng nhập họ và tên phụ huynh' },
-              { min: 3, message: 'Tên quá ngắn' }
-            ]}
+            rules={[{ min: 3, message: 'Tên quá ngắn' }]}
           >
             <Input prefix={<UserOutlined className="text-text-tertiary" />} placeholder="Nhập họ và tên" size="large" />
           </Form.Item>
@@ -88,7 +105,6 @@ export default function StudentProfilePage() {
             label="Số điện thoại phụ huynh"
             name="parentPhone"
             rules={[
-              { required: true, message: 'Vui lòng nhập số điện thoại' },
               { pattern: /^[0-9]{10,11}$/, message: 'Số điện thoại không hợp lệ' }
             ]}
           >
@@ -99,7 +115,6 @@ export default function StudentProfilePage() {
             label="Email phụ huynh"
             name="parentEmail"
             rules={[
-              { required: true, message: 'Vui lòng nhập email phụ huynh' },
               { type: 'email', message: 'Email không hợp lệ' }
             ]}
           >
@@ -110,7 +125,7 @@ export default function StudentProfilePage() {
             name="notifyParent" 
             valuePropName="checked"
           >
-            <Switch /> <span style={{ marginLeft: 8 }}>Đồng ý nhận thông báo qua email / SĐT phụ huynh</span>
+            <Switch disabled={!parentEmail?.trim()} /> <span style={{ marginLeft: 8 }}>Gửi thông báo qua email phụ huynh</span>
           </Form.Item>
 
           <Divider />
@@ -120,7 +135,7 @@ export default function StudentProfilePage() {
               Lưu thông tin
             </Button>
           </Form.Item>
-        </Form>
+        </Form>}
       </Card>
     </div>
   );

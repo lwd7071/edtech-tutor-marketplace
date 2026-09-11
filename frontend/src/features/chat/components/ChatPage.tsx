@@ -22,16 +22,22 @@ function ChatPageContent() {
   const [loadingMsg, setLoadingMsg] = useState(false);
   const [conversationError, setConversationError] = useState(false);
   const [messageError, setMessageError] = useState(false);
+  const [conversationPage, setConversationPage] = useState(0);
+  const [hasMoreConversations, setHasMoreConversations] = useState(false);
+  const [messagePage, setMessagePage] = useState(0);
+  const [hasOlderMessages, setHasOlderMessages] = useState(false);
   
   const { user } = useAuthStore();
   const { lastMessage, sendMessage, reconnecting, isConnected } = useChatStomp();
 
-  const fetchConversations = async () => {
+  const fetchConversations = async (page = 0) => {
     try {
       setLoadingConv(true);
       setConversationError(false);
-      const res = await chatApi.getConversations();
-      setConversations(res.data || []);
+      const res = await chatApi.getConversations(page, 20);
+      setConversations(previous => page === 0 ? (res.data || []) : [...previous, ...(res.data || []).filter(item => !previous.some(old => old.id === item.id))]);
+      setConversationPage(page);
+      setHasMoreConversations((res.meta?.page ?? page) + 1 < (res.meta?.totalPages ?? 0));
     } catch (e) {
       console.error(e);
       setConversationError(true);
@@ -40,16 +46,19 @@ function ChatPageContent() {
     }
   };
 
-  const fetchMessages = useCallback(async (convId: string) => {
+  const fetchMessages = useCallback(async (convId: string, page = 0) => {
     try {
       setLoadingMsg(true);
       setMessageError(false);
-      const res = await chatApi.getMessages(convId);
-      setMessages(res.data?.map(m => ({
+      const res = await chatApi.getMessages(convId, page, 20);
+      const loaded = (res.data ?? []).map(m => ({
         ...m,
         createdAt: m.createdAt || m.sentAt || new Date().toISOString(),
         isOwnMessage: m.senderId === user?.id,
-      })) || []);
+      })).reverse();
+      setMessages(previous => page === 0 ? loaded : [...loaded, ...previous]);
+      setMessagePage(page);
+      setHasOlderMessages((res.meta?.page ?? page) + 1 < (res.meta?.totalPages ?? 0));
     } catch (e) {
       console.error(e);
       setMessageError(true);
@@ -64,7 +73,7 @@ function ChatPageContent() {
 
   useEffect(() => {
     if (activeConversationId) {
-      fetchMessages(activeConversationId);
+      fetchMessages(activeConversationId, 0);
     } else {
       setMessages([]);
     }
@@ -85,11 +94,14 @@ function ChatPageContent() {
       }
       
       // Update last message in conversation list
-      setConversations(prev => prev.map(c => 
+      setConversations(prev => {
+        if (!prev.some(c => c.id === lastMessage.conversationId)) { void fetchConversations(0); return prev; }
+        return prev.map(c =>
         c.id === lastMessage.conversationId 
           ? { ...c, lastMessagePreview: lastMessage.content, unreadCount: c.id === activeConversationId ? 0 : c.unreadCount + 1 }
           : c
-      ));
+        );
+      });
     }
   }, [lastMessage, activeConversationId, user?.id]);
 
@@ -142,6 +154,8 @@ function ChatPageContent() {
       onRetry={fetchConversations}
       reconnecting={reconnecting}
       onSelectConversation={handleSelectConversation}
+      hasMoreConversations={hasMoreConversations}
+      onLoadMoreConversations={() => void fetchConversations(conversationPage + 1)}
     >
       {activeConversationId && activeConv ? (
         <ChatThread
@@ -154,6 +168,8 @@ function ChatPageContent() {
           error={messageError}
           onRetry={() => fetchMessages(activeConversationId)}
           reconnecting={reconnecting}
+          hasOlderMessages={hasOlderMessages}
+          onLoadOlder={() => void fetchMessages(activeConversationId, messagePage + 1)}
         />
       ) : (
         <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--color-text-secondary)',padding:32,textAlign:'center'}}>
@@ -165,7 +181,6 @@ function ChatPageContent() {
     </ChatLayout>
   );
 }
-
 export function ChatPage() {
   return (
     <div style={{background:'var(--color-surface)',borderRadius:12,overflow:'hidden',border:'1px solid var(--color-border)'}}>

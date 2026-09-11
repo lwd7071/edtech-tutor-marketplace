@@ -14,6 +14,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import com.edtech.platform.auth.domain.UserStatus;
 
 @AutoConfigureMockMvc
 public class AuthRegisterTest extends AuthIntegrationTestBase {
@@ -44,10 +46,14 @@ public class AuthRegisterTest extends AuthIntegrationTestBase {
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.email").value("student1@example.com"))
+                .andExpect(jsonPath("$.data.verificationRequired").value(true))
+                .andExpect(jsonPath("$.data.accessToken").doesNotExist());
 
         // Assert
         User savedUser = userRepository.findByEmailIgnoreCase("student1@example.com").orElseThrow();
         assertThat(savedUser.getNotifyParent()).isTrue();
+        assertThat(savedUser.getStatus()).isEqualTo(UserStatus.PENDING_VERIFICATION);
     }
 }

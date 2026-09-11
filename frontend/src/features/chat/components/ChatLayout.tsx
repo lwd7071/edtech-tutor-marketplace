@@ -12,12 +12,14 @@ interface ChatLayoutProps {
   onRetry?: () => void;
   reconnecting?: boolean;
   onSelectConversation: (id: string) => void;
+  hasMoreConversations?: boolean;
+  onLoadMoreConversations?: () => void;
   children: React.ReactNode;
 }
 
 export const ChatLayout: React.FC<ChatLayoutProps> = ({
   conversations, activeConversationId, loadingConversations = false,
-  error = false, onRetry, reconnecting = false, onSelectConversation, children,
+  error = false, onRetry, reconnecting = false, onSelectConversation, hasMoreConversations = false, onLoadMoreConversations, children,
 }) => {
   return (
     <div className={`chat-shell ${activeConversationId ? 'has-active-chat' : ''}`}>
@@ -36,6 +38,7 @@ export const ChatLayout: React.FC<ChatLayoutProps> = ({
                 <span className="chat-conversation-copy"><strong>{conversation.participantName || 'Người dùng'}</strong><span className={conversation.unreadCount > 0 ? 'unread' : ''}>{conversation.lastMessagePreview || 'Bắt đầu cuộc trò chuyện'}</span></span>
               </button>
             ))}
+            {hasMoreConversations && <Button block onClick={onLoadMoreConversations}>Tải thêm cuộc trò chuyện</Button>}
           </div>
         </aside>
         <main className="chat-thread-area">{children}</main>

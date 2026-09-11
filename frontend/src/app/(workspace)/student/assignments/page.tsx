@@ -1,3 +1,3 @@
-import AssignmentList from '@/features/learning/components/AssignmentList';
-export default function Page(){return <AssignmentList role="student"/>;}
+import {StudentAssignmentList} from '@/features/learning/components/StudentAssignmentList';
+export default function Page(){return <StudentAssignmentList/>;}
 

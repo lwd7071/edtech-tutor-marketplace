@@ -19,21 +19,34 @@ import java.util.UUID;
 public class ParentContactService {
     private final UserRepository users;
 
+    @Transactional(readOnly = true)
+    public ParentContactResponse get(UUID userId) {
+        return response(requireStudent(userId));
+    }
+
     @Transactional
     public ParentContactResponse update(UUID userId, UpdateParentContactRequest request) {
+        User user = requireStudent(userId);
+        user.setParentFullName(normalize(request.parentFullName()));
+        user.setParentPhone(normalize(request.parentPhone()));
+        user.setParentEmail(normalize(request.parentEmail()));
+        user.setNotifyParent(StringUtils.hasText(user.getParentEmail()) && Boolean.TRUE.equals(request.notifyParent()));
+        user = users.save(user);
+        return response(user);
+    }
+
+    private String normalize(String value) {
+        return StringUtils.hasText(value) ? value.trim() : null;
+    }
+
+    private User requireStudent(UUID userId) {
         User user = users.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
-        if (user.getRole() != Role.STUDENT) {
-            throw new BusinessException(ErrorCode.ROLE_NOT_ALLOWED);
-        }
-        user.setParentFullName(request.parentFullName());
-        user.setParentPhone(request.parentPhone());
-        user.setParentEmail(request.parentEmail());
-        boolean hasContact = StringUtils.hasText(request.parentFullName())
-                || StringUtils.hasText(request.parentPhone())
-                || StringUtils.hasText(request.parentEmail());
-        user.setNotifyParent(hasContact && Boolean.TRUE.equals(request.notifyParent()));
-        user = users.save(user);
+        if (user.getRole() != Role.STUDENT) throw new BusinessException(ErrorCode.ROLE_NOT_ALLOWED);
+        return user;
+    }
+
+    private ParentContactResponse response(User user) {
         return new ParentContactResponse(user.getParentFullName(), user.getParentPhone(), user.getParentEmail(),
                 user.getNotifyParent(), user.getUpdatedAt());
     }

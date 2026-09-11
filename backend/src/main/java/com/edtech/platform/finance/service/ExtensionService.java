@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
+import com.edtech.platform.common.event.StudentLifecycleEvent;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,7 @@ public class ExtensionService {
 
     private final PackageExtensionRequestRepository extensionRequestRepository;
     private final EnrollmentFacade enrollmentFacade;
+    private final ApplicationEventPublisher events;
 
     @Transactional
     public ExtensionRequestView createExtension(UUID studentId, CreateExtensionRequest request) {
@@ -95,6 +98,7 @@ public class ExtensionService {
 
         // 2. Approve extension
         extension.approve(adminId, request.approvedExpiryDate(), request.adminNote(), Instant.now());
+        notifyStudent(extension, "EXTENSION_APPROVED", "Yêu cầu gia hạn đã được duyệt");
 
         return ExtensionRequestView.from(extension);
     }
@@ -109,6 +113,12 @@ public class ExtensionService {
         }
 
         extension.reject(adminId, request.reason(), Instant.now());
+        notifyStudent(extension, "EXTENSION_REJECTED", "Yêu cầu gia hạn bị từ chối");
         return ExtensionRequestView.from(extension);
+    }
+
+    private void notifyStudent(PackageExtensionRequest extension, String type, String title) {
+        events.publishEvent(new StudentLifecycleEvent(extension.getStudentId(), type, title, title,
+                "EXTENSION", extension.getId()));
     }
 }

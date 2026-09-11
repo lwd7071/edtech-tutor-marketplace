@@ -1,8 +1,5 @@
 package com.edtech.platform.payment.service;
 
-import com.edtech.platform.admin.facade.PlatformSettingsFacade;
-import com.edtech.platform.catalog.facade.PricingPackageFacade;
-import com.edtech.platform.catalog.facade.dto.PricingPackageSnapshot;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.enrollment.facade.EnrollmentFacade;
@@ -30,11 +27,10 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
 
     private final InvoiceCommandRepository invoiceCommandRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
-    private final PricingPackageFacade pricingPackageFacade;
-    private final PlatformSettingsFacade platformSettingsFacade;
     private final EnrollmentFacade enrollmentFacade;
     private final FinanceFacade financeFacade;
     private final PackageMoneyAllocator packageMoneyAllocator;
+    private final org.springframework.context.ApplicationEventPublisher events;
 
     @Override
     @Transactional
@@ -91,20 +87,13 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
         );
         paymentTransactionRepository.append(tx);
 
-        // 6. Fetch Pricing Package Snapshot
-        PricingPackageSnapshot pkg = pricingPackageFacade.getPackageForPaymentFulfillment(invoice.getPricingPackageId());
-        if (pkg == null) {
-            log.error("Pricing package {} not found for invoice {}", invoice.getPricingPackageId(), invoice.getInvoiceNumber());
-            throw new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND);
-        }
-
-        UUID subjectId = pkg.subjectId();
+        UUID subjectId = invoice.getSubjectIdSnapshot();
         if (subjectId == null) {
             throw new BusinessException(ErrorCode.SUBJECT_NOT_FOUND, "Package does not have associated subject");
         }
 
         // 7. Get Commission Rate
-        BigDecimal commissionRate = platformSettingsFacade.getCommissionRate();
+        BigDecimal commissionRate = invoice.getCommissionRateSnapshot();
         if (commissionRate == null) {
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "Commission rate is not configured");
         }
@@ -114,11 +103,11 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
                 invoice.getStudentId(),
                 invoice.getTeacherId(),
                 subjectId,
-                pkg.id(),
+                invoice.getPricingPackageId(),
                 invoice.getId(),
-                pkg.name(),
-                pkg.totalSessions(),
-                pkg.durationDays(),
+                invoice.getPackageNameSnapshot(),
+                invoice.getTotalSessionsSnapshot(),
+                invoice.getDurationDaysSnapshot(),
                 invoice.getAmountVnd(),
                 commissionRate,
                 payment.paidAt()
@@ -136,6 +125,10 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
                     invoice.getInvoiceNumber()
             );
         }
+
+        events.publishEvent(new com.edtech.platform.common.event.payment.PaymentSucceededEvent(
+                invoice.getStudentId(), invoice.getTeacherId(), invoice.getId(), invoice.getPricingPackageId(),
+                invoice.getPackageNameSnapshot(), invoice.getAmountVnd()));
 
         log.info("Successfully processed payment webhook for invoice {}", invoice.getInvoiceNumber());
     }

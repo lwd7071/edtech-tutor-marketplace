@@ -25,6 +25,15 @@ public class NotificationService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createNotification(UUID userId, String type, String title, String content, String referenceType, UUID referenceId) {
+        if (referenceId != null) {
+            int inserted = notificationRepository.insertIfAbsent(userId, type, title, content, referenceType, referenceId);
+            if (inserted == 0) return;
+            Notification notification = notificationRepository
+                    .findByUserIdAndTypeAndReferenceTypeAndReferenceId(userId, type, referenceType, referenceId)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR));
+            publishAfterCommit(notification);
+            return;
+        }
         Notification notification = Notification.builder()
                 .userId(userId)
                 .type(type)
@@ -37,15 +46,32 @@ public class NotificationService {
         
         notificationRepository.save(notification);
         
+        publishAfterCommit(notification);
+    }
+
+    private void publishAfterCommit(Notification notification) {
         NotificationView view = mapToView(notification);
-        com.edtech.platform.common.transaction.AfterCommit.run(() -> messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/notifications", view));
+        com.edtech.platform.common.transaction.AfterCommit.run(() -> messagingTemplate.convertAndSendToUser(
+                notification.getUserId().toString(), "/queue/notifications", view));
     }
     
     @Transactional(readOnly = true)
-    public Page<NotificationView> getNotifications(UUID userId, Boolean isRead, Pageable pageable) {
+    public Page<NotificationView> getNotifications(UUID userId, Boolean isRead, String referenceType, Pageable pageable) {
+        java.util.List<String> referenceTypes = switch (referenceType == null ? "" : referenceType) {
+            case "BOOKING" -> java.util.List.of("BOOKING", "TRIAL_REQUEST");
+            case "ASSIGNMENT" -> java.util.List.of("ASSIGNMENT", "SUBMISSION");
+            case "FINANCE" -> java.util.List.of("INVOICE", "PAYMENT", "REFUND", "EXTENSION");
+            case "SYSTEM" -> java.util.List.of("SYSTEM", "PROFILE");
+            case "" -> java.util.List.of();
+            default -> java.util.List.of(referenceType);
+        };
         Page<Notification> page;
-        if (isRead != null) {
+        if (isRead != null && !referenceTypes.isEmpty()) {
+            page = notificationRepository.findByUserIdAndIsReadAndReferenceTypeIn(userId, isRead, referenceTypes, pageable);
+        } else if (isRead != null) {
             page = notificationRepository.findByUserIdAndIsRead(userId, isRead, pageable);
+        } else if (!referenceTypes.isEmpty()) {
+            page = notificationRepository.findByUserIdAndReferenceTypeIn(userId, referenceTypes, pageable);
         } else {
             page = notificationRepository.findByUserId(userId, pageable);
         }
@@ -73,6 +99,10 @@ public class NotificationService {
     
     private NotificationView mapToView(Notification n) {
         return mapToView(n, identityFacade.getIdentity(n.getUserId()).map(i -> i.roleName()).orElse(null));
+    }
+
+    public Page<NotificationView> getNotifications(UUID userId, Boolean isRead, Pageable pageable) {
+        return getNotifications(userId, isRead, null, pageable);
     }
 
     private NotificationView mapToView(Notification n, String role) {

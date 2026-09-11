@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
 
 class TeacherAssignmentLifecycleTest {
     @Test void rejectsScoresOutsideTenPointScaleBeforeAccessingData() {
-        var service = new TeacherAssignmentService(null,null,null,null,null,null,null,null,null,null);
+        var service = new TeacherAssignmentService(null,null,null,null,null,null,null,null,null,null,null);
         for (String score : new String[]{"-0.1", "10.1"}) {
             var request = new GradeSubmissionRequest(); request.setScore(new BigDecimal(score));
             assertThrows(BusinessException.class, () -> service.gradeSubmission(UUID.randomUUID(), UUID.randomUUID(), request));
@@ -37,7 +37,7 @@ class TeacherAssignmentLifecycleTest {
         when(repository.save(assignment)).thenReturn(assignment);
         var objectMapper = new ObjectMapper();
         var service = new TeacherAssignmentService(repository,null,teachers,null,null,null,objectMapper,null,
-                new AssignmentViewMapper(objectMapper), Clock.systemUTC());
+                new AssignmentViewMapper(objectMapper), Clock.systemUTC(), mock(org.springframework.context.ApplicationEventPublisher.class));
         service.transition(user,id,AssignmentStatus.PUBLISHED);
         assertEquals(AssignmentStatus.PUBLISHED, assignment.getStatus());
         service.transition(user,id,AssignmentStatus.CLOSED);
@@ -54,7 +54,7 @@ class TeacherAssignmentLifecycleTest {
         when(repository.findByIdForUpdate(id)).thenReturn(Optional.of(Assignment.builder().teacherId(UUID.randomUUID()).status(AssignmentStatus.DRAFT).build()));
         var objectMapper = new ObjectMapper();
         var service = new TeacherAssignmentService(repository,null,teachers,null,null,null,objectMapper,null,
-                new AssignmentViewMapper(objectMapper), Clock.systemUTC());
+                new AssignmentViewMapper(objectMapper), Clock.systemUTC(), mock(org.springframework.context.ApplicationEventPublisher.class));
         assertThrows(BusinessException.class, () -> service.transition(user,id,AssignmentStatus.PUBLISHED));
         verify(repository,never()).save(any());
     }

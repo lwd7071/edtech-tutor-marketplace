@@ -9,6 +9,9 @@ import org.springframework.stereotype.Component;
 @Component
 class AccountAccessPolicy {
     void requireActiveAccess(User user) {
+        if (user.getStatus() == UserStatus.PENDING_VERIFICATION || !Boolean.TRUE.equals(user.getEmailVerified())) {
+            throw new BusinessException(ErrorCode.AUTH_EMAIL_NOT_VERIFIED);
+        }
         if (user.getStatus() == UserStatus.LOCKED) {
             throw new BusinessException(ErrorCode.ACCOUNT_LOCKED);
         }

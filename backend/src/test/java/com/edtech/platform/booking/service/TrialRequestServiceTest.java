@@ -77,7 +77,7 @@ class TrialRequestServiceTest {
         when(teacherFacade.hasAssignedSubject(teacherId, subjectId)).thenReturn(true);
         when(trialRequestRepository.existsByTeacherIdAndStudentIdAndStatus(teacherId, studentUserId, TrialRequestStatus.PENDING))
                 .thenReturn(false);
-        when(trialRequestRepository.save(any(TrialRequest.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(trialRequestRepository.saveAndFlush(any(TrialRequest.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         TrialRequest result = trialRequestService.create(studentUserId, req);
 
@@ -118,7 +118,7 @@ class TrialRequestServiceTest {
         when(bookingRepository.existsOverlapTeacher(teacherId, start, end)).thenReturn(false);
         when(bookingRepository.existsOverlapStudent(studentUserId, start, end)).thenReturn(false);
         when(teacherFacade.isWithinAvailability(teacherId, start, end)).thenReturn(true);
-        when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(bookingRepository.saveAndFlush(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         BookingDetail detail = trialRequestService.accept(teacherUserId, requestId, acceptReq);
 
@@ -140,7 +140,7 @@ class TrialRequestServiceTest {
 
         assertThat(rejected.getStatus()).isEqualTo(TrialRequestStatus.REJECTED);
         assertThat(rejected.getRejectionReason()).isEqualTo("Teacher busy");
-        verify(bookingRepository, never()).save(any());
+        verify(bookingRepository, never()).saveAndFlush(any());
         verify(communicationFacade).publishAfterCommit(any());
     }
 }

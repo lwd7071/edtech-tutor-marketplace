@@ -69,6 +69,13 @@ public class ReviewService {
                 .map(this::mapToView);
     }
 
+    @Transactional(readOnly = true)
+    public ReviewView getStudentBookingReview(UUID studentId, UUID bookingId) {
+        return reviewRepository.findByBookingIdAndStudentId(bookingId, studentId)
+                .map(this::mapToView)
+                .orElse(null);
+    }
+
     private ReviewView mapToView(Review review) {
         var studentSnapshotOpt = identityFacade.getIdentity(review.getStudentId());
         

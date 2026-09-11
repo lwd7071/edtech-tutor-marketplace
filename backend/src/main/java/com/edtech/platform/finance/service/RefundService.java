@@ -26,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
+import com.edtech.platform.common.event.StudentLifecycleEvent;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +41,7 @@ public class RefundService {
     private final AccountNumberProtector accountNumbers;
     private final RefundRequestViewMapper views;
     private final PackageMoneyAllocator packageMoneyAllocator;
+    private final ApplicationEventPublisher events;
 
     @Transactional
     public RefundRequestView createRefund(UUID studentId, CreateRefundRequest request) {
@@ -141,6 +144,7 @@ public class RefundService {
                 pkg.purchasePriceVnd(), pkg.totalSessions(), resolvedBefore, request.approvedSessions());
 
         refund.approve(adminId, request.approvedSessions(), refundAmountVnd, request.adminNote(), Instant.now());
+        notifyStudent(refund, "REFUND_APPROVED", "Yêu cầu hoàn tiền đã được duyệt");
         return views.toView(refund);
     }
 
@@ -156,6 +160,7 @@ public class RefundService {
 
         // Restore package status
         enrollmentFacade.restoreFromRefundPending(refund.getStudentPackageId());
+        notifyStudent(refund, "REFUND_REJECTED", "Yêu cầu hoàn tiền bị từ chối");
 
         return views.toView(refund);
     }
@@ -210,7 +215,13 @@ public class RefundService {
 
         // 3. Complete refund
         refund.complete(adminId, request.bankReference(), request.proofPublicId(), request.proofUrl(), Instant.now());
+        notifyStudent(refund, "REFUND_COMPLETED", "Khoản hoàn tiền đã được xử lý");
 
         return views.toView(refund);
+    }
+
+    private void notifyStudent(RefundRequest refund, String type, String title) {
+        events.publishEvent(new StudentLifecycleEvent(refund.getStudentId(), type, title, title,
+                "REFUND", refund.getId()));
     }
 }

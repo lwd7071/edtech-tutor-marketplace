@@ -7,6 +7,7 @@ export const workspaceLinks: Record<UserRole, { href: string; label: string }[]>
  STUDENT: [
  ['/student','Tổng quan'], ['/student/packages','Gói học'], ['/student/bookings','Lịch học'],
  ['/student/assignments','Bài tập'], ['/student/messages','Tin nhắn'], ['/student/requests','Yêu cầu của tôi'],
+ ['/student/session-reports','Báo cáo buổi học'],
  ['/student/notifications','Thông báo'], ['/student/profile','Hồ sơ'],
  ].map(([href,label]) => ({href,label})),
  TEACHER: [

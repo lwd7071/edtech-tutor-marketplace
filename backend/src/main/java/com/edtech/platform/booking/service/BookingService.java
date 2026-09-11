@@ -127,7 +127,7 @@ public class BookingService {
 
         // 11. Publish Event after commit
         communicationFacade.publishAfterCommit(
-                new BookingEvent("BOOKING_CREATED", booking.getId(), booking.getStudentId(), teacherUserId)
+                new BookingEvent("BOOKING_CREATED", booking.getId(), booking.getStudentId(), teacherId, teacherUserId)
         );
 
         return BookingDetail.from(booking);
@@ -199,7 +199,7 @@ public class BookingService {
 
         // 4. Publish Event after commit
         communicationFacade.publishAfterCommit(
-                new BookingEvent("BOOKING_COMPLETED", booking.getId(), booking.getStudentId(), teacherUserId)
+                new BookingEvent("BOOKING_COMPLETED", booking.getId(), booking.getStudentId(), teacherId, teacherUserId)
         );
 
         return BookingDetail.from(booking);
@@ -240,7 +240,7 @@ public class BookingService {
 
         // 3. Publish Event after commit
         communicationFacade.publishAfterCommit(
-                new BookingEvent("BOOKING_CANCELLED", booking.getId(), booking.getStudentId(), teacherUserId)
+                new BookingEvent("BOOKING_CANCELLED", booking.getId(), booking.getStudentId(), teacherId, teacherUserId)
         );
 
         return BookingDetail.from(booking);

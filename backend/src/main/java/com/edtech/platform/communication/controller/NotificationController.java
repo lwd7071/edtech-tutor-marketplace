@@ -25,8 +25,9 @@ public class NotificationController {
     public ApiResponse<java.util.List<NotificationView>> getNotifications(
             @AuthenticationPrincipal AuthenticatedUser user,
             @RequestParam(required = false) Boolean isRead,
+            @RequestParam(required = false) String referenceType,
             Pageable pageable) {
-        Page<NotificationView> page = notificationService.getNotifications(user.getId(), isRead, pageable);
+        Page<NotificationView> page = notificationService.getNotifications(user.getId(), isRead, referenceType, pageable);
         return ApiResponse.page(page.getContent(), PageMeta.from(page));
     }
 

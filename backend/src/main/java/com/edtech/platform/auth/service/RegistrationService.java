@@ -4,7 +4,7 @@ import com.edtech.platform.auth.domain.Role;
 import com.edtech.platform.auth.domain.User;
 import com.edtech.platform.auth.domain.UserStatus;
 import com.edtech.platform.auth.dto.request.RegisterRequest;
-import com.edtech.platform.auth.dto.response.AuthResult;
+import com.edtech.platform.auth.dto.response.RegistrationResult;
 import com.edtech.platform.auth.event.UserRegisteredEvent;
 import com.edtech.platform.auth.repository.UserRepository;
 import com.edtech.platform.common.exception.BusinessException;
@@ -25,10 +25,9 @@ public class RegistrationService {
     private final ApplicationEventPublisher events;
     private final RedisTokenService oneTimeTokens;
     private final MailService mail;
-    private final SessionIssuer sessions;
 
     @Transactional
-    public AuthResult register(RegisterRequest request, String ipAddress) {
+    public RegistrationResult register(RegisterRequest request, String ipAddress) {
         if (users.existsByEmailIgnoreCase(request.email())) {
             throw new BusinessException(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS);
         }
@@ -61,6 +60,6 @@ public class RegistrationService {
         events.publishEvent(new UserRegisteredEvent(user.getId(), user.getEmail(), user.getRole(), user.getFullName()));
         String token = oneTimeTokens.issue(RedisTokenService.Purpose.EMAIL_VERIFY, user.getId().toString());
         mail.sendVerificationEmail(user.getEmail(), token);
-        return sessions.issue(user, null, ipAddress);
+        return new RegistrationResult(user.getEmail(), true);
     }
 }

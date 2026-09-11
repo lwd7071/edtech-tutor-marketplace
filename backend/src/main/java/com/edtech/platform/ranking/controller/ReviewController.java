@@ -3,6 +3,7 @@ package com.edtech.platform.ranking.controller;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.common.response.PageMeta;
+import com.edtech.platform.common.security.RequireRole;
 import com.edtech.platform.ranking.dto.request.CreateReviewRequest;
 import com.edtech.platform.ranking.dto.response.ReviewView;
 import com.edtech.platform.ranking.service.ReviewService;
@@ -34,6 +35,14 @@ public class ReviewController {
             @Valid @RequestBody CreateReviewRequest request,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         return ApiResponse.created(reviewService.createReview(authenticatedUser.id(), bookingId, request));
+    }
+
+    @GetMapping("/api/student/bookings/{id}/review")
+    @RequireRole("STUDENT")
+    public ApiResponse<ReviewView> getBookingReview(
+            @PathVariable("id") UUID bookingId,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        return ApiResponse.ok(reviewService.getStudentBookingReview(authenticatedUser.id(), bookingId));
     }
 
     @GetMapping("/api/public/teachers/{id}/reviews")

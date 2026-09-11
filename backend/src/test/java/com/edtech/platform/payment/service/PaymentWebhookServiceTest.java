@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -40,6 +41,7 @@ class PaymentWebhookServiceTest {
     @Mock private PlatformSettingsFacade platformSettingsFacade;
     @Mock private EnrollmentFacade enrollmentFacade;
     @Mock private FinanceFacade financeFacade;
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     private PaymentWebhookService webhookService;
 
@@ -48,11 +50,10 @@ class PaymentWebhookServiceTest {
         webhookService = new PaymentWebhookServiceImpl(
                 invoiceCommandRepository,
                 paymentTransactionRepository,
-                pricingPackageFacade,
-                platformSettingsFacade,
                 enrollmentFacade,
                 financeFacade,
-                new PackageMoneyAllocator()
+                new PackageMoneyAllocator(),
+                eventPublisher
         );
     }
 
@@ -77,17 +78,13 @@ class PaymentWebhookServiceTest {
         UUID invoiceId = UUID.randomUUID();
 
         // 1. Mock Invoice
-        Invoice invoice = spy(Invoice.pending("INV-1", orderCode, studentId, teacherId, packageId, amount, UUID.randomUUID(), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"));
+        Invoice invoice = spy(Invoice.pending("INV-1", orderCode, studentId, teacherId, packageId, amount,
+                UUID.randomUUID(), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                subjectId, "Advanced Java", 20, 90, 60, new BigDecimal("5.00"),
+                "http://localhost:3000/payment/success", "http://localhost:3000/payment/cancel"));
         when(invoice.getId()).thenReturn(invoiceId);
         when(invoiceCommandRepository.findByPayosOrderCodeForUpdate(orderCode)).thenReturn(Optional.of(invoice));
         when(paymentTransactionRepository.existsByProviderReference("REF-123456")).thenReturn(false);
-
-        // 2. Mock Package Snapshot & Platform settings
-        PricingPackageSnapshot pkg = new PricingPackageSnapshot(
-                packageId, teacherId, subjectId, "Advanced Java", 20, 90, amount, 60, "ACTIVE"
-        );
-        when(pricingPackageFacade.getPackageForPaymentFulfillment(packageId)).thenReturn(pkg);
-        when(platformSettingsFacade.getCommissionRate()).thenReturn(new BigDecimal("5.00")); // 5% commission
 
         // Act
         webhookService.processWebhook(verifiedPayment);
@@ -156,13 +153,11 @@ class PaymentWebhookServiceTest {
         UUID invoiceId = UUID.randomUUID();
         Invoice invoice = spy(Invoice.pending(
                 "INV-ZERO-NET", orderCode, studentId, teacherId, packageId, amount,
-                UUID.randomUUID(), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"));
+                UUID.randomUUID(), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                subjectId, "Package", 10, 30, 60, new BigDecimal("100"),
+                "http://localhost:3000/payment/success", "http://localhost:3000/payment/cancel"));
         when(invoice.getId()).thenReturn(invoiceId);
         when(invoiceCommandRepository.findByPayosOrderCodeForUpdate(orderCode)).thenReturn(Optional.of(invoice));
-        when(pricingPackageFacade.getPackageForPaymentFulfillment(packageId)).thenReturn(new PricingPackageSnapshot(
-                packageId, teacherId, subjectId, "Package", 10, 30, amount, 60, "ACTIVE"));
-        when(platformSettingsFacade.getCommissionRate()).thenReturn(new BigDecimal("100"));
-
         webhookService.processWebhook(new VerifiedPayment(
                 "REF-ZERO-NET", orderCode, amount, paidAt, new ObjectMapper().createObjectNode()));
 

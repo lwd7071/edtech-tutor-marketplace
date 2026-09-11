@@ -15,6 +15,7 @@ final class NotificationRoutes {
             case "STUDENT_PACKAGE" -> "STUDENT".equals(role) ? base + "/packages/" + id : base + "/students";
             case "INVOICE" -> "STUDENT".equals(role) ? base + "/payment-result/" + id : base + "/wallet";
             case "REFUND", "EXTENSION" -> "STUDENT".equals(role) ? base + "/requests" : null;
+            case "TRIAL_REQUEST" -> "STUDENT".equals(role) ? base + "/requests" : base + "/trial-requests";
             case "PAYOUT" -> "TEACHER".equals(role) ? base + "/payouts" : null;
             default -> null;
         };

@@ -3,14 +3,10 @@ import { ApiResponse } from '@/shared/backend';
 
 export interface AttachmentView {
   id: string;
-  uploaderId: string;
-  attachableType: string;
-  attachableId: string | null;
-  fileUrl: string;
-  originalName: string;
+  secureUrl: string;
+  originalFilename: string;
   mimeType: string;
   fileSize: number;
-  uploadedAt: string;
 }
 
 export const attachmentApi = {
@@ -19,7 +15,7 @@ export const attachmentApi = {
    */
   uploadAttachment: async (
     file: File,
-    attachableType: 'ASSIGNMENT' | 'SUBMISSION' | 'SESSION_REPORT'
+    attachableType: 'ASSIGNMENT' | 'SUBMISSION' | 'MESSAGE'
   ): Promise<ApiResponse<AttachmentView>> => {
     const formData = new FormData();
     formData.append('file', file);

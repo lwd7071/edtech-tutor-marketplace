@@ -7,6 +7,7 @@ import { StudentPackageDetail } from '../types';
 import { SessionCounter } from './SessionCounter';
 import { getPackageStatusConfig, formatVnd, formatDate } from './StudentPackageCard';
 import { BackLink } from '@/shared/components/navigation/NavigationLinks';
+import {MessageTeacherButton} from '@/features/chat/components/MessageTeacherButton';
 
 interface StudentPackageDetailViewProps {
   packageData: StudentPackageDetail;
@@ -43,6 +44,7 @@ export const StudentPackageDetailView: React.FC<StudentPackageDetailViewProps> =
           <Tag color={statusConfig.color} style={{ fontSize: 14, padding: '4px 12px', fontWeight: 600 }}>
             {statusConfig.label}
           </Tag>
+          <MessageTeacherButton teacherId={packageData.teacher.id} />
         </div>
       </div>
 
@@ -61,9 +63,9 @@ export const StudentPackageDetailView: React.FC<StudentPackageDetailViewProps> =
                 <Button type="primary" size="small" onClick={onExtensionRequest}>
                   Yêu cầu gia hạn
                 </Button>
-                <Button size="small" onClick={onRefundRequest}>
+                {packageData.remainingSessions > 0 && <Button size="small" onClick={onRefundRequest}>
                   Yêu cầu hoàn tiền
-                </Button>
+                </Button>}
               </Space>
             </div>
           }
@@ -79,6 +81,12 @@ export const StudentPackageDetailView: React.FC<StudentPackageDetailViewProps> =
           description="Gói học đang trong tiến trình xử lý hoàn tiền từ ban quản trị. Các thao tác đặt lịch học mới tạm thời bị khóa."
           style={{ marginBottom: 20 }}
         />
+      )}
+
+      {packageData.status === 'ACTIVE' && packageData.remainingSessions > 0 && (
+        <div style={{display:'flex',justifyContent:'flex-end',marginBottom:20}}>
+          <Button onClick={onRefundRequest}>Yêu cầu hoàn tiền phần chưa học</Button>
+        </div>
       )}
 
       {/* Card thống kê buổi học & tiến độ */}

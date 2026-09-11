@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -43,6 +44,9 @@ public class TrialRequestService {
         if (!identityFacade.isActive(studentUserId)) {
             throw new BusinessException(ErrorCode.ACCOUNT_NOT_ACTIVE);
         }
+        if (request.preferredStartTime() == null || !request.preferredStartTime().isAfter(Instant.now())) {
+            throw new BusinessException(ErrorCode.BOOKING_IN_PAST);
+        }
 
         TeacherSnapshot teacher = teacherFacade.getTeacher(request.teacherId());
         if (teacher == null || !"APPROVED".equalsIgnoreCase(teacher.status())) {
@@ -56,6 +60,10 @@ public class TrialRequestService {
         if (trialRequestRepository.existsByTeacherIdAndStudentIdAndStatus(request.teacherId(), studentUserId, TrialRequestStatus.PENDING)) {
             throw new BusinessException(ErrorCode.TRIAL_REQUEST_ALREADY_PENDING, "A pending trial request already exists for this pair");
         }
+        if (bookingRepository.existsByTeacherIdAndStudentIdAndStatusIn(request.teacherId(), studentUserId,
+                java.util.List.of(BookingStatus.SCHEDULED, BookingStatus.COMPLETED))) {
+            throw new BusinessException(ErrorCode.TRIAL_ALREADY_USED);
+        }
 
         TrialRequest trialRequest = TrialRequest.create(
                 studentUserId,
@@ -64,10 +72,14 @@ public class TrialRequestService {
                 request.preferredStartTime(),
                 request.note()
         );
-        trialRequest = trialRequestRepository.save(trialRequest);
+        try {
+            trialRequest = trialRequestRepository.saveAndFlush(trialRequest);
+        } catch (DataIntegrityViolationException conflict) {
+            throw new BusinessException(ErrorCode.TRIAL_REQUEST_ALREADY_PENDING);
+        }
 
         communicationFacade.publishAfterCommit(
-                new BookingEvent("TRIAL_REQUESTED", trialRequest.getId(), studentUserId, request.teacherId())
+                new BookingEvent("TRIAL_REQUESTED", trialRequest.getId(), studentUserId, teacher.id(), teacher.userId())
         );
 
         return trialRequest;
@@ -81,6 +93,12 @@ public class TrialRequestService {
             return Page.empty();
         }
         return trialRequestRepository.findByTeacherId(teacherId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TrialRequest> findForStudent(UUID studentUserId, TrialRequestStatus status, Pageable pageable) {
+        return status == null ? trialRequestRepository.findByStudentId(studentUserId, pageable)
+                : trialRequestRepository.findByStudentIdAndStatus(studentUserId, status, pageable);
     }
 
     @Transactional
@@ -110,6 +128,10 @@ public class TrialRequestService {
         if (trialRequest.getStatus() != TrialRequestStatus.PENDING) {
             throw new BusinessException(ErrorCode.TRIAL_REQUEST_INVALID_STATE);
         }
+        if (bookingRepository.existsByTeacherIdAndStudentIdAndStatusIn(teacherId, trialRequest.getStudentId(),
+                java.util.List.of(BookingStatus.SCHEDULED, BookingStatus.COMPLETED))) {
+            throw new BusinessException(ErrorCode.TRIAL_ALREADY_USED);
+        }
 
         // Overlap checks
         if (bookingRepository.existsOverlapTeacher(teacherId, start, end)) {
@@ -133,13 +155,17 @@ public class TrialRequestService {
                 request.locationAddress(),
                 outsideAvailability
         );
-        booking = bookingRepository.save(booking);
+        try {
+            booking = bookingRepository.saveAndFlush(booking);
+        } catch (DataIntegrityViolationException conflict) {
+            throw new BusinessException(ErrorCode.TRIAL_ALREADY_USED);
+        }
 
         // Update trial request status
         trialRequest.accept(booking.getId(), Instant.now());
 
         communicationFacade.publishAfterCommit(
-                new BookingEvent("TRIAL_ACCEPTED", booking.getId(), trialRequest.getStudentId(), teacherUserId)
+                new BookingEvent("TRIAL_ACCEPTED", booking.getId(), trialRequest.getStudentId(), teacherId, teacherUserId)
         );
 
         return BookingDetail.from(booking);
@@ -170,7 +196,7 @@ public class TrialRequestService {
         trialRequest.reject(reason, Instant.now());
 
         communicationFacade.publishAfterCommit(
-                new BookingEvent("TRIAL_REJECTED", trialRequest.getId(), trialRequest.getStudentId(), teacherId)
+                new BookingEvent("TRIAL_REJECTED", trialRequest.getId(), trialRequest.getStudentId(), teacherId, teacherUserId)
         );
 
         return trialRequest;

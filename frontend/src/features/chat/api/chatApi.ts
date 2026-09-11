@@ -3,6 +3,8 @@ import { ApiResponse, PaginationMeta } from '@/shared/backend';
 import { ConversationView, MessageView } from '../types';
 
 export const chatApi = {
+  openTeacherConversation: async (teacherId: string): Promise<ApiResponse<{id:string}>> =>
+    (await axiosClient.put<ApiResponse<{id:string}>>(`/api/student/conversations/teachers/${teacherId}`)).data,
   /**
    * Lấy danh sách cuộc hội thoại
    */

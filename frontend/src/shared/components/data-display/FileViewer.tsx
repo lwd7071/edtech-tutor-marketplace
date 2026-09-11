@@ -49,10 +49,10 @@ export const FileViewer: React.FC<FileViewerProps> = ({ files }) => {
             <div className="flex flex-col">
               <Typography.Text 
                 strong 
-                ellipsis={{ tooltip: file.originalName }}
+                ellipsis={{ tooltip: file.originalFilename }}
                 style={{ maxWidth: '250px' }}
               >
-                {file.originalName}
+                {file.originalFilename}
               </Typography.Text>
               <Typography.Text type="secondary" style={{ fontSize: '12px' }}>
                 {formatFileSize(file.fileSize)}
@@ -62,11 +62,11 @@ export const FileViewer: React.FC<FileViewerProps> = ({ files }) => {
           <Button 
             type="text" 
             icon={<DownloadOutlined />} 
-            href={file.fileUrl}
+            href={file.secureUrl}
             target="_blank"
             rel="noopener noreferrer"
-            title={`Tải xuống ${file.originalName}`}
-            aria-label={`Tải xuống ${file.originalName}`}
+            title={`Tải xuống ${file.originalFilename}`}
+            aria-label={`Tải xuống ${file.originalFilename}`}
           />
         </div>
       ))}

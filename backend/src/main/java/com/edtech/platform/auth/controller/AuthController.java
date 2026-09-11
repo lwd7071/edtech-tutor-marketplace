@@ -4,6 +4,7 @@ import com.edtech.platform.auth.dto.request.LoginRequest;
 import com.edtech.platform.auth.dto.request.RefreshRequest;
 import com.edtech.platform.auth.dto.request.RegisterRequest;
 import com.edtech.platform.auth.dto.response.AuthResult;
+import com.edtech.platform.auth.dto.response.RegistrationResult;
 import com.edtech.platform.auth.service.AccountVerificationService;
 import com.edtech.platform.auth.service.OAuthAccountService;
 import com.edtech.platform.auth.service.PasswordRecoveryService;
@@ -41,9 +42,9 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<AuthResult> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+    public ApiResponse<RegistrationResult> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
         String ipAddress = httpRequest.getRemoteAddr();
-        AuthResult result = registration.register(request, ipAddress);
+        RegistrationResult result = registration.register(request, ipAddress);
         return ApiResponse.created(result);
     }
 

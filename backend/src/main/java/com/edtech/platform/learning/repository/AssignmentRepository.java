@@ -18,4 +18,18 @@ public interface AssignmentRepository extends JpaRepository<Assignment, UUID> {
     Page<Assignment> findByTeacherId(UUID teacherId, Pageable pageable);
     Page<Assignment> findByStudentIdAndStatus(UUID studentId, AssignmentStatus status, Pageable pageable);
     Page<Assignment> findByStudentId(UUID studentId, Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query("""
+        select a from Assignment a where a.studentId=:studentId and a.status=:published and
+        not exists (select s.id from Submission s where s.assignment=a and s.studentId=:studentId and s.status in (:submittedStatuses))
+        """)
+    Page<Assignment> findStudentTodo(UUID studentId, AssignmentStatus published,
+        java.util.Collection<com.edtech.platform.learning.domain.SubmissionStatus> submittedStatuses, Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query("""
+        select a from Assignment a where a.studentId=:studentId and
+        exists (select s.id from Submission s where s.assignment=a and s.studentId=:studentId and s.status=:submissionStatus)
+        """)
+    Page<Assignment> findStudentBySubmissionStatus(UUID studentId,
+        com.edtech.platform.learning.domain.SubmissionStatus submissionStatus, Pageable pageable);
 }

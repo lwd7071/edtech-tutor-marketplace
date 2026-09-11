@@ -72,7 +72,28 @@ export interface TrialRequestView {
   preferredStartTime: string;
   note?: string;
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  bookingId?: string | null;
+  rejectionReason?: string | null;
+  respondedAt?: string | null;
   createdAt: string;
+}
+
+export interface ReviewView {
+  id: string;
+  rating: number;
+  comment?: string | null;
+  createdAt: string;
+}
+
+export interface SessionReportView extends SessionReport {
+  id: string;
+  bookingId: string;
+  teacherId: string;
+  subjectId: string;
+  startTime: string;
+  endTime: string;
+  deliveryMode: DeliveryMode;
+  submittedAt: string;
 }
 
 export interface CreateTrialRequest {

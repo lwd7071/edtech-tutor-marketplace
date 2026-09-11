@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
+import com.edtech.platform.common.event.StudentLifecycleEvent;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +42,7 @@ public class TeacherAssignmentService {
     private final AssignmentAttachmentBinder attachmentBinder;
     private final AssignmentViewMapper views;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
 
     @Transactional
     public AssignmentDetail createAssignment(UUID teacherUserId, CreateAssignmentRequest request) {
@@ -73,6 +76,7 @@ public class TeacherAssignmentService {
         if (request.getContentBlocks() != null) {
             attachmentBinder.bind(teacherUserId, "ASSIGNMENT", request.getContentBlocks(), assignment.getId());
         }
+        if (assignment.getStatus() == com.edtech.platform.learning.domain.AssignmentStatus.PUBLISHED) publishAssignment(assignment);
 
         return views.assignment(assignment);
     }
@@ -105,7 +109,10 @@ public class TeacherAssignmentService {
         submission.setStatus(SubmissionStatus.GRADED);
         submission.setGradedAt(clock.instant());
 
-        return views.submission(submissionRepository.save(submission));
+        Submission saved = submissionRepository.save(submission);
+        events.publishEvent(new StudentLifecycleEvent(saved.getAssignment().getStudentId(), "SUBMISSION_GRADED",
+                "Bài tập đã được chấm", saved.getAssignment().getTitle(), "ASSIGNMENT", saved.getAssignment().getId()));
+        return views.submission(saved);
     }
 
     @Transactional
@@ -140,7 +147,14 @@ public class TeacherAssignmentService {
                 throw new BusinessException(ErrorCode.ASSIGNMENT_DUE_DATE_PASSED);
         }
         assignment.setStatus(target);
-        return views.assignment(assignmentRepository.save(assignment));
+        Assignment saved = assignmentRepository.save(assignment);
+        if (target == com.edtech.platform.learning.domain.AssignmentStatus.PUBLISHED) publishAssignment(saved);
+        return views.assignment(saved);
+    }
+
+    private void publishAssignment(Assignment assignment) {
+        events.publishEvent(new StudentLifecycleEvent(assignment.getStudentId(), "ASSIGNMENT_PUBLISHED",
+                "Bạn có bài tập mới", assignment.getTitle(), "ASSIGNMENT", assignment.getId()));
     }
 
     private Assignment ownedForUpdate(UUID userId, UUID id) {

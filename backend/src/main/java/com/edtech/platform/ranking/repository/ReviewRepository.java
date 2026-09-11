@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.UUID;
+import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
@@ -24,4 +25,5 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     Double findAverageRatingByTeacherId(@Param("teacherId") UUID teacherId);
 
     boolean existsByBookingId(UUID bookingId);
+    Optional<Review> findByBookingIdAndStudentId(UUID bookingId, UUID studentId);
 }

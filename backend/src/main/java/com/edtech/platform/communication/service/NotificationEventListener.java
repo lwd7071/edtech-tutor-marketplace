@@ -7,7 +7,7 @@ import com.edtech.platform.common.event.booking.BookingCreatedEvent;
 import com.edtech.platform.common.event.payment.PaymentSucceededEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
+import com.edtech.platform.common.event.StudentLifecycleEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -22,7 +22,6 @@ public class NotificationEventListener {
     private final IdentityFacade identityFacade;
     private final com.edtech.platform.teacher.facade.TeacherFacade teacherFacade;
 
-    @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePaymentSucceededEvent(PaymentSucceededEvent event) {
         log.info("Handling PaymentSucceededEvent for invoice {}", event.getInvoiceId());
@@ -58,7 +57,6 @@ public class NotificationEventListener {
         });
     }
 
-    @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleBookingCreatedEvent(BookingCreatedEvent event) {
         log.info("Handling BookingCreatedEvent for booking {}", event.getBookingId());
@@ -84,7 +82,6 @@ public class NotificationEventListener {
         });
     }
 
-    @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleBookingCompletedEvent(BookingCompletedEvent event) {
         log.info("Handling BookingCompletedEvent for booking {}", event.getBookingId());
@@ -111,6 +108,11 @@ public class NotificationEventListener {
                 emailService.sendNotificationEmail(student.parentEmail(), title, content);
             }
         });
+    }
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleStudentLifecycleEvent(StudentLifecycleEvent event) {
+        notificationService.createNotification(event.studentUserId(), event.type(), event.title(),
+                event.content(), event.referenceType(), event.resourceId());
     }
 }
 

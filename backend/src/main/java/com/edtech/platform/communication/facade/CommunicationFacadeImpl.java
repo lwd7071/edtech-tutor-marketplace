@@ -18,6 +18,7 @@ public class CommunicationFacadeImpl implements CommunicationFacade {
     private final NotificationService notifications;
     private final ApplicationEventPublisher publisher;
     private final com.edtech.platform.teacher.facade.TeacherFacade teacherFacade;
+    private final com.edtech.platform.communication.service.ConversationService conversations;
 
     @Override
     public void publishAfterCommit(BookingEvent event) {
@@ -31,6 +32,22 @@ public class CommunicationFacadeImpl implements CommunicationFacade {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onBookingEvent(BookingEvent e) {
-        notifications.createNotification(teacherFacade.getTeacher(e.teacherId()).userId(), e.type(), "Booking update", "Booking status changed", "BOOKING", e.bookingId());
+        if ("TRIAL_REQUESTED".equals(e.type())) {
+            notifications.createNotification(e.teacherUserId(), e.type(), "Yêu cầu học thử mới", "Một học viên vừa gửi yêu cầu học thử", "BOOKING", e.resourceId());
+            return;
+        }
+        String title = switch (e.type()) {
+            case "TRIAL_ACCEPTED" -> "Yêu cầu học thử đã được chấp nhận";
+            case "TRIAL_REJECTED" -> "Yêu cầu học thử đã bị từ chối";
+            case "BOOKING_CREATED" -> "Lịch học mới";
+            case "BOOKING_COMPLETED" -> "Buổi học đã hoàn thành";
+            case "BOOKING_CANCELLED" -> "Buổi học đã hủy";
+            default -> "Cập nhật lịch học";
+        };
+        String referenceType = "TRIAL_REJECTED".equals(e.type()) ? "TRIAL_REQUEST" : "BOOKING";
+        notifications.createNotification(e.studentUserId(), e.type(), title, title, referenceType, e.resourceId());
+        if ("TRIAL_ACCEPTED".equals(e.type()) || "BOOKING_CREATED".equals(e.type())) {
+            conversations.getOrCreateConversation(e.teacherProfileId(), e.studentUserId());
+        }
     }
 }

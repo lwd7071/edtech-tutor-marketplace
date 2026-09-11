@@ -110,4 +110,17 @@ class ReviewServiceTest {
         verify(reviewRepository).save(any(Review.class));
         verify(eventPublisher).publishEvent(any(Object.class));
     }
+
+    @Test
+    void getStudentBookingReviewReturnsNullUntilReviewed() {
+        when(reviewRepository.findByBookingIdAndStudentId(bookingId, studentId)).thenReturn(Optional.empty());
+        assertNull(reviewService.getStudentBookingReview(studentId, bookingId));
+    }
+
+    @Test
+    void getStudentBookingReviewDoesNotExposeAnotherStudentsReview() {
+        UUID anotherStudent = UUID.randomUUID();
+        when(reviewRepository.findByBookingIdAndStudentId(bookingId, anotherStudent)).thenReturn(Optional.empty());
+        assertNull(reviewService.getStudentBookingReview(anotherStudent, bookingId));
+    }
 }

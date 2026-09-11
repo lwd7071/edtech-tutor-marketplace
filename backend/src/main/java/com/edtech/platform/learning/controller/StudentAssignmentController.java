@@ -5,6 +5,7 @@ import com.edtech.platform.common.security.RequireRole;
 import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.learning.domain.AssignmentStatus;
+import com.edtech.platform.learning.domain.StudentAssignmentProgress;
 import com.edtech.platform.learning.dto.request.CreateSubmissionRequest;
 import com.edtech.platform.learning.dto.response.AssignmentDetail;
 import com.edtech.platform.learning.dto.response.SubmissionDetail;
@@ -42,11 +43,19 @@ public class StudentAssignmentController {
     public ApiResponse<java.util.List<AssignmentDetail>> getAssignments(
             @AuthenticationPrincipal AuthenticatedUser userDetails,
             @RequestParam(required = false) AssignmentStatus status,
+            @RequestParam(required = false) StudentAssignmentProgress progress,
             @RequestParam(defaultValue = "0") @Min(value = 0, message = "Trang phải lớn hơn hoặc bằng 0") int page,
             @RequestParam(defaultValue = "20") @Min(value = 1, message = "Kích thước trang phải lớn hơn 0") @Max(value = 100, message = "Kích thước tối đa là 100") int size) {
         
-        Page<AssignmentDetail> result = studentAssignmentService.getAssignments(userDetails.id(), status, PageRequest.of(page, size));
+        Page<AssignmentDetail> result = studentAssignmentService.getAssignments(userDetails.id(), status, progress, PageRequest.of(page, size));
         return ApiResponse.page(result.getContent(), PageMeta.from(result));
+    }
+
+    @GetMapping("/assignments/{id}")
+    @RequireRole("STUDENT")
+    public ApiResponse<com.edtech.platform.learning.dto.response.StudentAssignmentDetail> getAssignment(
+            @AuthenticationPrincipal AuthenticatedUser userDetails, @PathVariable UUID id) {
+        return ApiResponse.ok(studentAssignmentService.getDetail(userDetails.id(), id));
     }
 
     @PostMapping("/assignments/{id}/submissions")

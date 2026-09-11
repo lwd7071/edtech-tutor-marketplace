@@ -5,9 +5,9 @@ import { Alert, Button, Input, Spin } from 'antd';
 import { ArrowLeftOutlined, ExclamationCircleOutlined, SendOutlined } from '@ant-design/icons';
 import { MessageView } from '../types';
 
-interface ChatThreadProps { conversationId: string; participantName: string; messages: MessageView[]; loading?: boolean; error?: boolean; reconnecting?: boolean; onRetry?: () => void; onSendMessage: (content: string) => void; onBack?: () => void; }
+interface ChatThreadProps { conversationId: string; participantName: string; messages: MessageView[]; loading?: boolean; error?: boolean; reconnecting?: boolean; hasOlderMessages?: boolean; onLoadOlder?: () => void; onRetry?: () => void; onSendMessage: (content: string) => void; onBack?: () => void; }
 
-export const ChatThread: React.FC<ChatThreadProps> = ({ participantName, messages, loading = false, error = false, reconnecting = false, onRetry, onSendMessage, onBack }) => {
+export const ChatThread: React.FC<ChatThreadProps> = ({ participantName, messages, loading = false, error = false, reconnecting = false, hasOlderMessages = false, onLoadOlder, onRetry, onSendMessage, onBack }) => {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
@@ -18,8 +18,9 @@ export const ChatThread: React.FC<ChatThreadProps> = ({ participantName, message
       <div className="chat-messages" aria-live="polite">
         {loading && <div className="chat-loading"><Spin /></div>}
         {error && <div className="chat-loading"><Alert type="error" showIcon title="Chưa tải được tin nhắn" /><Button onClick={onRetry}>Thử lại</Button></div>}
+        {hasOlderMessages && <div className="chat-loading"><Button onClick={onLoadOlder}>Tải tin nhắn cũ hơn</Button></div>}
         {!loading && !error && messages.length === 0 && <div className="chat-no-messages">Chưa có tin nhắn. Hãy gửi lời chào để bắt đầu.</div>}
-        {messages.map((message) => <div key={message.id} className={`chat-message-row ${message.isOwnMessage ? 'own' : ''}`}><div className={`chat-bubble ${message.isOwnMessage ? 'own' : ''}`}><div className="chat-content">{message.content}</div><time dateTime={message.createdAt}>{new Date(message.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}{message.status === 'FAILED' && <ExclamationCircleOutlined className="chat-failed" title="Gửi thất bại" />}</time></div></div>)}
+        {messages.map((message) => <div key={message.id} className={`chat-message-row ${message.isOwnMessage ? 'own' : ''}`}><div className={`chat-bubble ${message.isOwnMessage ? 'own' : ''}`}>{message.attachment && <a href={message.attachment.secureUrl} target="_blank" rel="noopener noreferrer">{message.messageType === 'IMAGE' ? <img src={message.attachment.secureUrl} alt={message.attachment.originalFilename} style={{maxWidth:260,maxHeight:220,borderRadius:8}} /> : `📎 ${message.attachment.originalFilename}`}</a>}<div className="chat-content">{message.content}</div><time dateTime={message.createdAt}>{new Date(message.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}{message.status === 'FAILED' && <ExclamationCircleOutlined className="chat-failed" title="Gửi thất bại" />}</time></div></div>)}
         <div ref={messagesEndRef} />
       </div>
       <footer className="chat-composer"><Input.TextArea value={inputValue} onChange={(event) => setInputValue(event.target.value)} onPressEnter={(event) => { if (!event.shiftKey) { event.preventDefault(); handleSend(); } }} placeholder={reconnecting ? 'Đang kết nối lại…' : 'Nhập tin nhắn…'} autoSize={{ minRows: 1, maxRows: 4 }} disabled={reconnecting} /><Button type="primary" shape="circle" icon={<SendOutlined />} size="large" disabled={!inputValue.trim() || reconnecting} onClick={handleSend} aria-label="Gửi tin nhắn" /></footer>

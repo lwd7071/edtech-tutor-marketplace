@@ -11,7 +11,7 @@ const { Dragger } = Upload;
 interface FileUploadProps extends Omit<UploadProps, 'customRequest'> {
   title?: string;
   hint?: string;
-  attachableType?: 'ASSIGNMENT' | 'SUBMISSION' | 'SESSION_REPORT';
+  attachableType?: 'ASSIGNMENT' | 'SUBMISSION' | 'MESSAGE';
   onUploadSuccess?: (attachment: AttachmentView) => void;
 }
 

@@ -1,6 +1,7 @@
 package com.edtech.platform.booking.controller;
 
 import com.edtech.platform.booking.domain.TrialRequest;
+import com.edtech.platform.booking.domain.TrialRequestStatus;
 import com.edtech.platform.booking.dto.request.AcceptTrialRequest;
 import com.edtech.platform.booking.dto.request.CreateTrialRequest;
 import com.edtech.platform.booking.dto.request.RejectTrialRequest;
@@ -34,6 +35,18 @@ public class TrialRequestController {
     @RequireRole("STUDENT")
     public ApiResponse<TrialRequestView> create(@AuthenticationPrincipal AuthenticatedUser u, @Valid @RequestBody CreateTrialRequest r) {
         return ApiResponse.created(TrialRequestView.from(service.create(u.id(), r)));
+    }
+
+    @GetMapping("/api/student/trial-requests")
+    @RequireRole("STUDENT")
+    public ApiResponse<List<TrialRequestView>> listForStudent(
+            @AuthenticationPrincipal AuthenticatedUser u,
+            @RequestParam(required = false) TrialRequestStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Page<TrialRequest> p = service.findForStudent(u.id(), status,
+                PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "createdAt")));
+        return ApiResponse.page(p.map(TrialRequestView::from).getContent(), PageMeta.from(p));
     }
 
     @GetMapping("/api/teacher/trial-requests")

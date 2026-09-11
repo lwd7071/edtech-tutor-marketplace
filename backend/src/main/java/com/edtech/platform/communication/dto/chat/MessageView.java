@@ -6,6 +6,7 @@ import lombok.Value;
 
 import java.time.Instant;
 import java.util.UUID;
+import com.edtech.platform.common.dto.response.AttachmentView;
 
 @Value
 @Builder
@@ -18,6 +19,7 @@ public class MessageView {
     private String content;
     private UUID attachmentId;
     private String attachmentUrl;
+    private AttachmentView attachment;
     private Instant sentAt;
     private Instant readAt;
 }

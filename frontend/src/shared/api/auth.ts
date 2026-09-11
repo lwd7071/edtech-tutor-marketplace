@@ -18,13 +18,15 @@ export interface AuthResult {
   accessTokenExpiresIn: number;
   user: UserSummary;
 }
+export interface RegistrationResult { email: string; verificationRequired: boolean }
 
 export interface LoginRequest { email: string; password: string; deviceInfo?: string }
 export interface RegisterRequest { fullName: string; email: string; password: string; role: 'STUDENT' | 'TEACHER' }
 export interface ResetPasswordRequest { token: string; newPassword: string }
 export interface OAuthExchangeRequest { exchangeCode: string }
 export interface CompleteOAuthRegistrationRequest { registrationToken: string; role: 'STUDENT' | 'TEACHER' }
-export interface ParentContactRequest { parentFullName: string; parentPhone: string; parentEmail: string; notifyParent: boolean }
+export interface ParentContactRequest { parentFullName: string | null; parentPhone: string | null; parentEmail: string | null; notifyParent: boolean }
+export interface ParentContactResponse extends ParentContactRequest { updatedAt: string | null }
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<ApiResponse<AuthResult>> => {
@@ -32,7 +34,7 @@ export const authApi = {
     return response.data;
   },
 
-  register: async (data: RegisterRequest): Promise<ApiResponse<AuthResult>> => {
+  register: async (data: RegisterRequest): Promise<ApiResponse<RegistrationResult>> => {
     const response = await axiosClient.post('/api/auth/register', data);
     return response.data;
   },
@@ -78,8 +80,12 @@ export const authApi = {
     return response.data;
   },
 
-  updateParentContact: async (data: ParentContactRequest): Promise<ApiResponse<unknown>> => {
+  updateParentContact: async (data: ParentContactRequest): Promise<ApiResponse<ParentContactResponse>> => {
     const response = await axiosClient.put('/api/student/parent-contact', data);
+    return response.data;
+  },
+  getParentContact: async (): Promise<ApiResponse<ParentContactResponse>> => {
+    const response = await axiosClient.get('/api/student/parent-contact');
     return response.data;
   },
 };

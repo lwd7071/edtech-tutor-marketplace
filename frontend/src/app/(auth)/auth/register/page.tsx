@@ -54,10 +54,10 @@ export default function RegisterPage() {
         role: values.role,
       };
 
-      await authApi.register(payload);
+      const result = await authApi.register(payload);
       
       // On success, redirect to verify email page
-      router.push('/auth/verify-email');
+      router.push(`/auth/verify-email?email=${encodeURIComponent(result.data.email)}`);
     } catch (error: any) {
       setErrorMsg(error.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
     } finally {

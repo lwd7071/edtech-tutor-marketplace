@@ -18,6 +18,20 @@ import java.util.UUID;
 public class ConversationService {
 
     private final ConversationRepository conversationRepository;
+    private final com.edtech.platform.enrollment.facade.EnrollmentFacade enrollment;
+    private final com.edtech.platform.booking.facade.BookingEligibilityFacade bookingEligibility;
+
+    @Transactional
+    public Conversation openForStudent(UUID teacherProfileId, UUID studentUserId) {
+        Optional<Conversation> existing = conversationRepository.findByTeacherIdAndStudentId(teacherProfileId, studentUserId);
+        if (existing.isPresent()) return existing.get();
+        if (!enrollment.hasValidRelationship(teacherProfileId, studentUserId)
+                && !bookingEligibility.hasValidBookingOrTrial(teacherProfileId, studentUserId)) {
+            throw new com.edtech.platform.common.exception.BusinessException(
+                    com.edtech.platform.common.exception.ErrorCode.CONVERSATION_NOT_ALLOWED);
+        }
+        return getOrCreateConversation(teacherProfileId, studentUserId);
+    }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Conversation getOrCreateConversation(UUID teacherId, UUID studentId) {

@@ -52,4 +52,11 @@ public class StudentParentContactControllerTest {
         org.junit.jupiter.api.Assertions.assertTrue(response.success());
         assertEquals(expectedResponse, response.data());
     }
+
+    @Test
+    void shouldReadCurrentParentContact() {
+        ParentContactResponse expected = new ParentContactResponse(null, null, "parent@test.com", true, Instant.now());
+        when(parentContacts.get(mockUser.id())).thenReturn(expected);
+        assertEquals(expected, controller.getParentContact(mockUser).data());
+    }
 }

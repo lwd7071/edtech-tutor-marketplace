@@ -23,10 +23,9 @@ export const StudentAssignmentList: React.FC = () => {
     try {
       setLoading(true);
       // Map tab to status if backend supports it
-      let statusParams = undefined;
-      if (tab === 'to_do') statusParams = 'PUBLISHED';
+      const progress = ({to_do:'TODO', submitted:'SUBMITTED', graded:'GRADED'} as const)[tab as 'to_do'|'submitted'|'graded'];
       
-      const res = await learningApi.getStudentAssignments(page, size, statusParams);
+      const res = await learningApi.getStudentAssignments(page, size, progress);
       if (res.data) {
         setData(res.data);
         if (res.meta) {

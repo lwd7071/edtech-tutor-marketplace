@@ -10,6 +10,8 @@ import {
   CreateTrialRequest,
   AcceptTrialRequest,
   RejectTrialRequest,
+  ReviewView,
+  SessionReportView,
 } from '../types';
 
 export const bookingApi = {
@@ -111,6 +113,12 @@ export const bookingApi = {
     return response.data;
   },
 
+  getStudentTrialRequests: async (status?: string, page = 0, size = 20): Promise<ApiResponse<TrialRequestView[]>> =>
+    (await axiosClient.get<ApiResponse<TrialRequestView[]>>('/api/student/trial-requests', { params: { status, page, size } })).data,
+
+  getStudentSessionReports: async (page = 0, size = 20): Promise<ApiResponse<SessionReportView[]>> =>
+    (await axiosClient.get<ApiResponse<SessionReportView[]>>('/api/student/session-reports', { params: { page, size } })).data,
+
   /**
    * Giáo viên chấp nhận yêu cầu học thử (tạo booking trial)
    */
@@ -152,4 +160,7 @@ export const bookingApi = {
     );
     return response.data;
   },
+
+  getReview: async (bookingId: string): Promise<ApiResponse<ReviewView | null>> =>
+    (await axiosClient.get<ApiResponse<ReviewView | null>>(`/api/student/bookings/${bookingId}/review`)).data,
 };

@@ -13,6 +13,7 @@ import com.edtech.platform.payment.repository.InvoiceQueryRepository;
 import com.edtech.platform.payment.repository.PaymentIdentifierRepository;
 import com.edtech.platform.payment.service.support.InvoiceNumberFactory;
 import com.edtech.platform.payment.service.support.InvoiceRequestFingerprint;
+import com.edtech.platform.admin.facade.PlatformSettingsFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -36,6 +37,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final PricingPackageFacade pricingPackageFacade;
     private final PaymentIdentifierRepository paymentIdentifierRepository;
     private final PaymentProviderProperties paymentProperties;
+    private final PlatformSettingsFacade platformSettings;
     private final TransactionTemplate transactionTemplate;
 
     private final InvoiceRequestFingerprint fingerprintHelper = new InvoiceRequestFingerprint();
@@ -57,6 +59,22 @@ public class InvoiceServiceImpl implements InvoiceService {
         if (returnUrl == null || cancelUrl == null) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Payment return/cancel URL is not configured");
         }
+        requireConfiguredOrigin(returnUrl, paymentProperties.getDefaultReturnUrl(), "returnUrl");
+        requireConfiguredOrigin(cancelUrl, paymentProperties.getDefaultCancelUrl(), "cancelUrl");
+        final String acceptedReturnUrl = returnUrl;
+        final String acceptedCancelUrl = cancelUrl;
+
+        Optional<Invoice> existingOpt = invoiceQueryRepository.findByStudentIdAndIdempotencyKey(studentId, idempotencyKey);
+        if (existingOpt.isPresent()) {
+            Invoice existing = existingOpt.get();
+            boolean sameRequest = existing.getPricingPackageId().equals(pricingPackageId)
+                    && (existing.getReturnUrl() == null || existing.getReturnUrl().equals(returnUrl))
+                    && (existing.getCancelUrl() == null || existing.getCancelUrl().equals(cancelUrl))
+                    && existing.getRequestFingerprint().equals(fingerprintHelper.sha256(
+                            studentId, pricingPackageId, existing.getAmountVnd(), returnUrl, cancelUrl));
+            if (!sameRequest) throw new BusinessException(ErrorCode.IDEMPOTENCY_KEY_REUSED);
+            return existing;
+        }
 
         // 1. Fetch package snapshot
         PricingPackageSnapshot pkg = pricingPackageFacade.getPurchasablePackage(pricingPackageId);
@@ -77,25 +95,9 @@ public class InvoiceServiceImpl implements InvoiceService {
         );
 
         // 3. Check idempotency
-        Optional<Invoice> existingOpt = invoiceQueryRepository.findByStudentIdAndIdempotencyKey(studentId, idempotencyKey);
-        if (existingOpt.isPresent()) {
-            Invoice existing = existingOpt.get();
-            if (!existing.getRequestFingerprint().equals(requestFingerprint)) {
-                throw new BusinessException(ErrorCode.IDEMPOTENCY_KEY_REUSED);
-            }
-            if (existing.getStatus() == InvoiceStatus.PAID) {
-                return existing;
-            }
-            if (existing.getCheckoutUrl() != null) {
-                return existing;
-            }
-        }
-
         // 4. Phase 1: Local DB Transaction 1 (Prepare & Insert Pending Invoice)
         Invoice pendingInvoice = null;
-        if (existingOpt.isPresent() && existingOpt.get().getCheckoutUrl() == null) {
-            pendingInvoice = existingOpt.get();
-        } else {
+        {
             try {
                 pendingInvoice = transactionTemplate.execute(status -> {
                     long orderCode = paymentIdentifierRepository.nextPayosOrderCode();
@@ -110,7 +112,8 @@ public class InvoiceServiceImpl implements InvoiceService {
                             pricingPackageId,
                             pkg.priceVnd(),
                             idempotencyKey,
-                            requestFingerprint
+                            requestFingerprint, pkg.subjectId(), pkg.name(), pkg.totalSessions(), pkg.durationDays(),
+                            pkg.sessionDurationMinutes(), platformSettings.getCommissionRate(), acceptedReturnUrl, acceptedCancelUrl
                     );
                     return invoiceCommandRepository.insert(invoice);
                 });
@@ -183,5 +186,21 @@ public class InvoiceServiceImpl implements InvoiceService {
             );
             return inv;
         });
+    }
+
+    private void requireConfiguredOrigin(String value, String configured, String field) {
+        if (value == null || configured == null) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, field + " must be configured");
+        }
+        try {
+            URI actual = URI.create(value); URI allowed = URI.create(configured);
+            int actualPort = actual.getPort() < 0 ? ("https".equalsIgnoreCase(actual.getScheme()) ? 443 : 80) : actual.getPort();
+            int allowedPort = allowed.getPort() < 0 ? ("https".equalsIgnoreCase(allowed.getScheme()) ? 443 : 80) : allowed.getPort();
+            if (!Objects.equals(actual.getScheme(), allowed.getScheme()) || !Objects.equals(actual.getHost(), allowed.getHost()) || actualPort != allowedPort) {
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR, field + " has an untrusted origin");
+            }
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, field + " must be a valid URL");
+        }
     }
 }

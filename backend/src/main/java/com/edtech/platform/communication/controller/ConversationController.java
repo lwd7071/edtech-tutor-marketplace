@@ -20,7 +20,6 @@ import java.util.UUID;
 public class ConversationController {
 
     private final ChatQueryService chatQueries;
-
     @GetMapping
     @com.edtech.platform.common.security.RequireRole({"STUDENT", "TEACHER"})
     public ApiResponse<java.util.List<ConversationView>> getConversations(

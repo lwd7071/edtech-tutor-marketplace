@@ -20,6 +20,10 @@ export interface MessageView {
   clientMessageId?: string;
   isOwnMessage: boolean;
   status?: 'SENDING' | 'SENT' | 'FAILED';
+  messageType?: 'TEXT' | 'IMAGE' | 'FILE';
+  attachmentId?: string | null;
+  attachmentUrl?: string | null;
+  attachment?: import('@/shared/api/attachmentApi').AttachmentView | null;
 }
 
 export interface SendMessageRequest {

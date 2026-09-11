@@ -1,11 +1,12 @@
 export interface NotificationView {
   id: string;
   userId: string;
-  type: 'BOOKING' | 'ASSIGNMENT' | 'FINANCE' | 'SYSTEM' | 'PROFILE';
+  type: string;
   title: string;
   content: string;
   isRead: boolean;
   referenceId: string | null;
+  referenceType: 'BOOKING' | 'TRIAL_REQUEST' | 'ASSIGNMENT' | 'SUBMISSION' | 'INVOICE' | 'PAYMENT' | 'REFUND' | 'EXTENSION' | 'PROFILE' | 'SYSTEM' | string | null;
   referenceUrl: string | null;
   createdAt: string;
 }

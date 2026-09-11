@@ -73,3 +73,17 @@ export interface SubmissionListItem {
 export interface TeacherAssignmentDetail extends AssignmentDetail {
   submissions: SubmissionDetail[];
 }
+
+export interface AttachmentView {
+  id: string;
+  secureUrl: string;
+  originalFilename: string;
+  mimeType: string;
+  fileSize: number;
+}
+
+export interface StudentAssignmentDetail extends AssignmentDetail {
+  submission?: SubmissionDetail | null;
+  assignmentAttachments: AttachmentView[];
+  submissionAttachments: AttachmentView[];
+}

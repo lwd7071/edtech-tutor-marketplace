@@ -12,8 +12,8 @@ public class MessageViewMapper {
     private final AttachmentFacade attachments;
 
     public MessageView toView(Message message) {
-        String attachmentUrl = message.getAttachmentId() == null ? null
-                : attachments.getAttachmentView(message.getAttachmentId()).getSecureUrl();
+        var attachment = message.getAttachmentId() == null ? null : attachments.getAttachmentView(message.getAttachmentId());
+        String attachmentUrl = attachment == null ? null : attachment.getSecureUrl();
         return MessageView.builder()
                 .id(message.getId())
                 .conversationId(message.getConversationId())
@@ -23,6 +23,7 @@ public class MessageViewMapper {
                 .content(message.getContent())
                 .attachmentId(message.getAttachmentId())
                 .attachmentUrl(attachmentUrl)
+                .attachment(attachment)
                 .sentAt(message.getSentAt())
                 .readAt(message.getReadAt())
                 .build();

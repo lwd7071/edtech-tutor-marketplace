@@ -1,6 +1,7 @@
 package com.edtech.platform.payment.service;
 
 import com.edtech.platform.catalog.facade.PricingPackageFacade;
+import com.edtech.platform.admin.facade.PlatformSettingsFacade;
 import com.edtech.platform.catalog.facade.dto.PricingPackageSnapshot;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
@@ -25,6 +26,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Instant;
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,6 +44,7 @@ class InvoiceServiceTest {
     @Mock private PaymentGateway paymentGateway;
     @Mock private PricingPackageFacade pricingPackageFacade;
     @Mock private PaymentIdentifierRepository paymentIdentifierRepository;
+    @Mock private PlatformSettingsFacade platformSettingsFacade;
     @Mock private TransactionTemplate transactionTemplate;
 
     private PaymentProviderProperties properties;
@@ -65,8 +68,10 @@ class InvoiceServiceTest {
                 pricingPackageFacade,
                 paymentIdentifierRepository,
                 properties,
+                platformSettingsFacade,
                 transactionTemplate
         );
+        when(platformSettingsFacade.getCommissionRate()).thenReturn(new BigDecimal("5.00"));
     }
 
     @Test

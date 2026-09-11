@@ -8,9 +8,11 @@ import com.edtech.platform.learning.domain.Assignment;
 import com.edtech.platform.learning.domain.AssignmentStatus;
 import com.edtech.platform.learning.domain.Submission;
 import com.edtech.platform.learning.domain.SubmissionStatus;
+import com.edtech.platform.learning.domain.StudentAssignmentProgress;
 import com.edtech.platform.learning.dto.request.CreateSubmissionRequest;
 import com.edtech.platform.learning.dto.response.AssignmentDetail;
 import com.edtech.platform.learning.dto.response.SubmissionDetail;
+import com.edtech.platform.learning.dto.response.StudentAssignmentDetail;
 import com.edtech.platform.learning.repository.AssignmentRepository;
 import com.edtech.platform.learning.repository.SubmissionRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +41,7 @@ public class StudentAssignmentService {
     private final AssignmentAttachmentBinder attachmentBinder;
     private final AssignmentViewMapper views;
     private final Clock clock;
+    private final com.edtech.platform.common.facade.AttachmentFacade attachments;
 
     @Transactional(readOnly = true)
     public Page<AssignmentDetail> getAssignments(UUID studentId, AssignmentStatus status, Pageable pageable) {
@@ -50,6 +53,37 @@ public class StudentAssignmentService {
             assignments = assignmentRepository.findByStudentIdAndStatusIn(studentId, List.of(AssignmentStatus.PUBLISHED, AssignmentStatus.CLOSED), pageable);
         }
         return assignments.map(views::assignment);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AssignmentDetail> getAssignments(UUID studentId, AssignmentStatus status,
+                                                  StudentAssignmentProgress progress, Pageable pageable) {
+        if (progress == null) return getAssignments(studentId, status, pageable);
+        Page<Assignment> result = switch (progress) {
+            case TODO -> assignmentRepository.findStudentTodo(studentId, AssignmentStatus.PUBLISHED,
+                    List.of(SubmissionStatus.SUBMITTED, SubmissionStatus.GRADED), pageable);
+            case SUBMITTED -> assignmentRepository.findStudentBySubmissionStatus(studentId, SubmissionStatus.SUBMITTED, pageable);
+            case GRADED -> assignmentRepository.findStudentBySubmissionStatus(studentId, SubmissionStatus.GRADED, pageable);
+        };
+        return result.map(views::assignment);
+    }
+
+    @Transactional(readOnly = true)
+    public StudentAssignmentDetail getDetail(UUID studentId, UUID assignmentId) {
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .filter(a -> a.getStudentId().equals(studentId) && a.getStatus() != AssignmentStatus.DRAFT)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ASSIGNMENT_NOT_FOUND));
+        SubmissionDetail submission = submissionRepository.findByAssignmentIdAndStudentId(assignmentId, studentId)
+                .map(views::submission).orElse(null);
+        List<com.edtech.platform.common.dto.response.AttachmentView> assignmentFiles = attachmentViews(views.assignment(assignment).getContentBlocks());
+        List<com.edtech.platform.common.dto.response.AttachmentView> submissionFiles = submission == null ? List.of() : attachmentViews(submission.getContentBlocks());
+        return new StudentAssignmentDetail(views.assignment(assignment), submission, assignmentFiles, submissionFiles);
+    }
+
+    private List<com.edtech.platform.common.dto.response.AttachmentView> attachmentViews(List<com.edtech.platform.learning.dto.response.ContentBlock> blocks) {
+        if (blocks == null) return List.of();
+        return blocks.stream().map(com.edtech.platform.learning.dto.response.ContentBlock::getAttachmentId)
+                .filter(java.util.Objects::nonNull).distinct().map(attachments::getAttachmentView).toList();
     }
 
     @Transactional

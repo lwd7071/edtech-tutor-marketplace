@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -47,6 +48,7 @@ class RefundServiceTest {
     @Mock private BookingEligibilityFacade bookingEligibilityFacade;
     @Mock private WalletRepository walletRepository;
     @Mock private LedgerEntryRepository ledgerEntryRepository;
+    @Mock private ApplicationEventPublisher events;
 
     private RefundService refundService;
 
@@ -62,7 +64,7 @@ class RefundServiceTest {
         refundService = new RefundService(
                 refundRequestRepository, enrollmentFacade, bookingEligibilityFacade,
                 walletRepository, ledgerEntryRepository, protector, new RefundRequestViewMapper(protector),
-                new PackageMoneyAllocator()
+                new PackageMoneyAllocator(), events
         );
     }
 
