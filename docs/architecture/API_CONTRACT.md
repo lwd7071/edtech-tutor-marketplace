@@ -473,14 +473,21 @@ Tất cả endpoint yêu cầu role `STUDENT` và ownership của resource.
 | GET | `/api/student/packages/{id}` | — | `StudentPackageDetail` |
 | GET | `/api/student/bookings` | `status?`, `from?`, `to?`, pagination | `BookingDetail[]` |
 | POST | `/api/student/trials/requests` | `CreateTrialRequest` | `TrialRequestView` (`201`) |
+| GET | `/api/student/trial-requests` | `status?`, pagination | `TrialRequestView[]` |
 | POST | `/api/student/refund-requests` | `CreateRefundRequest` | `RefundRequestView` (`201`) |
 | POST | `/api/student/extension-requests` | `CreateExtensionRequest` | `ExtensionRequestView` (`201`) |
-| GET | `/api/student/assignments` | `status?`, pagination | `AssignmentDetail[]` |
+| GET | `/api/student/assignments` | `status?`, `progress?`, pagination | `AssignmentDetail[]` |
+| GET | `/api/student/assignments/{id}` | — | `StudentAssignmentDetail` |
 | POST | `/api/student/assignments/{id}/submissions` | `CreateSubmissionRequest` | `SubmissionDetail` (`201`) |
 | GET | `/api/student/session-reports` | pagination | `SessionReportView[]` |
 | POST | `/api/student/bookings/{id}/review` | `CreateReviewRequest` | `ReviewView` (`201`) |
-| GET | `/api/student/notifications` | `isRead?`, pagination | `NotificationView[]` |
+| GET | `/api/student/bookings/{id}/review` | — | `ReviewView` hoặc `null` |
+| GET | `/api/student/notifications` | `isRead?`, `referenceType?`, pagination | `NotificationView[]` |
 | PATCH | `/api/student/notifications/{id}/read` | — | `NotificationView` |
+| PUT | `/api/student/conversations/teachers/{teacherId}` | — | `{ id }` |
+| GET | `/api/conversations` | pagination | `ConversationView[]` |
+| GET | `/api/conversations/{id}/messages` | pagination | `MessageView[]` |
+| GET | `/api/student/parent-contact` | — | `ParentContactResponse` hoặc `null` |
 | PUT | `/api/student/parent-contact` | `UpdateParentContactRequest` | `ParentContactResponse` |
 
 Student không có endpoint hủy Booking trực tiếp.
@@ -506,7 +513,7 @@ Student không có endpoint hủy Booking trực tiếp.
 }
 ```
 
-`PUT /api/student/parent-contact` thay thế toàn bộ thông tin liên hệ phụ huynh của Student đang đăng nhập. Ba field liên hệ đều nullable; gửi `null` để xóa field tương ứng. Nếu cả ba field đều `null`, Backend bắt buộc chuẩn hóa `notifyParent = false`. Email phụ huynh chỉ được gửi khi `parentEmail` tồn tại và `notifyParent = true`; MVP không tự động gửi SMS. Parent contact chỉ xuất hiện trong DTO riêng dành cho Student sở hữu, không xuất hiện trong public DTO hoặc user summary.
+`GET` và `PUT /api/student/parent-contact` chỉ dành cho Student đang đăng nhập. PUT thay thế toàn bộ thông tin liên hệ; ba field liên hệ đều nullable, gửi `null` để xóa. Nếu cả ba field đều `null`, Backend chuẩn hóa `notifyParent = false`. Email phụ huynh chỉ được gửi khi `parentEmail` tồn tại và `notifyParent = true`; MVP không tự động gửi SMS. Parent contact chỉ xuất hiện trong DTO riêng dành cho Student sở hữu, không xuất hiện trong public DTO hoặc user summary.
 
 ```json
 // CreateInvoiceRequest
@@ -532,7 +539,9 @@ Student không có endpoint hủy Booking trực tiếp.
 }
 ```
 
-Return URL chỉ dùng cho UX. FE phải poll invoice hoặc nhận notification; không tự coi thanh toán thành công từ query parameter trình duyệt.
+Return URL chỉ dùng cho UX. FE phải poll invoice hoặc nhận notification; không tự coi thanh toán thành công từ query parameter trình duyệt. Invoice cũng giữ snapshot subject, tên gói, số buổi, thời hạn, thời lượng buổi, commission, return/cancel URL và fingerprint version; fulfillment không đọc lại các điều khoản hiện tại của PricingPackage.
+
+`progress` của assignment student nhận `TODO`, `SUBMITTED` hoặc `GRADED` và được lọc trước pagination. Assignment detail trả `submission` đơn của student hiện tại, không trả danh sách submission của các student khác.
 
 ```json
 // CreateTrialRequest
@@ -682,7 +691,7 @@ Các endpoint REST dưới đây bổ sung phần còn thiếu trong danh sách 
 | GET | `/api/conversations` | Student/Teacher | pagination | `ConversationView[]` |
 | GET | `/api/conversations/{id}/messages` | Member | cursor/page, size | `MessageView[]` |
 | POST | `/api/attachments` | Authenticated | multipart | `AttachmentView` (`201`) |
-| GET | `/api/notifications` | Authenticated | `isRead?`, pagination | `NotificationView[]` |
+| GET | `/api/notifications` | Authenticated | `isRead?`, `referenceType?`, pagination | `NotificationView[]` |
 | PATCH | `/api/notifications/{id}/read` | Owner | — | `NotificationView` |
 | POST | `/api/notifications/read-all` | Authenticated | — | `{ "updatedCount": n }` |
 

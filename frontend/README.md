@@ -1,6 +1,6 @@
 # Tutor Match Frontend
 
-Frontend của nền tảng kết nối học viên với gia sư 1-1. Cấu trúc giao diện, danh sách trang và phân quyền nằm tại [`docs/planning/SPEC-FE.md`](../docs/planning/SPEC-FE.md).
+Frontend của nền tảng kết nối học viên với gia sư 1-1. Cấu trúc giao diện, danh sách trang và phân quyền nằm tại [`docs/architecture/FRONTEND_SPEC.md`](../docs/architecture/FRONTEND_SPEC.md).
 
 ## Công nghệ
 
@@ -81,7 +81,7 @@ Các domain chính gồm `auth`, `marketplace`, `teacher-dashboard`, `student-pa
 
 ## Tài liệu nguồn
 
-- [Đặc tả Frontend](../docs/planning/SPEC-FE.md)
+- [Đặc tả Frontend](../docs/architecture/FRONTEND_SPEC.md)
 - [API contract](../docs/architecture/API_CONTRACT.md)
 - [Mã lỗi](../docs/architecture/ERROR_CODES.md)
 - [Thiết lập toàn dự án](../docs/guidelines/SETUP.md)

@@ -1,6 +1,6 @@
 # Đặc tả Frontend — Tutor Match
 
-Đây là nguồn chuẩn cho cấu trúc giao diện, trang và phân quyền. Request/response nằm trong [`API_CONTRACT.md`](../architecture/API_CONTRACT.md); hướng dẫn chạy nằm trong [`frontend/README.md`](../../frontend/README.md).
+Đây là nguồn chuẩn cho cấu trúc giao diện, trang và phân quyền. Request/response nằm trong [`API_CONTRACT.md`](API_CONTRACT.md); hướng dẫn chạy nằm trong [`frontend/README.md`](../../frontend/README.md).
 
 ## Nguyên tắc sản phẩm
 
