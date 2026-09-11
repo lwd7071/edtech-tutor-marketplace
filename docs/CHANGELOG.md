@@ -2,6 +2,13 @@
 
 Các entry dưới đây ghi hành vi và bằng chứng quan trọng. Danh sách file đầy đủ nằm trong Git history.
 
+## 2026-09-11 — Finance state, contract và V29 hardening
+
+- Đơn giản hóa transition Refund/Payout và siết invariant counter của StudentPackage; focused backend finance `20/20` pass.
+- Đồng bộ payload/version và endpoint Admin Refund/Payout ở frontend; focused Jest finance/UI `6 suites, 22 tests` và TypeScript typecheck pass.
+- Thêm V29 fail-fast preflight, `transferred_at`, active-request partial unique indexes và bảng receipt idempotency; Flyway Testcontainers clean V1→V29 và V27→V29 pass.
+- Chưa triển khai command executor idempotency, concurrency/rollback integration đầy đủ hoặc áp V29 lên Supabase production.
+
 ## 2026-09-11 — Re-check sau khi Docker Engine hoạt động
 
 - Chạy lại vòng diagnose cho scheduler toggle, Teacher Search và CI hardening.

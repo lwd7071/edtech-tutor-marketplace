@@ -425,6 +425,10 @@ Accept tạo Booking trial và đổi TrialRequest sang `ACCEPTED` trong cùng t
 
 Các endpoint bank account là phần bổ sung bắt buộc để hỗ trợ luồng payout đã mô tả trong spec.
 
+Các POST tạo bank account, payout, refund và extension cùng các POST action tài chính của Admin
+nhận header bắt buộc `Idempotency-Key: <UUID>`. Một lần retry transport của cùng command phải
+dùng lại key; payload mới phải dùng key mới.
+
 ```json
 // CreateAssignmentRequest
 {
@@ -449,6 +453,20 @@ Các endpoint bank account là phần bổ sung bắt buộc để hỗ trợ lu
   "amountVnd": 950000,
   "teacherNote": "Rút thu nhập tháng 8",
   "walletVersion": 5
+}
+```
+
+```json
+// CreateRefundRequest
+{
+  "studentPackageId": "uuid",
+  "packageVersion": 4,
+  "requestedSessions": 3,
+  "reason": "Lý do",
+  "bankName": "Vietcombank",
+  "bankBin": "970436",
+  "accountNumber": "...",
+  "accountHolderName": "NGUYEN VAN A"
 }
 ```
 

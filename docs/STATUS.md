@@ -19,6 +19,7 @@
 | Assignment/attachment | Đã triển khai endpoint và view mới | Cần kiểm thử file thật |
 | Chat/notification/events | Đã triển khai event và mở conversation | Smoke test local đã xác nhận gửi/nhận giữa Student và Teacher qua STOMP tới backend `:8080`; cảnh báo browser extension không thuộc ứng dụng |
 | Teacher search/catalog | Đã triển khai V28, query/count/cache/config | Focused tests và PostgreSQL Testcontainers pass; V28 đã áp dụng trên Supabase; cloud smoke và load test chưa xác minh |
+| Finance/refund/payout/package | Đã harden domain, contract/UI và V29 local | Domain/backend focused `20/20`, frontend finance Jest `6 suites/22 tests`, typecheck pass; Flyway V1→V29 và V27→V29 pass trên PostgreSQL Testcontainers; V29 Supabase, idempotency executor, concurrency/rollback và full suite chưa xác minh |
 | Parent contact/requests/reports | Đã triển khai UI/API liên quan | Cần smoke test theo role |
 | Frontend Student Journey | Đã có route/component/API thay đổi | Playwright chưa chạy |
 

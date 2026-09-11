@@ -574,7 +574,7 @@ Không được phát sinh sai lệch do làm tròn VND.
   - wallet_id
   - bank_account_id
   - amount_vnd
-  - status: `PENDING` | `PROCESSING` | `SUCCEEDED` | `REJECTED` | `FAILED`
+  - status: `PENDING` | `PROCESSING` | `SUCCEEDED` | `REJECTED`
   - teacher_note
   - admin_note
   - bank_reference
@@ -592,7 +592,7 @@ Không được phát sinh sai lệch do làm tròn VND.
 5. Admin duyệt và chuyển khoản thủ công.
 6. Admin nhập mã giao dịch, thời điểm và ảnh chứng từ.
 7. Hệ thống chuyển payout thành `SUCCEEDED`, giảm reserved.
-8. Nếu từ chối/thất bại, reserved được trả về available.
+8. Nếu từ chối, reserved được trả về available.
 
 ### 6.10. Refund và gia hạn
 - **refund_requests**
@@ -603,7 +603,7 @@ Không được phát sinh sai lệch do làm tròn VND.
   - requested_sessions
   - approved_sessions
   - refund_amount_vnd
-  - status: `PENDING` | `APPROVED` | `PROCESSING` | `REFUNDED` | `REJECTED` | `FAILED`
+  - status: `PENDING` | `APPROVED` | `REFUNDED` | `REJECTED`
   - admin_note
   - bank_name
   - bank_bin
@@ -614,6 +614,11 @@ Không được phát sinh sai lệch do làm tròn VND.
   - proof_url
   - processed_by
   - processed_at
+  - transferred_at
+
+Refund chỉ có transition `PENDING → APPROVED → REFUNDED` hoặc `PENDING → REJECTED`.
+Payout chỉ có transition `PENDING → PROCESSING → SUCCEEDED`, hoặc `PENDING/PROCESSING → REJECTED`.
+Các trạng thái terminal không có transition ra ngoài.
 
 **Điều kiện gửi refund:**
 - Gói `ACTIVE` hoặc `LOCKED_EXPIRED`.
