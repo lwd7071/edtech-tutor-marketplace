@@ -2,7 +2,9 @@
 
 ## Thứ tự đọc bắt buộc
 
-Trước khi sửa code, đọc theo thứ tự:
+Trước khi bắt đầu mỗi task mới, dù là đọc, chẩn đoán, sửa code, chạy test, commit hay push, phải đọc lại `AGENTS.md` hiện tại.
+
+Sau đó, nếu task có liên quan đến code hoặc tài liệu dự án, đọc theo thứ tự:
 
 1. `CONTEXT.md` — mô hình nghiệp vụ, thuật ngữ và invariant.
 2. `docs/STATUS.md` — trạng thái hiện tại, bằng chứng kiểm thử và phần chưa xác minh.
