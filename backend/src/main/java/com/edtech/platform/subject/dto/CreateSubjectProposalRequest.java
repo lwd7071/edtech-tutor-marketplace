@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record CreateSubjectProposalRequest(
-        @NotBlank String proposedName,
+        @NotBlank @jakarta.validation.constraints.Pattern(regexp = "^[^<]*$", message = "Name must not contain HTML tags") String proposedName,
         @NotNull EducationLevel educationLevel,
-        String description
+        @jakarta.validation.constraints.Pattern(regexp = "^[^<]*$", message = "Description must not contain HTML tags") String description
 ) {
 }

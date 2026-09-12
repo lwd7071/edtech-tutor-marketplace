@@ -7,6 +7,7 @@ import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.payment.config.PaymentProviderProperties;
 import com.edtech.platform.payment.domain.Invoice;
 import com.edtech.platform.payment.domain.InvoiceStatus;
+import com.edtech.platform.payment.dto.InvoiceDetail;
 import com.edtech.platform.payment.gateway.*;
 import com.edtech.platform.payment.repository.InvoiceCommandRepository;
 import com.edtech.platform.payment.repository.InvoiceQueryRepository;
@@ -44,13 +45,13 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceNumberFactory invoiceNumberFactory = new InvoiceNumberFactory(Clock.systemUTC());
 
     @Override
-    public Invoice createInvoiceAndPaymentLink(UUID studentId, UUID pricingPackageId, UUID idempotencyKey) {
+    public InvoiceDetail createInvoiceAndPaymentLink(UUID studentId, UUID pricingPackageId, UUID idempotencyKey) {
         String defaultReturn = paymentProperties.getDefaultReturnUrl() != null ? paymentProperties.getDefaultReturnUrl() : "http://localhost:3000/payment/success";
         String defaultCancel = paymentProperties.getDefaultCancelUrl() != null ? paymentProperties.getDefaultCancelUrl() : "http://localhost:3000/payment/cancel";
         return createInvoiceAndPaymentLink(studentId, pricingPackageId, idempotencyKey, defaultReturn, defaultCancel);
     }
 
-    public Invoice createInvoiceAndPaymentLink(UUID studentId, UUID pricingPackageId, UUID idempotencyKey, String returnUrl, String cancelUrl) {
+    public InvoiceDetail createInvoiceAndPaymentLink(UUID studentId, UUID pricingPackageId, UUID idempotencyKey, String returnUrl, String cancelUrl) {
         Objects.requireNonNull(studentId, "studentId is required");
         Objects.requireNonNull(pricingPackageId, "pricingPackageId is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
@@ -73,7 +74,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                     && existing.getRequestFingerprint().equals(fingerprintHelper.sha256(
                             studentId, pricingPackageId, existing.getAmountVnd(), returnUrl, cancelUrl));
             if (!sameRequest) throw new BusinessException(ErrorCode.IDEMPOTENCY_KEY_REUSED);
-            return existing;
+            return InvoiceDetail.from(existing);
         }
 
         // 1. Fetch package snapshot
@@ -126,7 +127,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                         throw new BusinessException(ErrorCode.IDEMPOTENCY_KEY_REUSED);
                     }
                     if (raceInvoice.getCheckoutUrl() != null) {
-                        return raceInvoice;
+                        return InvoiceDetail.from(raceInvoice);
                     }
                     pendingInvoice = raceInvoice;
                 } else {
@@ -184,7 +185,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                     finalLinkResult.qrCode(),
                     finalLinkResult.expiresAt()
             );
-            return inv;
+            return InvoiceDetail.from(inv);
         });
     }
 

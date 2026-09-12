@@ -15,5 +15,6 @@ public class CreateReviewRequest {
     private Short rating;
     
     @Size(max = 2000, message = "Comment must not exceed 2000 characters")
+    @jakarta.validation.constraints.Pattern(regexp = "^[^<]*$", message = "Comment must not contain HTML tags")
     private String comment;
 }

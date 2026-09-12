@@ -1,11 +1,12 @@
-package com.edtech.platform.admin.controller;
+package com.edtech.platform.finance.controller;
 
-import com.edtech.platform.admin.dto.request.ApproveExtensionRequest;
+import com.edtech.platform.admin.dto.request.ApproveRefundRequest;
+import com.edtech.platform.admin.dto.request.CompleteTransferRequest;
 import com.edtech.platform.admin.dto.request.RejectRequest;
 import com.edtech.platform.common.security.AuthenticatedUser;
-import com.edtech.platform.finance.domain.ExtensionStatus;
-import com.edtech.platform.finance.dto.response.ExtensionRequestView;
-import com.edtech.platform.finance.service.ExtensionService;
+import com.edtech.platform.finance.domain.RefundStatus;
+import com.edtech.platform.finance.dto.response.RefundRequestView;
+import com.edtech.platform.finance.service.RefundService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,13 +39,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-class AdminExtensionControllerTest {
+class AdminRefundControllerTest {
 
     private MockMvc mockMvc;
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
-    @Mock private ExtensionService extensionService;
-    @InjectMocks private AdminExtensionController controller;
+    @Mock private RefundService refundService;
+    @InjectMocks private AdminRefundController controller;
 
     private final UUID adminId = UUID.randomUUID();
 
@@ -67,16 +68,16 @@ class AdminExtensionControllerTest {
     }
 
     @Test
-    void listAdminExtensions_shouldReturn200Paged() throws Exception {
-        Instant requested = Instant.now().plusSeconds(86400 * 30);
-        ExtensionRequestView view = new ExtensionRequestView(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Reason", requested, null,
-                ExtensionStatus.PENDING, null, null, null, Instant.now()
+    void listAdminRefunds_shouldReturn200Paged() throws Exception {
+        RefundRequestView view = new RefundRequestView(
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Reason", 5, 0, null,
+                RefundStatus.PENDING, null, "VCB", "970436", "******6789", "NGUYEN VAN A",
+                null, null, null, null, 0L, Instant.now()
         );
-        when(extensionService.findAdminExtensions(nullable(String.class), any()))
+        when(refundService.findAdminRefunds(nullable(String.class), any()))
                 .thenReturn(new PageImpl<>(List.of(view)));
 
-        mockMvc.perform(get("/api/admin/extension-requests")
+        mockMvc.perform(get("/api/admin/refund-requests")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -84,22 +85,23 @@ class AdminExtensionControllerTest {
     }
 
     @Test
-    void approveExtension_shouldReturn200() throws Exception {
-        UUID extId = UUID.randomUUID();
-        Instant approved = Instant.now().plusSeconds(86400 * 30);
-        ApproveExtensionRequest req = new ApproveExtensionRequest(approved, "Duyet");
+    void approveRefund_shouldReturn200() throws Exception {
+        UUID refundId = UUID.randomUUID();
+        ApproveRefundRequest req = new ApproveRefundRequest(3, "Duyet 3 buoi", 0L);
 
-        ExtensionRequestView view = new ExtensionRequestView(
-                extId, UUID.randomUUID(), UUID.randomUUID(), "Reason", approved, approved,
-                ExtensionStatus.APPROVED, "Duyet", adminId, Instant.now(), Instant.now()
+        RefundRequestView view = new RefundRequestView(
+                refundId, UUID.randomUUID(), UUID.randomUUID(), "Reason", 5, 3, 300000L,
+                RefundStatus.APPROVED, "Duyet 3 buoi", "VCB", "970436", "******6789", "NGUYEN VAN A",
+                null, null, adminId, Instant.now(), 1L, Instant.now()
         );
-        when(extensionService.approveExtension(eq(adminId), eq(extId), any())).thenReturn(view);
+        when(refundService.approveRefund(eq(adminId), eq(refundId), any())).thenReturn(view);
 
-        mockMvc.perform(post("/api/admin/extension-requests/" + extId + "/approve")
+        mockMvc.perform(post("/api/admin/refund-requests/" + refundId + "/approve")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.status").value("APPROVED"));
+                .andExpect(jsonPath("$.data.approvedSessions").value(3))
+                .andExpect(jsonPath("$.data.refundAmountVnd").value(300000));
     }
 }

@@ -1,6 +1,5 @@
 package com.edtech.platform.payment.controller;
 
-import com.edtech.platform.payment.domain.Invoice;
 import com.edtech.platform.payment.dto.CreateInvoiceRequest;
 import com.edtech.platform.payment.dto.InvoiceDetail;
 import com.edtech.platform.payment.service.InvoiceService;
@@ -33,7 +32,7 @@ public class StudentInvoiceController {
     ) {
         String limitKey = (user != null && user.id() != null) ? user.id().toString() : "anonymous";
         rateLimiterService.checkRateLimit("create_invoice", limitKey, 10, 60);
-        Invoice invoice = invoiceService.createInvoiceAndPaymentLink(
+        InvoiceDetail invoice = invoiceService.createInvoiceAndPaymentLink(
                 user.id(),
                 request.pricingPackageId(),
                 idempotencyKey,
@@ -41,6 +40,6 @@ public class StudentInvoiceController {
                 request.cancelUrl()
         );
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(InvoiceDetail.from(invoice)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(invoice));
     }
 }

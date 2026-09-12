@@ -7,6 +7,7 @@ import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.payment.config.PaymentProviderProperties;
 import com.edtech.platform.payment.domain.Invoice;
+import com.edtech.platform.payment.dto.InvoiceDetail;
 import com.edtech.platform.payment.gateway.PaymentGateway;
 import com.edtech.platform.payment.gateway.PaymentLinkCommand;
 import com.edtech.platform.payment.gateway.PaymentLinkResult;
@@ -100,14 +101,13 @@ class InvoiceServiceTest {
                 new InvoiceRequestFingerprint().sha256(studentId, packageId, 500000L, properties.getDefaultReturnUrl(), properties.getDefaultCancelUrl()));
         when(invoiceCommandRepository.findByIdForUpdate(any())).thenReturn(Optional.of(createdPending));
 
-        Invoice result = invoiceService.createInvoiceAndPaymentLink(studentId, packageId, idempotencyKey);
+        InvoiceDetail result = invoiceService.createInvoiceAndPaymentLink(studentId, packageId, idempotencyKey);
 
         verify(invoiceCommandRepository).insert(any(Invoice.class));
         verify(paymentGateway).createPaymentLink(any(PaymentLinkCommand.class));
         verify(invoiceCommandRepository).findByIdForUpdate(any());
 
-        assertThat(result.getCheckoutUrl()).isEqualTo("https://checkout.payos.vn/1001");
-        assertThat(result.getPayosPaymentLinkId()).isEqualTo("payos-link-id");
+        assertThat(result.checkoutUrl()).isEqualTo("https://checkout.payos.vn/1001");
     }
 
     @Test
@@ -129,11 +129,11 @@ class InvoiceServiceTest {
 
         when(invoiceQueryRepository.findByStudentIdAndIdempotencyKey(studentId, idempotencyKey)).thenReturn(Optional.of(existingInvoice));
 
-        Invoice result = invoiceService.createInvoiceAndPaymentLink(studentId, packageId, idempotencyKey);
+        InvoiceDetail result = invoiceService.createInvoiceAndPaymentLink(studentId, packageId, idempotencyKey);
 
         verify(paymentGateway, never()).createPaymentLink(any());
         verify(invoiceCommandRepository, never()).insert(any());
-        assertThat(result.getCheckoutUrl()).isEqualTo("https://checkout.payos.vn/1001");
+        assertThat(result.checkoutUrl()).isEqualTo("https://checkout.payos.vn/1001");
     }
 
     @Test

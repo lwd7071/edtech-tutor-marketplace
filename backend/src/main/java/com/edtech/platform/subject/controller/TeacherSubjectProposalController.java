@@ -1,4 +1,4 @@
-package com.edtech.platform.teacher.controller;
+package com.edtech.platform.subject.controller;
 
 import com.edtech.platform.common.response.ApiResponse;
 

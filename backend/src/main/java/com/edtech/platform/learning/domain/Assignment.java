@@ -22,7 +22,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "assignments")
-@SQLDelete(sql = "UPDATE assignments SET is_deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE assignments SET is_deleted = true WHERE id=? AND version=?")
 @SQLRestriction("is_deleted = false")
 @Getter
 @Setter
@@ -59,6 +59,10 @@ public class Assignment extends BaseEntity {
     @Column(nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
     private AssignmentStatus status;
+
+    @jakarta.persistence.Version
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private long version;
 
     @Builder
     public Assignment(UUID teacherId, UUID studentId, UUID subjectId, String title, AssignmentType assignmentType, JsonNode contentBlocks, JsonNode quizSchema, Instant dueAt, AssignmentStatus status) {

@@ -21,13 +21,13 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    @DisplayName("Tất cả 29 file migration V1-V29 phải được apply và validate thành công")
+    @DisplayName("Tất cả 30 file migration V1-V30 phải được apply và validate thành công")
     void flyway_shouldApplyAllMigrationsSuccessfully() {
         assertThat(flyway).isNotNull();
         MigrationInfo[] appliedMigrations = flyway.info().applied();
 
         assertThat(appliedMigrations)
-                .hasSize(29)
+                .hasSize(30)
                 .allSatisfy(info -> {
                     assertThat(info.getState().isApplied()).isTrue();
                     assertThat(info.getVersion()).isNotNull();
@@ -121,7 +121,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword())
                 .load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("29");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("30");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 

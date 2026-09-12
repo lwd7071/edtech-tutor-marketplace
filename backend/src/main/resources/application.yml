@@ -57,8 +57,8 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:dummy-client-id}
-            client-secret: ${GOOGLE_CLIENT_SECRET:dummy-client-secret}
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
             scope: email,profile
 
@@ -105,7 +105,7 @@ app:
     read-timeout: ${PAYOS_READ_TIMEOUT:10s}
   finance:
     account-encryption:
-      key: ${EDTECH_ACCOUNT_ENCRYPTION_KEY:01234567890123456789012345678901}
+      key: ${EDTECH_ACCOUNT_ENCRYPTION_KEY}
 
 # --- Resilience4j Configuration ---
 resilience4j.circuitbreaker:

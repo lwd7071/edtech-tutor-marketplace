@@ -1,6 +1,5 @@
 package com.edtech.platform.booking.controller;
 
-import com.edtech.platform.booking.domain.TrialRequest;
 import com.edtech.platform.booking.domain.TrialRequestStatus;
 import com.edtech.platform.booking.dto.request.AcceptTrialRequest;
 import com.edtech.platform.booking.dto.request.CreateTrialRequest;
@@ -34,7 +33,7 @@ public class TrialRequestController {
     @ResponseStatus(HttpStatus.CREATED)
     @RequireRole("STUDENT")
     public ApiResponse<TrialRequestView> create(@AuthenticationPrincipal AuthenticatedUser u, @Valid @RequestBody CreateTrialRequest r) {
-        return ApiResponse.created(TrialRequestView.from(service.create(u.id(), r)));
+        return ApiResponse.created(service.create(u.id(), r));
     }
 
     @GetMapping("/api/student/trial-requests")
@@ -44,9 +43,9 @@ public class TrialRequestController {
             @RequestParam(required = false) TrialRequestStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        Page<TrialRequest> p = service.findForStudent(u.id(), status,
+        Page<TrialRequestView> p = service.findForStudent(u.id(), status,
                 PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "createdAt")));
-        return ApiResponse.page(p.map(TrialRequestView::from).getContent(), PageMeta.from(p));
+        return ApiResponse.page(p.getContent(), PageMeta.from(p));
     }
 
     @GetMapping("/api/teacher/trial-requests")
@@ -55,8 +54,8 @@ public class TrialRequestController {
             @AuthenticationPrincipal AuthenticatedUser u,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        Page<TrialRequest> p = service.find(u.id(), PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "createdAt")));
-        return ApiResponse.page(p.map(TrialRequestView::from).getContent(), PageMeta.from(p));
+        Page<TrialRequestView> p = service.find(u.id(), PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "createdAt")));
+        return ApiResponse.page(p.getContent(), PageMeta.from(p));
     }
 
     @PostMapping("/api/teacher/trial-requests/{id}/accept")
@@ -69,6 +68,6 @@ public class TrialRequestController {
     @PostMapping("/api/teacher/trial-requests/{id}/reject")
     @RequireRole("TEACHER")
     public ApiResponse<TrialRequestView> reject(@AuthenticationPrincipal AuthenticatedUser u, @PathVariable UUID id, @Valid @RequestBody RejectTrialRequest r) {
-        return ApiResponse.ok(TrialRequestView.from(service.reject(u.id(), id, r.reason())));
+        return ApiResponse.ok(service.reject(u.id(), id, r.reason()));
     }
 }

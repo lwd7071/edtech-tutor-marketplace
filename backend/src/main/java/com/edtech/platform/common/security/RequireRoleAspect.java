@@ -13,7 +13,16 @@ import java.util.Arrays;
 public class RequireRoleAspect {
 
     @Before("@annotation(requireRole)")
-    public void checkRole(RequireRole requireRole) {
+    public void checkMethodRole(RequireRole requireRole) {
+        checkRole(requireRole);
+    }
+
+    @Before("@within(requireRole) && !@annotation(com.edtech.platform.common.security.RequireRole)")
+    public void checkClassRole(RequireRole requireRole) {
+        checkRole(requireRole);
+    }
+
+    private void checkRole(RequireRole requireRole) {
         String currentRole = SecurityUtils.getCurrentUserRole();
         if (currentRole == null) {
             throw new BusinessException(ErrorCode.ROLE_NOT_ALLOWED);

@@ -6,7 +6,7 @@
 ## Mốc kỹ thuật
 
 - Backend modular monolith đã có các seam chính cho auth, mail, payment, finance, booking, learning và communication.
-- Migration mới nhất trong working tree: `V29__harden_finance_workflows.sql` (V26/V27 thuộc Student Journey).
+- Migration mới nhất trong working tree: `V30__fix_data_constraints_and_locking.sql` (Fix lỗi dữ liệu/migration).
 - Không dùng Flyway `repair()`, không sửa migration đã áp dụng và không reset database người dùng.
 
 ## Trạng thái theo luồng
@@ -24,6 +24,13 @@
 | Frontend Student Journey | Đã có route/component/API thay đổi | Playwright chưa chạy |
 
 ## Những gì đã có trong code hiện tại
+
+### Architecture và Module Isolation
+
+- Controller không trả về Entity (đã fix Invoice, TrialRequest bằng DTO/View).
+- Controller được đặt đúng module (chuyển AdminRefund/Payout/Extension sang finance, TeacherSubjectProposal sang subject).
+- Các vi phạm cấm gọi chéo module đã được sửa chữa.
+
 
 ### Auth và hồ sơ Student
 
@@ -90,7 +97,7 @@
 - Supabase V28 migration bằng đúng Flyway connection/user: pass; Flyway validated 28 migrations, current version V27 và apply V28 thành công trên PostgreSQL 17.6. Migration DO preflight xác nhận `unaccent`/`pg_trgm` ở `public`.
 - Supabase V29 preflight bằng đúng Flyway user: current version V28, extensions `unaccent`/`pg_trgm` ở `public`, không có duplicate active refund/extension/payout hoặc legacy status; cloud servlet startup đã validate 29 migrations và apply V29 thành công trên PostgreSQL 17.6, sau đó process đã được dừng.
 - Finance idempotency executor, aspect wiring cho toàn bộ Finance POST và scheduled receipt cleanup đã compile; focused executor `2/2` pass. Frontend API tạo key và hook giữ key qua retry cùng command; focused finance/admin Jest `42/42` và typecheck pass.
-- Full backend Maven/Testcontainers sau đồng bộ API contract: `350/350` pass, `0` failure/error/skipped (Docker/Testcontainers hoạt động).
+- Full backend Maven/Testcontainers sau khi đồng bộ API, sửa lỗi Architecture, và fix lỗi Bảo mật/Phân quyền (Mục 5): `350/350` pass, `0` failure/error/skipped (Đã verify `SecurityIdorIntegrationTest` pass với RequireRoleAspect).
 - API contract focused backend sau đợt đồng bộ envelope/status/invoice/version: `26/26` pass (bao gồm `RestStatusContractTest`). Frontend typecheck pass; frontend Jest contract runner vẫn chưa xác minh vì bị treo trong môi trường hiện tại.
 - Full frontend Jest sau khi cập nhật fixtures/router mocks và idempotency assertions: `97/97` suites, `248/248` tests pass.
 - Cloud application HTTP smoke sau migration: **chưa xác minh**. Cách chạy `web-application-type=none` trước đây không hợp lệ cho OAuth servlet; smoke script mới yêu cầu chạy web mode với `APP_SCHEDULING_ENABLED=false`.

@@ -26,7 +26,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "submissions")
-@SQLDelete(sql = "UPDATE submissions SET is_deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE submissions SET is_deleted = true WHERE id=? AND version=?")
 @SQLRestriction("is_deleted = false")
 @Getter
 @Setter
@@ -59,6 +59,10 @@ public class Submission extends BaseEntity {
 
     @Column(name = "graded_at")
     private Instant gradedAt;
+
+    @jakarta.persistence.Version
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private long version;
 
     @Builder
     public Submission(Assignment assignment, UUID studentId, JsonNode contentBlocks, Instant submittedAt, SubmissionStatus status, BigDecimal score, String feedbackText, Instant gradedAt) {

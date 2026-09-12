@@ -8,6 +8,8 @@ import com.edtech.platform.common.AbstractIntegrationTest;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.payment.domain.Invoice;
+import com.edtech.platform.payment.domain.InvoiceStatus;
+import com.edtech.platform.payment.dto.InvoiceDetail;
 import com.edtech.platform.payment.service.InvoiceService;
 import com.edtech.platform.payment.gateway.PaymentGateway;
 import com.edtech.platform.payment.gateway.PaymentLinkCommand;
@@ -145,7 +147,7 @@ class ConcurrentStressIntegrationTest extends AbstractIntegrationTest {
         CountDownLatch readyLatch = new CountDownLatch(threadCount);
         CountDownLatch startLatch = new CountDownLatch(1);
 
-        List<Invoice> results = Collections.synchronizedList(new ArrayList<>());
+        List<InvoiceDetail> results = Collections.synchronizedList(new ArrayList<>());
         AtomicInteger successCount = new AtomicInteger(0);
         List<Throwable> failures = Collections.synchronizedList(new ArrayList<>());
 
@@ -155,7 +157,7 @@ class ConcurrentStressIntegrationTest extends AbstractIntegrationTest {
                 readyLatch.countDown();
                 try {
                     startLatch.await();
-                    Invoice invoice = invoiceService.createInvoiceAndPaymentLink(
+                    InvoiceDetail invoice = invoiceService.createInvoiceAndPaymentLink(
                             studentId,
                             pricingPackageId,
                             idempotencyKey,
@@ -183,12 +185,12 @@ class ConcurrentStressIntegrationTest extends AbstractIntegrationTest {
         assertThat(results).hasSize(threadCount);
 
         // All returned invoices must share the EXACT SAME invoice number and ID
-        String firstInvoiceNumber = results.get(0).getInvoiceNumber();
-        UUID firstInvoiceId = results.get(0).getId();
+        String firstInvoiceNumber = results.get(0).invoiceNumber();
+        UUID firstInvoiceId = results.get(0).id();
 
-        for (Invoice inv : results) {
-            assertThat(inv.getInvoiceNumber()).isEqualTo(firstInvoiceNumber);
-            assertThat(inv.getId()).isEqualTo(firstInvoiceId);
+        for (InvoiceDetail inv : results) {
+            assertThat(inv.invoiceNumber()).isEqualTo(firstInvoiceNumber);
+            assertThat(inv.id()).isEqualTo(firstInvoiceId);
         }
 
         // Verify DB only has 1 record for this idempotency key

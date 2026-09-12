@@ -8,6 +8,7 @@ import com.edtech.platform.booking.domain.TrialRequestStatus;
 import com.edtech.platform.booking.dto.request.AcceptTrialRequest;
 import com.edtech.platform.booking.dto.request.CreateTrialRequest;
 import com.edtech.platform.booking.dto.response.BookingDetail;
+import com.edtech.platform.booking.dto.response.TrialRequestView;
 import com.edtech.platform.booking.facade.CommunicationFacade;
 import com.edtech.platform.booking.repository.BookingRepository;
 import com.edtech.platform.booking.repository.TrialRequestRepository;
@@ -79,11 +80,11 @@ class TrialRequestServiceTest {
                 .thenReturn(false);
         when(trialRequestRepository.saveAndFlush(any(TrialRequest.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        TrialRequest result = trialRequestService.create(studentUserId, req);
+        TrialRequestView result = trialRequestService.create(studentUserId, req);
 
-        assertThat(result.getStudentId()).isEqualTo(studentUserId);
-        assertThat(result.getTeacherId()).isEqualTo(teacherId);
-        assertThat(result.getStatus()).isEqualTo(TrialRequestStatus.PENDING);
+        assertThat(result.studentId()).isEqualTo(studentUserId);
+        assertThat(result.teacherId()).isEqualTo(teacherId);
+        assertThat(result.status()).isEqualTo(TrialRequestStatus.PENDING);
         verify(communicationFacade).publishAfterCommit(any());
     }
 
@@ -136,10 +137,10 @@ class TrialRequestServiceTest {
         when(teacherFacade.getTeacherByUserId(teacherUserId)).thenReturn(mockTeacherSnapshot());
         when(trialRequestRepository.findByIdForUpdate(requestId)).thenReturn(Optional.of(req));
 
-        TrialRequest rejected = trialRequestService.reject(teacherUserId, requestId, "Teacher busy");
+        TrialRequestView result = trialRequestService.reject(teacherUserId, requestId, "Not available");
 
-        assertThat(rejected.getStatus()).isEqualTo(TrialRequestStatus.REJECTED);
-        assertThat(rejected.getRejectionReason()).isEqualTo("Teacher busy");
+        assertThat(result.status()).isEqualTo(TrialRequestStatus.REJECTED);
+        assertThat(result.rejectionReason()).isEqualTo("Not available");
         verify(bookingRepository, never()).saveAndFlush(any());
         verify(communicationFacade).publishAfterCommit(any());
     }

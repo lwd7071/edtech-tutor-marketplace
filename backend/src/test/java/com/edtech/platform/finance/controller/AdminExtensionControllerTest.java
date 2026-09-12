@@ -1,12 +1,11 @@
-package com.edtech.platform.admin.controller;
+package com.edtech.platform.finance.controller;
 
-import com.edtech.platform.admin.dto.request.CompleteTransferRequest;
-import com.edtech.platform.admin.dto.request.ProcessPayoutRequest;
+import com.edtech.platform.admin.dto.request.ApproveExtensionRequest;
 import com.edtech.platform.admin.dto.request.RejectRequest;
 import com.edtech.platform.common.security.AuthenticatedUser;
-import com.edtech.platform.finance.domain.PayoutStatus;
-import com.edtech.platform.finance.dto.response.PayoutRequestView;
-import com.edtech.platform.finance.service.PayoutService;
+import com.edtech.platform.finance.domain.ExtensionStatus;
+import com.edtech.platform.finance.dto.response.ExtensionRequestView;
+import com.edtech.platform.finance.service.ExtensionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,13 +38,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-class AdminPayoutControllerTest {
+class AdminExtensionControllerTest {
 
     private MockMvc mockMvc;
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
-    @Mock private PayoutService payoutService;
-    @InjectMocks private AdminPayoutController controller;
+    @Mock private ExtensionService extensionService;
+    @InjectMocks private AdminExtensionController controller;
 
     private final UUID adminId = UUID.randomUUID();
 
@@ -68,57 +67,39 @@ class AdminPayoutControllerTest {
     }
 
     @Test
-    void listAdminPayouts_shouldReturn200Paged() throws Exception {
-        PayoutRequestView view = new PayoutRequestView(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                500000L, PayoutStatus.PENDING, "Rut tien", null, null, null, null, null, null, 0L, Instant.now()
+    void listAdminExtensions_shouldReturn200Paged() throws Exception {
+        Instant requested = Instant.now().plusSeconds(86400 * 30);
+        ExtensionRequestView view = new ExtensionRequestView(
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Reason", requested, null,
+                ExtensionStatus.PENDING, null, null, null, Instant.now()
         );
-        when(payoutService.findAdminPayouts(nullable(String.class), any()))
+        when(extensionService.findAdminExtensions(nullable(String.class), any()))
                 .thenReturn(new PageImpl<>(List.of(view)));
 
-        mockMvc.perform(get("/api/admin/payout-requests")
+        mockMvc.perform(get("/api/admin/extension-requests")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data[0].amountVnd").value(500000))
                 .andExpect(jsonPath("$.meta.totalElements").value(1));
     }
 
     @Test
-    void processPayout_shouldReturn200() throws Exception {
-        UUID payoutId = UUID.randomUUID();
-        ProcessPayoutRequest req = new ProcessPayoutRequest(0L);
+    void approveExtension_shouldReturn200() throws Exception {
+        UUID extId = UUID.randomUUID();
+        Instant approved = Instant.now().plusSeconds(86400 * 30);
+        ApproveExtensionRequest req = new ApproveExtensionRequest(approved, "Duyet");
 
-        PayoutRequestView view = new PayoutRequestView(
-                payoutId, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                500000L, PayoutStatus.PROCESSING, "Rut tien", null, null, null, null, adminId, Instant.now(), 1L, Instant.now()
+        ExtensionRequestView view = new ExtensionRequestView(
+                extId, UUID.randomUUID(), UUID.randomUUID(), "Reason", approved, approved,
+                ExtensionStatus.APPROVED, "Duyet", adminId, Instant.now(), Instant.now()
         );
-        when(payoutService.processPayout(eq(adminId), eq(payoutId), any())).thenReturn(view);
+        when(extensionService.approveExtension(eq(adminId), eq(extId), any())).thenReturn(view);
 
-        mockMvc.perform(post("/api/admin/payout-requests/" + payoutId + "/process")
+        mockMvc.perform(post("/api/admin/extension-requests/" + extId + "/approve")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.status").value("PROCESSING"));
-    }
-
-    @Test
-    void completePayout_shouldReturn200() throws Exception {
-        UUID payoutId = UUID.randomUUID();
-        CompleteTransferRequest req = new CompleteTransferRequest("VCB123", Instant.now(), "proof", "https://proof", 1L);
-
-        PayoutRequestView view = new PayoutRequestView(
-                payoutId, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                500000L, PayoutStatus.SUCCEEDED, "Rut tien", null, "VCB123", "https://proof", Instant.now(), adminId, Instant.now(), 2L, Instant.now()
-        );
-        when(payoutService.completePayout(eq(adminId), eq(payoutId), any())).thenReturn(view);
-
-        mockMvc.perform(post("/api/admin/payout-requests/" + payoutId + "/complete")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.status").value("SUCCEEDED"));
+                .andExpect(jsonPath("$.data.status").value("APPROVED"));
     }
 }

@@ -3,6 +3,7 @@ package com.edtech.platform.payment.controller;
 import com.edtech.platform.payment.domain.Invoice;
 import com.edtech.platform.payment.domain.InvoiceStatus;
 import com.edtech.platform.payment.dto.CreateInvoiceRequest;
+import com.edtech.platform.payment.dto.InvoiceDetail;
 import com.edtech.platform.payment.service.InvoiceService;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +25,7 @@ import java.util.UUID;
 import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -76,8 +78,10 @@ class StudentInvoiceControllerTest {
         when(mockInvoice.getPaidAt()).thenReturn(null);
         when(mockInvoice.getAmountVnd()).thenReturn(500000L);
 
-        when(invoiceService.createInvoiceAndPaymentLink(eq(studentId), eq(packageId), eq(idempotencyKey), any(), any()))
-                .thenReturn(mockInvoice);
+        InvoiceDetail mockInvoiceDetail = InvoiceDetail.from(mockInvoice);
+        when(invoiceService.createInvoiceAndPaymentLink(
+                any(UUID.class), any(UUID.class), any(UUID.class), any(), any()))
+                .thenReturn(mockInvoiceDetail);
 
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(

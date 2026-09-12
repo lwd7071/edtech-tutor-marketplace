@@ -17,7 +17,7 @@ import java.util.UUID;
 @Table(name = "teacher_bank_accounts")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE teacher_bank_accounts SET is_deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE teacher_bank_accounts SET is_deleted = true WHERE id = ? AND version = ?")
 @SQLRestriction("is_deleted = false")
 public class TeacherBankAccount extends BaseEntity {
 
@@ -41,6 +41,10 @@ public class TeacherBankAccount extends BaseEntity {
 
     @Column(name = "is_default", nullable = false)
     private boolean isDefault;
+
+    @jakarta.persistence.Version
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private long version;
 
     public static TeacherBankAccount create(
             UUID teacherId,

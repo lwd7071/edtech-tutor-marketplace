@@ -11,7 +11,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity @Table(name="trial_requests") @Getter @NoArgsConstructor(access=AccessLevel.PROTECTED)
-@SQLDelete(sql="UPDATE trial_requests SET is_deleted=true WHERE id=?") @SQLRestriction("is_deleted = false")
+@SQLDelete(sql="UPDATE trial_requests SET is_deleted=true WHERE id=? AND version=?") @SQLRestriction("is_deleted = false")
 public class TrialRequest extends BaseEntity {
  @Column(name="teacher_id",nullable=false) private UUID teacherId;
  @Column(name="student_id",nullable=false) private UUID studentId;
@@ -22,6 +22,7 @@ public class TrialRequest extends BaseEntity {
  @Column(name="booking_id") private UUID bookingId;
  @Column(name="rejection_reason") private String rejectionReason;
  @Column(name="responded_at") private Instant respondedAt;
+ @Version @Column(nullable = false, columnDefinition = "bigint default 0") private long version;
  public static TrialRequest create(UUID studentId,UUID teacherId,UUID subjectId,Instant preferred,String note){
   if(studentId==null||teacherId==null||subjectId==null||preferred==null) throw new IllegalArgumentException("trial fields required");
   TrialRequest r=new TrialRequest(); r.studentId=studentId;r.teacherId=teacherId;r.subjectId=subjectId;r.preferredStartTime=preferred;r.note=note;r.status=TrialRequestStatus.PENDING; return r;

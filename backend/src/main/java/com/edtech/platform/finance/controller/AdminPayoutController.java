@@ -1,4 +1,4 @@
-package com.edtech.platform.admin.controller;
+package com.edtech.platform.finance.controller;
 
 import com.edtech.platform.admin.dto.request.CompleteTransferRequest;
 import com.edtech.platform.admin.dto.request.ProcessPayoutRequest;

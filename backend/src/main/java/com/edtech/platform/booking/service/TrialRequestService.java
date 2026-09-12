@@ -5,6 +5,7 @@ import com.edtech.platform.booking.domain.*;
 import com.edtech.platform.booking.dto.request.AcceptTrialRequest;
 import com.edtech.platform.booking.dto.request.CreateTrialRequest;
 import com.edtech.platform.booking.dto.response.BookingDetail;
+import com.edtech.platform.booking.dto.response.TrialRequestView;
 import com.edtech.platform.booking.facade.BookingEvent;
 import com.edtech.platform.booking.facade.CommunicationFacade;
 import com.edtech.platform.booking.repository.BookingRepository;
@@ -37,7 +38,7 @@ public class TrialRequestService {
     private final CommunicationFacade communicationFacade;
 
     @Transactional
-    public TrialRequest create(UUID studentUserId, CreateTrialRequest request) {
+    public TrialRequestView create(UUID studentUserId, CreateTrialRequest request) {
         Objects.requireNonNull(studentUserId, "studentUserId is required");
         Objects.requireNonNull(request, "request is required");
 
@@ -82,23 +83,24 @@ public class TrialRequestService {
                 new BookingEvent("TRIAL_REQUESTED", trialRequest.getId(), studentUserId, teacher.id(), teacher.userId())
         );
 
-        return trialRequest;
+        return TrialRequestView.from(trialRequest);
     }
 
     @Transactional(readOnly = true)
-    public Page<TrialRequest> find(UUID teacherUserId, Pageable pageable) {
+    public Page<TrialRequestView> find(UUID teacherUserId, Pageable pageable) {
         TeacherSnapshot teacher = teacherFacade.getTeacherByUserId(teacherUserId);
         UUID teacherId = teacher != null ? teacher.id() : null;
         if (teacherId == null) {
             return Page.empty();
         }
-        return trialRequestRepository.findByTeacherId(teacherId, pageable);
+        return trialRequestRepository.findByTeacherId(teacherId, pageable).map(TrialRequestView::from);
     }
 
     @Transactional(readOnly = true)
-    public Page<TrialRequest> findForStudent(UUID studentUserId, TrialRequestStatus status, Pageable pageable) {
-        return status == null ? trialRequestRepository.findByStudentId(studentUserId, pageable)
+    public Page<TrialRequestView> findForStudent(UUID studentUserId, TrialRequestStatus status, Pageable pageable) {
+        Page<TrialRequest> page = status == null ? trialRequestRepository.findByStudentId(studentUserId, pageable)
                 : trialRequestRepository.findByStudentIdAndStatus(studentUserId, status, pageable);
+        return page.map(TrialRequestView::from);
     }
 
     @Transactional
@@ -172,7 +174,7 @@ public class TrialRequestService {
     }
 
     @Transactional
-    public TrialRequest reject(UUID teacherUserId, UUID requestId, String reason) {
+    public TrialRequestView reject(UUID teacherUserId, UUID requestId, String reason) {
         Objects.requireNonNull(teacherUserId, "teacherUserId is required");
         Objects.requireNonNull(requestId, "requestId is required");
 
@@ -199,6 +201,6 @@ public class TrialRequestService {
                 new BookingEvent("TRIAL_REJECTED", trialRequest.getId(), trialRequest.getStudentId(), teacherId, teacherUserId)
         );
 
-        return trialRequest;
+        return TrialRequestView.from(trialRequest);
     }
 }

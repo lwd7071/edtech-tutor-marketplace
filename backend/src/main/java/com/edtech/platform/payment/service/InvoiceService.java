@@ -1,6 +1,7 @@
 package com.edtech.platform.payment.service;
 
 import com.edtech.platform.payment.domain.Invoice;
+import com.edtech.platform.payment.dto.InvoiceDetail;
 
 import java.util.UUID;
 
@@ -15,6 +16,6 @@ public interface InvoiceService {
      * @param idempotencyKey unique key to prevent duplicate creation
      * @return the created Invoice with checkout details attached
      */
-    Invoice createInvoiceAndPaymentLink(UUID studentId, UUID pricingPackageId, UUID idempotencyKey);
-    Invoice createInvoiceAndPaymentLink(UUID studentId, UUID pricingPackageId, UUID idempotencyKey, String returnUrl, String cancelUrl);
+    InvoiceDetail createInvoiceAndPaymentLink(UUID studentId, UUID pricingPackageId, UUID idempotencyKey);
+    InvoiceDetail createInvoiceAndPaymentLink(UUID studentId, UUID pricingPackageId, UUID idempotencyKey, String returnUrl, String cancelUrl);
 }

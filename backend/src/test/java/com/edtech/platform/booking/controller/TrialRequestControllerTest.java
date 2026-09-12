@@ -2,10 +2,12 @@ package com.edtech.platform.booking.controller;
 
 import com.edtech.platform.booking.domain.DeliveryMode;
 import com.edtech.platform.booking.domain.TrialRequest;
+import com.edtech.platform.booking.domain.TrialRequestStatus;
 import com.edtech.platform.booking.dto.request.AcceptTrialRequest;
 import com.edtech.platform.booking.dto.request.CreateTrialRequest;
 import com.edtech.platform.booking.dto.request.RejectTrialRequest;
 import com.edtech.platform.booking.dto.response.BookingDetail;
+import com.edtech.platform.booking.dto.response.TrialRequestView;
 import com.edtech.platform.booking.service.TrialRequestService;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,7 +77,7 @@ class TrialRequestControllerTest {
         CreateTrialRequest req = new CreateTrialRequest(teacherId, subjectId, Instant.now().plusSeconds(7200), "Hello");
 
         TrialRequest trialRequest = TrialRequest.create(currentUserId, teacherId, subjectId, Instant.now().plusSeconds(7200), "Hello");
-        when(service.create(eq(currentUserId), any())).thenReturn(trialRequest);
+        when(service.create(eq(currentUserId), any())).thenReturn(TrialRequestView.from(trialRequest));
 
         mockMvc.perform(post("/api/student/trials/requests")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -110,7 +112,7 @@ class TrialRequestControllerTest {
 
         TrialRequest trialRequest = TrialRequest.create(UUID.randomUUID(), currentUserId, UUID.randomUUID(), Instant.now().plusSeconds(7200), "Hello");
         trialRequest.reject("Busy", Instant.now());
-        when(service.reject(eq(currentUserId), eq(requestId), eq("Busy"))).thenReturn(trialRequest);
+        when(service.reject(eq(currentUserId), eq(requestId), eq("Busy"))).thenReturn(TrialRequestView.from(trialRequest));
 
         mockMvc.perform(post("/api/teacher/trial-requests/" + requestId + "/reject")
                 .contentType(MediaType.APPLICATION_JSON)

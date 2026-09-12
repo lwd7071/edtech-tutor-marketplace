@@ -26,7 +26,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE subject_proposals SET is_deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE subject_proposals SET is_deleted = true WHERE id = ? AND version = ?")
 @SQLRestriction("is_deleted = false")
 public class SubjectProposal extends BaseEntity {
 
@@ -59,6 +59,10 @@ public class SubjectProposal extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_subject_id")
     private Subject createdSubject;
+
+    @jakarta.persistence.Version
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private long version;
 
     @Builder
     public SubjectProposal(UUID teacherId, String proposedName, EducationLevel educationLevel, String description) {

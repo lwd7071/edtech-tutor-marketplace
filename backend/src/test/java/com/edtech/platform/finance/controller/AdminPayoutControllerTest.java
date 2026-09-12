@@ -1,12 +1,12 @@
-package com.edtech.platform.admin.controller;
+package com.edtech.platform.finance.controller;
 
-import com.edtech.platform.admin.dto.request.ApproveRefundRequest;
 import com.edtech.platform.admin.dto.request.CompleteTransferRequest;
+import com.edtech.platform.admin.dto.request.ProcessPayoutRequest;
 import com.edtech.platform.admin.dto.request.RejectRequest;
 import com.edtech.platform.common.security.AuthenticatedUser;
-import com.edtech.platform.finance.domain.RefundStatus;
-import com.edtech.platform.finance.dto.response.RefundRequestView;
-import com.edtech.platform.finance.service.RefundService;
+import com.edtech.platform.finance.domain.PayoutStatus;
+import com.edtech.platform.finance.dto.response.PayoutRequestView;
+import com.edtech.platform.finance.service.PayoutService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,13 +39,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-class AdminRefundControllerTest {
+class AdminPayoutControllerTest {
 
     private MockMvc mockMvc;
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
-    @Mock private RefundService refundService;
-    @InjectMocks private AdminRefundController controller;
+    @Mock private PayoutService payoutService;
+    @InjectMocks private AdminPayoutController controller;
 
     private final UUID adminId = UUID.randomUUID();
 
@@ -68,40 +68,57 @@ class AdminRefundControllerTest {
     }
 
     @Test
-    void listAdminRefunds_shouldReturn200Paged() throws Exception {
-        RefundRequestView view = new RefundRequestView(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Reason", 5, 0, null,
-                RefundStatus.PENDING, null, "VCB", "970436", "******6789", "NGUYEN VAN A",
-                null, null, null, null, 0L, Instant.now()
+    void listAdminPayouts_shouldReturn200Paged() throws Exception {
+        PayoutRequestView view = new PayoutRequestView(
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                500000L, PayoutStatus.PENDING, "Rut tien", null, null, null, null, null, null, 0L, Instant.now()
         );
-        when(refundService.findAdminRefunds(nullable(String.class), any()))
+        when(payoutService.findAdminPayouts(nullable(String.class), any()))
                 .thenReturn(new PageImpl<>(List.of(view)));
 
-        mockMvc.perform(get("/api/admin/refund-requests")
+        mockMvc.perform(get("/api/admin/payout-requests")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data[0].amountVnd").value(500000))
                 .andExpect(jsonPath("$.meta.totalElements").value(1));
     }
 
     @Test
-    void approveRefund_shouldReturn200() throws Exception {
-        UUID refundId = UUID.randomUUID();
-        ApproveRefundRequest req = new ApproveRefundRequest(3, "Duyet 3 buoi", 0L);
+    void processPayout_shouldReturn200() throws Exception {
+        UUID payoutId = UUID.randomUUID();
+        ProcessPayoutRequest req = new ProcessPayoutRequest(0L);
 
-        RefundRequestView view = new RefundRequestView(
-                refundId, UUID.randomUUID(), UUID.randomUUID(), "Reason", 5, 3, 300000L,
-                RefundStatus.APPROVED, "Duyet 3 buoi", "VCB", "970436", "******6789", "NGUYEN VAN A",
-                null, null, adminId, Instant.now(), 1L, Instant.now()
+        PayoutRequestView view = new PayoutRequestView(
+                payoutId, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                500000L, PayoutStatus.PROCESSING, "Rut tien", null, null, null, null, adminId, Instant.now(), 1L, Instant.now()
         );
-        when(refundService.approveRefund(eq(adminId), eq(refundId), any())).thenReturn(view);
+        when(payoutService.processPayout(eq(adminId), eq(payoutId), any())).thenReturn(view);
 
-        mockMvc.perform(post("/api/admin/refund-requests/" + refundId + "/approve")
+        mockMvc.perform(post("/api/admin/payout-requests/" + payoutId + "/process")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.approvedSessions").value(3))
-                .andExpect(jsonPath("$.data.refundAmountVnd").value(300000));
+                .andExpect(jsonPath("$.data.status").value("PROCESSING"));
+    }
+
+    @Test
+    void completePayout_shouldReturn200() throws Exception {
+        UUID payoutId = UUID.randomUUID();
+        CompleteTransferRequest req = new CompleteTransferRequest("VCB123", Instant.now(), "proof", "https://proof", 1L);
+
+        PayoutRequestView view = new PayoutRequestView(
+                payoutId, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                500000L, PayoutStatus.SUCCEEDED, "Rut tien", null, "VCB123", "https://proof", Instant.now(), adminId, Instant.now(), 2L, Instant.now()
+        );
+        when(payoutService.completePayout(eq(adminId), eq(payoutId), any())).thenReturn(view);
+
+        mockMvc.perform(post("/api/admin/payout-requests/" + payoutId + "/complete")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("SUCCEEDED"));
     }
 }

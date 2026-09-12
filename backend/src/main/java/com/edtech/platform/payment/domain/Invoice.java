@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @Entity @Table(name = "invoices") @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE invoices SET is_deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE invoices SET is_deleted = true WHERE id = ? AND version = ?")
 @SQLRestriction("is_deleted = false")
 public class Invoice extends BaseEntity {
     @Column(name="invoice_number", nullable=false, length=50, unique=true) private String invoiceNumber;
@@ -43,7 +43,7 @@ public class Invoice extends BaseEntity {
     @Column(name="return_url", length=500) private String returnUrl;
     @Column(name="cancel_url", length=500) private String cancelUrl;
     @Column(name="fingerprint_version", nullable=false) private short fingerprintVersion = 2;
-
+    @Version @Column(nullable = false, columnDefinition = "bigint default 0") private long version;
     public static Invoice pending(String invoiceNumber, long orderCode, UUID studentId, UUID teacherId,
                                   UUID pricingPackageId, long amountVnd, UUID idempotencyKey,
                                   String requestFingerprint) {
