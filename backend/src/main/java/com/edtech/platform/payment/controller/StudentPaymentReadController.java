@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
-import com.edtech.platform.payment.dto.StudentInvoiceDetail;
+import com.edtech.platform.payment.dto.InvoiceDetail;
 
 @RestController
 @RequestMapping("/api/student")
@@ -20,8 +20,8 @@ public class StudentPaymentReadController {
 
     @GetMapping("/invoices/{id}")
     @RequireRole("STUDENT")
-    public ApiResponse<StudentInvoiceDetail> invoice(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser user) {
-        return ApiResponse.ok(invoices.findOwned(id, user.id()).map(StudentInvoiceDetail::from)
+    public ApiResponse<InvoiceDetail> invoice(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser user) {
+        return ApiResponse.ok(invoices.findOwned(id, user.id()).map(InvoiceDetail::from)
                 .orElseThrow(() -> new BusinessException(ErrorCode.INVOICE_NOT_FOUND)));
     }
 

@@ -83,6 +83,9 @@ public class RefundService {
             throw new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND);
         }
 
+        if ("REFUND_PENDING".equalsIgnoreCase(pkg.status())) {
+            throw new BusinessException(ErrorCode.PACKAGE_REFUND_IN_PROGRESS);
+        }
         if (!"ACTIVE".equalsIgnoreCase(pkg.status()) && !"LOCKED_EXPIRED".equalsIgnoreCase(pkg.status())) {
             throw new BusinessException(ErrorCode.PACKAGE_INVALID_STATE);
         }

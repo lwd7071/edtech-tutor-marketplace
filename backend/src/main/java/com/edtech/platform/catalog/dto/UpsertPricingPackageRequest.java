@@ -29,5 +29,15 @@ public record UpsertPricingPackageRequest(
         int sessionDurationMinutes,
 
         @NotNull(message = "Trạng thái không được để trống")
-        PackageStatus status
-) {}
+        PackageStatus status,
+
+        @jakarta.validation.constraints.Min(value = 0, message = "Version không hợp lệ")
+        long version
+) {
+    public UpsertPricingPackageRequest(UUID subjectId, String name, String description,
+                                       int totalSessions, int durationDays, long priceVnd,
+                                       int sessionDurationMinutes, PackageStatus status) {
+        this(subjectId, name, description, totalSessions, durationDays, priceVnd,
+                sessionDurationMinutes, status, 0L);
+    }
+}

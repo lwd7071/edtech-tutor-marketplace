@@ -48,17 +48,25 @@ public class TeacherAvailabilityService {
         TeacherProfile profile = teacherProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TEACHER_PROFILE_NOT_FOUND));
 
-        List<AvailabilityItem> items = request.availabilities();
+        List<AvailabilityItem> items = request.items();
 
         for (int i = 0; i < items.size(); i++) {
             AvailabilityItem item1 = items.get(i);
             if (!item1.startTime().isBefore(item1.endTime())) {
                 throw new BusinessException(ErrorCode.AVAILABILITY_INVALID_RANGE);
             }
+            String timezone = item1.timezone() == null || item1.timezone().isBlank()
+                    ? "Asia/Ho_Chi_Minh" : item1.timezone();
+            try {
+                java.time.ZoneId.of(timezone);
+            } catch (java.time.DateTimeException ex) {
+                throw new BusinessException(ErrorCode.AVAILABILITY_INVALID_TIMEZONE);
+            }
 
             for (int j = i + 1; j < items.size(); j++) {
                 AvailabilityItem item2 = items.get(j);
-                if (item1.dayOfWeek() == item2.dayOfWeek()) {
+                if (Boolean.TRUE.equals(item1.isActive()) && Boolean.TRUE.equals(item2.isActive())
+                        && item1.dayOfWeek() == item2.dayOfWeek()) {
                     if (item1.startTime().isBefore(item2.endTime()) && item1.endTime().isAfter(item2.startTime())) {
                         throw new BusinessException(ErrorCode.AVAILABILITY_TIME_CONFLICT);
                     }
@@ -74,8 +82,9 @@ public class TeacherAvailabilityService {
                         .dayOfWeek(item.dayOfWeek())
                         .startTime(item.startTime())
                         .endTime(item.endTime())
-                        .timezone("Asia/Ho_Chi_Minh") 
-                        .isActive(true)
+                        .timezone(item.timezone() == null || item.timezone().isBlank()
+                                ? "Asia/Ho_Chi_Minh" : item.timezone())
+                        .isActive(!Boolean.FALSE.equals(item.isActive()))
                         .build())
                 .toList();
 

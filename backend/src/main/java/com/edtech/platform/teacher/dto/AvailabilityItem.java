@@ -12,5 +12,9 @@ public record AvailabilityItem(
         LocalTime startTime,
 
         @NotNull(message = "Thời gian kết thúc không được để trống")
-        LocalTime endTime
+        LocalTime endTime,
+
+        String timezone,
+
+        Boolean isActive
 ) {}

@@ -63,7 +63,8 @@ public class RedisTokenService {
         return switch (purpose) {
             case EMAIL_VERIFY -> ErrorCode.AUTH_VERIFY_TOKEN_INVALID;
             case PASSWORD_RESET -> ErrorCode.AUTH_PASSWORD_RESET_TOKEN_INVALID;
-            case OAUTH_REGISTRATION, OAUTH_LOGIN_EXCHANGE -> ErrorCode.AUTH_VERIFY_TOKEN_INVALID;
+            case OAUTH_REGISTRATION -> ErrorCode.AUTH_OAUTH_REGISTRATION_TOKEN_INVALID;
+            case OAUTH_LOGIN_EXCHANGE -> ErrorCode.AUTH_OAUTH_EXCHANGE_TOKEN_INVALID;
         };
     }
 }

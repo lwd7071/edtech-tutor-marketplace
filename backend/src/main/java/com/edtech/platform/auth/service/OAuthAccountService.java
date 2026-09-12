@@ -45,7 +45,7 @@ public class OAuthAccountService implements OAuthAuthorizationPort {
         String userId = oneTimeTokens.consume(RedisTokenService.Purpose.OAUTH_LOGIN_EXCHANGE,
                 request.exchangeCode(), String.class);
         User user = users.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_VERIFY_TOKEN_INVALID));
+                .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_OAUTH_EXCHANGE_TOKEN_INVALID));
         accessPolicy.requireActiveAccess(user);
         user.setLastLoginAt(clock.instant());
         users.save(user);

@@ -2,7 +2,7 @@ package com.edtech.platform.payment.controller;
 
 import com.edtech.platform.payment.domain.Invoice;
 import com.edtech.platform.payment.domain.InvoiceStatus;
-import com.edtech.platform.payment.dto.InvoiceCreationRequest;
+import com.edtech.platform.payment.dto.CreateInvoiceRequest;
 import com.edtech.platform.payment.service.InvoiceService;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 
 import java.util.UUID;
+import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -62,12 +63,17 @@ class StudentInvoiceControllerTest {
         UUID idempotencyKey = UUID.randomUUID();
         UUID studentId = UUID.randomUUID();
         UUID packageId = UUID.randomUUID();
-        InvoiceCreationRequest request = new InvoiceCreationRequest(studentId, packageId, null, null);
+        CreateInvoiceRequest request = new CreateInvoiceRequest(packageId, null, null);
 
         Invoice mockInvoice = mock(Invoice.class);
         when(mockInvoice.getInvoiceNumber()).thenReturn("INV-123");
+        when(mockInvoice.getId()).thenReturn(UUID.randomUUID());
+        when(mockInvoice.getPricingPackageId()).thenReturn(packageId);
         when(mockInvoice.getStatus()).thenReturn(InvoiceStatus.PENDING);
         when(mockInvoice.getCheckoutUrl()).thenReturn("https://payos.vn/pay/123");
+        when(mockInvoice.getQrCode()).thenReturn("qr");
+        when(mockInvoice.getPaymentExpiredAt()).thenReturn(Instant.parse("2026-09-12T01:00:00Z"));
+        when(mockInvoice.getPaidAt()).thenReturn(null);
         when(mockInvoice.getAmountVnd()).thenReturn(500000L);
 
         when(invoiceService.createInvoiceAndPaymentLink(eq(studentId), eq(packageId), eq(idempotencyKey), any(), any()))
@@ -82,7 +88,9 @@ class StudentInvoiceControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.*").value(org.hamcrest.Matchers.hasSize(5)))
                 .andExpect(jsonPath("$.data.invoiceNumber").value("INV-123"))
+                .andExpect(jsonPath("$.data.pricingPackageId").value(packageId.toString()))
                 .andExpect(jsonPath("$.data.checkoutUrl").value("https://payos.vn/pay/123"));
     }
 }

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,16 +35,27 @@ class RestApiContractArchitectureTest {
                 }
                 Class<?> returnType = method.getReturnType();
                 boolean sharedEnvelope = ApiResponse.class.isAssignableFrom(returnType)
-                        || ResponseEntity.class.isAssignableFrom(returnType);
+                        || isApiResponseEntity(method);
                 ResponseStatus responseStatus = AnnotatedElementUtils.findMergedAnnotation(method, ResponseStatus.class);
                 boolean noContent = returnType == Void.TYPE && responseStatus != null
                         && responseStatus.code() == HttpStatus.NO_CONTENT;
-                if (!sharedEnvelope && !noContent) {
+                boolean documentedException = controller.getSimpleName().equals("PayOsWebhookController")
+                        || controller.getSimpleName().equals("HealthController");
+                if (!sharedEnvelope && !noContent && !documentedException) {
                     violations.add(controller.getSimpleName() + "#" + method.getName() + " -> " + returnType.getSimpleName());
                 }
             }
         }
 
         assertThat(violations).as("REST endpoints outside the five-field response contract").isEmpty();
+    }
+
+    private boolean isApiResponseEntity(Method method) {
+        if (!ResponseEntity.class.isAssignableFrom(method.getReturnType())) return false;
+        Type type = method.getGenericReturnType();
+        if (!(type instanceof ParameterizedType responseEntity)) return false;
+        Type[] args = responseEntity.getActualTypeArguments();
+        if (args.length != 1 || !(args[0] instanceof ParameterizedType body)) return false;
+        return body.getRawType() == ApiResponse.class;
     }
 }

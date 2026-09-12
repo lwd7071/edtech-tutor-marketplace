@@ -77,7 +77,7 @@ public class BookingService {
             throw new BusinessException(ErrorCode.PACKAGE_RELATION_MISMATCH);
         }
         if (!"ACTIVE".equalsIgnoreCase(pkg.status())) {
-            throw new BusinessException(ErrorCode.PACKAGE_INVALID_STATE);
+            throw new BusinessException(ErrorCode.PACKAGE_NOT_ACTIVE);
         }
         if (pkg.remainingSessions() <= 0) {
             throw new BusinessException(ErrorCode.PACKAGE_NO_REMAINING_SESSION);

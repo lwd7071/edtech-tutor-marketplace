@@ -39,6 +39,9 @@ public class PricingPackageService {
     @Transactional
     public PricingPackageView createPackage(UUID userId, UpsertPricingPackageRequest request) {
         TeacherSnapshot profile = requireApprovedTeacher(userId);
+        if (request.version() != 0) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Version khi tạo gói phải bằng 0");
+        }
 
         SubjectSnapshot subject = subjectFacade.getSubject(request.subjectId());
 
@@ -93,6 +96,8 @@ public class PricingPackageService {
             throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE);
         }
 
+        requireCurrentVersion(pkg, request.version());
+
         if (enrollmentFacade.hasStudentPackage(packageId)) {
             throw new BusinessException(ErrorCode.PACKAGE_IMMUTABLE_AFTER_PURCHASE);
         }
@@ -129,6 +134,8 @@ public class PricingPackageService {
         if (!pkg.getTeacherId().equals(profile.id())) {
             throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE);
         }
+
+        requireCurrentVersion(pkg, request.version());
 
         if (request.status() == PackageStatus.ACTIVE) {
             requireApproved(profile);
@@ -194,6 +201,12 @@ public class PricingPackageService {
     private void requireApproved(TeacherSnapshot profile) {
         if (!"APPROVED".equalsIgnoreCase(profile.status())) {
             throw new BusinessException(ErrorCode.TEACHER_NOT_APPROVED);
+        }
+    }
+
+    private void requireCurrentVersion(PricingPackage pkg, long requestedVersion) {
+        if (pkg.getVersion() != requestedVersion) {
+            throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
         }
     }
 
