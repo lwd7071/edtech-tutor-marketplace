@@ -13,10 +13,11 @@ export interface PaginationMeta {
 
 export interface ApiResponse<T> {
   success: boolean;
-  message: string;
+  message: string | null;
+  // For error responses callers use ApiResponse<null>; successful resource responses are non-null.
   data: T;
-  errors: ApiErrorDetail[];
-  meta?: PaginationMeta | null;
+  errors: ApiErrorDetail[] | null;
+  meta: PaginationMeta | null;
 }
 
 export interface PageResult<T> {

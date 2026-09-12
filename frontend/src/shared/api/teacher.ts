@@ -47,11 +47,12 @@ export interface TeacherSubjectProposal {
 
 
 export interface ReplaceAvailabilityRequest {
-  timezone: string;
   items: {
     dayOfWeek: string;
     startTime: string;
     endTime: string;
+    timezone: string;
+    isActive: boolean;
   }[];
 }
 
@@ -60,13 +61,11 @@ export interface CreatePackageRequest {
   subjectId: string;
   description: string;
   priceVnd: number;
-  sessionCount?: number;
-  durationMonths?: number;
-  trialEnabled?: boolean;
-  totalSessions?: number;
-  durationDays?: number;
-  sessionDurationMinutes?: number;
-  status?: string;
+  totalSessions: number;
+  durationDays: number;
+  sessionDurationMinutes: number;
+  status: string;
+  version: number;
 }
 
 export interface UpdatePackageRequest {
@@ -74,13 +73,11 @@ export interface UpdatePackageRequest {
   name: string;
   description: string;
   priceVnd: number;
-  sessionCount?: number;
-  durationMonths?: number;
-  trialEnabled?: boolean;
-  totalSessions?: number;
-  durationDays?: number;
-  sessionDurationMinutes?: number;
-  status?: string;
+  totalSessions: number;
+  durationDays: number;
+  sessionDurationMinutes: number;
+  status: string;
+  version: number;
 }
 
 type SubjectWire = {id:string;subject:{id:string;name:string;educationLevel:string}};
@@ -115,12 +112,12 @@ export const teacherApi = {
 
   // Availability
   getAvailabilities: () => axiosClient.get<{data:AvailabilityView[]}>('/api/teacher/availability').then(res => res.data.data),
-  replaceAvailabilities: (data: ReplaceAvailabilityRequest) => axiosClient.put('/api/teacher/availability', {availabilities:data.items}).then(res => res.data),
+  replaceAvailabilities: (data: ReplaceAvailabilityRequest) => axiosClient.put('/api/teacher/availability', data).then(res => res.data),
 
   // Packages
   getPackages: () => axiosClient.get<{data:PricingPackageView[]}>('/api/teacher/packages', {params:{size:100}}).then(res => res.data.data),
   getPackage: (id:string) => axiosClient.get<{data:PricingPackageView}>(`/api/teacher/packages/${id}`).then(res=>res.data.data),
   createPackage: (data: CreatePackageRequest) => axiosClient.post<{data:PricingPackageView}>('/api/teacher/packages', data).then(res => res.data.data),
   updatePackage: (id: string, data: UpdatePackageRequest) => axiosClient.put<{data:PricingPackageView}>(`/api/teacher/packages/${id}`, data).then(res => res.data.data),
-  updatePackageStatus: (id: string, status: string) => axiosClient.patch<void>(`/api/teacher/packages/${id}/status`, { status }).then(res => res.data),
+  updatePackageStatus: (id: string, status: string, version: number) => axiosClient.patch<void>(`/api/teacher/packages/${id}/status`, { status, version }).then(res => res.data),
 };

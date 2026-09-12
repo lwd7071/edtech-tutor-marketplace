@@ -15,8 +15,8 @@ jest.mock('@/shared/components/feedback/EmptyState', () => ({
 describe('TeacherPackagesTab', () => {
   it('renders packages correctly', () => {
     const packages = [
-      { id: '1', name: 'Gói cơ bản', description: 'Dạy toán 10', priceVnd: 500000, sessionCount: 4, durationMinutes: 60, status: 'ACTIVE' },
-      { id: '2', name: 'Gói nâng cao', priceVnd: 1000000, sessionCount: 8, durationMinutes: 90, status: 'ACTIVE' }
+      { id: '1', name: 'Gói cơ bản', description: 'Dạy toán 10', priceVnd: 500000, totalSessions: 4, sessionDurationMinutes: 60, durationDays: 30, subjectId: 's1', subjectName: 'Toán', version: 0, status: 'ACTIVE' },
+      { id: '2', name: 'Gói nâng cao', priceVnd: 1000000, totalSessions: 8, sessionDurationMinutes: 90, durationDays: 60, subjectId: 's1', subjectName: 'Toán', version: 0, status: 'ACTIVE' }
     ];
 
     render(<TeacherPackagesTab packages={packages} />);

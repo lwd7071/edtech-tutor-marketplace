@@ -98,14 +98,16 @@ export interface PricingPackageView {
   name: string;
   description?: string;
   priceVnd: number;
-  sessionCount: number;
-  durationMinutes: number;
-  totalSessions?: number;
-  sessionDurationMinutes?: number;
-  durationDays?: number;
-  subjectId?: string;
-  subjectName?: string;
-  version?: number;
+  totalSessions: number;
+  sessionDurationMinutes: number;
+  durationDays: number;
+  subjectId: string;
+  subjectName: string;
+  /** @deprecated use totalSessions/sessionDurationMinutes */
+  sessionCount?: number;
+  /** @deprecated use sessionDurationMinutes */
+  durationMinutes?: number;
+  version: number;
   status: string;
 }
 

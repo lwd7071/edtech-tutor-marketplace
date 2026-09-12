@@ -20,12 +20,12 @@ describe('teacherApi', () => {
     });
 
     it('should replace availabilities successfully', async () => {
-      const mockPayload = { timezone: 'Asia/Ho_Chi_Minh', items: [{ dayOfWeek: 'MONDAY', startTime: '08:00:00', endTime: '10:00:00' }] };
+      const mockPayload = { items: [{ dayOfWeek: 'MONDAY', startTime: '08:00:00', endTime: '10:00:00', timezone: 'Asia/Ho_Chi_Minh', isActive: true }] };
       (axiosClient.put as jest.Mock).mockResolvedValueOnce({ data: undefined });
 
       await teacherApi.replaceAvailabilities(mockPayload);
 
-      expect(axiosClient.put).toHaveBeenCalledWith('/api/teacher/availability', { availabilities: mockPayload.items });
+      expect(axiosClient.put).toHaveBeenCalledWith('/api/teacher/availability', mockPayload);
     });
   });
 
@@ -41,7 +41,7 @@ describe('teacherApi', () => {
     });
 
     it('should create package successfully', async () => {
-      const mockPayload = { name: 'Basic', priceVnd: 500000, subjectId: 'subj1', description: 'desc', sessionCount: 10, durationMonths: 1, trialEnabled: false };
+      const mockPayload = { name: 'Basic', priceVnd: 500000, subjectId: 'subj1', description: 'desc', totalSessions: 10, durationDays: 30, sessionDurationMinutes: 60, status: 'DRAFT', version: 0 };
       const mockData = { id: '1', ...mockPayload };
       (axiosClient.post as jest.Mock).mockResolvedValueOnce({ data: { data: mockData } });
 
@@ -52,7 +52,7 @@ describe('teacherApi', () => {
     });
 
     it('should update package successfully', async () => {
-      const mockPayload = { name: 'Pro', priceVnd: 600000, description: 'new desc', sessionCount: 12, durationMonths: 2, trialEnabled: true };
+      const mockPayload = { name: 'Pro', priceVnd: 600000, subjectId: 'subj1', description: 'new desc', totalSessions: 12, durationDays: 60, sessionDurationMinutes: 60, status: 'DRAFT', version: 1 };
       const mockData = { id: '1', ...mockPayload };
       (axiosClient.put as jest.Mock).mockResolvedValueOnce({ data: { data: mockData } });
 
@@ -65,9 +65,9 @@ describe('teacherApi', () => {
     it('should update package status successfully', async () => {
       (axiosClient.patch as jest.Mock).mockResolvedValueOnce({ data: undefined });
 
-      await teacherApi.updatePackageStatus('1', 'INACTIVE');
+      await teacherApi.updatePackageStatus('1', 'INACTIVE', 2);
 
-      expect(axiosClient.patch).toHaveBeenCalledWith('/api/teacher/packages/1/status', { status: 'INACTIVE' });
+      expect(axiosClient.patch).toHaveBeenCalledWith('/api/teacher/packages/1/status', { status: 'INACTIVE', version: 2 });
     });
   });
 });

@@ -66,9 +66,11 @@ export const AvailabilityEditor: React.FC = () => {
         dayOfWeek: REV_DAY_MAP[s.dayOfWeek],
         startTime: s.startTime,
         endTime: s.endTime,
+        timezone,
+        isActive: true,
       }));
       
-      await teacherApi.replaceAvailabilities({ timezone, items });
+      await teacherApi.replaceAvailabilities({ items });
       message.success('Cập nhật lịch rảnh thành công');
     } catch (error) {
       message.error('Lưu lịch rảnh thất bại');

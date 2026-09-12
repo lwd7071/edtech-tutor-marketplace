@@ -84,10 +84,9 @@ describe('AvailabilityEditor', () => {
     });
 
     expect(teacherApi.replaceAvailabilities).toHaveBeenCalledWith({
-      timezone: expect.any(String),
       items: [
-        { dayOfWeek: 'MONDAY', startTime: '08:00', endTime: '09:00' },
-        { dayOfWeek: 'TUESDAY', startTime: '09:00', endTime: '10:00' }
+        { dayOfWeek: 'MONDAY', startTime: '08:00', endTime: '09:00', timezone: 'Asia/Ho_Chi_Minh', isActive: true },
+        { dayOfWeek: 'TUESDAY', startTime: '09:00', endTime: '10:00', timezone: 'Asia/Ho_Chi_Minh', isActive: true }
       ]
     });
     
