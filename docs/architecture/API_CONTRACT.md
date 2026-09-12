@@ -161,7 +161,7 @@ Page<T>     data: T[], meta: PageMeta
 
 | Method | Endpoint | Quyền | Request | Response `data` |
 |---|---|---|---|---|
-| POST | `/api/auth/register` | Public | `RegisterRequest` | `AuthResult` (`201`) |
+| POST | `/api/auth/register` | Public | `RegisterRequest` | `RegistrationResult` (`201`) |
 | POST | `/api/auth/login` | Public | `LoginRequest` | `AuthResult` |
 | POST | `/api/auth/refresh` | Public | `RefreshRequest` | `AuthResult` |
 | POST | `/api/auth/logout` | Authenticated | `RefreshRequest` | `null` |
@@ -170,7 +170,7 @@ Page<T>     data: T[], meta: PageMeta
 | POST | `/api/auth/forgot-password` | Public | `ForgotPasswordRequest` | `null` |
 | POST | `/api/auth/reset-password` | Public | `ResetPasswordRequest` | `null` |
 | POST | `/api/auth/oauth2/exchange` | Public | `OAuthExchangeRequest` | `AuthResult` |
-| POST | `/api/auth/oauth2/complete-registration` | Public | `CompleteOAuthRegistrationRequest` | `AuthResult` |
+| POST | `/api/auth/oauth2/complete-registration` | Public | `CompleteOAuthRegistrationRequest` | `AuthResult` (`201`) |
 | GET | `/oauth2/authorization/google` | Public | — | Redirect Google |
 
 ```json
@@ -323,6 +323,8 @@ Upload document dùng parts `file`, `documentType`, `title`. MIME/size theo `COD
 }
 ```
 
+`items` là tên canonical. Backend tạm nhận top-level `availabilities` như alias deprecated; item cũ thiếu `timezone` hoặc `isActive` được mặc định lần lượt là `Asia/Ho_Chi_Minh` và `true`.
+
 PUT availability thay toàn bộ danh sách trong một transaction; overlap trả `409 AVAILABILITY_TIME_CONFLICT`.
 
 ### 4.2. Pricing package và booking
@@ -334,6 +336,8 @@ PUT availability thay toàn bộ danh sách trong một transaction; overlap tr�
 | PATCH | `/api/teacher/packages/{id}/status` | `ChangePackageStatusRequest` | `PricingPackageView` |
 | POST | `/api/teacher/bookings` | `CreateBookingRequest` | `BookingDetail` (`201`) |
 | POST | `/api/teacher/bookings/{id}/complete` | `CompleteBookingRequest` | `BookingDetail` |
+
+`UpsertPricingPackageRequest.version` phải bằng `0` khi tạo. PUT và PATCH status bắt buộc gửi version hiện tại; version cũ trả `409 CONCURRENT_MODIFICATION`.
 | POST | `/api/teacher/bookings/{id}/cancel` | `CancelBookingRequest` | `BookingDetail` |
 | GET | `/api/teacher/trial-requests` | `status?`, pagination | `TrialRequestView[]` |
 | POST | `/api/teacher/trial-requests/{id}/accept` | `AcceptTrialRequest` | `BookingDetail` (`201`) |

@@ -72,6 +72,10 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | `AUTH_EMAIL_NOT_VERIFIED` | 403 | Chức năng yêu cầu email đã xác minh |
 | `AUTH_PASSWORD_RESET_TOKEN_INVALID` | 400 | Token reset sai/đã dùng |
 | `AUTH_PASSWORD_RESET_TOKEN_EXPIRED` | 400 | Token reset hết hạn |
+| `AUTH_VERIFY_TOKEN_INVALID` | 400 | Token xác minh email không hợp lệ, hết hạn hoặc đã dùng |
+| `AUTH_VERIFY_TOKEN_EXPIRED` | 400 | Reserved compatibility code; runtime dùng `AUTH_VERIFY_TOKEN_INVALID` khi Redis không phân biệt được hết hạn và đã dùng |
+| `AUTH_OAUTH_REGISTRATION_TOKEN_INVALID` | 400 | OAuth registration token không hợp lệ, hết hạn hoặc đã dùng |
+| `AUTH_OAUTH_EXCHANGE_TOKEN_INVALID` | 400 | OAuth exchange code không hợp lệ, hết hạn hoặc đã dùng |
 | `AUTH_OAUTH_ROLE_REQUIRED` | 422 | Google account mới chưa chọn Student/Teacher |
 | `AUTH_OAUTH_LINK_NOT_ALLOWED` | 409 | Cố tự động link OAuth vào local account chưa xác minh |
 | `ACCOUNT_LOCKED` | 403 | User ở trạng thái `LOCKED`; không login/refresh |
@@ -105,6 +109,7 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | `SUBJECT_PROPOSAL_ALREADY_PROCESSED` | 409 | Proposal đã được approve/reject hoặc request thua race |
 | `AVAILABILITY_TIME_CONFLICT` | 409 | Hai khoảng active cùng teacher/ngày overlap |
 | `AVAILABILITY_INVALID_RANGE` | 400 | `startTime >= endTime` hoặc thiếu bộ filter thời gian |
+| `AVAILABILITY_INVALID_TIMEZONE` | 400 | Timezone không hợp lệ theo IANA |
 
 ## 6. PricingPackage và StudentPackage
 
@@ -112,6 +117,7 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 |---|---:|---|
 | `PRICING_PACKAGE_NOT_FOUND` | 404 | PricingPackage không tồn tại |
 | `PACKAGE_NOT_ACTIVE` | 422 | Mua/đặt lịch với PricingPackage hoặc StudentPackage không ACTIVE |
+| `PACKAGE_INVALID_STATE` | 422 | Transition trạng thái PricingPackage không hợp lệ |
 | `PACKAGE_IMMUTABLE_AFTER_PURCHASE` | 422 | Sửa giá/số buổi/thời hạn/môn của gói đã được mua |
 | `PACKAGE_EXPIRED` | 422 | StudentPackage hết hạn/`LOCKED_EXPIRED` |
 | `PACKAGE_NO_REMAINING_SESSION` | 422 | `remainingSessions = 0` khi tạo Booking |
@@ -155,7 +161,7 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | `INVOICE_EXPIRED` | 422 | Payment link/invoice đã hết hạn |
 | `PAYMENT_AMOUNT_MISMATCH` | 422 | Số tiền provider khác chính xác `invoice.amountVnd` |
 | `PAYMENT_SIGNATURE_INVALID` | 401 | Webhook signature không hợp lệ |
-| `PAYMENT_ALREADY_PROCESSED` | 409* | Provider reference đã xử lý |
+| `PAYMENT_ALREADY_PROCESSED` | 409 | Provider reference đã xử lý |
 | `PAYMENT_LINK_CREATION_FAILED` | 502 | payOS không tạo được payment link |
 | `PAYMENT_PROVIDER_ERROR` | 502 | payOS trả lỗi/response không hợp lệ |
 | `PAYMENT_RECONCILIATION_FAILED` | 502 | Đối soát server-to-server thất bại |

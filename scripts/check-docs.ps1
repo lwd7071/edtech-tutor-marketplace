@@ -47,6 +47,35 @@ foreach ($file in $currentDocs) {
     }
 }
 
+# Keep the documented error-code table in lockstep with the backend enum.
+$errorEnumPath = Join-Path $repo 'backend\src\main\java\com\edtech\platform\common\exception\ErrorCode.java'
+$errorDocsPath = Join-Path $repo 'docs\architecture\ERROR_CODES.md'
+if ((Test-Path $errorEnumPath -PathType Leaf) -and (Test-Path $errorDocsPath -PathType Leaf)) {
+    $enumText = Get-Content -Raw -LiteralPath $errorEnumPath
+    $docText = Get-Content -Raw -LiteralPath $errorDocsPath
+    $statusMap = @{
+        BAD_REQUEST=400; UNAUTHORIZED=401; FORBIDDEN=403; NOT_FOUND=404; CONFLICT=409
+        UNSUPPORTED_MEDIA_TYPE=415; PAYLOAD_TOO_LARGE=413
+        UNPROCESSABLE_ENTITY=422; TOO_MANY_REQUESTS=429; INTERNAL_SERVER_ERROR=500
+        BAD_GATEWAY=502; SERVICE_UNAVAILABLE=503; NO_CONTENT=204
+    }
+    $enumEntries = @{}
+    foreach ($m in [regex]::Matches($enumText, '(?m)^\s*([A-Z][A-Z0-9_]+)\(HttpStatus\.([A-Z_]+),')) {
+        $enumEntries[$m.Groups[1].Value] = $statusMap[$m.Groups[2].Value]
+    }
+    $docEntries = @{}
+    foreach ($m in [regex]::Matches($docText, '(?m)^\|\s*`([A-Z][A-Z0-9_]+)`\s*\|\s*(\d{3})\s*\|')) {
+        $docEntries[$m.Groups[1].Value] = [int]$m.Groups[2].Value
+    }
+    foreach ($code in $enumEntries.Keys) {
+        if (-not $docEntries.ContainsKey($code)) { $failures.Add("Error code only in enum: $code") }
+        elseif ($enumEntries[$code] -ne $docEntries[$code]) { $failures.Add("Error code status mismatch: $code enum=$($enumEntries[$code]) docs=$($docEntries[$code])") }
+    }
+    foreach ($code in $docEntries.Keys) {
+        if (-not $enumEntries.ContainsKey($code)) { $failures.Add("Error code only in docs: $code") }
+    }
+}
+
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { Write-Error $_ }
     exit 1
