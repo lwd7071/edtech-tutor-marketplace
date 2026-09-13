@@ -1,5 +1,12 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-13 — Apply V30 lên Supabase và khóa quy trình migration
+
+- Thêm Flyway Maven plugin và `scripts/update-supabase-schema.ps1` với preflight version/checksum, guard migration phá hủy và post-migrate validation; secret chỉ đọc từ `.env.cloud`, không in ra log.
+- Bổ sung rule Supabase vào `AGENTS.md`: code/docs-only không mutate database; migration tương thích ngược phải test, preflight, apply và ghi evidence.
+- Flyway cloud preflight xác nhận V29; `V30__fix_data_constraints_and_locking` đã apply thành công, Supabase hiện ở V30 và validate 30 migrations pass.
+- Flyway Testcontainers focused run trong lượt này bị blocked vì Docker daemon không có `dockerDesktopLinuxEngine`; không tính blocked run là pass.
+
 ## 2026-09-13 — Sửa regression contract/version sau review
 
 - Khôi phục request contract cho teacher rejection và cho phép `ApiResponse<Void>` thành công đi qua Axios interceptor.

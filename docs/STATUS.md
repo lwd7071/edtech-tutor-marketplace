@@ -6,7 +6,7 @@
 ## Mốc kỹ thuật
 
 - Backend modular monolith đã có các seam chính cho auth, mail, payment, finance, booking, learning và communication.
-- Migration mới nhất trong working tree: `V30__fix_data_constraints_and_locking.sql` (Fix lỗi dữ liệu/migration).
+- Migration mới nhất trong repository: `V30__fix_data_constraints_and_locking.sql` (Fix lỗi dữ liệu/migration); Supabase đã apply thành công đến V30.
 - Không dùng Flyway `repair()`, không sửa migration đã áp dụng và không reset database người dùng.
 
 ## Trạng thái theo luồng
@@ -19,7 +19,7 @@
 | Assignment/attachment | Đã triển khai endpoint và view mới | Cần kiểm thử file thật |
 | Chat/notification/events | Đã triển khai event và mở conversation | Smoke test local đã xác nhận gửi/nhận giữa Student và Teacher qua STOMP tới backend `:8080`; cảnh báo browser extension không thuộc ứng dụng |
 | Teacher search/catalog | Đã triển khai V28, query/count/cache/config | Focused tests và PostgreSQL Testcontainers pass; V28 đã áp dụng trên Supabase; cloud smoke và load test chưa xác minh |
-| Finance/refund/payout/package | Đã harden domain, contract/UI, V29 và idempotency | Domain/backend focused và full backend đều pass; finance idempotency concurrency `2/2`, Flyway V1→V30/V27→V30 pass trên Testcontainers; frontend full check `252/252` pass; V29 đã apply Supabase bằng cloud Flyway user. |
+| Finance/refund/payout/package | Đã harden domain, contract/UI, V30 và idempotency | Domain/backend focused và full backend đều pass; finance idempotency concurrency `2/2`, Flyway V1→V30/V27→V30 pass khi Docker hoạt động; frontend full check `252/252` pass; V30 đã apply Supabase bằng cloud Flyway user. |
 | Parent contact/requests/reports | Đã triển khai UI/API liên quan | Cần smoke test theo role |
 | Frontend Student Journey | Đã có route/component/API thay đổi | Playwright chưa chạy |
 
@@ -96,6 +96,8 @@
 - Teacher-search PostgreSQL 16 Testcontainers: repository regression + EXPLAIN/index assertions `4/4` pass; Flyway clean schema, metadata và V27 → V28 upgrade `9/9` pass.
 - Supabase V28 migration bằng đúng Flyway connection/user: pass; Flyway validated 28 migrations, current version V27 và apply V28 thành công trên PostgreSQL 17.6. Migration DO preflight xác nhận `unaccent`/`pg_trgm` ở `public`.
 - Supabase V29 preflight bằng đúng Flyway user: current version V28, extensions `unaccent`/`pg_trgm` ở `public`, không có duplicate active refund/extension/payout hoặc legacy status; cloud servlet startup đã validate 29 migrations và apply V29 thành công trên PostgreSQL 17.6, sau đó process đã được dừng.
+- Supabase V30 preflight read-only xác nhận current version V29 và validate 30 migrations; Flyway đã apply `V30__fix_data_constraints_and_locking` thành công trên PostgreSQL 17.6 ngày 2026-09-13, post-migrate validate/info xác nhận schema version V30 và migration state `Success`. Không sửa migration cũ, không dùng `repair` hoặc `clean`.
+- Thêm `scripts/update-supabase-schema.ps1` và Flyway Maven plugin guarded: code/docs-only không mutate Supabase; migration mới phải kiểm tra version, chặn operation phá hủy, preflight và post-validate.
 - Finance idempotency executor, aspect wiring cho toàn bộ Finance POST và scheduled receipt cleanup đã compile; focused executor `2/2` pass. Frontend API tạo key và hook giữ key qua retry cùng command; focused finance/admin Jest `42/42` và typecheck pass.
 - Full backend Maven/Testcontainers sau khi đồng bộ API, sửa lỗi Architecture, và fix lỗi Bảo mật/Phân quyền (Mục 5): `350/350` pass, `0` failure/error/skipped (Đã verify `SecurityIdorIntegrationTest` pass với RequireRoleAspect).
 - Đợt optimistic-lock contract tiếp theo đã cập nhật DTO/service/controller cho trial, learning, subject proposal và bank account; backend focused và full integration đều pass. `If-Match` bank-account delete kiểm tra ownership trước khi parse để giữ IDOR `404` và malformed own-resource header `400`.
@@ -110,7 +112,7 @@ Các con số trên chỉ là bằng chứng gần nhất đã có; benchmark v�
 ## Việc đang chờ
 
 1. Khi cần đối chiếu local, mở Docker và chạy `scripts/test-student-journey-docker.ps1`.
-2. Nếu cần kiểm thử nâng cấp riêng, xác nhận V26/V27 trên bản sao Supabase test; Supabase chính đã ở V29.
+2. Nếu cần kiểm thử nâng cấp riêng, xác nhận V26/V27 trên bản sao Supabase test; Supabase chính đã ở V30.
 3. Chạy smoke test các role Student, Teacher và Admin.
 4. Cập nhật bảng này bằng số liệu thật sau mỗi lần chạy.
 5. Có thể chạy lại `scripts/preflight-teacher-search-extensions.sql` bằng Flyway user để bổ sung bằng chứng standalone; không deploy lại V28/V29.

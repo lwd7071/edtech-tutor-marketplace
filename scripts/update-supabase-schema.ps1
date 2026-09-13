@@ -108,14 +108,14 @@ $infoBefore = @(Invoke-Flyway 'info')
 $currentVersion = Get-CurrentFlywayVersion $infoBefore
 if ($currentVersion -eq $TargetVersion) {
     Write-Output ("Supabase is already at V{0}; no migration needed." -f $TargetVersion)
-    Invoke-Flyway 'validate'
+    Invoke-Flyway 'validate' | Out-Null
     if ($Apply) { Write-Output 'Apply requested but database is already at target; no-op.' }
     exit 0
 }
 if ($currentVersion -ne $ExpectedCurrentVersion) {
     Stop-WithMessage ("Expected current V{0}, but Flyway info reported V{1}." -f $ExpectedCurrentVersion, $currentVersion)
 }
-Invoke-Flyway 'validate' @('-Dflyway.ignoreMigrationPatterns=*:pending')
+Invoke-Flyway 'validate' @('-Dflyway.ignoreMigrationPatterns=*:pending') | Out-Null
 
 if (-not $Apply) {
     Write-Output 'Read-only preflight complete; no migration applied.'
@@ -123,7 +123,7 @@ if (-not $Apply) {
 }
 
 Write-Output ("Applying V{0}; Flyway will not clean the database." -f $TargetVersion)
-Invoke-Flyway 'migrate' @('-Dflyway.target=' + $TargetVersion)
-Invoke-Flyway 'validate'
-Invoke-Flyway 'info'
+Invoke-Flyway 'migrate' @('-Dflyway.target=' + $TargetVersion) | Out-Null
+Invoke-Flyway 'validate' | Out-Null
+Invoke-Flyway 'info' | Out-Null
 Write-Output ("Supabase migration target V{0} completed and post-migrate validation passed." -f $TargetVersion)
