@@ -47,6 +47,7 @@ public class BankAccountService {
     public BankAccountView createAccount(UUID teacherUserId, UpsertBankAccountRequest request) {
         UUID teacherId = resolveTeacherId(teacherUserId);
         validateRequest(request);
+        if (request.version() != 0L) throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Create version must be 0");
 
         boolean isDefault = request.isDefault() != null && request.isDefault();
         boolean hasAccounts = bankAccountRepository.existsByTeacherId(teacherId);
@@ -79,6 +80,7 @@ public class BankAccountService {
 
         TeacherBankAccount account = bankAccountRepository.findByIdAndTeacherId(accountId, teacherId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.BANK_ACCOUNT_NOT_FOUND));
+        requireVersion(account.getVersion(), request.version());
 
         boolean isDefault = request.isDefault() != null && request.isDefault();
         String encrypted = accountNumbers.encrypt(request.accountNumber());
@@ -97,13 +99,30 @@ public class BankAccountService {
         return views.toView(account);
     }
 
+    /**
+     * Deletes after ownership lookup, so an IDOR cannot be turned into a version/header oracle.
+     * The If-Match syntax is validated only after the resource is known to belong to the caller.
+     */
     @Transactional
-    public void deleteAccount(UUID teacherUserId, UUID accountId) {
+    public void deleteAccount(UUID teacherUserId, UUID accountId, String ifMatch) {
         UUID teacherId = resolveTeacherId(teacherUserId);
         TeacherBankAccount account = bankAccountRepository.findByIdAndTeacherId(accountId, teacherId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.BANK_ACCOUNT_NOT_FOUND));
-
+        if (ifMatch == null || !ifMatch.matches("\\\"\\d+\\\"")) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "If-Match phải là version hiện tại");
+        }
+        final long requestedVersion;
+        try {
+            requestedVersion = Long.parseLong(ifMatch.substring(1, ifMatch.length() - 1));
+        } catch (NumberFormatException exception) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "If-Match phải là version hiện tại");
+        }
+        requireVersion(account.getVersion(), requestedVersion);
         bankAccountRepository.delete(account);
+    }
+
+    private void requireVersion(long current, long requested) {
+        if (current != requested) throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
     }
 
     private void validateRequest(UpsertBankAccountRequest request) {

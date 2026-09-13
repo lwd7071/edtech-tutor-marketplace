@@ -5,6 +5,8 @@ import com.edtech.platform.common.security.RequireRole;
 import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.learning.dto.request.CreateAssignmentRequest;
 import com.edtech.platform.learning.dto.request.GradeSubmissionRequest;
+import com.edtech.platform.learning.dto.request.VersionedAssignmentActionRequest;
+import jakarta.validation.constraints.Min;
 import com.edtech.platform.learning.dto.response.AssignmentDetail;
 import com.edtech.platform.learning.dto.response.SubmissionDetail;
 import com.edtech.platform.learning.service.TeacherAssignmentService;
@@ -37,14 +39,14 @@ public class TeacherAssignmentController {
 
     @PostMapping("/assignments/{id}/publish")
     @RequireRole("TEACHER")
-    public ApiResponse<AssignmentDetail> publish(@AuthenticationPrincipal AuthenticatedUser user, @PathVariable UUID id) {
-        return ApiResponse.ok(teacherAssignmentService.transition(user.id(), id, com.edtech.platform.learning.domain.AssignmentStatus.PUBLISHED));
+    public ApiResponse<AssignmentDetail> publish(@AuthenticationPrincipal AuthenticatedUser user, @PathVariable UUID id, @Valid @RequestBody VersionedAssignmentActionRequest request) {
+        return ApiResponse.ok(teacherAssignmentService.transition(user.id(), id, com.edtech.platform.learning.domain.AssignmentStatus.PUBLISHED, request.version()));
     }
 
     @PostMapping("/assignments/{id}/close")
     @RequireRole("TEACHER")
-    public ApiResponse<AssignmentDetail> close(@AuthenticationPrincipal AuthenticatedUser user, @PathVariable UUID id) {
-        return ApiResponse.ok(teacherAssignmentService.transition(user.id(), id, com.edtech.platform.learning.domain.AssignmentStatus.CLOSED));
+    public ApiResponse<AssignmentDetail> close(@AuthenticationPrincipal AuthenticatedUser user, @PathVariable UUID id, @Valid @RequestBody VersionedAssignmentActionRequest request) {
+        return ApiResponse.ok(teacherAssignmentService.transition(user.id(), id, com.edtech.platform.learning.domain.AssignmentStatus.CLOSED, request.version()));
     }
 
     @PostMapping("/assignments")

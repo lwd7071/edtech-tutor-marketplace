@@ -52,8 +52,9 @@ public class TeacherBankAccountController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @AuthenticationPrincipal AuthenticatedUser user,
-            @PathVariable UUID id
+            @PathVariable UUID id,
+            @RequestHeader(value = "If-Match", required = false) String ifMatch
     ) {
-        bankAccountService.deleteAccount(user.id(), id);
+        bankAccountService.deleteAccount(user.id(), id, ifMatch);
     }
 }

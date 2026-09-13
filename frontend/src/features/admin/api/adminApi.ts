@@ -6,6 +6,7 @@ import {
   IdentitySnapshot,
   ApproveTeacherRequest,
   RejectRequest,
+  SubjectProposalRejectRequest,
   ApproveSubjectProposalRequest,
   ChangeUserStatusRequest,
 } from '../types';
@@ -57,7 +58,7 @@ export const adminApi = {
 
   rejectSubjectProposal: async (
     proposalId: string,
-    data: RejectRequest
+    data: SubjectProposalRejectRequest
   ): Promise<ApiResponse<SubjectProposalSnapshot>> => {
     return (await axiosClient.post(`/api/admin/subject-proposals/${proposalId}/reject`, data)).data;
   },

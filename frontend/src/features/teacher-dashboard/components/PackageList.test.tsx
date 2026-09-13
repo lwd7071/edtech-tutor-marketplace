@@ -10,8 +10,8 @@ jest.mock('@/shared/api/teacher', () => ({ teacherApi: { getProfile: jest.fn(), 
 jest.mock('../api/teacherDashboardApi', () => ({ teacherDashboardApi: { getPackages: jest.fn() } }));
 
 const packages = [
-  { id: '1', name: 'Toán cơ bản', subjectName: 'Toán', priceVnd: 500000, totalSessions: 10, sessionDurationMinutes: 60, durationDays: 60, status: 'ACTIVE' },
-  { id: '2', name: 'Toán nâng cao', subjectName: 'Toán', priceVnd: 800000, totalSessions: 12, sessionDurationMinutes: 60, durationDays: 90, status: 'INACTIVE' },
+  { id: '1', name: 'Toán cơ bản', subjectName: 'Toán', priceVnd: 500000, totalSessions: 10, sessionDurationMinutes: 60, durationDays: 60, status: 'ACTIVE', version: 2 },
+  { id: '2', name: 'Toán nâng cao', subjectName: 'Toán', priceVnd: 800000, totalSessions: 12, sessionDurationMinutes: 60, durationDays: 90, status: 'INACTIVE', version: 4 },
 ];
 const renderPage = () => render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><App><PackageList onEdit={jest.fn()} onCreate={jest.fn()} /></App></QueryClientProvider>);
 
@@ -39,6 +39,6 @@ describe('PackageList', () => {
     (teacherApi.updatePackageStatus as jest.Mock).mockResolvedValue({});
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: 'Ngừng bán' }));
-    await waitFor(() => expect(teacherApi.updatePackageStatus).toHaveBeenCalledWith('1', 'INACTIVE'));
+    await waitFor(() => expect(teacherApi.updatePackageStatus).toHaveBeenCalledWith('1', 'INACTIVE', 2));
   });
 });

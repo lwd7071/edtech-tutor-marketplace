@@ -118,8 +118,25 @@ class BankAccountServiceTest {
         );
         when(bankAccountRepository.findByIdAndTeacherId(accountId, teacherId)).thenReturn(Optional.of(existing));
 
-        bankAccountService.deleteAccount(teacherUserId, accountId);
+        bankAccountService.deleteAccount(teacherUserId, accountId, "\"0\"");
 
         verify(bankAccountRepository).delete(existing);
+    }
+
+    @Test
+    void deleteRejectsMalformedOrOverflowingIfMatchAsValidationError() {
+        UUID accountId = UUID.randomUUID();
+        when(teacherFacade.getTeacherByUserId(teacherUserId)).thenReturn(mockTeacherSnapshot());
+        TeacherBankAccount existing = TeacherBankAccount.create(
+                teacherId, "970436", "Vietcombank", "enc", "NGUYEN VAN A", false);
+        when(bankAccountRepository.findByIdAndTeacherId(accountId, teacherId)).thenReturn(Optional.of(existing));
+
+        for (String invalid : List.of("\"0", "0\"", "0", "\"999999999999999999999999\"")) {
+            assertThatThrownBy(() -> bankAccountService.deleteAccount(teacherUserId, accountId, invalid))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(error -> assertThat(((BusinessException) error).getErrorCode())
+                            .isEqualTo(ErrorCode.VALIDATION_ERROR));
+        }
+        verify(bankAccountRepository, never()).delete(any());
     }
 }

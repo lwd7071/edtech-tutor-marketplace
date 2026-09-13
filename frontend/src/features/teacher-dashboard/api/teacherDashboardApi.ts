@@ -1,5 +1,5 @@
 import { axiosClient } from '@/shared/api/axiosClient';
-import type { ApiResponse } from '@/shared/backend';
+import { ApiResponse, ApiResponseWithData, requireApiData } from '@/shared/backend';
 import type { PricingPackageView } from '@/shared/api/public';
 
 export interface LearnerPackage {
@@ -17,9 +17,9 @@ export interface LearnerPackage {
 }
 
 export const teacherDashboardApi = {
-  getPackages: async (page = 0, size = 12): Promise<ApiResponse<PricingPackageView[]>> =>
-    (await axiosClient.get<ApiResponse<PricingPackageView[]>>('/api/teacher/packages', { params: { page, size } })).data,
+  getPackages: async (page = 0, size = 12): Promise<ApiResponseWithData<PricingPackageView[]>> =>
+    requireApiData((await axiosClient.get<ApiResponse<PricingPackageView[]>>('/api/teacher/packages', { params: { page, size } })).data),
 
-  getLearners: async (page = 0, size = 12, studentId?: string): Promise<ApiResponse<LearnerPackage[]>> =>
-    (await axiosClient.get<ApiResponse<LearnerPackage[]>>('/api/teacher/students', { params: { page, size, studentId } })).data,
+  getLearners: async (page = 0, size = 12, studentId?: string): Promise<ApiResponseWithData<LearnerPackage[]>> =>
+    requireApiData((await axiosClient.get<ApiResponse<LearnerPackage[]>>('/api/teacher/students', { params: { page, size, studentId } })).data),
 };

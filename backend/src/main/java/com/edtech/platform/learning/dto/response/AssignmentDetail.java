@@ -21,4 +21,5 @@ public class AssignmentDetail {
     private JsonNode quizSchema;
     private Instant dueAt;
     private AssignmentStatus status;
+    private long version;
 }

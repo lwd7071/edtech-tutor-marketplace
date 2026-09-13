@@ -16,6 +16,7 @@ export interface AssignmentDetail {
   quizSchema?: any;
   dueAt: string;
   status: 'DRAFT' | 'PUBLISHED' | 'CLOSED';
+  version: number;
 }
 
 export interface SubmissionDetail {
@@ -28,9 +29,11 @@ export interface SubmissionDetail {
   score: number | null;
   feedbackText: string | null;
   gradedAt: string | null;
+  version: number;
 }
 
 export interface CreateAssignmentRequest {
+  version: number;
   studentId: string;
   subjectId: string;
   title: string;
@@ -43,11 +46,13 @@ export interface CreateAssignmentRequest {
 
 export interface CreateSubmissionRequest {
   contentBlocks: ContentBlock[];
+  version: number;
 }
 
 export interface GradeSubmissionRequest {
   score: number;
   feedbackText?: string;
+  version: number;
 }
 
 export interface TeacherAssignmentListItem {

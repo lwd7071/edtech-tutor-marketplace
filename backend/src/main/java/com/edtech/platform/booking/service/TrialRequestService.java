@@ -127,6 +127,7 @@ public class TrialRequestService {
         if (teacherId == null || !trialRequest.getTeacherId().equals(teacherId)) {
             throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
         }
+        requireVersion(trialRequest.getVersion(), request.version());
         if (trialRequest.getStatus() != TrialRequestStatus.PENDING) {
             throw new BusinessException(ErrorCode.TRIAL_REQUEST_INVALID_STATE);
         }
@@ -174,11 +175,11 @@ public class TrialRequestService {
     }
 
     @Transactional
-    public TrialRequestView reject(UUID teacherUserId, UUID requestId, String reason) {
+    public TrialRequestView reject(UUID teacherUserId, UUID requestId, com.edtech.platform.booking.dto.request.RejectTrialRequest request) {
         Objects.requireNonNull(teacherUserId, "teacherUserId is required");
         Objects.requireNonNull(requestId, "requestId is required");
 
-        if (reason == null || reason.isBlank()) {
+        if (request.reason() == null || request.reason().isBlank()) {
             throw new BusinessException(ErrorCode.BOOKING_CANCEL_REASON_REQUIRED);
         }
 
@@ -191,16 +192,27 @@ public class TrialRequestService {
         if (teacherId == null || !trialRequest.getTeacherId().equals(teacherId)) {
             throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
         }
+        requireVersion(trialRequest.getVersion(), request.version());
         if (trialRequest.getStatus() != TrialRequestStatus.PENDING) {
             throw new BusinessException(ErrorCode.TRIAL_REQUEST_INVALID_STATE);
         }
 
-        trialRequest.reject(reason, Instant.now());
+        trialRequest.reject(request.reason(), Instant.now());
 
         communicationFacade.publishAfterCommit(
                 new BookingEvent("TRIAL_REJECTED", trialRequest.getId(), trialRequest.getStudentId(), teacherId, teacherUserId)
         );
 
         return TrialRequestView.from(trialRequest);
+    }
+
+    public TrialRequestView reject(UUID teacherUserId, UUID requestId, String reason) {
+        return reject(teacherUserId, requestId, new com.edtech.platform.booking.dto.request.RejectTrialRequest(reason));
+    }
+
+    private void requireVersion(long current, Long requested) {
+        if (requested == null || current != requested) {
+            throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
+        }
     }
 }

@@ -66,8 +66,8 @@ public class AdminApprovalService {
     }
 
     @Transactional
-    public SubjectProposalSnapshot rejectSubject(UUID id, UUID actor, String reason, AuditContext context) {
-        SubjectProposalChange change = subjects.reject(id, actor, reason);
+    public SubjectProposalSnapshot rejectSubject(UUID id, UUID actor, String reason, long version, AuditContext context) {
+        SubjectProposalChange change = subjects.reject(id, actor, reason, version);
         auditLogs.append(actor, AuditAction.SUBJECT_PROPOSAL_REJECTED, "SUBJECT_PROPOSAL", id,
                 snapshots.subjectProposal(change.before()), snapshots.subjectProposal(change.after()), context);
         return change.after();

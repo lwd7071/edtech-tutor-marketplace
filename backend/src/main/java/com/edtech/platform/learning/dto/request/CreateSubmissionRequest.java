@@ -11,6 +11,9 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class CreateSubmissionRequest {
+    @NotNull
+    @jakarta.validation.constraints.Min(0)
+    private Long version;
     private List<ContentBlock> contentBlocks;
     
     @NotNull

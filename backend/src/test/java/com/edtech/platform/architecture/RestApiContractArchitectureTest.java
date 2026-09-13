@@ -34,15 +34,18 @@ class RestApiContractArchitectureTest {
                     continue;
                 }
                 Class<?> returnType = method.getReturnType();
-                boolean sharedEnvelope = ApiResponse.class.isAssignableFrom(returnType)
+                boolean sharedEnvelope = isDirectApiResponse(method)
                         || isApiResponseEntity(method);
                 ResponseStatus responseStatus = AnnotatedElementUtils.findMergedAnnotation(method, ResponseStatus.class);
                 boolean noContent = returnType == Void.TYPE && responseStatus != null
                         && responseStatus.code() == HttpStatus.NO_CONTENT;
-                boolean documentedException = controller.getSimpleName().equals("PayOsWebhookController")
-                        || controller.getSimpleName().equals("HealthController");
+                boolean documentedException = (controller.getSimpleName().equals("PayOsWebhookController")
+                        && method.getName().equals("handleWebhook"))
+                        || (controller.getSimpleName().equals("HealthController")
+                        && method.getName().equals("health"));
                 if (!sharedEnvelope && !noContent && !documentedException) {
-                    violations.add(controller.getSimpleName() + "#" + method.getName() + " -> " + returnType.getSimpleName());
+                    violations.add(controller.getSimpleName() + "#" + method.getName() + " -> "
+                            + method.getGenericReturnType().getTypeName());
                 }
             }
         }
@@ -57,5 +60,13 @@ class RestApiContractArchitectureTest {
         Type[] args = responseEntity.getActualTypeArguments();
         if (args.length != 1 || !(args[0] instanceof ParameterizedType body)) return false;
         return body.getRawType() == ApiResponse.class;
+    }
+
+    private boolean isDirectApiResponse(Method method) {
+        if (method.getReturnType() != ApiResponse.class) return false;
+        Type type = method.getGenericReturnType();
+        return type instanceof ParameterizedType response
+                && response.getRawType() == ApiResponse.class
+                && response.getActualTypeArguments().length == 1;
     }
 }

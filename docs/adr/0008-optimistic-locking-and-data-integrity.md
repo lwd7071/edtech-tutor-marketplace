@@ -24,6 +24,7 @@ Thêm vào đó, chúng tôi cần sửa đổi các script Flyway. Một số d
 2. **Cập nhật `@SQLDelete` Soft-delete:** Bổ sung điều kiện version `AND version = ?` vào annotation `@SQLDelete` của các entity có dùng optimistic locking để đảm bảo tính nhất quán giữa lệnh soft delete và version check.
 3. **Tuyệt đối Append-only Migration:** Nghiêm cấm sửa chữa, thêm bớt constraint vào các file migration Flyway đã được commit trước đó (`V1` đến `V29`). Bất kỳ sự thay đổi schema hoặc dữ liệu nào cũng phải được thực hiện thông qua file migration mới nhất, trong trường hợp này là `V30__fix_data_constraints_and_locking.sql`.
 4. **Không áp dụng `@Version` cho Singleton Entity:** Đối với các entity như `PlatformSettings` mang tính chất singleton, không sử dụng optimistic locking để bảo vệ logic constraint độc bản của database.
+5. **Client version contract:** mọi public mutation của sáu entity trên nhận version hiện tại và trả `409 CONCURRENT_MODIFICATION` khi stale. Invoice chỉ bị mutate bởi webhook/internal flow nên public `InvoiceDetail` không expose version; flow này dùng DB lock và JPA version.
 
 ## Consequences
 

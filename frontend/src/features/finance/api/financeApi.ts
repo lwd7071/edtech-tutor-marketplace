@@ -1,5 +1,5 @@
 import { axiosClient } from '@/shared/api/axiosClient';
-import { ApiResponse } from '@/shared/backend';
+import { ApiResponse, ApiResponseWithData, requireApiData } from '@/shared/backend';
 import {
   WalletView,
   LedgerEntryView,
@@ -20,36 +20,36 @@ const idempotencyConfig = (key?: string) => ({
 
 export const financeApi = {
   // ---- Teacher Wallet & Ledger ----
-  getWallet: async (): Promise<ApiResponse<WalletView>> => {
+  getWallet: async (): Promise<ApiResponseWithData<WalletView>> => {
     const response = await axiosClient.get<ApiResponse<WalletView>>('/api/teacher/wallet');
-    return response.data;
+    return requireApiData(response.data);
   },
 
-  getLedger: async (page = 0, size = 20): Promise<ApiResponse<LedgerEntryView[]>> => {
+  getLedger: async (page = 0, size = 20): Promise<ApiResponseWithData<LedgerEntryView[]>> => {
     const response = await axiosClient.get<ApiResponse<LedgerEntryView[]>>('/api/teacher/wallet/ledger', {
       params: { page, size },
     });
-    return response.data;
+    return requireApiData(response.data);
   },
 
   // ---- Teacher Bank Accounts ----
-  getBankAccounts: async (): Promise<ApiResponse<BankAccountView[]>> => {
+  getBankAccounts: async (): Promise<ApiResponseWithData<BankAccountView[]>> => {
     const response = await axiosClient.get<ApiResponse<BankAccountView[]>>('/api/teacher/bank-accounts');
-    return response.data;
+    return requireApiData(response.data);
   },
 
-  createBankAccount: async (data: UpsertBankAccountRequest, idempotencyKey?: string): Promise<ApiResponse<BankAccountView>> => {
+  createBankAccount: async (data: UpsertBankAccountRequest, idempotencyKey?: string): Promise<ApiResponseWithData<BankAccountView>> => {
     const response = await axiosClient.post<ApiResponse<BankAccountView>>('/api/teacher/bank-accounts', data, idempotencyConfig(idempotencyKey));
-    return response.data;
+    return requireApiData(response.data);
   },
 
-  updateBankAccount: async (id: string, data: UpsertBankAccountRequest): Promise<ApiResponse<BankAccountView>> => {
+  updateBankAccount: async (id: string, data: UpsertBankAccountRequest): Promise<ApiResponseWithData<BankAccountView>> => {
     const response = await axiosClient.put<ApiResponse<BankAccountView>>(`/api/teacher/bank-accounts/${id}`, data);
-    return response.data;
+    return requireApiData(response.data);
   },
 
-  deleteBankAccount: async (id: string): Promise<void> => {
-    await axiosClient.delete(`/api/teacher/bank-accounts/${id}`);
+  deleteBankAccount: async (id: string, version: number): Promise<void> => {
+    await axiosClient.delete(`/api/teacher/bank-accounts/${id}`, { headers: { 'If-Match': `"${version}"` } });
   },
 
   // ---- Teacher Payout Requests ----
@@ -64,9 +64,9 @@ export const financeApi = {
     return response.data;
   },
 
-  createPayoutRequest: async (data: CreatePayoutRequest, idempotencyKey?: string): Promise<ApiResponse<PayoutRequestView>> => {
+  createPayoutRequest: async (data: CreatePayoutRequest, idempotencyKey?: string): Promise<ApiResponseWithData<PayoutRequestView>> => {
     const response = await axiosClient.post<ApiResponse<PayoutRequestView>>('/api/teacher/payout-requests', data, idempotencyConfig(idempotencyKey));
-    return response.data;
+    return requireApiData(response.data);
   },
 
   // ---- Student Refunds ----
@@ -77,9 +77,9 @@ export const financeApi = {
     return response.data;
   },
 
-  createRefundRequest: async (data: CreateRefundRequest, idempotencyKey?: string): Promise<ApiResponse<RefundRequestView>> => {
+  createRefundRequest: async (data: CreateRefundRequest, idempotencyKey?: string): Promise<ApiResponseWithData<RefundRequestView>> => {
     const response = await axiosClient.post<ApiResponse<RefundRequestView>>('/api/student/refund-requests', data, idempotencyConfig(idempotencyKey));
-    return response.data;
+    return requireApiData(response.data);
   },
 
   // ---- Student Extensions ----

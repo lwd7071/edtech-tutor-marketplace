@@ -1,5 +1,5 @@
 import { axiosClient } from '@/shared/api/axiosClient';
-import { ApiResponse } from '@/shared/backend';
+import { ApiResponse, ApiResponseWithData, requireApiData } from '@/shared/backend';
 import {
   PayoutRequestView,
   RefundRequestView,
@@ -40,12 +40,12 @@ export const adminFinanceApi = {
     return response.data;
   },
 
-  completePayout: async (id: string, data: CompleteTransferRequest, key?: string): Promise<ApiResponse<PayoutRequestView>> => {
+  completePayout: async (id: string, data: CompleteTransferRequest, key?: string): Promise<ApiResponseWithData<PayoutRequestView>> => {
     const response = await axiosClient.post<ApiResponse<PayoutRequestView>>(
       `/api/admin/payout-requests/${id}/complete`,
       data, idempotencyConfig(key)
     );
-    return response.data;
+    return requireApiData(response.data);
   },
 
   rejectPayout: async (id: string, data: RejectFinanceRequest, key?: string): Promise<ApiResponse<PayoutRequestView>> => {
@@ -113,9 +113,9 @@ export const adminFinanceApi = {
   },
 
   // ---- Admin Dashboard ----
-  getDashboardStats: async (): Promise<ApiResponse<AdminDashboardView>> => {
+  getDashboardStats: async (): Promise<ApiResponseWithData<AdminDashboardView>> => {
     const response = await axiosClient.get<ApiResponse<AdminDashboardView>>('/api/admin/dashboard');
-    return response.data;
+    return requireApiData(response.data);
   },
 
   // ---- Admin Platform Settings ----

@@ -17,7 +17,7 @@ interface BankAccountListProps {
   loading?: boolean;
   onCreateAccount: (data: UpsertBankAccountRequest) => Promise<void> | void;
   onUpdateAccount: (id: string, data: UpsertBankAccountRequest) => Promise<void> | void;
-  onDeleteAccount: (id: string) => Promise<void> | void;
+  onDeleteAccount: (id: string, version: number) => Promise<void> | void;
 }
 
 export const BankAccountList: React.FC<BankAccountListProps> = ({
@@ -45,9 +45,9 @@ export const BankAccountList: React.FC<BankAccountListProps> = ({
     setActionLoading(true);
     try {
       if (editingAccount) {
-        await onUpdateAccount(editingAccount.id, values);
+        await onUpdateAccount(editingAccount.id, { ...values, version: editingAccount.version });
       } else {
-        await onCreateAccount(values);
+        await onCreateAccount({ ...values, version: 0 });
       }
       setModalOpen(false);
     } finally {
@@ -117,7 +117,7 @@ export const BankAccountList: React.FC<BankAccountListProps> = ({
                     okText="Xóa"
                     cancelText="Hủy"
                     okButtonProps={{ danger: true }}
-                    onConfirm={() => onDeleteAccount(acc.id)}
+                    onConfirm={() => onDeleteAccount(acc.id, acc.version)}
                   >
                     <Button type="link" danger icon={<DeleteOutlined />}>
                       Xóa

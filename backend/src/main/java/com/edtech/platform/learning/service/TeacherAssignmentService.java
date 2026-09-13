@@ -47,6 +47,7 @@ public class TeacherAssignmentService {
     @Transactional
     public AssignmentDetail createAssignment(UUID teacherUserId, CreateAssignmentRequest request) {
         validateRequest(request);
+        if (request.getVersion() == null || request.getVersion() != 0L) throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Create version must be 0");
         var teacher = teacherFacade.getTeacherByUserId(teacherUserId);
 
         if (identityFacade.getIdentity(request.getStudentId()).filter(i -> "STUDENT".equals(i.roleName())).isEmpty()) {
@@ -95,6 +96,7 @@ public class TeacherAssignmentService {
         if (!submission.getAssignment().getTeacherId().equals(teacher.id())) {
             throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE);
         }
+        requireVersion(submission.getVersion(), request.getVersion());
 
         if (submission.getStatus() == SubmissionStatus.DRAFT) {
             throw new BusinessException(ErrorCode.SUBMISSION_NOT_SUBMITTED);
@@ -124,6 +126,7 @@ public class TeacherAssignmentService {
         validateRequest(request);
         if (!assignment.getStudentId().equals(request.getStudentId()) || !assignment.getSubjectId().equals(request.getSubjectId()))
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Không thể đổi học viên hoặc môn học của bài tập");
+        requireVersion(assignment.getVersion(), request.getVersion());
         assignment.setTitle(request.getTitle());
         assignment.setAssignmentType(request.getAssignmentType());
         assignment.setContentBlocks(objectMapper.valueToTree(request.getContentBlocks()));
@@ -134,8 +137,9 @@ public class TeacherAssignmentService {
     }
 
     @Transactional
-    public AssignmentDetail transition(UUID userId, UUID id, com.edtech.platform.learning.domain.AssignmentStatus target) {
+    public AssignmentDetail transition(UUID userId, UUID id, com.edtech.platform.learning.domain.AssignmentStatus target, long requestedVersion) {
         Assignment assignment = ownedForUpdate(userId, id);
+        requireVersion(assignment.getVersion(), requestedVersion);
         var source = assignment.getStatus();
         if (!(source == com.edtech.platform.learning.domain.AssignmentStatus.DRAFT && target == com.edtech.platform.learning.domain.AssignmentStatus.PUBLISHED)
                 && !(source == com.edtech.platform.learning.domain.AssignmentStatus.PUBLISHED && target == com.edtech.platform.learning.domain.AssignmentStatus.CLOSED))
@@ -172,6 +176,15 @@ public class TeacherAssignmentService {
             throw new BusinessException(ErrorCode.ASSIGNMENT_INVALID_STATE);
         if (request.getDueAt() != null && !request.getDueAt().isAfter(clock.instant()))
             throw new BusinessException(ErrorCode.ASSIGNMENT_DUE_DATE_PASSED);
+    }
+
+    /** Compatibility overload for internal callers; HTTP controllers must provide version. */
+    public AssignmentDetail transition(UUID userId, UUID id, com.edtech.platform.learning.domain.AssignmentStatus target) {
+        return transition(userId, id, target, 0L);
+    }
+
+    private void requireVersion(long current, long requested) {
+        if (current != requested) throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
     }
 
 }

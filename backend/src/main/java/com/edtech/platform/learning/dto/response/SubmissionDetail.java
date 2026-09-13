@@ -19,4 +19,5 @@ public class SubmissionDetail {
     private BigDecimal score;
     private String feedbackText;
     private Instant gradedAt;
+    private long version;
 }

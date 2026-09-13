@@ -14,6 +14,6 @@ public class BankAccountViewMapper {
     public BankAccountView toView(TeacherBankAccount account) {
         String masked = accountNumbers.mask(accountNumbers.decrypt(account.getAccountNumberEncrypted()));
         return new BankAccountView(account.getId(), account.getBankBin(), account.getBankName(), masked,
-                account.getAccountHolderName(), account.isVerified(), account.isDefault(), account.getCreatedAt());
+                account.getAccountHolderName(), account.isVerified(), account.isDefault(), account.getCreatedAt(), account.getVersion());
     }
 }

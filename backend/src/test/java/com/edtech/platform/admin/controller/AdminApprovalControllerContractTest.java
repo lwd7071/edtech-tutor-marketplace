@@ -20,6 +20,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -63,5 +64,19 @@ class AdminApprovalControllerContractTest {
         mvc.perform(get("/api/admin/teachers/approvals").param("sort", "email,asc"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[0].code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void teacherRejectionAcceptsTheTeacherRejectContractWithoutVersion() throws Exception {
+        AuthenticatedUser admin = new AuthenticatedUser(UUID.randomUUID(), "admin@example.com", "ADMIN");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(admin, null, java.util.List.of()));
+
+        mvc.perform(post("/api/admin/teachers/{id}/reject", UUID.randomUUID())
+                        .contentType("application/json")
+                        .content("{\"reason\":\"Thiếu chứng chỉ sư phạm\"}"))
+                .andExpect(status().isOk());
+
+        verify(service).rejectTeacher(any(), any(), anyString(), any());
     }
 }

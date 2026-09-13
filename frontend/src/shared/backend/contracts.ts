@@ -14,8 +14,7 @@ export interface PaginationMeta {
 export interface ApiResponse<T> {
   success: boolean;
   message: string | null;
-  // For error responses callers use ApiResponse<null>; successful resource responses are non-null.
-  data: T;
+  data: T | null;
   errors: ApiErrorDetail[] | null;
   meta: PaginationMeta | null;
 }

@@ -9,6 +9,7 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.repository.Repository;
+import jakarta.persistence.Entity;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
@@ -23,6 +24,14 @@ class SolidGuardrailsArchitectureTest {
     void controllersDoNotAccessPersistenceDirectly() {
         noClasses().that().resideInAPackage("..controller..")
                 .should().dependOnClassesThat().areAssignableTo(Repository.class)
+                .allowEmptyShould(true)
+                .check(production);
+    }
+
+    @Test
+    void controllersDoNotDependOnJpaEntities() {
+        noClasses().that().resideInAPackage("..controller..")
+                .should().dependOnClassesThat().areAnnotatedWith(Entity.class)
                 .allowEmptyShould(true)
                 .check(production);
     }

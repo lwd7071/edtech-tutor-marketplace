@@ -1,5 +1,24 @@
 import type { ApiErrorDetail, ApiResponse } from './contracts';
 
+export class ApiContractError extends Error {
+  readonly code = 'API_CONTRACT_INVALID';
+  constructor(message = 'Máy chủ trả về response thiếu data theo contract') {
+    super(message);
+    this.name = 'ApiContractError';
+  }
+}
+
+export type ApiResponseWithData<T> = ApiResponse<T> & { data: T };
+
+export function requireApiData<T>(response: ApiResponse<T>): ApiResponseWithData<T> {
+  if (!response.success || response.data == null) throw new ApiContractError();
+  return response as ApiResponseWithData<T>;
+}
+
+export function isConcurrentModification(error: unknown): boolean {
+  return parseApiError(error).code === 'CONCURRENT_MODIFICATION';
+}
+
 export interface ParsedApiError {
   code: string;
   message: string;

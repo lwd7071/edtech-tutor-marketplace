@@ -4,6 +4,7 @@ import com.edtech.platform.admin.dto.request.ApproveSubjectProposalRequest;
 import com.edtech.platform.admin.dto.request.ApproveTeacherRequest;
 import com.edtech.platform.admin.dto.request.ChangeUserStatusRequest;
 import com.edtech.platform.admin.dto.request.RejectRequest;
+import com.edtech.platform.admin.dto.request.RejectSubjectProposalRequest;
 import com.edtech.platform.admin.service.AdminApprovalService;
 import com.edtech.platform.admin.service.AuditContext;
 import com.edtech.platform.auth.facade.dto.IdentitySnapshot;
@@ -91,10 +92,10 @@ public class AdminApprovalController {
 
     @PostMapping("/subject-proposals/{id}/reject")
     public ApiResponse<SubjectProposalSnapshot> rejectSubject(@PathVariable UUID id,
-            @Valid @RequestBody RejectRequest body, @AuthenticationPrincipal AuthenticatedUser actor,
+            @Valid @RequestBody RejectSubjectProposalRequest body, @AuthenticationPrincipal AuthenticatedUser actor,
             HttpServletRequest request) {
         return ApiResponse.ok("Từ chối đề xuất môn học thành công",
-                service.rejectSubject(id, actor.id(), body.reason(), context(request)));
+                service.rejectSubject(id, actor.id(), body.reason(), body.version(), context(request)));
     }
 
     @PatchMapping("/users/{id}/status")

@@ -68,6 +68,6 @@ public class TrialRequestController {
     @PostMapping("/api/teacher/trial-requests/{id}/reject")
     @RequireRole("TEACHER")
     public ApiResponse<TrialRequestView> reject(@AuthenticationPrincipal AuthenticatedUser u, @PathVariable UUID id, @Valid @RequestBody RejectTrialRequest r) {
-        return ApiResponse.ok(service.reject(u.id(), id, r.reason()));
+        return ApiResponse.ok(service.reject(u.id(), id, r));
     }
 }

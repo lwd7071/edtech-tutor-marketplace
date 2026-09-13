@@ -25,3 +25,5 @@ Chúng tôi quyết định áp dụng nguyên tắc **Zero-Trust Secrets** (Kh�
 
 - Các nhà phát triển và đội DevOps bắt buộc phải cung cấp đầy đủ các biến môi trường nhạy cảm trong file `.env.cloud` hoặc qua hệ thống quản lý secret (như AWS Secrets Manager) khi deploy.
 - Tăng độ an toàn và tính minh bạch cho quy trình vận hành. Ứng dụng sẽ báo ngay cấu hình thiếu sót qua log.
+
+Cloudinary tuân thủ cùng quy tắc: base/cloud chỉ dùng `${CLOUDINARY_URL}`; giá trị giả chỉ được phép ở profile local/test.

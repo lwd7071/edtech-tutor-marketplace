@@ -71,9 +71,7 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | `AUTH_EMAIL_ALREADY_EXISTS` | 409 | Email đăng ký đã tồn tại |
 | `AUTH_EMAIL_NOT_VERIFIED` | 403 | Chức năng yêu cầu email đã xác minh |
 | `AUTH_PASSWORD_RESET_TOKEN_INVALID` | 400 | Token reset sai/đã dùng |
-| `AUTH_PASSWORD_RESET_TOKEN_EXPIRED` | 400 | Token reset hết hạn |
 | `AUTH_VERIFY_TOKEN_INVALID` | 400 | Token xác minh email không hợp lệ, hết hạn hoặc đã dùng |
-| `AUTH_VERIFY_TOKEN_EXPIRED` | 400 | Reserved compatibility code; runtime dùng `AUTH_VERIFY_TOKEN_INVALID` khi Redis không phân biệt được hết hạn và đã dùng |
 | `AUTH_OAUTH_REGISTRATION_TOKEN_INVALID` | 400 | OAuth registration token không hợp lệ, hết hạn hoặc đã dùng |
 | `AUTH_OAUTH_EXCHANGE_TOKEN_INVALID` | 400 | OAuth exchange code không hợp lệ, hết hạn hoặc đã dùng |
 | `AUTH_OAUTH_ROLE_REQUIRED` | 422 | Google account mới chưa chọn Student/Teacher |

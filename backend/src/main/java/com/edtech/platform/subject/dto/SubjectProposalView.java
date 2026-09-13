@@ -14,6 +14,7 @@ public record SubjectProposalView(
         ProposalStatus status,
         String reviewNote,
         Instant reviewedAt,
-        UUID createdSubjectId
+        UUID createdSubjectId,
+        long version
 ) {
 }

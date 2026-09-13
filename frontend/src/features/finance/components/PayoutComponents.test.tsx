@@ -15,6 +15,7 @@ describe('CreatePayoutModal & PayoutListTable', () => {
       isVerified: true,
       isDefault: true,
       createdAt: '2026-08-01T00:00:00Z',
+      version: 0,
     },
   ];
 

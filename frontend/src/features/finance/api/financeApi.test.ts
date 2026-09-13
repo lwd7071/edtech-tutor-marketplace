@@ -67,6 +67,16 @@ describe('Finance & Admin APIs', () => {
         expect.objectContaining({ headers: expect.objectContaining({ 'Idempotency-Key': expect.any(String) }) }));
       expect(result.data.id).toBe('ref-1');
     });
+
+    it('sends the current bank-account version as a quoted If-Match header', async () => {
+      (axiosClient.delete as jest.Mock).mockResolvedValueOnce({ status: 204 });
+
+      await financeApi.deleteBankAccount('bank-1', 7);
+
+      expect(axiosClient.delete).toHaveBeenCalledWith('/api/teacher/bank-accounts/bank-1', {
+        headers: { 'If-Match': '"7"' },
+      });
+    });
   });
 
   describe('adminFinanceApi', () => {

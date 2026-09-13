@@ -7,6 +7,7 @@ import ResponsiveTable from '@/shared/components/ui/ResponsiveTable';
 import { SubjectProposalSnapshot } from '../types';
 import { useSubjectProposals, useRejectSubjectProposal } from '../hooks/useAdminApprovals';
 import { ApproveSubjectModal } from './ApproveSubjectModal';
+import { isConcurrentModification, parseApiError } from '@/shared/backend';
 
 export function SubjectProposalTable() {
   const [page, setPage] = useState<number>(0);
@@ -45,13 +46,16 @@ export function SubjectProposalTable() {
         proposalId: propId,
         data: {
           reason: rejectionReason.trim(),
+          version: selectedProposal.version,
         },
       });
       message.success('Đã từ chối đề xuất môn học');
       setRejectModalOpen(false);
       setSelectedProposal(null);
-    } catch {
-      message.error('Từ chối đề xuất thất bại');
+    } catch (error) {
+      message.error(isConcurrentModification(error)
+        ? 'Dữ liệu đã được thay đổi bởi người khác. Vui lòng tải lại.'
+        : parseApiError(error).message);
     }
   };
 

@@ -1,6 +1,35 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-13 — Sửa regression contract/version sau review
+
+- Khôi phục request contract cho teacher rejection và cho phép `ApiResponse<Void>` thành công đi qua Axios interceptor.
+- Siết version bắt buộc, phân biệt đúng `CONCURRENT_MODIFICATION`, refetch dữ liệu stale, validate chặt `If-Match` và HTTP/HTTPS profile URL.
+- Bổ sung regression/config tests và đồng bộ API contract/ERD; full backend `366/366`, frontend `97/97` suites và `252/252` tests cùng Next build đều pass.
+
+## 2026-09-13 — Clean verification
+
+- `mvn clean test` với Docker/Testcontainers thật pass `361/361`, không sửa migration V1–V30; docs check vẫn pass.
+
+## 2026-09-12 — Verification optimistic-lock và frontend contract
+
+- Hoàn tất narrowing `ApiResponse.data` nullable qua `requireApiData`; frontend gửi version cho các public mutation và xử lý conflict không retry.
+- Frontend full check pass (`97/97` suites, `248/248` tests, build); backend focused non-container `29/29` pass.
+- Ghi rõ các test integration/Flyway bị chặn do Docker Desktop Linux engine chưa cung cấp socket; không coi compile/static check là integration pass.
+
+## 2026-09-12 — Full verification sau khi Docker hoạt động
+
+- Sửa test profile Cloudinary để integration context dùng credential giả chỉ trong test; giữ base/cloud fail-fast.
+- Sửa bank-account delete kiểm tra ownership trước `If-Match`, cập nhật fixture trial/bank contract và xác minh IDOR.
+- Thêm test validation biên cho Teacher Profile (`3/3`), kiểm tra giới hạn/nullability/XSS/URL theo contract.
+- Siết architecture contract để kiểm tra generic `ApiResponse`, allowlist đúng từng webhook/health method, và loại hai error code token-expired không thể phát sinh.
+- Full backend `361/361`, finance idempotency `2/2`, Flyway `12/12`, frontend `248/248` và docs check đều pass.
+
 Các entry dưới đây ghi hành vi và bằng chứng quan trọng. Danh sách file đầy đủ nằm trong Git history.
+
+## 2026-09-12 — Optimistic-lock contract và zero-trust storage
+
+- Thêm version contract cho các public mutation của trial, learning, subject proposal và teacher bank account; stale version trả `409 CONCURRENT_MODIFICATION`.
+- Thêm guardrail controller không phụ thuộc JPA entity, validation teacher profile và Cloudinary fail-fast ở base/cloud.
 
 ## 2026-09-12 — Fix lỗi bảo mật và phân quyền (Mục 5)
 

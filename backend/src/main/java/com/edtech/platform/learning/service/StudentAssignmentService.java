@@ -115,6 +115,8 @@ public class StudentAssignmentService {
 
         if (existingSubmission.isPresent()) {
             submission = existingSubmission.get();
+            if (request.getVersion() == null || submission.getVersion() != request.getVersion())
+                throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
             if (submission.getStatus() == SubmissionStatus.GRADED) {
                 throw new BusinessException(ErrorCode.SUBMISSION_ALREADY_GRADED);
             }
@@ -126,6 +128,8 @@ public class StudentAssignmentService {
                 submission.setSubmittedAt(null);
             }
         } else {
+            if (request.getVersion() == null || request.getVersion() != 0L)
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Create version must be 0");
             submission = Submission.builder()
                     .assignment(assignment)
                     .studentId(studentId)

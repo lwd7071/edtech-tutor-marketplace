@@ -27,6 +27,6 @@ public class StudentConversationController {
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID teacherId) {
         return ApiResponse.ok(new ConversationOpenResponse(
-                conversations.openForStudent(teacherId, user.id()).getId()));
+                conversations.openForStudent(teacherId, user.id())));
     }
 }

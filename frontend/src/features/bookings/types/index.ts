@@ -76,6 +76,7 @@ export interface TrialRequestView {
   rejectionReason?: string | null;
   respondedAt?: string | null;
   createdAt: string;
+  version: number;
 }
 
 export interface ReviewView {
@@ -109,10 +110,12 @@ export interface AcceptTrialRequest {
   deliveryMode: DeliveryMode;
   meetingLink?: string | null;
   locationAddress?: string | null;
+  version: number;
 }
 
 export interface RejectTrialRequest {
   reason: string;
+  version: number;
 }
 
 export interface BookingFilterParams {

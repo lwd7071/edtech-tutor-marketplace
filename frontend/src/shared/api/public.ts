@@ -1,5 +1,5 @@
 import axiosClient from './axiosClient';
-import type { ApiResponse } from '@/shared/backend';
+import { requireApiData, type ApiResponseWithData } from '@/shared/backend';
 export interface PaginatedResponse<T> {
   data: T[];
   meta: {
@@ -111,7 +111,9 @@ export interface PricingPackageView {
   status: string;
 }
 
-type PaginatedApiResponse<T> = Omit<ApiResponse<T[]>, 'meta'> & { meta: PageMeta };
+type PaginatedApiResponse<T> = Omit<ApiResponseWithData<T[]>, 'meta'> & { meta: PageMeta };
+
+const paginated = <T>(response: ApiResponseWithData<T[]>): PaginatedApiResponse<T> => response as PaginatedApiResponse<T>;
 
 export interface AvailabilityView {
   id?: string;
@@ -130,33 +132,33 @@ export interface Review {
 }
 
 export const getPublicSubjects = async (params?: GetPublicSubjectsParams): Promise<PaginatedApiResponse<SubjectSummary>> => {
-  const response = await axiosClient.get('/api/public/subjects', { params });
-  return response.data;
+  const response = await axiosClient.get<ApiResponseWithData<SubjectSummary[]>>('/api/public/subjects', { params });
+  return paginated(requireApiData(response.data));
 };
 
 export const getPublicTeachers = async (params?: TeacherSearchParams): Promise<PaginatedApiResponse<TeacherCard>> => {
-  const response = await axiosClient.get('/api/public/teachers', { params });
-  return response.data;
+  const response = await axiosClient.get<ApiResponseWithData<TeacherCard[]>>('/api/public/teachers', { params });
+  return paginated(requireApiData(response.data));
 };
 
 export const getTeacherDetail = async (id: string): Promise<TeacherPublicDetail> => {
-  const response = await axiosClient.get(`/api/public/teachers/${id}`);
-  return response.data.data; // Note: ApiResponse.ok usually wraps in { data: ... }
+  const response = await axiosClient.get<ApiResponseWithData<TeacherPublicDetail>>(`/api/public/teachers/${id}`);
+  return requireApiData(response.data).data;
 };
 
 export const getTeacherPackages = async (id: string, page: number = 0, size: number = 20): Promise<PaginatedApiResponse<PricingPackageView>> => {
-  const response = await axiosClient.get(`/api/public/teachers/${id}/packages`, { params: { page, size } });
-  return response.data;
+  const response = await axiosClient.get<ApiResponseWithData<PricingPackageView[]>>(`/api/public/teachers/${id}/packages`, { params: { page, size } });
+  return paginated(requireApiData(response.data));
 };
 
 export const getTeacherAvailability = async (id: string): Promise<AvailabilityView[]> => {
-  const response = await axiosClient.get(`/api/public/teachers/${id}/availability`);
-  return response.data.data;
+  const response = await axiosClient.get<ApiResponseWithData<AvailabilityView[]>>(`/api/public/teachers/${id}/availability`);
+  return requireApiData(response.data).data;
 };
 
 export const getTeacherReviews = async (id: string, page: number = 0, size: number = 10): Promise<PaginatedApiResponse<Review>> => {
-  const response = await axiosClient.get(`/api/public/teachers/${id}/reviews`, { params: { page, size } });
-  return response.data;
+  const response = await axiosClient.get<ApiResponseWithData<Review[]>>(`/api/public/teachers/${id}/reviews`, { params: { page, size } });
+  return paginated(requireApiData(response.data));
 };
 
 export interface TeacherRankingItem {
@@ -170,6 +172,6 @@ export interface TeacherRankingItem {
 }
 
 export const getGlobalRanking = async (subjectId?: string, page: number = 0, size: number = 10): Promise<PaginatedApiResponse<TeacherRankingItem>> => {
-  const response = await axiosClient.get('/api/public/teachers/ranking', { params: { subjectId, page, size } });
-  return response.data;
+  const response = await axiosClient.get<ApiResponseWithData<TeacherRankingItem[]>>('/api/public/teachers/ranking', { params: { subjectId, page, size } });
+  return paginated(requireApiData(response.data));
 };

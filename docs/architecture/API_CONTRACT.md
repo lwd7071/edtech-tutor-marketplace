@@ -2,7 +2,7 @@
 
 > Phiên bản API: v1 (MVP)  
 > Base path REST: `/api`  
-> Media type: `application/json; charset=UTF-8`  
+> Media type: `application/json; charset=UTF-8`
 > Thời gian: ISO-8601; server lưu UTC, client hiển thị `Asia/Ho_Chi_Minh`  
 > Tiền: VND nguyên (`integer/int64`)
 
@@ -306,6 +306,10 @@ Tất cả endpoint yêu cầu role `TEACHER`; endpoint bán gói/booking yêu c
 }
 ```
 
+`bio` tối đa 5.000 ký tự và không chứa HTML; `yearsOfExperience` từ 0 đến 80;
+`languages` tối đa 10 giá trị, mỗi giá trị 1–50 ký tự; `locationAddress` tối đa 500 ký tự;
+`introductionVideoUrl` nếu có phải là URL HTTP/HTTPS hợp lệ, có host.
+
 Upload document dùng parts `file`, `documentType`, `title`. MIME/size theo `CODING_CONVENTION.md` và spec upload.
 
 ```json
@@ -340,8 +344,8 @@ PUT availability thay toàn bộ danh sách trong một transaction; overlap tr�
 `UpsertPricingPackageRequest.version` phải bằng `0` khi tạo. PUT và PATCH status bắt buộc gửi version hiện tại; version cũ trả `409 CONCURRENT_MODIFICATION`.
 | POST | `/api/teacher/bookings/{id}/cancel` | `CancelBookingRequest` | `BookingDetail` |
 | GET | `/api/teacher/trial-requests` | `status?`, pagination | `TrialRequestView[]` |
-| POST | `/api/teacher/trial-requests/{id}/accept` | `AcceptTrialRequest` | `BookingDetail` (`201`) |
-| POST | `/api/teacher/trial-requests/{id}/reject` | `RejectTrialRequest` | `TrialRequestView` |
+| POST | `/api/teacher/trial-requests/{id}/accept` | `AcceptTrialRequest` + current `version` | `BookingDetail` (`201`) |
+| POST | `/api/teacher/trial-requests/{id}/reject` | `RejectTrialRequest` + current `version` | `TrialRequestView` |
 | GET | `/api/teacher/students` | `keyword?`, pagination | `TeacherStudentView[]` |
 
 ```json
@@ -415,14 +419,17 @@ Accept tạo Booking trial và đổi TrialRequest sang `ACCEPTED` trong cùng t
 
 | Method | Endpoint | Request | Response `data` |
 |---|---|---|---|
-| POST | `/api/teacher/assignments` | `CreateAssignmentRequest` | `AssignmentDetail` (`201`) |
-| POST | `/api/teacher/submissions/{id}/grade` | `GradeSubmissionRequest` | `SubmissionDetail` |
+| POST | `/api/teacher/assignments` | `CreateAssignmentRequest` (`version=0`) | `AssignmentDetail` (`201`) |
+| PUT | `/api/teacher/assignments/{id}` | `CreateAssignmentRequest` + current `version` | `AssignmentDetail` |
+| POST | `/api/teacher/assignments/{id}/publish` | `{ "version": n }` | `AssignmentDetail` |
+| POST | `/api/teacher/assignments/{id}/close` | `{ "version": n }` | `AssignmentDetail` |
+| POST | `/api/teacher/submissions/{id}/grade` | `GradeSubmissionRequest` + current `version` | `SubmissionDetail` |
 | GET | `/api/teacher/wallet` | — | `WalletView` |
 | GET | `/api/teacher/wallet/ledger` | filters, pagination | `LedgerEntryView[]` |
 | GET | `/api/teacher/bank-accounts` | — | `BankAccountView[]` |
 | POST | `/api/teacher/bank-accounts` | `UpsertBankAccountRequest` | `BankAccountView` (`201`) |
 | PUT | `/api/teacher/bank-accounts/{id}` | `UpsertBankAccountRequest` | `BankAccountView` |
-| DELETE | `/api/teacher/bank-accounts/{id}` | — | — (`204`) |
+| DELETE | `/api/teacher/bank-accounts/{id}` | `If-Match: "<version>"` | — (`204`) |
 | POST | `/api/teacher/payout-requests` | `CreatePayoutRequest` | `PayoutRequestView` (`201`) |
 | GET | `/api/teacher/payout-requests` | `status?`, pagination | `PayoutRequestView[]` |
 | GET | `/api/teacher/stats` | — | `TeacherStatsView` |
@@ -619,8 +626,8 @@ Tất cả endpoint yêu cầu role `ADMIN`. Mọi action thay đổi trạng th
 | POST | `/api/admin/teachers/{id}/approve` | `ApproveTeacherRequest` | `TeacherApprovalSnapshot` |
 | POST | `/api/admin/teachers/{id}/reject` | `RejectRequest` | `TeacherApprovalSnapshot` |
 | GET | `/api/admin/subject-proposals` | pagination | `SubjectProposalSnapshot[]` |
-| POST | `/api/admin/subject-proposals/{id}/approve` | `ApproveSubjectProposalRequest` | `SubjectProposalSnapshot` |
-| POST | `/api/admin/subject-proposals/{id}/reject` | `RejectRequest` | `SubjectProposalSnapshot` |
+| POST | `/api/admin/subject-proposals/{id}/approve` | `ApproveSubjectProposalRequest` + current `version` | `SubjectProposalSnapshot` |
+| POST | `/api/admin/subject-proposals/{id}/reject` | `RejectSubjectProposalRequest` + current `version` | `SubjectProposalSnapshot` |
 | POST | `/api/admin/subjects` | `UpsertSubjectRequest` | `SubjectView` (`201`) |
 | PUT | `/api/admin/subjects/{id}` | `UpsertSubjectRequest` | `SubjectView` |
 | GET | `/api/admin/refund-requests` | `status?`, pagination | `RefundRequestView[]` |
@@ -649,7 +656,8 @@ Tất cả endpoint yêu cầu role `ADMIN`. Mọi action thay đổi trạng th
   "name": "Vật lý 11",
   "educationLevel": "HIGH_SCHOOL",
   "description": "Chương trình Vật lý lớp 11",
-  "note": "Nội dung phù hợp"
+  "note": "Nội dung phù hợp",
+  "version": 4
 }
 ```
 

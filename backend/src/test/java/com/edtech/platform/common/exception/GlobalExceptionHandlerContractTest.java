@@ -1,6 +1,7 @@
 package com.edtech.platform.common.exception;
 
 import com.edtech.platform.common.response.ApiResponse;
+import com.edtech.platform.common.response.ApiErrorDetail;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,5 +60,19 @@ class GlobalExceptionHandlerContractTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getBody().message()).isEqualTo(ErrorCode.INTERNAL_SERVER_ERROR.getDefaultMessage());
         assertThat(response.getBody().message()).doesNotContain("password", "SQL");
+    }
+
+    @Test
+    void jpaOptimisticLockUsesConflictEnvelope() {
+        ResponseEntity<ApiResponse<Void>> response = handler.handleJpaOptimisticLockException(
+                new jakarta.persistence.OptimisticLockException("stale"));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().success()).isFalse();
+        assertThat(response.getBody().data()).isNull();
+        assertThat(response.getBody().errors()).singleElement()
+                .extracting(ApiErrorDetail::code)
+                .isEqualTo(ErrorCode.CONCURRENT_MODIFICATION.name());
     }
 }

@@ -47,6 +47,7 @@ export interface BankAccountView {
   isVerified: boolean;
   isDefault: boolean;
   createdAt: string;
+  version: number;
 }
 
 export interface UpsertBankAccountRequest {
@@ -55,6 +56,7 @@ export interface UpsertBankAccountRequest {
   accountNumber: string;
   accountHolderName: string;
   isDefault: boolean;
+  version: number;
 }
 
 export type PayoutStatus = 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'REJECTED' | 'FAILED';

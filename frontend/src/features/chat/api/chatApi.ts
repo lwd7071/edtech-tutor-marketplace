@@ -1,10 +1,10 @@
 import { axiosClient } from '@/shared/api/axiosClient';
-import { ApiResponse, PaginationMeta } from '@/shared/backend';
+import { ApiResponse, ApiResponseWithData, PaginationMeta, requireApiData } from '@/shared/backend';
 import { ConversationView, MessageView } from '../types';
 
 export const chatApi = {
-  openTeacherConversation: async (teacherId: string): Promise<ApiResponse<{id:string}>> =>
-    (await axiosClient.put<ApiResponse<{id:string}>>(`/api/student/conversations/teachers/${teacherId}`)).data,
+  openTeacherConversation: async (teacherId: string): Promise<ApiResponseWithData<{id:string}>> =>
+    requireApiData((await axiosClient.put<ApiResponse<{id:string}>>(`/api/student/conversations/teachers/${teacherId}`)).data),
   /**
    * Lấy danh sách cuộc hội thoại
    */

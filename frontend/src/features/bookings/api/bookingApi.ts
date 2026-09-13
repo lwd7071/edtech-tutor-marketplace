@@ -1,5 +1,5 @@
 import { axiosClient } from '@/shared/api/axiosClient';
-import { ApiResponse } from '@/shared/backend';
+import { ApiResponse, ApiResponseWithData, requireApiData } from '@/shared/backend';
 import {
   BookingDetail,
   BookingFilterParams,
@@ -18,17 +18,17 @@ export const bookingApi = {
   getBookings: async (
     role: 'student' | 'teacher',
     params?: BookingFilterParams,
-  ): Promise<ApiResponse<BookingDetail[]>> => {
+  ): Promise<ApiResponseWithData<BookingDetail[]>> => {
     const response = await axiosClient.get<ApiResponse<BookingDetail[]>>(`/api/${role}/bookings`, { params });
-    return response.data;
+    return requireApiData(response.data);
   },
 
   getBookingDetail: async (
     role: 'student' | 'teacher',
     id: string,
-  ): Promise<ApiResponse<BookingDetail>> => {
+  ): Promise<ApiResponseWithData<BookingDetail>> => {
     const response = await axiosClient.get<ApiResponse<BookingDetail>>(`/api/${role}/bookings/${id}`);
-    return response.data;
+    return requireApiData(response.data);
   },
 
   /**
@@ -36,12 +36,12 @@ export const bookingApi = {
    */
   getStudentBookings: async (
     params?: BookingFilterParams
-  ): Promise<ApiResponse<BookingDetail[]>> => {
+  ): Promise<ApiResponseWithData<BookingDetail[]>> => {
     const response = await axiosClient.get<ApiResponse<BookingDetail[]>>(
       '/api/student/bookings',
       { params }
     );
-    return response.data;
+    return requireApiData(response.data);
   },
 
   /**
@@ -49,12 +49,12 @@ export const bookingApi = {
    */
   createTeacherBooking: async (
     data: CreateBookingRequest
-  ): Promise<ApiResponse<BookingDetail>> => {
+  ): Promise<ApiResponseWithData<BookingDetail>> => {
     const response = await axiosClient.post<ApiResponse<BookingDetail>>(
       '/api/teacher/bookings',
       data
     );
-    return response.data;
+    return requireApiData(response.data);
   },
 
   /**
@@ -63,12 +63,12 @@ export const bookingApi = {
   completeBooking: async (
     id: string,
     data: CompleteBookingRequest
-  ): Promise<ApiResponse<BookingDetail>> => {
+  ): Promise<ApiResponseWithData<BookingDetail>> => {
     const response = await axiosClient.post<ApiResponse<BookingDetail>>(
       `/api/teacher/bookings/${id}/complete`,
       data
     );
-    return response.data;
+    return requireApiData(response.data);
   },
 
   /**
@@ -77,12 +77,12 @@ export const bookingApi = {
   cancelBooking: async (
     id: string,
     data: CancelBookingRequest
-  ): Promise<ApiResponse<BookingDetail>> => {
+  ): Promise<ApiResponseWithData<BookingDetail>> => {
     const response = await axiosClient.post<ApiResponse<BookingDetail>>(
       `/api/teacher/bookings/${id}/cancel`,
       data
     );
-    return response.data;
+    return requireApiData(response.data);
   },
 
   /**
@@ -92,12 +92,12 @@ export const bookingApi = {
     status?: string,
     page: number = 0,
     size: number = 20
-  ): Promise<ApiResponse<TrialRequestView[]>> => {
+  ): Promise<ApiResponseWithData<TrialRequestView[]>> => {
     const response = await axiosClient.get<ApiResponse<TrialRequestView[]>>(
       '/api/teacher/trial-requests',
       { params: { status, page, size } }
     );
-    return response.data;
+    return requireApiData(response.data);
   },
 
   /**
@@ -105,19 +105,19 @@ export const bookingApi = {
    */
   createTrialRequest: async (
     data: CreateTrialRequest
-  ): Promise<ApiResponse<TrialRequestView>> => {
+  ): Promise<ApiResponseWithData<TrialRequestView>> => {
     const response = await axiosClient.post<ApiResponse<TrialRequestView>>(
       '/api/student/trials/requests',
       data
     );
-    return response.data;
+    return requireApiData(response.data);
   },
 
-  getStudentTrialRequests: async (status?: string, page = 0, size = 20): Promise<ApiResponse<TrialRequestView[]>> =>
-    (await axiosClient.get<ApiResponse<TrialRequestView[]>>('/api/student/trial-requests', { params: { status, page, size } })).data,
+  getStudentTrialRequests: async (status?: string, page = 0, size = 20): Promise<ApiResponseWithData<TrialRequestView[]>> =>
+    requireApiData((await axiosClient.get<ApiResponse<TrialRequestView[]>>('/api/student/trial-requests', { params: { status, page, size } })).data),
 
-  getStudentSessionReports: async (page = 0, size = 20): Promise<ApiResponse<SessionReportView[]>> =>
-    (await axiosClient.get<ApiResponse<SessionReportView[]>>('/api/student/session-reports', { params: { page, size } })).data,
+  getStudentSessionReports: async (page = 0, size = 20): Promise<ApiResponseWithData<SessionReportView[]>> =>
+    requireApiData((await axiosClient.get<ApiResponse<SessionReportView[]>>('/api/student/session-reports', { params: { page, size } })).data),
 
   /**
    * Giáo viên chấp nhận yêu cầu học thử (tạo booking trial)
@@ -125,12 +125,12 @@ export const bookingApi = {
   acceptTrialRequest: async (
     id: string,
     data: AcceptTrialRequest
-  ): Promise<ApiResponse<BookingDetail>> => {
+  ): Promise<ApiResponseWithData<BookingDetail>> => {
     const response = await axiosClient.post<ApiResponse<BookingDetail>>(
       `/api/teacher/trial-requests/${id}/accept`,
       data
     );
-    return response.data;
+    return requireApiData(response.data);
   },
 
   /**
@@ -139,12 +139,12 @@ export const bookingApi = {
   rejectTrialRequest: async (
     id: string,
     data: RejectTrialRequest
-  ): Promise<ApiResponse<TrialRequestView>> => {
+  ): Promise<ApiResponseWithData<TrialRequestView>> => {
     const response = await axiosClient.post<ApiResponse<TrialRequestView>>(
       `/api/teacher/trial-requests/${id}/reject`,
       data
     );
-    return response.data;
+    return requireApiData(response.data);
   },
 
   /**

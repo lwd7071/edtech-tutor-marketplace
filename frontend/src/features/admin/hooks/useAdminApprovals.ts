@@ -3,9 +3,11 @@ import { adminApi } from '../api/adminApi';
 import {
   ApproveTeacherRequest,
   RejectRequest,
+  SubjectProposalRejectRequest,
   ApproveSubjectProposalRequest,
   ChangeUserStatusRequest,
 } from '../types';
+import { isConcurrentModification } from '@/shared/backend';
 
 export const ADMIN_QUERY_KEYS = {
   all: ['admin'] as const,
@@ -98,6 +100,11 @@ export function useApproveSubjectProposal() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.subjectProposalsRoot });
     },
+    onError: (error) => {
+      if (isConcurrentModification(error)) {
+        queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.subjectProposalsRoot });
+      }
+    },
   });
 }
 
@@ -108,10 +115,15 @@ export function useRejectSubjectProposal() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ proposalId, data }: { proposalId: string; data: RejectRequest }) =>
+    mutationFn: ({ proposalId, data }: { proposalId: string; data: SubjectProposalRejectRequest }) =>
       adminApi.rejectSubjectProposal(proposalId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.subjectProposalsRoot });
+    },
+    onError: (error) => {
+      if (isConcurrentModification(error)) {
+        queryClient.invalidateQueries({ queryKey: ADMIN_QUERY_KEYS.subjectProposalsRoot });
+      }
     },
   });
 }

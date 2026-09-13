@@ -48,6 +48,7 @@ export interface SubjectProposalSnapshot {
   reviewedAt?: string | null;
   subjectId?: string | null;
   createdAt?: string;
+  version: number;
 }
 
 export interface IdentitySnapshot {
@@ -70,6 +71,11 @@ export interface RejectRequest {
   reason: string;
 }
 
+export interface SubjectProposalRejectRequest {
+  reason: string;
+  version: number;
+}
+
 export interface ApproveSubjectProposalRequest {
   resolution: 'CREATE_NEW' | 'LINK_EXISTING';
   existingSubjectId?: string;
@@ -78,6 +84,7 @@ export interface ApproveSubjectProposalRequest {
   educationLevel?: 'ELEMENTARY' | 'MIDDLE_SCHOOL' | 'HIGH_SCHOOL' | 'UNIVERSITY' | 'OTHER';
   description?: string;
   note?: string;
+  version: number;
 }
 
 export interface ChangeUserStatusRequest {

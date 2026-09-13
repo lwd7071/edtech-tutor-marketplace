@@ -13,6 +13,7 @@ const mockProposal: SubjectProposalSnapshot = {
   description: 'Chương trình luyện thi đại học môn Toán nâng cao',
   status: 'PENDING',
   createdAt: '2026-03-01T10:00:00Z',
+  version: 0,
 };
 
 jest.mock('../hooks/useAdminApprovals', () => ({

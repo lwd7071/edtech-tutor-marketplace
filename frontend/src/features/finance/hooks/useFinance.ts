@@ -8,6 +8,7 @@ import {
   CreateExtensionRequest,
 } from '../types';
 import { financeKeys } from '../data/financeKeys';
+import { isConcurrentModification } from '@/shared/backend';
 
 export const FINANCE_KEYS = financeKeys;
 
@@ -61,15 +62,26 @@ export function useUpdateBankAccount() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.bankAccounts() });
     },
+    onError: (error) => {
+      if (isConcurrentModification(error)) {
+        queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.bankAccounts() });
+      }
+    },
   });
 }
 
 export function useDeleteBankAccount() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => financeApi.deleteBankAccount(id),
+    mutationFn: ({ id, version }: { id: string; version: number }) =>
+      financeApi.deleteBankAccount(id, version),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.bankAccounts() });
+    },
+    onError: (error) => {
+      if (isConcurrentModification(error)) {
+        queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.bankAccounts() });
+      }
     },
   });
 }

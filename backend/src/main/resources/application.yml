@@ -94,7 +94,7 @@ app:
   oauth2:
     frontend-redirect-uri: ${APP_OAUTH2_FRONTEND_CALLBACK_URI:${APP_OAUTH2_REDIRECT_URI:http://localhost:3000/oauth2/callback}}
   cloudinary:
-    url: ${CLOUDINARY_URL:cloudinary://dummy:dummy@dummy}
+    url: ${CLOUDINARY_URL}
   payment:
     provider: ${APP_PAYMENT_PROVIDER:disabled}
     client-id: ${PAYOS_CLIENT_ID:}

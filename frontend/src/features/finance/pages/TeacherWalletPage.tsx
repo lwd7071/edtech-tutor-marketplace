@@ -23,7 +23,7 @@ import { BankAccountList } from '../components/BankAccountList';
 import { CreatePayoutModal } from '../components/CreatePayoutModal';
 import { PayoutListTable } from '../components/PayoutListTable';
 import { CreatePayoutRequest } from '../types';
-import { parseApiError } from '@/shared/backend';
+import { isConcurrentModification, parseApiError } from '@/shared/backend';
 
 export const TeacherWalletPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -51,8 +51,12 @@ export const TeacherWalletPage: React.FC = () => {
   const payouts = payoutsRes?.data || [];
 
   const handleCreatePayoutSubmit = async (values: CreatePayoutRequest) => {
+    if (!wallet) {
+      message.error('Chưa tải được dữ liệu ví. Vui lòng tải lại.');
+      return;
+    }
     try {
-      await createPayoutMutation.mutateAsync({ ...values, walletVersion: wallet?.version ?? 0 });
+      await createPayoutMutation.mutateAsync({ ...values, walletVersion: wallet.version });
       message.success('Tạo yêu cầu rút tiền thành công. Ban quản trị sẽ sớm duyệt và chuyển khoản.');
       setPayoutModalOpen(false);
     } catch (err: unknown) {
@@ -145,16 +149,32 @@ export const TeacherWalletPage: React.FC = () => {
                   accounts={bankAccounts}
                   loading={bankLoading}
                   onCreateAccount={async (data) => {
-                    await createBankMutation.mutateAsync(data);
-                    message.success('Thêm tài khoản ngân hàng thành công');
+                    try {
+                      await createBankMutation.mutateAsync(data);
+                      message.success('Thêm tài khoản ngân hàng thành công');
+                    } catch (error) {
+                      message.error(parseApiError(error).message);
+                    }
                   }}
                   onUpdateAccount={async (id, data) => {
-                    await updateBankMutation.mutateAsync({ id, data });
-                    message.success('Cập nhật tài khoản ngân hàng thành công');
+                    try {
+                      await updateBankMutation.mutateAsync({ id, data });
+                      message.success('Cập nhật tài khoản ngân hàng thành công');
+                    } catch (error) {
+                      message.error(isConcurrentModification(error)
+                        ? 'Dữ liệu đã được thay đổi bởi người khác. Vui lòng tải lại.'
+                        : parseApiError(error).message);
+                    }
                   }}
-                  onDeleteAccount={async (id) => {
-                    await deleteBankMutation.mutateAsync(id);
-                    message.success('Đã xóa tài khoản ngân hàng');
+                  onDeleteAccount={async (id, version) => {
+                    try {
+                      await deleteBankMutation.mutateAsync({ id, version });
+                      message.success('Đã xóa tài khoản ngân hàng');
+                    } catch (error) {
+                      message.error(isConcurrentModification(error)
+                        ? 'Dữ liệu đã được thay đổi bởi người khác. Vui lòng tải lại.'
+                        : parseApiError(error).message);
+                    }
                   }}
                 />
               ),
@@ -163,15 +183,15 @@ export const TeacherWalletPage: React.FC = () => {
         />
       </div>
 
-      <CreatePayoutModal
+      {wallet && <CreatePayoutModal
         open={payoutModalOpen}
-        availableBalanceVnd={wallet?.availableBalanceVnd ?? 0}
-        walletVersion={wallet?.version ?? 0}
+        availableBalanceVnd={wallet.availableBalanceVnd}
+        walletVersion={wallet.version}
         bankAccounts={bankAccounts}
         loading={createPayoutMutation.isPending}
         onCancel={() => setPayoutModalOpen(false)}
         onSubmit={handleCreatePayoutSubmit}
-      />
+      />}
     </div>
   );
 };

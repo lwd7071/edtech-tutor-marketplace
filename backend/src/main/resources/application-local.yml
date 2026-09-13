@@ -23,6 +23,8 @@ app:
     provider: logging
   jwt:
     secret: ${APP_JWT_SECRET:local-dev-only-secret-change-before-sharing-32chars}
+  cloudinary:
+    url: ${CLOUDINARY_URL:cloudinary://local:local@local}
 
 management:
   health:

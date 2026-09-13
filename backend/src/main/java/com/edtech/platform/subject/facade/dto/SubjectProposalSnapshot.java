@@ -6,5 +6,5 @@ import java.util.UUID;
 public record SubjectProposalSnapshot(
         UUID proposalId, UUID teacherId, String proposedName, String educationLevel,
         String description, String status, String reviewNote, UUID reviewedBy,
-        Instant reviewedAt, UUID subjectId) {
+        Instant reviewedAt, UUID subjectId, long version) {
 }

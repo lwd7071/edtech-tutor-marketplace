@@ -76,7 +76,7 @@ public class AssignmentReadService {
 
     private SubmissionDetail submissionView(Submission s) {
         List<ContentBlock> blocks = s.getContentBlocks()==null?List.of():mapper.convertValue(s.getContentBlocks(),new TypeReference<List<ContentBlock>>(){});
-        return new SubmissionDetail(s.getId(),s.getAssignment().getId(),s.getStudentId(),blocks,s.getSubmittedAt(),s.getStatus(),s.getScore(),s.getFeedbackText(),s.getGradedAt());
+        return new SubmissionDetail(s.getId(),s.getAssignment().getId(),s.getStudentId(),blocks,s.getSubmittedAt(),s.getStatus(),s.getScore(),s.getFeedbackText(),s.getGradedAt(),s.getVersion());
     }
 }
 

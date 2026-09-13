@@ -41,6 +41,7 @@ public class SubjectApprovalFacadeImpl implements SubjectApprovalFacade {
     @Transactional
     public SubjectProposalChange approve(UUID proposalId, UUID adminId, SubjectResolutionCommand command) {
         SubjectProposal proposal = pendingForUpdate(proposalId);
+        requireVersion(proposal.getVersion(), command.version());
         SubjectProposalSnapshot before = snapshot(proposal);
         Subject subject = resolveSubject(proposal, command);
         proposal.approve(subject, adminId, command.note());
@@ -50,11 +51,16 @@ public class SubjectApprovalFacadeImpl implements SubjectApprovalFacade {
 
     @Override
     @Transactional
-    public SubjectProposalChange reject(UUID proposalId, UUID adminId, String reason) {
+    public SubjectProposalChange reject(UUID proposalId, UUID adminId, String reason, long version) {
         SubjectProposal proposal = pendingForUpdate(proposalId);
+        requireVersion(proposal.getVersion(), version);
         SubjectProposalSnapshot before = snapshot(proposal);
         proposal.reject(adminId, reason);
         return new SubjectProposalChange(before, snapshot(proposal));
+    }
+
+    public SubjectProposalChange reject(UUID proposalId, UUID adminId, String reason) {
+        return reject(proposalId, adminId, reason, 0L);
     }
 
     private SubjectProposal pendingForUpdate(UUID id) {
@@ -108,6 +114,10 @@ public class SubjectApprovalFacadeImpl implements SubjectApprovalFacade {
         return new SubjectProposalSnapshot(p.getId(), p.getTeacherId(), p.getProposedName(),
                 p.getEducationLevel() == null ? null : p.getEducationLevel().name(), p.getDescription(),
                 p.getStatus().name(), p.getReviewNote(), p.getReviewedById(), p.getReviewedAt(),
-                p.getCreatedSubject() == null ? null : p.getCreatedSubject().getId());
+                p.getCreatedSubject() == null ? null : p.getCreatedSubject().getId(), p.getVersion());
+    }
+
+    private void requireVersion(long current, long requested) {
+        if (current != requested) throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
     }
 }

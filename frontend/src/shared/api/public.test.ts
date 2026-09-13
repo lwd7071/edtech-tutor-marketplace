@@ -15,7 +15,7 @@ describe('Public API', () => {
 
   describe('getPublicSubjects', () => {
     it('should call GET /api/public/subjects with correct params', async () => {
-      const mockResponse = { data: { data: [{ id: '1', name: 'Toán' }], meta: { page: 0 } } };
+      const mockResponse = { data: { success: true, message: null, data: [{ id: '1', name: 'Toán' }], errors: null, meta: { page: 0 } } };
       (axiosClient.get as jest.Mock).mockResolvedValue(mockResponse);
 
       const params = { keyword: 'Toán', page: 0, size: 10 };
@@ -28,7 +28,7 @@ describe('Public API', () => {
 
   describe('getPublicTeachers', () => {
     it('should call GET /api/public/teachers with correct params', async () => {
-      const mockResponse = { data: { data: [{ id: '1', user: { fullName: 'Nguyen Van A' } }], meta: { page: 0 } } };
+      const mockResponse = { data: { success: true, message: null, data: [{ id: '1', user: { fullName: 'Nguyen Van A' } }], errors: null, meta: { page: 0 } } };
       (axiosClient.get as jest.Mock).mockResolvedValue(mockResponse);
 
       const params = { keyword: 'Toán', sort: 'rating_desc', page: 0, size: 6 };
@@ -41,7 +41,7 @@ describe('Public API', () => {
 
   describe('getTeacherDetail', () => {
     it('should call GET /api/public/teachers/:id', async () => {
-      const mockResponse = { data: { data: { id: '1', fullName: 'John' } } };
+      const mockResponse = { data: { success: true, message: null, data: { id: '1', fullName: 'John' }, errors: null, meta: null } };
       (axiosClient.get as jest.Mock).mockResolvedValue(mockResponse);
 
       const result = await getTeacherDetail('1');
@@ -53,7 +53,7 @@ describe('Public API', () => {
 
   describe('getTeacherPackages', () => {
     it('should call GET /api/public/teachers/:id/packages', async () => {
-      const mockResponse = { data: { data: [{ id: 'pkg1' }], meta: { page: 0 } } };
+      const mockResponse = { data: { success: true, message: null, data: [{ id: 'pkg1' }], errors: null, meta: { page: 0 } } };
       (axiosClient.get as jest.Mock).mockResolvedValue(mockResponse);
 
       const result = await getTeacherPackages('1', 0, 10);
@@ -65,7 +65,7 @@ describe('Public API', () => {
 
   describe('getTeacherAvailability', () => {
     it('should call GET /api/public/teachers/:id/availability', async () => {
-      const mockResponse = { data: { data: [{ dayOfWeek: 'MONDAY' }] } };
+      const mockResponse = { data: { success: true, message: null, data: [{ dayOfWeek: 'MONDAY' }], errors: null, meta: null } };
       (axiosClient.get as jest.Mock).mockResolvedValue(mockResponse);
 
       const result = await getTeacherAvailability('1');
@@ -77,7 +77,7 @@ describe('Public API', () => {
 
   describe('getTeacherReviews', () => {
     it('should call GET /api/public/teachers/:id/reviews', async () => {
-      const mockResponse = { data: { data: [{ id: 'rev1' }], meta: { page: 0 } } };
+      const mockResponse = { data: { success: true, message: null, data: [{ id: 'rev1' }], errors: null, meta: { page: 0 } } };
       (axiosClient.get as jest.Mock).mockResolvedValue(mockResponse);
 
       const result = await getTeacherReviews('1', 0, 5);
@@ -90,7 +90,7 @@ describe('Public API', () => {
   describe('getGlobalRanking', () => {
     it('should call /api/public/teachers/ranking and return data', async () => {
       const mockRanking = [{ teacherId: 't1', fullName: 'John Doe', globalRank: 1 }];
-      (axiosClient.get as jest.Mock).mockResolvedValue({ data: { data: mockRanking, meta: {} } });
+      (axiosClient.get as jest.Mock).mockResolvedValue({ data: { success: true, message: null, data: mockRanking, errors: null, meta: {} } });
 
       const result = await getGlobalRanking('math-1', 0, 10);
       expect(result.data).toEqual(mockRanking);

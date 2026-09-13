@@ -21,6 +21,8 @@ spring:
 app:
   scheduling:
     enabled: false
+  cloudinary:
+    url: cloudinary://test:test@test
   jwt:
     secret: test-jwt-secret-minimum-256-bit-key-for-integration-tests-32chars
     access-expiration-ms: 900000

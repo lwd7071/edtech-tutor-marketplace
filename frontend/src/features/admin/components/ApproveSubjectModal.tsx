@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { Modal, Form, Input, Button, message, Select } from 'antd';
 import { SubjectProposalSnapshot, ApproveSubjectProposalRequest } from '../types';
 import { useApproveSubjectProposal } from '../hooks/useAdminApprovals';
+import { isConcurrentModification, parseApiError } from '@/shared/backend';
 
 interface ApproveSubjectModalProps {
   open: boolean;
@@ -30,6 +31,7 @@ export const ApproveSubjectModal: React.FC<ApproveSubjectModalProps> = ({
         name: currentName,
         educationLevel: currentCategory as ApproveSubjectProposalRequest['educationLevel'],
         description: proposal.description || '',
+        version: proposal.version,
       });
     }
   }, [proposal, open, form, currentName, currentCategory]);
@@ -40,12 +42,14 @@ export const ApproveSubjectModal: React.FC<ApproveSubjectModalProps> = ({
     try {
       await approveMutation.mutateAsync({
         proposalId: propId,
-        data: values,
+        data: { ...values, version: proposal.version },
       });
       message.success('Phê duyệt môn học thành công');
       onClose();
-    } catch {
-      message.error('Phê duyệt môn học thất bại');
+    } catch (error) {
+      message.error(isConcurrentModification(error)
+        ? 'Dữ liệu đã được thay đổi bởi người khác. Vui lòng tải lại.'
+        : parseApiError(error).message);
     }
   };
 

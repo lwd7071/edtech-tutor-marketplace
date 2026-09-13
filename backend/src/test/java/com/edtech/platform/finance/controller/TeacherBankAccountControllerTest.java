@@ -101,7 +101,8 @@ class TeacherBankAccountControllerTest {
     void deleteBankAccount_shouldReturn204() throws Exception {
         UUID accountId = UUID.randomUUID();
 
-        mockMvc.perform(delete("/api/teacher/bank-accounts/" + accountId))
+        mockMvc.perform(delete("/api/teacher/bank-accounts/" + accountId)
+                        .header("If-Match", "\"0\""))
                 .andExpect(status().isNoContent());
     }
 }

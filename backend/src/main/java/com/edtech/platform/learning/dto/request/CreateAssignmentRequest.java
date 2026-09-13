@@ -5,6 +5,7 @@ import com.edtech.platform.learning.domain.AssignmentType;
 import com.edtech.platform.learning.dto.response.ContentBlock;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,6 +16,9 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 public class CreateAssignmentRequest {
+    @NotNull
+    @Min(0)
+    private Long version;
     @NotNull
     private UUID studentId;
     

@@ -16,7 +16,8 @@ public record ApproveSubjectProposalRequest(
         @Size(max = 150) String name,
         @Pattern(regexp = "ELEMENTARY|MIDDLE_SCHOOL|HIGH_SCHOOL|UNIVERSITY|OTHER") String educationLevel,
         @Size(max = 2000) String description,
-        @Size(max = 1000) String note) {
+        @Size(max = 1000) String note,
+        @jakarta.validation.constraints.NotNull @jakarta.validation.constraints.Min(0) Long version) {
 
     @JsonIgnore
     @AssertTrue(message = "Dữ liệu resolution không hợp lệ")
@@ -30,6 +31,6 @@ public record ApproveSubjectProposalRequest(
 
     public SubjectResolutionCommand toCommand() {
         return new SubjectResolutionCommand(resolution, existingSubjectId, code, name,
-                educationLevel, description, note);
+                educationLevel, description, note, version);
     }
 }

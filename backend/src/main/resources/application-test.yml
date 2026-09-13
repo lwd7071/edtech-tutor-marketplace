@@ -1,0 +1,7 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+app:
+  cloudinary:
+    url: ${CLOUDINARY_URL:cloudinary://test:test@test}

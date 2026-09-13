@@ -112,7 +112,7 @@ class TrialRequestControllerTest {
 
         TrialRequest trialRequest = TrialRequest.create(UUID.randomUUID(), currentUserId, UUID.randomUUID(), Instant.now().plusSeconds(7200), "Hello");
         trialRequest.reject("Busy", Instant.now());
-        when(service.reject(eq(currentUserId), eq(requestId), eq("Busy"))).thenReturn(TrialRequestView.from(trialRequest));
+        when(service.reject(eq(currentUserId), eq(requestId), any(RejectTrialRequest.class))).thenReturn(TrialRequestView.from(trialRequest));
 
         mockMvc.perform(post("/api/teacher/trial-requests/" + requestId + "/reject")
                 .contentType(MediaType.APPLICATION_JSON)

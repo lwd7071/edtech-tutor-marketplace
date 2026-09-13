@@ -21,6 +21,7 @@ jest.mock('axios', () => {
 
 describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
   let requestInterceptor: (config: any) => any;
+  let responseSuccessInterceptor: (response: any) => any;
   let responseErrorInterceptor: (error: any) => Promise<any>;
 
   beforeEach(() => {
@@ -35,7 +36,17 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
     const responseUse = (mockClient.interceptors.response.use as jest.Mock).mock;
 
     requestInterceptor = requestUse.calls[requestUse.calls.length - 1][0];
+    responseSuccessInterceptor = responseUse.calls[responseUse.calls.length - 1][0];
     responseErrorInterceptor = responseUse.calls[responseUse.calls.length - 1][1];
+  });
+
+  it('should preserve successful ApiResponse<Void> envelopes', () => {
+    const response = {
+      status: 200,
+      data: { success: true, message: null, data: null, errors: null, meta: null },
+    };
+
+    expect(responseSuccessInterceptor(response)).toBe(response);
   });
 
   it('should attach Bearer token to request headers when user is authenticated', () => {

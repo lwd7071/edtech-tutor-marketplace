@@ -67,7 +67,8 @@ public class SubjectProposalService {
                 proposal.getStatus(),
                 proposal.getReviewNote(),
                 proposal.getReviewedAt(),
-                proposal.getCreatedSubject() != null ? proposal.getCreatedSubject().getId() : null
+                proposal.getCreatedSubject() != null ? proposal.getCreatedSubject().getId() : null,
+                proposal.getVersion()
         );
     }
 }

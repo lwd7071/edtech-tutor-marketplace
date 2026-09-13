@@ -112,7 +112,7 @@ describe('Admin Approvals TanStack Hooks (TDD)', () => {
 
     await result.current.mutateAsync({
       proposalId: 'p1',
-      data: { resolution: 'CREATE_NEW', code: 'IELTS_ACADEMIC', name: 'IELTS Academic', educationLevel: 'OTHER', description: 'Ôn thi IELTS 4 kỹ năng' },
+      data: { resolution: 'CREATE_NEW', code: 'IELTS_ACADEMIC', name: 'IELTS Academic', educationLevel: 'OTHER', description: 'Ôn thi IELTS 4 kỹ năng', version: 0 },
     });
 
     expect(adminApi.approveSubjectProposal).toHaveBeenCalledWith('p1', {
@@ -121,6 +121,7 @@ describe('Admin Approvals TanStack Hooks (TDD)', () => {
       name: 'IELTS Academic',
       educationLevel: 'OTHER',
       description: 'Ôn thi IELTS 4 kỹ năng',
+      version: 0,
     });
   });
 

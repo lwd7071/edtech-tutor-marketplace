@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
+import java.util.Map;
+import java.lang.reflect.Field;
+import jakarta.persistence.Version;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,6 +22,38 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
 
     @Autowired(required = false)
     private JdbcTemplate jdbcTemplate;
+
+    @Test
+    @DisplayName("V30 version columns phải là bigint NOT NULL default 0")
+    void optimisticLockColumnsShouldHaveExpectedMetadata() {
+        Map<String, String> expected = Map.of(
+                "invoices", "version", "trial_requests", "version", "assignments", "version",
+                "submissions", "version", "subject_proposals", "version", "teacher_bank_accounts", "version");
+        expected.forEach((table, column) -> {
+            Map<String, Object> row = jdbcTemplate.queryForMap("SELECT data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema='public' AND table_name=? AND column_name=?", table, column);
+            assertThat(row.get("data_type")).isEqualTo("bigint");
+            assertThat(row.get("is_nullable")).isEqualTo("NO");
+            assertThat(String.valueOf(row.get("column_default"))).contains("0");
+        });
+    }
+
+    @Test
+    @DisplayName("Sáu entity lõi phải có đúng field JPA @Version")
+    void coreEntitiesShouldDeclareVersionField() {
+        List<Class<?>> entities = List.of(
+                com.edtech.platform.payment.domain.Invoice.class,
+                com.edtech.platform.booking.domain.TrialRequest.class,
+                com.edtech.platform.learning.domain.Assignment.class,
+                com.edtech.platform.learning.domain.Submission.class,
+                com.edtech.platform.subject.domain.SubjectProposal.class,
+                com.edtech.platform.finance.domain.TeacherBankAccount.class);
+        entities.forEach(type -> {
+            List<Field> versionFields = java.util.Arrays.stream(type.getDeclaredFields())
+                    .filter(field -> field.isAnnotationPresent(Version.class)).toList();
+            assertThat(versionFields).as(type.getSimpleName()).hasSize(1);
+            assertThat(versionFields.get(0).getName()).isEqualTo("version");
+        });
+    }
 
     @Test
     @DisplayName("Tất cả 30 file migration V1-V30 phải được apply và validate thành công")

@@ -106,6 +106,7 @@ erDiagram
         uuid reviewed_by FK
         timestamptz reviewed_at
         uuid created_subject_id FK
+        bigint version
     }
     TEACHER_SUBJECTS {
         uuid id PK
@@ -143,6 +144,7 @@ erDiagram
         timestamptz payment_expired_at
         timestamptz paid_at
         uuid idempotency_key
+        bigint version
         varchar request_fingerprint
     }
     PAYMENT_TRANSACTIONS {
@@ -211,6 +213,7 @@ erDiagram
         uuid booking_id FK,UK
         text rejection_reason
         timestamptz responded_at
+        bigint version
     }
     SESSION_REPORTS {
         uuid id PK
@@ -278,6 +281,7 @@ erDiagram
         varchar account_holder_name
         boolean is_verified
         boolean is_default
+        bigint version
     }
     PAYOUT_REQUESTS {
         uuid id PK
@@ -286,6 +290,7 @@ erDiagram
         uuid bank_account_id FK
         bigint amount_vnd
         varchar status
+        bigint version
         text teacher_note
         text admin_note
         varchar bank_reference
@@ -340,6 +345,7 @@ erDiagram
         jsonb quiz_schema
         timestamptz due_at
         varchar status
+        bigint version
     }
     SUBMISSIONS {
         uuid id PK
@@ -351,6 +357,7 @@ erDiagram
         numeric score
         text feedback_text
         timestamptz graded_at
+        bigint version
     }
     ATTACHMENTS {
         uuid id PK
@@ -466,6 +473,8 @@ erDiagram
 ```
 
 ## 3. Khóa, unique và check constraint
+
+V30 bổ sung `version bigint NOT NULL DEFAULT 0` cho `invoices`, `trial_requests`, `assignments`, `submissions`, `subject_proposals` và `teacher_bank_accounts`; các entity này dùng JPA `@Version`. Chỉ public mutation của entity có client action mới yêu cầu client gửi version; Invoice là internal webhook mutation.
 
 | Bảng | Ràng buộc bắt buộc |
 |---|---|

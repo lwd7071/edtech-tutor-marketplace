@@ -21,13 +21,13 @@ public class AssignmentViewMapper {
         List<ContentBlock> blocks = value.getContentBlocks() == null ? null
                 : objectMapper.convertValue(value.getContentBlocks(), new TypeReference<>() {});
         return new AssignmentDetail(value.getId(), value.getTeacherId(), value.getStudentId(), value.getSubjectId(),
-                value.getTitle(), value.getAssignmentType(), blocks, value.getQuizSchema(), value.getDueAt(), value.getStatus());
+                value.getTitle(), value.getAssignmentType(), blocks, value.getQuizSchema(), value.getDueAt(), value.getStatus(), value.getVersion());
     }
 
     public SubmissionDetail submission(Submission value) {
         List<ContentBlock> blocks = value.getContentBlocks() == null ? null
                 : objectMapper.convertValue(value.getContentBlocks(), new TypeReference<>() {});
         return new SubmissionDetail(value.getId(), value.getAssignment().getId(), value.getStudentId(), blocks,
-                value.getSubmittedAt(), value.getStatus(), value.getScore(), value.getFeedbackText(), value.getGradedAt());
+                value.getSubmittedAt(), value.getStatus(), value.getScore(), value.getFeedbackText(), value.getGradedAt(), value.getVersion());
     }
 }

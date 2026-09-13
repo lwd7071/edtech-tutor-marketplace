@@ -11,5 +11,5 @@ import java.util.UUID;
 public interface SubjectApprovalFacade {
     Page<SubjectProposalSnapshot> findPending(Pageable pageable);
     SubjectProposalChange approve(UUID proposalId, UUID adminId, SubjectResolutionCommand command);
-    SubjectProposalChange reject(UUID proposalId, UUID adminId, String reason);
+    SubjectProposalChange reject(UUID proposalId, UUID adminId, String reason, long version);
 }

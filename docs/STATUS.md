@@ -1,6 +1,6 @@
 # Trạng thái dự án
 
-> Cập nhật: 2026-09-12. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
+> Cập nhật: 2026-09-13. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
 
 ## Mốc kỹ thuật
@@ -13,13 +13,13 @@
 
 | Luồng | Trạng thái hiện tại | Ghi chú |
 |---|---|---|
-| Auth/verification/logout | Đã triển khai thay đổi Student Journey | Cần chạy full integration với Docker |
-| Invoice snapshot/payment | Đã triển khai V26 | Chưa nghiệm thu DB sạch và DB nâng cấp |
+| Auth/verification/logout | Đã triển khai thay đổi Student Journey | Full backend/Testcontainers đã pass; provider OAuth thật chưa xác minh |
+| Invoice snapshot/payment | Đã triển khai V26 | Flyway clean/upgrade và full backend đã pass; PayOS thật chưa xác minh |
 | Trial/package/booking/review | Đã triển khai phần Student Journey | Cần kiểm thử xuyên luồng |
 | Assignment/attachment | Đã triển khai endpoint và view mới | Cần kiểm thử file thật |
 | Chat/notification/events | Đã triển khai event và mở conversation | Smoke test local đã xác nhận gửi/nhận giữa Student và Teacher qua STOMP tới backend `:8080`; cảnh báo browser extension không thuộc ứng dụng |
 | Teacher search/catalog | Đã triển khai V28, query/count/cache/config | Focused tests và PostgreSQL Testcontainers pass; V28 đã áp dụng trên Supabase; cloud smoke và load test chưa xác minh |
-| Finance/refund/payout/package | Đã harden domain, contract/UI, V29 và idempotency | Domain/backend focused `20/20`, idempotency focused `2/2`, frontend finance/admin `42/42`, full frontend `248/248`, typecheck pass; Flyway V1→V29 và V27→V29 pass trên Testcontainers; V29 đã apply Supabase bằng cloud Flyway user; full backend `348/348` pass; concurrency/rollback/reconciliation finance integration chưa bổ sung |
+| Finance/refund/payout/package | Đã harden domain, contract/UI, V29 và idempotency | Domain/backend focused và full backend đều pass; finance idempotency concurrency `2/2`, Flyway V1→V30/V27→V30 pass trên Testcontainers; frontend full check `252/252` pass; V29 đã apply Supabase bằng cloud Flyway user. |
 | Parent contact/requests/reports | Đã triển khai UI/API liên quan | Cần smoke test theo role |
 | Frontend Student Journey | Đã có route/component/API thay đổi | Playwright chưa chạy |
 
@@ -98,8 +98,10 @@
 - Supabase V29 preflight bằng đúng Flyway user: current version V28, extensions `unaccent`/`pg_trgm` ở `public`, không có duplicate active refund/extension/payout hoặc legacy status; cloud servlet startup đã validate 29 migrations và apply V29 thành công trên PostgreSQL 17.6, sau đó process đã được dừng.
 - Finance idempotency executor, aspect wiring cho toàn bộ Finance POST và scheduled receipt cleanup đã compile; focused executor `2/2` pass. Frontend API tạo key và hook giữ key qua retry cùng command; focused finance/admin Jest `42/42` và typecheck pass.
 - Full backend Maven/Testcontainers sau khi đồng bộ API, sửa lỗi Architecture, và fix lỗi Bảo mật/Phân quyền (Mục 5): `350/350` pass, `0` failure/error/skipped (Đã verify `SecurityIdorIntegrationTest` pass với RequireRoleAspect).
+- Đợt optimistic-lock contract tiếp theo đã cập nhật DTO/service/controller cho trial, learning, subject proposal và bank account; backend focused và full integration đều pass. `If-Match` bank-account delete kiểm tra ownership trước khi parse để giữ IDOR `404` và malformed own-resource header `400`.
+- Verification mới nhất sau regression review: backend focused `15/15` và full backend `366/366` pass (`0` failure/error/skipped) với Docker Desktop/Testcontainers thật. Frontend focused `31/31` và `npm run check` pass: typecheck, lint, `97/97` suites, `252/252` tests và Next build. Docs check pass.
 - API contract focused backend sau đợt đồng bộ envelope/status/invoice/version: `26/26` pass (bao gồm `RestStatusContractTest`). Frontend typecheck pass; frontend Jest contract runner vẫn chưa xác minh vì bị treo trong môi trường hiện tại.
-- Full frontend Jest sau khi cập nhật fixtures/router mocks và idempotency assertions: `97/97` suites, `248/248` tests pass.
+- Full frontend Jest sau khi cập nhật regression contract/version tests: `97/97` suites, `252/252` tests pass.
 - Cloud application HTTP smoke sau migration: **chưa xác minh**. Cách chạy `web-application-type=none` trước đây không hợp lệ cho OAuth servlet; smoke script mới yêu cầu chạy web mode với `APP_SCHEDULING_ENABLED=false`.
 - Cold-cache load test 25/50/80/100 users với pool 5/8/10 và warm-cache benchmark: **chưa chạy**; chưa có bằng chứng đạt các p95 mục tiêu.
 
@@ -112,8 +114,8 @@ Các con số trên chỉ là bằng chứng gần nhất đã có; benchmark v�
 3. Chạy smoke test các role Student, Teacher và Admin.
 4. Cập nhật bảng này bằng số liệu thật sau mỗi lần chạy.
 5. Có thể chạy lại `scripts/preflight-teacher-search-extensions.sql` bằng Flyway user để bổ sung bằng chứng standalone; không deploy lại V28/V29.
-6. Bổ sung PostgreSQL concurrency/rollback/reconciliation integration tests trước khi tuyên bố finance acceptance hoàn tất; hiện phần này **chưa xác minh**.
-6. Benchmark bằng `node scripts/benchmark-teacher-search.mjs` với từng pool candidate; ghi riêng cold-cache và warm-cache.
+6. Finance same-key concurrency/rollback integration đã được xác minh `2/2`; nếu mở rộng reconciliation nghiệp vụ riêng thì thực hiện ở đợt finance tiếp theo.
+7. Benchmark bằng `node scripts/benchmark-teacher-search.mjs` với từng pool candidate; ghi riêng cold-cache và warm-cache.
 
 ## Provider chưa xác minh
 

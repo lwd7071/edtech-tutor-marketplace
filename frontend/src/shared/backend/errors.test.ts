@@ -1,4 +1,4 @@
-import { parseApiError, ApiResponse, ApiErrorDetail } from '@/shared/backend';
+import { isConcurrentModification, parseApiError, ApiResponse } from '@/shared/backend';
 
 describe('API Types and Error Envelope Parser (TDD)', () => {
   it('should correctly parse standard validation error with field mapping', () => {
@@ -58,5 +58,15 @@ describe('API Types and Error Envelope Parser (TDD)', () => {
 
     expect(parsed.code).toBe('UNAUTHORIZED');
     expect(parsed.isAuthError).toBe(true);
+  });
+
+  it('recognizes only CONCURRENT_MODIFICATION as stale data', () => {
+    const error = (code: string) => ({ response: { status: 409, data: {
+      success: false, message: null, data: null,
+      errors: [{ code, field: null, message: 'conflict' }], meta: null,
+    } } });
+
+    expect(isConcurrentModification(error('CONCURRENT_MODIFICATION'))).toBe(true);
+    expect(isConcurrentModification(error('BOOKING_TIME_CONFLICT'))).toBe(false);
   });
 });

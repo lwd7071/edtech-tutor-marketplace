@@ -1,5 +1,5 @@
 import axiosClient from './axiosClient';
-import type { ApiResponse } from '@/shared/backend';
+import { requireApiData, type ApiResponse, type ApiResponseWithData } from '@/shared/backend';
 
 // Types mapping backend DTOs
 export interface UserSummary {
@@ -34,9 +34,9 @@ export const authApi = {
     return response.data;
   },
 
-  register: async (data: RegisterRequest): Promise<ApiResponse<RegistrationResult>> => {
-    const response = await axiosClient.post('/api/auth/register', data);
-    return response.data;
+  register: async (data: RegisterRequest): Promise<ApiResponseWithData<RegistrationResult>> => {
+    const response = await axiosClient.post<ApiResponse<RegistrationResult>>('/api/auth/register', data);
+    return requireApiData(response.data);
   },
 
   refresh: async (refreshToken: string): Promise<ApiResponse<AuthResult>> => {

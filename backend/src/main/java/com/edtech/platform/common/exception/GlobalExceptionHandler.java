@@ -77,6 +77,11 @@ public class GlobalExceptionHandler {
         return buildResponse(ErrorCode.CONCURRENT_MODIFICATION, null, null);
     }
 
+    @ExceptionHandler(jakarta.persistence.OptimisticLockException.class)
+    public ResponseEntity<ApiResponse<Void>> handleJpaOptimisticLockException(jakarta.persistence.OptimisticLockException ex) {
+        return buildResponse(ErrorCode.CONCURRENT_MODIFICATION, null, null);
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         String msg = ex.getMessage();

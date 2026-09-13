@@ -22,15 +22,15 @@ public class ConversationService {
     private final com.edtech.platform.booking.facade.BookingEligibilityFacade bookingEligibility;
 
     @Transactional
-    public Conversation openForStudent(UUID teacherProfileId, UUID studentUserId) {
+    public UUID openForStudent(UUID teacherProfileId, UUID studentUserId) {
         Optional<Conversation> existing = conversationRepository.findByTeacherIdAndStudentId(teacherProfileId, studentUserId);
-        if (existing.isPresent()) return existing.get();
+        if (existing.isPresent()) return existing.get().getId();
         if (!enrollment.hasValidRelationship(teacherProfileId, studentUserId)
                 && !bookingEligibility.hasValidBookingOrTrial(teacherProfileId, studentUserId)) {
             throw new com.edtech.platform.common.exception.BusinessException(
                     com.edtech.platform.common.exception.ErrorCode.CONVERSATION_NOT_ALLOWED);
         }
-        return getOrCreateConversation(teacherProfileId, studentUserId);
+        return getOrCreateConversation(teacherProfileId, studentUserId).getId();
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
