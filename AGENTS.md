@@ -24,3 +24,14 @@ Không cần đọc `docs/archive/` trong công việc thông thường. Chỉ m
 - Chạy `scripts/check-docs.ps1` trước khi commit docs.
 
 Tài liệu được commit cùng đợt chức năng để code và context luôn đi cùng nhau.
+
+## Đồng bộ schema Supabase
+
+- Mỗi task phải kiểm tra diff trong `backend/src/main/resources/db/migration`.
+- Thay đổi frontend, docs hoặc backend không có migration mới thì không kết nối hoặc mutate Supabase.
+- Khi có migration mới tương thích ngược, phải chạy Flyway clean-schema test, upgrade test từ version production hiện tại, preflight read-only trên Supabase, apply bằng đúng Flyway user trong `.env.cloud`, validate Flyway history sau migration, rồi cập nhật `docs/STATUS.md` và `docs/CHANGELOG.md` bằng kết quả thật.
+- Chỉ được gọi là đã deploy schema khi Flyway trên Supabase báo migration `Success`.
+- Migration đã apply là bất biến; không sửa checksum, không dùng `flyway repair`, không reset database.
+- Migration có DROP, rename, type narrowing, xóa hoặc rewrite dữ liệu không được tự apply; phải dừng và xin xác nhận rollout/backup.
+- Không đọc ra terminal, commit hoặc ghi vào docs bất kỳ URL, username, password hay secret nào từ `.env.cloud`.
+- Nếu Supabase không kết nối được hoặc migration thất bại, ghi rõ blocked; không bỏ qua và không tuyên bố task hoàn tất.
