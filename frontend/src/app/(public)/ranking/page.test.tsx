@@ -1,11 +1,17 @@
 import React from 'react';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import RankingPage from './page';
-import { getGlobalRanking, getPublicSubjects } from '@/shared/api/public';
+import { getGlobalRankingServer, getPublicSubjectsServer } from '@/shared/api/public.server';
 
-jest.mock('@/shared/api/public', () => ({
-  getGlobalRanking: jest.fn(),
-  getPublicSubjects: jest.fn(),
+jest.mock('@/shared/api/public.server', () => ({
+  getGlobalRankingServer: jest.fn(),
+  getPublicSubjectsServer: jest.fn(),
+}));
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 describe('RankingPage', () => {
@@ -18,34 +24,18 @@ describe('RankingPage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (getPublicSubjects as jest.Mock).mockResolvedValue({ data: [] });
-    (getGlobalRanking as jest.Mock).mockResolvedValue({ data: mockRanking, meta: {} });
+    (getPublicSubjectsServer as jest.Mock).mockResolvedValue({ data: [], meta: {} });
+    (getGlobalRankingServer as jest.Mock).mockResolvedValue({ data: mockRanking, meta: {} });
   });
 
-  it('renders loading state initially', async () => {
-    let resolvePromise: any;
-    const promise = new Promise(resolve => { resolvePromise = resolve; });
-    (getGlobalRanking as jest.Mock).mockReturnValue(promise);
+  it('renders server-fetched initial ranking without a client loading fetch', async () => {
+    const page = await RankingPage();
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(<QueryClientProvider client={client}>{page}</QueryClientProvider>);
 
-    render(<RankingPage />);
-    expect(screen.getByTestId('ranking-loading')).toBeInTheDocument();
-    
-    await act(async () => {
-      resolvePromise({ data: mockRanking, meta: {} });
-    });
-  });
-
-  it('renders podium and list after loading', async () => {
-    await act(async () => {
-      render(<RankingPage />);
-    });
-
-    // Top 3 in Podium
     expect(screen.getAllByText('Teacher One').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Teacher Two').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Teacher Three').length).toBeGreaterThan(0);
-    
-    // Rest in List
     expect(screen.getAllByText('Teacher Four').length).toBeGreaterThan(0);
+    expect(getPublicSubjectsServer).toHaveBeenCalledWith({ size: 100 });
+    expect(getGlobalRankingServer).toHaveBeenCalledWith(undefined, 0, 50);
   });
 });

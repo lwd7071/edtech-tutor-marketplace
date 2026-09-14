@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import SubjectsPage from './page';
-import { getPublicSubjects } from '@/shared/api/public';
+import { getPublicSubjectsServer } from '@/shared/api/public.server';
 
 // Mock dependencies
-jest.mock('@/shared/api/public', () => ({
-  getPublicSubjects: jest.fn(),
+jest.mock('@/shared/api/public.server', () => ({
+  getPublicSubjectsServer: jest.fn(),
 }));
 
 jest.mock('@/features/marketplace/components/SubjectGrid', () => {
@@ -47,7 +47,7 @@ describe('SubjectsPage', () => {
       data: [{ id: '1', name: 'Môn Toán' }],
       meta: { page: 0, totalElements: 1, size: 20 }
     };
-    (getPublicSubjects as jest.Mock).mockResolvedValue(mockData);
+    (getPublicSubjectsServer as jest.Mock).mockResolvedValue(mockData);
 
     // Call the async Server Component
     const searchParams = { keyword: 'Toán', page: '1' };
@@ -60,7 +60,7 @@ describe('SubjectsPage', () => {
     expect(screen.getByText('Môn Toán')).toBeInTheDocument();
     
     // Check if API was called with correct mapped params (page - 1 for 0-indexed API)
-    expect(getPublicSubjects).toHaveBeenCalledWith({
+    expect(getPublicSubjectsServer).toHaveBeenCalledWith({
       keyword: 'Toán',
       page: 0,
       educationLevel: undefined,
@@ -69,7 +69,7 @@ describe('SubjectsPage', () => {
   });
 
   it('handles error state', async () => {
-    (getPublicSubjects as jest.Mock).mockRejectedValue(new Error('Network error'));
+    (getPublicSubjectsServer as jest.Mock).mockRejectedValue(new Error('Network error'));
 
     const PageComponent = await SubjectsPage({ searchParams: Promise.resolve({}) });
     render(PageComponent);

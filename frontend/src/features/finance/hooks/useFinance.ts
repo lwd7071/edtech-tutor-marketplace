@@ -9,6 +9,7 @@ import {
 } from '../types';
 import { financeKeys } from '../data/financeKeys';
 import { isConcurrentModification } from '@/shared/backend';
+import { studentDashboardKeys } from '@/features/student-dashboard/data/studentDashboardKeys';
 
 export const FINANCE_KEYS = financeKeys;
 
@@ -119,6 +120,7 @@ export function useCreateRefund() {
     mutationFn: (data: CreateRefundRequest) => financeApi.createRefundRequest(data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.refunds(0, 20) });
+      queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() });
     },
   });
 }
@@ -137,6 +139,7 @@ export function useCreateExtension() {
     mutationFn: (data: CreateExtensionRequest) => financeApi.createExtensionRequest(data, keyFor(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.extensions(0, 20) });
+      queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() });
     },
   });
 }

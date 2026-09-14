@@ -14,6 +14,7 @@ Backend là modular monolith Spring Boot. Mỗi module trong `com.edtech.platfor
 | `learning` | Assignment, submission, attachment và mapping view | `AssignmentAttachmentBinder`, `AssignmentViewMapper` |
 | `communication` | Chat, notification và realtime | command/query service, event `AFTER_COMMIT` |
 | `catalog` | Public teacher search/profile và subject catalog | SQL projection, `TeacherSearchCache`, cache configuration contributor |
+| `dashboard` | Read-model tổng hợp cho các màn hình cá nhân | `StudentDashboardRepository` dùng một SQL projection, không sở hữu mutation/invariant |
 
 Các side effect ra SMTP, WebSocket và notification chỉ chạy sau khi transaction nghiệp vụ commit. Các invariant về tiền, ledger, lượt học và lock order vẫn nằm trong transaction của module sở hữu.
 
@@ -46,6 +47,8 @@ Spring runtime nạp `.env.cloud` qua `spring.config.import`; Flyway Maven khôn
 Mail dùng `APP_EMAIL_PROVIDER=logging` khi phát triển không cần SMTP và `smtp` khi kiểm thử Mailpit/Gmail test. Outbox luôn được ghi trong transaction; delivery job claim bằng lease, gửi ngoài transaction giữ database lock rồi đánh dấu thành công hoặc retry.
 
 Teacher search dùng SQL projection và batch query cho subject, không hydrate entity graph. Keyword được normalize bằng functional indexes PostgreSQL theo quyết định tại [ADR-0004](../adr/0004-accent-insensitive-teacher-search.md). Cache search là tối ưu tùy chọn: Redis lỗi phải fallback về PostgreSQL, chỉ cache page 0–2 với size tối đa 50 và không thay đổi response contract.
+
+Student dashboard là read-model cross-domain chỉ đọc. Controller chỉ gọi service; service gọi `StudentDashboardRepository` đúng một lần. Repository dùng một SQL projection có các scalar subquery trên bảng booking, enrollment, learning, communication và finance, lọc theo `studentId` từ principal. Module này không expose entity và không được dùng cho command/mutation.
 
 ## Kiểm thử và guardrail
 

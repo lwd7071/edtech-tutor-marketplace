@@ -498,6 +498,7 @@ Tất cả endpoint yêu cầu role `STUDENT` và ownership của resource.
 
 | Method | Endpoint | Request/Query | Response `data` |
 |---|---|---|---|
+| GET | `/api/student/dashboard` | — | `StudentDashboardView` |
 | POST | `/api/student/invoices` | `CreateInvoiceRequest` | `InvoiceDetail` (`201`) |
 | GET | `/api/student/invoices/{id}` | — | `InvoiceDetail` |
 | GET | `/api/student/packages` | `status?`, pagination | `StudentPackageSummary[]` |
@@ -522,6 +523,19 @@ Tất cả endpoint yêu cầu role `STUDENT` và ownership của resource.
 | PUT | `/api/student/parent-contact` | `UpdateParentContactRequest` | `ParentContactResponse` |
 
 Student không có endpoint hủy Booking trực tiếp.
+
+```json
+// StudentDashboardView
+{
+  "nextBookingStartTime": "2026-09-14T10:00:00Z",
+  "remainingSessions": 12,
+  "todoAssignments": 3,
+  "unreadNotifications": 4,
+  "pendingRequests": 2
+}
+```
+
+`GET /api/student/dashboard` chỉ trả số liệu tổng hợp của Student đang đăng nhập. `nextBookingStartTime` là lịch `SCHEDULED` trong tương lai gần nhất hoặc `null`; các counter là số nguyên không âm. Endpoint không nhận `studentId`, không phân trang và không cache dùng chung giữa người dùng.
 
 ```json
 // UpdateParentContactRequest

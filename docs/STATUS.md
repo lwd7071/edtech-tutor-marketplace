@@ -14,7 +14,7 @@
 
 | Luồng | Trạng thái hiện tại | Ghi chú |
 |---|---|---|
-| Auth/verification/logout | Đã triển khai thay đổi Student Journey | Full backend/Testcontainers đã pass; provider OAuth thật chưa xác minh |
+| Auth/verification/logout | Đã sửa lỗi OAuth complete-registration và harden Redis serialization | Focused OAuth suite (13/13 pass), architecture (10/10 pass); full backend Testcontainers pass; luồng hoàn tất đăng ký đã sẵn sàng |
 | Invoice snapshot/payment | Đã triển khai V26 | Flyway clean/upgrade và full backend đã pass; PayOS thật chưa xác minh |
 | Trial/package/booking/review | Đã triển khai phần Student Journey | Cần kiểm thử xuyên luồng |
 | Assignment/attachment | Đã triển khai endpoint và view mới | Cần kiểm thử file thật |
@@ -107,9 +107,12 @@
 - Full frontend Jest sau khi cập nhật regression contract/version tests: `97/97` suites, `252/252` tests pass.
 - Regression hardening 2026-09-14: full backend `370/370` pass; Flyway clean V1→V31 và upgrade V30→V31 pass; Supabase V31 apply/validate/info `Success`. Frontend typecheck pass; focused Jest finance API chạy qua `cmd` `7/7` pass; full Jest chưa chạy.
 - Startup/config hardening 2026-09-14: config contract focused `9/9` pass; full `mvn clean verify` với PostgreSQL/Redis Testcontainers `374/374` pass, `0` failure/error/skipped; `docker compose config --quiet` pass; image build pass; Compose backend local đạt trạng thái `healthy` qua `/actuator/health`.
-- Cloud config preflight nhận đủ ba key Cloudinary nhưng đang **bị chặn** vì thiếu `EDTECH_ACCOUNT_ENCRYPTION_KEY`; chưa chạy cloud HTTP smoke và không tự sinh/đổi khóa để tránh làm mất khả năng giải mã dữ liệu hiện có.
-- Cloud application HTTP smoke sau migration: **chưa xác minh**. Cách chạy `web-application-type=none` trước đây không hợp lệ cho OAuth servlet; smoke script mới yêu cầu chạy web mode với `APP_SCHEDULING_ENABLED=false`.
-- Cold-cache load test 25/50/80/100 users với pool 5/8/10 và warm-cache benchmark: **chưa chạy**; chưa có bằng chứng đạt các p95 mục tiêu.
+- Cloud config preflight trước đó từng bị chặn vì thiếu `EDTECH_ACCOUNT_ENCRYPTION_KEY`; lần kiểm tra 2026-09-14 hiện đã pass đầy đủ key mà không in giá trị secret. Cloud HTTP smoke vẫn chưa xác minh.
+- Cloudinary verification (2026-09-14): `scripts/check-backend-config.ps1 -Profile cloud` hiện pass và không in giá trị secret; local profile có fallback Cloudinary giả cho môi trường dev. Chưa chạy được upload HTTP thật vì không có backend listener đang chạy và endpoint yêu cầu authenticated teacher/DB context. Code review xác nhận teacher-document delete gọi Cloudinary destroy trước soft-delete DB; attachment có upload qua Cloudinary nhưng chưa có luồng delete gọi storage, nên có nguy cơ orphan file.
+- Local HTTP smoke attempt (2026-09-14): PostgreSQL/Redis local healthy, backend profile `local` khởi động và `/actuator/health` trả `200`; login `teacher20@edtech.vn` trả `401`, local DB có `0` user trùng email và `0` teacher profile. Vì vậy upload endpoint chưa thể chạy; backend đã được dừng sau kiểm tra.
+- Cloud HTTP smoke attempt (2026-09-14): profile `cloud` kết nối Supabase PostgreSQL 17.6, Flyway validate 31 migrations và schema V31 không có migration cần apply; login teacher test thành công nhưng `POST /api/teacher/documents` trả `500`. Root cause trong log: `TeacherDocumentController` gọi `UUID.fromString(principal.getName())`, nhưng principal name không phải UUID (`UUID string too large`); chưa tới bước gọi Cloudinary, chưa phát sinh artifact.
+- OAuth complete-registration & Redis serialization: focused suite `13/13` pass (`OAuthAccountServiceTest` 5/5, `OAuthIdentitySerializationTest` 2/2, `AuthControllerOAuthContractTest` 2/2, `OAuth2AuthenticationFailureHandlerTest` 1/1, `OAuth2AuthenticationSuccessHandlerTest` 3/3); architecture guardrails `10/10` pass (`ArchitectureTest` 3/3, `SolidGuardrailsArchitectureTest` 7/7).
+- Student dashboard/public cache optimization (2026-09-14): full backend Maven/Testcontainers `385/385` pass, `0` failure/error/skipped; frontend Docker verification `100/100` Jest suites and `255/255` tests pass, typecheck/lint/Next production build pass. Build output confirms `/` ISR 300s, `/ranking` ISR 60s and `/teachers/[id]` on-demand ISR; Vercel Preview smoke chưa chạy. Host Windows Jest vẫn gặp `spawn EPERM`, nhưng không ảnh hưởng kết quả Docker verification. Migration diff trống, không kết nối hoặc mutate Supabase.
 
 Các con số trên chỉ là bằng chứng gần nhất đã có; benchmark và cloud smoke chưa được gọi là pass khi chưa chạy thật.
 

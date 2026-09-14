@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import LandingPage from './page';
-import { getPublicSubjects, getPublicTeachers } from '@/shared/api/public';
+import { getPublicSubjectsServer, getPublicTeachersServer } from '@/shared/api/public.server';
 
-jest.mock('@/shared/api/public', () => ({
-  getPublicSubjects: jest.fn(),
-  getPublicTeachers: jest.fn(),
+jest.mock('@/shared/api/public.server', () => ({
+  getPublicSubjectsServer: jest.fn(),
+  getPublicTeachersServer: jest.fn(),
 }));
 
 jest.mock('@/features/marketplace/components/HeroSearch', () => {
@@ -35,8 +35,8 @@ jest.mock('@/features/marketplace/components/CTASection', () => {
 });
 describe('LandingPage', () => {
   it('renders all sections and fetches data', async () => {
-    (getPublicSubjects as jest.Mock).mockResolvedValue({ data: [] });
-    (getPublicTeachers as jest.Mock).mockResolvedValue({ data: [] });
+    (getPublicSubjectsServer as jest.Mock).mockResolvedValue({ data: [], meta: {} });
+    (getPublicTeachersServer as jest.Mock).mockResolvedValue({ data: [], meta: {} });
 
     const Page = await LandingPage();
     render(Page);
@@ -48,7 +48,7 @@ describe('LandingPage', () => {
     expect(screen.getByText('Một khởi đầu rõ ràng')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Trở thành gia sư/i })).toBeInTheDocument();
 
-    expect(getPublicSubjects).toHaveBeenCalled();
-    expect(getPublicTeachers).toHaveBeenCalled();
+    expect(getPublicSubjectsServer).toHaveBeenCalled();
+    expect(getPublicTeachersServer).toHaveBeenCalled();
   });
 });

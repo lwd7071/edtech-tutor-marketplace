@@ -1,5 +1,19 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-14 — Sửa lỗi 500 khi hoàn tất đăng ký Google OAuth
+
+- Khắc phục lỗi `SerializationException` khi hoàn tất đăng ký OAuth (`POST /api/auth/oauth2/complete-registration`): chuyển payload lưu trong Redis từ `Map` sang `OAuthIdentity` record để `GenericJackson2JsonRedisSerializer` gắn `@class` và deserialize an toàn.
+- Thêm unit test và edge case cho `OAuthAccountService` (5 ca kiểm thử).
+- Thêm regression test cho Redis serialization của `OAuthIdentity` (2 ca kiểm thử).
+- Thêm controller contract test cho `complete-registration` (2 ca kiểm thử).
+- Verification: 13/13 OAuth focused tests pass, 10/10 Architecture guardrails pass. Không thay đổi schema DB.
+
+## 2026-09-14 — Tối ưu Student dashboard và public cache
+
+- Thêm `GET /api/student/dashboard` dùng một SQL projection, thay cho bảy request riêng ở Student dashboard; React Query giữ cache 30 giây và invalidate sau mutation liên quan.
+- Public landing, catalog, teacher detail và ranking chuyển sang server-only fetch với Next ISR/Data Cache TTL 60–300 giây; ranking initial data không còn tải lại bằng hai `useEffect`.
+- Verification: full backend Maven/Testcontainers `385/385` pass, frontend Docker `100/100` Jest suites và `255/255` tests pass, typecheck/lint/Next production build pass. Build xác nhận `/` ISR 300s, `/ranking` ISR 60s và `/teachers/[id]` on-demand ISR; Vercel Preview smoke chưa chạy. Host Windows Jest gặp `spawn EPERM`, không ảnh hưởng Docker verification.
+
 ## 2026-09-14 — Ổn định startup contract Backend
 
 - Sửa regression CI của `FlywayMigrationTest`: giới hạn truy vấn constraint V31 vào schema hiện tại để các schema tạm không tạo kết quả trùng trên Linux runner.
@@ -152,3 +166,6 @@ Các entry dưới đây ghi hành vi và bằng chứng quan trọng. Danh sác
 ## Quy tắc ghi entry mới
 
 Mỗi đợt thêm một entry gồm ngày, hành vi thay đổi, contract/schema/config liên quan, lệnh kiểm thử và phần chưa xác minh. Không ghi secret hoặc token.
+- 2026-09-14: Cloudinary flow audit — cloud key preflight pass without exposing values; real endpoint smoke remains unverified; teacher-document cleanup calls Cloudinary, generic attachment cleanup is missing.
+- 2026-09-14: Local HTTP smoke attempt — backend health `200`, nhưng tài khoản test chưa có trong local DB (`0` user/profile), login `401`; không phát sinh file test trên Cloudinary.
+- 2026-09-14: Cloud HTTP smoke attempt — Supabase/Flyway cloud startup pass và teacher login pass; upload bị `500` do `TeacherDocumentController` parse sai `principal.name` thành UUID trước khi gọi Cloudinary. Chưa phát sinh artifact.

@@ -1,12 +1,12 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import TeachersPage from './page';
-import { getPublicTeachers, getPublicSubjects } from '@/shared/api/public';
+import { getPublicTeachersServer, getPublicSubjectsServer } from '@/shared/api/public.server';
 
 // Mock dependencies
-jest.mock('@/shared/api/public', () => ({
-  getPublicTeachers: jest.fn(),
-  getPublicSubjects: jest.fn(),
+jest.mock('@/shared/api/public.server', () => ({
+  getPublicTeachersServer: jest.fn(),
+  getPublicSubjectsServer: jest.fn(),
 }));
 
 jest.mock('@/features/marketplace/components/TeacherGrid', () => {
@@ -45,13 +45,13 @@ describe('TeachersPage', () => {
       data: [{ id: '1', user: { fullName: 'Nguyen Van A' } }],
       meta: { page: 0, totalElements: 1, size: 20 }
     };
-    (getPublicTeachers as jest.Mock).mockResolvedValue(mockTeacherData);
+    (getPublicTeachersServer as jest.Mock).mockResolvedValue(mockTeacherData);
     
     const mockSubjectData = {
       data: [{ id: 'sub1', name: 'Toán' }],
       meta: { page: 0, totalElements: 1, size: 100 }
     };
-    (getPublicSubjects as jest.Mock).mockResolvedValue(mockSubjectData);
+    (getPublicSubjectsServer as jest.Mock).mockResolvedValue(mockSubjectData);
 
     // Call Server Component function
     const searchParams = { keyword: 'Math' };
@@ -64,8 +64,8 @@ describe('TeachersPage', () => {
     expect(screen.getByText('Nguyen Van A')).toBeInTheDocument();
     
     // Checks API calls
-    expect(getPublicTeachers).toHaveBeenCalledWith(expect.objectContaining({ keyword: 'Math' }));
-    expect(getPublicSubjects).toHaveBeenCalled();
+    expect(getPublicTeachersServer).toHaveBeenCalledWith(expect.objectContaining({ keyword: 'Math' }));
+    expect(getPublicSubjectsServer).toHaveBeenCalled();
   });
 });
 

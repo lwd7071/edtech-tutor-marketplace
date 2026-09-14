@@ -35,6 +35,8 @@ Backend tiếp tục là nơi quyết định quyền truy cập dữ liệu.
 
 Query key nằm trong `features/<domain>/data` và chứa mọi tham số làm thay đổi response. Mutation invalidates bằng prefix công khai của domain liên quan.
 
+Public Server Components dùng `shared/api/public.server.ts` với native `fetch` và Next Data Cache. Subjects, teacher profile/list và packages dùng TTL 300 giây; availability, reviews và ranking dùng TTL 60 giây. Browser Axios adapter không được import vào server adapter. Dữ liệu cá nhân của workspace dùng React Query; Student dashboard gọi một read-model endpoint và cache client tối đa 30 giây.
+
 Chat tải lịch sử qua REST. STOMP chỉ quản kết nối, subscription và publish. Payload realtime được kiểm tra bằng Zod trước khi vào state; reducer thay optimistic message theo `clientMessageId`, chống trùng theo id và sắp xếp theo thời gian.
 
 ## Kiểm thử

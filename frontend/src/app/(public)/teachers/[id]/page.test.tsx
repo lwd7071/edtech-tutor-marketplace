@@ -1,18 +1,23 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import TeacherDetailPage from './page';
-import { getTeacherDetail, getTeacherPackages, getTeacherAvailability, getTeacherReviews, getPublicSubjects } from '@/shared/api/public';
+import { getTeacherDetailServer, getTeacherPackagesServer, getTeacherAvailabilityServer, getTeacherReviewsServer, getPublicSubjectsServer } from '@/shared/api/public.server';
 
-jest.mock('@/shared/api/public', () => ({
-  getTeacherDetail: jest.fn(),
-  getTeacherPackages: jest.fn(),
-  getTeacherAvailability: jest.fn(),
-  getTeacherReviews: jest.fn(),
-  getPublicSubjects: jest.fn(),
+jest.mock('@/shared/api/public.server', () => ({
+  getTeacherDetailServer: jest.fn(),
+  getTeacherPackagesServer: jest.fn(),
+  getTeacherAvailabilityServer: jest.fn(),
+  getTeacherReviewsServer: jest.fn(),
+  getPublicSubjectsServer: jest.fn(),
 }));
 
 jest.mock('@/features/marketplace/components/TeacherProfileHeader', () => ({
   TeacherProfileHeader: () => <div data-testid="teacher-profile-header" />
+}));
+
+jest.mock('./TeacherDetailClient', () => ({
+  __esModule: true,
+  default: () => <div data-testid="teacher-detail-client" />,
 }));
 
 jest.mock('@/features/marketplace/components/TeacherPackagesTab', () => ({
@@ -56,25 +61,24 @@ describe('TeacherDetailPage', () => {
 
   it('renders correctly and calls APIs', async () => {
     const teacherId = 'c0000000-0000-0000-0000-000000000001';
-    (getTeacherDetail as jest.Mock).mockResolvedValue({ id: teacherId, fullName: 'John Doe', bio: 'Bio', subjects: [] });
-    (getTeacherPackages as jest.Mock).mockResolvedValue({ data: [], meta: {} });
-    (getTeacherAvailability as jest.Mock).mockResolvedValue([]);
-    (getTeacherReviews as jest.Mock).mockResolvedValue({ data: [], meta: {} });
-    (getPublicSubjects as jest.Mock).mockResolvedValue({ data: [], meta: {} });
+    (getTeacherDetailServer as jest.Mock).mockResolvedValue({ id: teacherId, fullName: 'John Doe', bio: 'Bio', subjects: [] });
+    (getTeacherPackagesServer as jest.Mock).mockResolvedValue({ data: [], meta: {} });
+    (getTeacherAvailabilityServer as jest.Mock).mockResolvedValue([]);
+    (getTeacherReviewsServer as jest.Mock).mockResolvedValue({ data: [], meta: {} });
+    (getPublicSubjectsServer as jest.Mock).mockResolvedValue({ data: [], meta: {} });
 
     // Server Component call
-    const PageComponent = await TeacherDetailPage({ params: Promise.resolve({ id: teacherId }), searchParams: Promise.resolve({}) });
+    const PageComponent = await TeacherDetailPage({ params: Promise.resolve({ id: teacherId }) });
     render(PageComponent);
 
     expect(screen.getByTestId('teacher-profile-header')).toBeInTheDocument();
-    expect(screen.getByText('Giới thiệu')).toBeInTheDocument();
-    expect(screen.getByText('Bio')).toBeInTheDocument();
+    expect(screen.getByTestId('teacher-detail-client')).toBeInTheDocument();
     
-    expect(getTeacherDetail).toHaveBeenCalledWith(teacherId);
-    expect(getTeacherPackages).toHaveBeenCalledWith(teacherId, 0, 6);
-    expect(getTeacherAvailability).toHaveBeenCalledWith(teacherId);
-    expect(getTeacherReviews).toHaveBeenCalledWith(teacherId, 0, 10);
-    expect(getPublicSubjects).toHaveBeenCalledWith({ size: 100 });
+    expect(getTeacherDetailServer).toHaveBeenCalledWith(teacherId);
+    expect(getTeacherPackagesServer).toHaveBeenCalledWith(teacherId, 0, 6);
+    expect(getTeacherAvailabilityServer).toHaveBeenCalledWith(teacherId);
+    expect(getTeacherReviewsServer).toHaveBeenCalledWith(teacherId, 0, 10);
+    expect(getPublicSubjectsServer).toHaveBeenCalledWith({ size: 100 });
   });
 });
 

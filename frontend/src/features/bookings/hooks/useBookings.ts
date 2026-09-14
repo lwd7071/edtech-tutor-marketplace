@@ -12,6 +12,7 @@ import {
 import { bookingKeys } from '../data/bookingKeys';
 import { studentPackageKeys } from '@/features/student-packages/data/studentPackageKeys';
 import { financeKeys } from '@/features/finance/data/financeKeys';
+import { studentDashboardKeys } from '@/features/student-dashboard/data/studentDashboardKeys';
 
 export const BOOKING_KEYS = bookingKeys;
 
@@ -36,6 +37,7 @@ export function useCreateBooking() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.all });
       queryClient.invalidateQueries({ queryKey: studentPackageKeys.all });
+      queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() });
     },
   });
 }
@@ -53,6 +55,7 @@ export function useCompleteBooking() {
       queryClient.invalidateQueries({ queryKey: bookingKeys.all });
       queryClient.invalidateQueries({ queryKey: studentPackageKeys.all });
       queryClient.invalidateQueries({ queryKey: financeKeys.wallet() });
+      queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() });
     },
   });
 }
@@ -69,6 +72,7 @@ export function useCancelBooking() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.all });
       queryClient.invalidateQueries({ queryKey: studentPackageKeys.all });
+      queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() });
     },
   });
 }
@@ -93,6 +97,7 @@ export function useCreateTrialRequest() {
     mutationFn: (data: CreateTrialRequest) => bookingApi.createTrialRequest(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: BOOKING_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() });
     },
   });
 }

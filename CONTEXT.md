@@ -17,6 +17,8 @@ Backend là modular monolith Spring Boot. Module sở hữu entity, repository v
 
 `auth/user` sở hữu identity và session; `teacher/subject/catalog` sở hữu marketplace; `enrollment/payment` sở hữu gói đã mua và invoice; `booking` sở hữu lịch học/trial/report; `learning` sở hữu assignment/submission/attachment; `communication` sở hữu chat/notification; `finance` sở hữu wallet/ledger/refund/payout; `ranking` sở hữu review và teacher stats.
 
+`dashboard` là read-model cross-domain cho các màn hình tổng quan cá nhân. Module này chỉ đọc projection theo principal, không sở hữu entity/invariant mutation và không thay thế service command của module nghiệp vụ.
+
 Frontend tổ chức theo route group và feature. Feature gọi API qua shared transport; không gọi Axios trực tiếp trong UI. Backend vẫn là nơi quyết định authorization và ownership.
 
 ## Invariant cần bảo vệ

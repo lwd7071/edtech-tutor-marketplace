@@ -8,10 +8,13 @@ import { DateTimeText } from '@/shared/components/data-display/DateTimeText';
 import { notificationApi } from '../api/notificationApi';
 import { NotificationView } from '../types';
 import { useAuthStore } from '@/features/auth';
+import { useQueryClient } from '@tanstack/react-query';
+import { studentDashboardKeys } from '@/features/student-dashboard/data/studentDashboardKeys';
 
 export const NotificationBell: React.FC = () => {
   const router = useRouter();
   const { user } = useAuthStore();
+  const queryClient = useQueryClient();
   const [notifications, setNotifications] = useState<NotificationView[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -38,6 +41,7 @@ export const NotificationBell: React.FC = () => {
     try {
       await notificationApi.markAllAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      await queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() });
     } catch (error) {
       console.error('Failed to mark all notifications as read', { error });
     }
@@ -48,6 +52,7 @@ export const NotificationBell: React.FC = () => {
       try {
         await notificationApi.markAsRead(notification.id);
         setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, isRead: true } : n));
+        await queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() });
       } catch (error) {
         console.error('Failed to mark notification as read', { notificationId: notification.id, error });
       }

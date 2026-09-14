@@ -1,15 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Alert, App, Badge, Button, Empty, Pagination, Skeleton, Space, Tabs, Typography } from 'antd';
 import { BookOutlined, CheckOutlined, DollarOutlined, InfoCircleOutlined, ProfileOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import { DateTimeText } from '@/shared/components/data-display/DateTimeText';
 import { notificationApi } from '../api/notificationApi';
 import type { NotificationView } from '../types';
+import { studentDashboardKeys } from '@/features/student-dashboard/data/studentDashboardKeys';
 
 export const NotificationList = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { message } = App.useApp();
   const [items, setItems] = useState<NotificationView[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,9 +33,9 @@ export const NotificationList = () => {
   }, [page, tab]);
 
   useEffect(() => { void fetchNotifications(); }, [fetchNotifications]);
-  const read = async (id: string) => { try { await notificationApi.markAsRead(id); setItems(old => old.map(n => n.id === id ? { ...n, isRead: true } : n)); return true; } catch { message.error('Chưa đánh dấu được thông báo.'); return false; } };
+  const read = async (id: string) => { try { await notificationApi.markAsRead(id); setItems(old => old.map(n => n.id === id ? { ...n, isRead: true } : n)); await queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() }); return true; } catch { message.error('Chưa đánh dấu được thông báo.'); return false; } };
   const open = async (item: NotificationView) => { if (!item.isRead && !(await read(item.id))) return; if (item.referenceUrl?.startsWith('/')) router.push(item.referenceUrl); };
-  const markAll = async () => { try { await notificationApi.markAllAsRead(); setItems(old => old.map(n => ({ ...n, isRead: true }))); } catch { message.error('Chưa đánh dấu được các thông báo.'); } };
+  const markAll = async () => { try { await notificationApi.markAllAsRead(); setItems(old => old.map(n => ({ ...n, isRead: true }))); await queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() }); } catch { message.error('Chưa đánh dấu được các thông báo.'); } };
   const icon = (type: string | null) => ['INVOICE', 'PAYMENT', 'REFUND', 'EXTENSION'].includes(type ?? '') ? <DollarOutlined /> : type === 'PROFILE' ? <ProfileOutlined /> : ['BOOKING', 'TRIAL_REQUEST', 'ASSIGNMENT', 'SUBMISSION'].includes(type ?? '') ? <BookOutlined /> : <InfoCircleOutlined />;
 
   return <div className="tm-stack">

@@ -1,11 +1,12 @@
 import Link from 'next/link';
-import {getPublicSubjects,type SubjectSummary} from '@/shared/api/public';
+import {getPublicSubjectsServer} from '@/shared/api/public.server';
+import type {SubjectSummary} from '@/shared/api/public';
 import SubjectGrid from '@/features/marketplace/components/SubjectGrid';
 export default async function Page({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){
  const q=await searchParams;const keyword=typeof q.keyword==='string'?q.keyword:'';const educationLevel=typeof q.educationLevel==='string'?q.educationLevel:'';
  const current=typeof q.page==='string'&&/^\d+$/.test(q.page)?Math.max(1,Number(q.page)):1;
  let subjects:SubjectSummary[]=[];let totalPages=0;let error=false;
- try{const res=await getPublicSubjects({keyword,educationLevel:educationLevel||undefined,page:current-1,size:16});subjects=res.data;totalPages=res.meta.totalPages;}catch{error=true;}
+ try{const res=await getPublicSubjectsServer({keyword,educationLevel:educationLevel||undefined,page:current-1,size:16});subjects=res.data;totalPages=res.meta.totalPages;}catch{error=true;}
  const href=(page:number)=>'/subjects?'+new URLSearchParams({keyword,educationLevel,page:String(page)});
  return <div className="tm-container tm-page"><header className="tm-page-heading"><p className="tm-eyebrow">Khám phá môn học</p><h1>Bắt đầu từ điều bạn muốn học</h1><p>Mỗi môn học mở ra danh sách gia sư để bạn tìm hiểu và lựa chọn.</p></header><form className="tm-panel tm-toolbar" action="/subjects"><div className="tm-field"><label htmlFor="subject-keyword">Tên môn học</label><input id="subject-keyword" name="keyword" defaultValue={keyword} placeholder="Ví dụ: Toán, Tiếng Anh" style={{padding:12,border:'1px solid var(--color-border)',borderRadius:8}}/></div><div className="tm-field"><label htmlFor="education-level">Cấp học</label><select id="education-level" name="educationLevel" defaultValue={educationLevel} style={{padding:12,border:'1px solid var(--color-border)',borderRadius:8}}>{[['','Tất cả cấp học'],['ELEMENTARY','Tiểu học'],['MIDDLE_SCHOOL','THCS'],['HIGH_SCHOOL','THPT'],['UNIVERSITY','Đại học'],['OTHER','Khác']].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div><button className="tm-button" type="submit">Tìm môn học</button></form><SubjectGrid subjects={subjects} isError={error}/>{totalPages>1&&<nav className="tm-pagination" aria-label="Phân trang môn học">{current>1&&<Link className="tm-pagination-link" href={href(current-1)}>← Trang trước</Link>}<span>Trang {current} / {totalPages}</span>{current<totalPages&&<Link className="tm-pagination-link" href={href(current+1)}>Trang sau →</Link>}</nav>}</div>;
 }
