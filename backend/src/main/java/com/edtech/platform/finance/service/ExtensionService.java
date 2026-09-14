@@ -21,6 +21,7 @@ import java.time.Clock;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import com.edtech.platform.common.event.StudentLifecycleEvent;
+import com.edtech.platform.admin.facade.AuditTrailFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
@@ -30,22 +31,24 @@ public class ExtensionService {
     private final EnrollmentFacade enrollmentFacade;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final AuditTrailFacade auditTrail;
 
     @Autowired
     public ExtensionService(PackageExtensionRequestRepository extensionRequestRepository,
                              EnrollmentFacade enrollmentFacade,
                              ApplicationEventPublisher events,
-                             Clock clock) {
+                             Clock clock, AuditTrailFacade auditTrail) {
         this.extensionRequestRepository = extensionRequestRepository;
         this.enrollmentFacade = enrollmentFacade;
         this.events = events;
         this.clock = clock;
+        this.auditTrail = auditTrail;
     }
 
     public ExtensionService(PackageExtensionRequestRepository extensionRequestRepository,
                              EnrollmentFacade enrollmentFacade,
                              ApplicationEventPublisher events) {
-        this(extensionRequestRepository, enrollmentFacade, events, Clock.systemUTC());
+        this(extensionRequestRepository, enrollmentFacade, events, Clock.systemUTC(), null);
     }
 
     @Transactional
@@ -57,9 +60,6 @@ public class ExtensionService {
 
         EnrollmentPackageSnapshot pkg = enrollmentFacade.lockForFinanceAction(
                 request.studentPackageId(), studentId, request.packageVersion());
-        if (pkg == null) {
-            throw new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND);
-        }
 
         if (!"LOCKED_EXPIRED".equalsIgnoreCase(pkg.status())) {
             throw new BusinessException(ErrorCode.PACKAGE_EXTENSION_NOT_ALLOWED);
@@ -89,7 +89,11 @@ public class ExtensionService {
 
     @Transactional(readOnly = true)
     public Page<ExtensionRequestView> findAdminExtensions(String status, Pageable pageable) {
-        ExtensionStatus parsedStatus = (status != null && !status.isBlank()) ? ExtensionStatus.valueOf(status.trim().toUpperCase()) : null;
+        ExtensionStatus parsedStatus = null;
+        if (status != null && !status.isBlank()) {
+            try { parsedStatus = ExtensionStatus.valueOf(status.trim().toUpperCase()); }
+            catch (IllegalArgumentException ex) { throw new BusinessException(ErrorCode.VALIDATION_ERROR); }
+        }
         return findAdminExtensions(parsedStatus, pageable);
     }
 
@@ -120,6 +124,8 @@ public class ExtensionService {
 
         // 2. Approve extension
         extension.approve(adminId, request.approvedExpiryDate(), request.adminNote(), now, now);
+        if (auditTrail != null) auditTrail.append(adminId, "EXTENSION_APPROVED", "EXTENSION_REQUEST", extensionId,
+                java.util.Map.of("status", "PENDING"), java.util.Map.of("status", "APPROVED", "approvedExpiryDate", request.approvedExpiryDate()));
         notifyStudent(extension, "EXTENSION_APPROVED", "Yêu cầu gia hạn đã được duyệt");
 
         return ExtensionRequestView.from(extension);
@@ -135,6 +141,8 @@ public class ExtensionService {
         }
 
         extension.reject(adminId, request.reason(), clock.instant());
+        if (auditTrail != null) auditTrail.append(adminId, "EXTENSION_REJECTED", "EXTENSION_REQUEST", extensionId,
+                java.util.Map.of("status", "PENDING"), java.util.Map.of("status", "REJECTED"));
         notifyStudent(extension, "EXTENSION_REJECTED", "Yêu cầu gia hạn bị từ chối");
         return ExtensionRequestView.from(extension);
     }

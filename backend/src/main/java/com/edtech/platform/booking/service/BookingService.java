@@ -149,7 +149,7 @@ public class BookingService {
             throw new BusinessException(ErrorCode.BOOKING_NOT_FOUND);
         }
         if (booking.getVersion() != request.version()) {
-            throw new BusinessException(ErrorCode.BOOKING_INVALID_STATE);
+            throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
         }
         if (booking.getStatus() != BookingStatus.SCHEDULED) {
             throw new BusinessException(ErrorCode.BOOKING_INVALID_STATE);
@@ -221,7 +221,7 @@ public class BookingService {
             throw new BusinessException(ErrorCode.BOOKING_NOT_FOUND);
         }
         if (booking.getVersion() != request.version()) {
-            throw new BusinessException(ErrorCode.BOOKING_INVALID_STATE);
+            throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
         }
         if (booking.getStatus() != BookingStatus.SCHEDULED) {
             throw new BusinessException(ErrorCode.BOOKING_INVALID_STATE);

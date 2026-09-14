@@ -135,6 +135,10 @@ public class RefundRequest extends BaseEntity {
         if (status != RefundStatus.APPROVED) {
             throw new BusinessException(ErrorCode.REFUND_INVALID_STATE);
         }
+        if (bankReference == null || bankReference.isBlank() || transferredAt == null
+                || proofPublicId == null || proofPublicId.isBlank() || proofUrl == null || proofUrl.isBlank()) {
+            throw new BusinessException(ErrorCode.REFUND_PROOF_REQUIRED);
+        }
         this.status = RefundStatus.REFUNDED;
         this.bankReference = bankReference;
         this.transferredAt = transferredAt != null ? transferredAt : at;

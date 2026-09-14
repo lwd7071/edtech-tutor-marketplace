@@ -7,6 +7,6 @@ public record CompleteTransferCommand(
         Instant transferredAt,
         String proofPublicId,
         String proofUrl,
-        long version
+        Long version
 ) {
 }

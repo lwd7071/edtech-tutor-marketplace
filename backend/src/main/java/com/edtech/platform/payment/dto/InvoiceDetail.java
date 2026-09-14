@@ -1,6 +1,7 @@
 package com.edtech.platform.payment.dto;
 
 import com.edtech.platform.payment.domain.Invoice;
+import com.edtech.platform.payment.facade.dto.InvoiceSnapshot;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -20,5 +21,10 @@ public record InvoiceDetail(
                 invoice.getId(), invoice.getInvoiceNumber(), invoice.getPricingPackageId(),
                 invoice.getAmountVnd(), invoice.getStatus().name(), invoice.getCheckoutUrl(),
                 invoice.getQrCode(), invoice.getPaymentExpiredAt(), invoice.getPaidAt());
+    }
+    public static InvoiceDetail from(InvoiceSnapshot invoice) {
+        return new InvoiceDetail(invoice.id(), invoice.invoiceNumber(), invoice.pricingPackageId(),
+                invoice.amountVnd(), invoice.status(), invoice.checkoutUrl(), invoice.qrCode(),
+                invoice.paymentExpiredAt(), invoice.paidAt());
     }
 }

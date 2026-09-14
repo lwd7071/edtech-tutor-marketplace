@@ -13,7 +13,7 @@ public record CreateRefundRequest(
         String bankBin,
         String accountNumber,
         String accountHolderName,
-        long packageVersion
+        @jakarta.validation.constraints.NotNull @jakarta.validation.constraints.Min(0) Long packageVersion
 ) {
     public CreateRefundRequest(UUID studentPackageId, String reason, int requestedSessions,
                                String bankName, String bankBin, String accountNumber,

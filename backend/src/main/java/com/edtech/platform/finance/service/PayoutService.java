@@ -14,10 +14,11 @@ import com.edtech.platform.finance.repository.TeacherBankAccountRepository;
 import com.edtech.platform.finance.repository.WalletRepository;
 import com.edtech.platform.teacher.facade.TeacherFacade;
 import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
-import lombok.RequiredArgsConstructor;
+import com.edtech.platform.admin.facade.AuditTrailFacade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -25,7 +26,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class PayoutService {
 
     private final PayoutRequestRepository payoutRequestRepository;
@@ -33,6 +33,32 @@ public class PayoutService {
     private final LedgerEntryRepository ledgerEntryRepository;
     private final TeacherBankAccountRepository bankAccountRepository;
     private final TeacherFacade teacherFacade;
+    private final AuditTrailFacade auditTrail;
+
+    /** Backwards-compatible constructor for unit tests and non-audited callers. */
+    @Autowired
+    public PayoutService(PayoutRequestRepository payoutRequestRepository,
+                         WalletRepository walletRepository,
+                         LedgerEntryRepository ledgerEntryRepository,
+                         TeacherBankAccountRepository bankAccountRepository,
+                         TeacherFacade teacherFacade,
+                         AuditTrailFacade auditTrail) {
+        this.payoutRequestRepository = payoutRequestRepository;
+        this.walletRepository = walletRepository;
+        this.ledgerEntryRepository = ledgerEntryRepository;
+        this.bankAccountRepository = bankAccountRepository;
+        this.teacherFacade = teacherFacade;
+        this.auditTrail = auditTrail;
+    }
+
+    /** Backwards-compatible constructor for unit tests and non-audited callers. */
+    public PayoutService(PayoutRequestRepository payoutRequestRepository,
+                         WalletRepository walletRepository,
+                         LedgerEntryRepository ledgerEntryRepository,
+                         TeacherBankAccountRepository bankAccountRepository,
+                         TeacherFacade teacherFacade) {
+        this(payoutRequestRepository, walletRepository, ledgerEntryRepository, bankAccountRepository, teacherFacade, null);
+    }
 
     private UUID resolveTeacherId(UUID teacherUserId) {
         TeacherSnapshot teacher = teacherFacade.getTeacherByUserId(teacherUserId);
@@ -120,7 +146,11 @@ public class PayoutService {
 
     @Transactional(readOnly = true)
     public Page<PayoutRequestView> findAdminPayouts(String status, Pageable pageable) {
-        PayoutStatus parsedStatus = (status != null && !status.isBlank()) ? PayoutStatus.valueOf(status.trim().toUpperCase()) : null;
+        PayoutStatus parsedStatus = null;
+        if (status != null && !status.isBlank()) {
+            try { parsedStatus = PayoutStatus.valueOf(status.trim().toUpperCase()); }
+            catch (IllegalArgumentException ex) { throw new BusinessException(ErrorCode.VALIDATION_ERROR); }
+        }
         return findAdminPayouts(parsedStatus, pageable);
     }
 
@@ -142,6 +172,7 @@ public class PayoutService {
         }
 
         payout.process(adminId, Instant.now());
+        audit(adminId, "PAYOUT_PROCESSING", payoutId, "PENDING", "PROCESSING", payout.getAmountVnd());
         return PayoutRequestView.from(payout);
     }
 
@@ -171,6 +202,7 @@ public class PayoutService {
                 request.proofUrl(),
                 Instant.now()
         );
+        audit(adminId, "PAYOUT_COMPLETED", payoutId, "PROCESSING", "SUCCEEDED", payout.getAmountVnd());
 
         ledgerEntryRepository.append(new LedgerEntry(
                 wallet.getId(),
@@ -202,6 +234,7 @@ public class PayoutService {
         wallet.releaseReserved(payout.getAmountVnd());
 
         payout.reject(adminId, request.reason(), Instant.now());
+        audit(adminId, "PAYOUT_REJECTED", payoutId, "PENDING_OR_PROCESSING", "REJECTED", payout.getAmountVnd());
 
         ledgerEntryRepository.append(new LedgerEntry(
                 wallet.getId(),
@@ -228,5 +261,12 @@ public class PayoutService {
         ));
 
         return PayoutRequestView.from(payout);
+    }
+
+    private void audit(UUID actor, String action, UUID id, String beforeStatus, String afterStatus, long amount) {
+        if (auditTrail == null) return;
+        auditTrail.append(actor, action, "PAYOUT_REQUEST", id,
+                java.util.Map.of("status", beforeStatus),
+                java.util.Map.of("status", afterStatus, "amountVnd", amount));
     }
 }

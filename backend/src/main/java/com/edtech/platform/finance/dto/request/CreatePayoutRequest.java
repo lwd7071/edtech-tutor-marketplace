@@ -8,5 +8,5 @@ public record CreatePayoutRequest(
         @NotNull UUID bankAccountId,
         @Min(1000) long amountVnd,
         String teacherNote,
-        long walletVersion
+        @jakarta.validation.constraints.NotNull @jakarta.validation.constraints.Min(0) Long walletVersion
 ) {}

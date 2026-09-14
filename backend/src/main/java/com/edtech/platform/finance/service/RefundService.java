@@ -17,6 +17,7 @@ import com.edtech.platform.finance.repository.LedgerEntryRepository;
 import com.edtech.platform.finance.repository.RefundRequestRepository;
 import com.edtech.platform.finance.repository.WalletRepository;
 import com.edtech.platform.finance.security.AccountNumberProtector;
+import com.edtech.platform.admin.facade.AuditTrailFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,13 +44,14 @@ public class RefundService {
     private final PackageMoneyAllocator packageMoneyAllocator;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final AuditTrailFacade auditTrail;
 
     @Autowired
     public RefundService(RefundRequestRepository refundRequestRepository, EnrollmentFacade enrollmentFacade,
                          BookingEligibilityFacade bookingEligibilityFacade, WalletRepository walletRepository,
                          LedgerEntryRepository ledgerEntryRepository, AccountNumberProtector accountNumbers,
                          RefundRequestViewMapper views, PackageMoneyAllocator packageMoneyAllocator,
-                         ApplicationEventPublisher events, Clock clock) {
+                         ApplicationEventPublisher events, Clock clock, AuditTrailFacade auditTrail) {
         this.refundRequestRepository = refundRequestRepository;
         this.enrollmentFacade = enrollmentFacade;
         this.bookingEligibilityFacade = bookingEligibilityFacade;
@@ -60,6 +62,7 @@ public class RefundService {
         this.packageMoneyAllocator = packageMoneyAllocator;
         this.events = events;
         this.clock = clock;
+        this.auditTrail = auditTrail;
     }
 
     public RefundService(RefundRequestRepository refundRequestRepository, EnrollmentFacade enrollmentFacade,
@@ -68,7 +71,7 @@ public class RefundService {
                          RefundRequestViewMapper views, PackageMoneyAllocator packageMoneyAllocator,
                          ApplicationEventPublisher events) {
         this(refundRequestRepository, enrollmentFacade, bookingEligibilityFacade, walletRepository,
-                ledgerEntryRepository, accountNumbers, views, packageMoneyAllocator, events, Clock.systemUTC());
+                ledgerEntryRepository, accountNumbers, views, packageMoneyAllocator, events, Clock.systemUTC(), null);
     }
 
     @Transactional
@@ -79,9 +82,6 @@ public class RefundService {
 
         EnrollmentPackageSnapshot pkg = enrollmentFacade.lockForFinanceAction(
                 request.studentPackageId(), studentId, request.packageVersion());
-        if (pkg == null) {
-            throw new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND);
-        }
 
         if ("REFUND_PENDING".equalsIgnoreCase(pkg.status())) {
             throw new BusinessException(ErrorCode.PACKAGE_REFUND_IN_PROGRESS);
@@ -136,7 +136,11 @@ public class RefundService {
 
     @Transactional(readOnly = true)
     public Page<RefundRequestView> findAdminRefunds(String status, Pageable pageable) {
-        RefundStatus parsedStatus = (status != null && !status.isBlank()) ? RefundStatus.valueOf(status.trim().toUpperCase()) : null;
+        RefundStatus parsedStatus = null;
+        if (status != null && !status.isBlank()) {
+            try { parsedStatus = RefundStatus.valueOf(status.trim().toUpperCase()); }
+            catch (IllegalArgumentException ex) { throw new BusinessException(ErrorCode.VALIDATION_ERROR); }
+        }
         return findAdminRefunds(parsedStatus, pageable);
     }
 
@@ -176,6 +180,7 @@ public class RefundService {
                 pkg.purchasePriceVnd(), pkg.totalSessions(), resolvedBefore, request.approvedSessions());
 
         refund.approve(adminId, request.approvedSessions(), refundAmountVnd, request.adminNote(), clock.instant());
+        audit(adminId, "REFUND_APPROVED", refundId, "PENDING", "APPROVED", refund.getApprovedSessions(), refund.getRefundAmountVnd());
         notifyStudent(refund, "REFUND_APPROVED", "Yêu cầu hoàn tiền đã được duyệt");
         return views.toView(refund);
     }
@@ -189,6 +194,7 @@ public class RefundService {
             throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
         }
         refund.reject(adminId, request.reason(), clock.instant());
+        audit(adminId, "REFUND_REJECTED", refundId, "PENDING", "REJECTED", refund.getApprovedSessions(), refund.getRefundAmountVnd());
 
         // Restore package status
         enrollmentFacade.restoreFromRefundPending(refund.getStudentPackageId());
@@ -252,6 +258,7 @@ public class RefundService {
         // 2. Complete refund
         refund.complete(adminId, request.bankReference(), request.transferredAt(), request.proofPublicId(),
                 request.proofUrl(), clock.instant());
+        audit(adminId, "REFUND_COMPLETED", refundId, "APPROVED", "REFUNDED", refund.getApprovedSessions(), refund.getRefundAmountVnd());
         notifyStudent(refund, "REFUND_COMPLETED", "Khoản hoàn tiền đã được xử lý");
 
         return views.toView(refund);
@@ -260,5 +267,15 @@ public class RefundService {
     private void notifyStudent(RefundRequest refund, String type, String title) {
         events.publishEvent(new StudentLifecycleEvent(refund.getStudentId(), type, title, title,
                 "REFUND", refund.getId()));
+    }
+
+    private void audit(UUID actor, String action, UUID id, String beforeStatus, String afterStatus,
+                       int sessions, Long amount) {
+        if (auditTrail == null) return;
+        var after = new java.util.LinkedHashMap<String, Object>();
+        after.put("status", afterStatus); after.put("approvedSessions", sessions);
+        if (amount != null) after.put("refundAmountVnd", amount);
+        auditTrail.append(actor, action, "REFUND_REQUEST", id,
+                java.util.Map.of("status", beforeStatus), java.util.Map.copyOf(after));
     }
 }

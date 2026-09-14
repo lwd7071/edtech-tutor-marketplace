@@ -93,6 +93,10 @@ public class PayoutRequest extends BaseEntity {
         if (status != PayoutStatus.PROCESSING) {
             throw new BusinessException(ErrorCode.PAYOUT_INVALID_STATE);
         }
+        if (bankReference == null || bankReference.isBlank() || transferredAt == null
+                || proofPublicId == null || proofPublicId.isBlank() || proofUrl == null || proofUrl.isBlank()) {
+            throw new BusinessException(ErrorCode.PAYOUT_PROOF_REQUIRED);
+        }
         this.status = PayoutStatus.SUCCEEDED;
         this.bankReference = bankReference;
         this.transferredAt = transferredAt != null ? transferredAt : at;

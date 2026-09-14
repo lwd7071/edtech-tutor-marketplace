@@ -20,6 +20,9 @@ public interface StudentPackageRepository extends JpaRepository<StudentPackage, 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from StudentPackage p where p.id = :id")
     Optional<StudentPackage> findByIdForUpdate(UUID id);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from StudentPackage p where p.id = :id and p.studentId = :studentId")
+    Optional<StudentPackage> findByIdAndStudentIdForUpdate(UUID id, UUID studentId);
     Optional<StudentPackage> findByInvoiceId(UUID invoiceId);
     Page<StudentPackage> findByStudentIdAndStatus(UUID studentId, StudentPackageStatus status, Pageable pageable);
     Optional<StudentPackage> findByIdAndStudentId(UUID id, UUID studentId);

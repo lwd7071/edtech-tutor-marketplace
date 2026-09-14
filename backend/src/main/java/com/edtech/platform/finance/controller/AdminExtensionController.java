@@ -1,11 +1,13 @@
 package com.edtech.platform.finance.controller;
 
-import com.edtech.platform.admin.dto.request.ApproveExtensionRequest;
-import com.edtech.platform.admin.dto.request.RejectRequest;
+import com.edtech.platform.finance.dto.request.ApproveExtensionRequest;
+import com.edtech.platform.finance.dto.request.RejectExtensionRequest;
 import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.common.security.RequireRole;
+import com.edtech.platform.common.exception.BusinessException;
+import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.finance.dto.response.ExtensionRequestView;
 import com.edtech.platform.finance.command.ApproveExtensionCommand;
 import com.edtech.platform.finance.command.RejectFinanceCommand;
@@ -35,7 +37,7 @@ public class AdminExtensionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        size = Math.min(size, 100);
+        if (page < 0 || size < 1 || size > 100) throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         Page<ExtensionRequestView> result = extensionService.findAdminExtensions(status, PageRequest.of(page, size));
         return ApiResponse.page(result.getContent(), PageMeta.from(result));
     }
@@ -56,7 +58,7 @@ public class AdminExtensionController {
     public ApiResponse<ExtensionRequestView> reject(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,
-            @Valid @RequestBody RejectRequest request
+            @Valid @RequestBody RejectExtensionRequest request
     ) {
         return ApiResponse.ok(extensionService.rejectExtension(user.id(), id,
                 new RejectFinanceCommand(request.reason(), 0)));

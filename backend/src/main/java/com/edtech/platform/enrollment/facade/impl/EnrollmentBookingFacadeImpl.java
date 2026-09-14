@@ -4,6 +4,8 @@ import com.edtech.platform.booking.facade.EnrollmentBookingFacade;
 import com.edtech.platform.booking.facade.dto.BookingPackageSnapshot;
 import com.edtech.platform.enrollment.domain.StudentPackage;
 import com.edtech.platform.enrollment.repository.StudentPackageRepository;
+import com.edtech.platform.common.exception.BusinessException;
+import com.edtech.platform.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,8 @@ public class EnrollmentBookingFacadeImpl implements EnrollmentBookingFacade {
     private final Clock clock;
 
     private StudentPackage get(UUID id) {
-        return repo.findByIdForUpdate(id).orElseThrow();
+        return repo.findByIdForUpdate(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
     }
 
     private BookingPackageSnapshot snap(StudentPackage p) {
@@ -48,7 +51,7 @@ public class EnrollmentBookingFacadeImpl implements EnrollmentBookingFacade {
     public BookingPackageSnapshot inspect(UUID id, UUID student) {
         StudentPackage p = get(id);
         if (student != null && !p.getStudentId().equals(student)) {
-            throw new IllegalArgumentException("ownership mismatch");
+            throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
         }
         return snap(p);
     }

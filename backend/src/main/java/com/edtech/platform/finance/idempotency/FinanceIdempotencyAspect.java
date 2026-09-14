@@ -16,6 +16,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Arrays;
 import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 @Aspect
 @Component
@@ -42,6 +43,7 @@ public class FinanceIdempotencyAspect {
                 .orElseThrow(() -> new BusinessException(ErrorCode.IDEMPOTENCY_KEY_REQUIRED));
         Object command = Arrays.stream(point.getArgs())
                 .filter(arg -> !(arg instanceof AuthenticatedUser))
+                .map(this::fingerprintValue)
                 .toList();
         return executor.execute(actor, idempotent.operation(), key, command,
                 (Class) idempotent.responseType(), () -> {
@@ -53,6 +55,19 @@ public class FinanceIdempotencyAspect {
                     }
                 });
     }
+
+    private Object fingerprintValue(Object value) {
+        if (!(value instanceof MultipartFile file)) return value;
+        try {
+            byte[] bytes = file.getBytes();
+            return new FileFingerprint(file.getOriginalFilename(), file.getContentType(), file.getSize(),
+                    java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes)));
+        } catch (Exception ex) {
+            throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+    }
+
+    private record FileFingerprint(String filename, String contentType, long size, String sha256) {}
 
     public static class FinanceCommandInvocationException extends RuntimeException {
         public FinanceCommandInvocationException(Throwable cause) { super(cause); }

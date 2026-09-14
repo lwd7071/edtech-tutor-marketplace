@@ -1,18 +1,21 @@
 package com.edtech.platform.finance.controller;
 
-import com.edtech.platform.admin.dto.request.CompleteTransferRequest;
-import com.edtech.platform.admin.dto.request.ProcessPayoutRequest;
-import com.edtech.platform.admin.dto.request.RejectRequest;
-import com.edtech.platform.admin.dto.request.RejectFinanceRequest;
+import com.edtech.platform.finance.dto.request.ProcessPayoutRequest;
+import com.edtech.platform.finance.dto.request.RejectFinanceRequest;
 import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.common.security.RequireRole;
+import com.edtech.platform.common.exception.BusinessException;
+import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.finance.dto.response.PayoutRequestView;
 import com.edtech.platform.finance.command.CompleteTransferCommand;
 import com.edtech.platform.finance.command.ProcessPayoutCommand;
 import com.edtech.platform.finance.command.RejectFinanceCommand;
 import com.edtech.platform.finance.service.PayoutService;
+import com.edtech.platform.finance.service.FinanceProofStorage;
+import com.edtech.platform.finance.dto.request.CompleteTransferMetadata;
+import org.springframework.web.multipart.MultipartFile;
 import com.edtech.platform.finance.idempotency.FinanceIdempotent;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +36,7 @@ import java.util.UUID;
 public class AdminPayoutController {
 
     private final PayoutService payoutService;
+    private final FinanceProofStorage proofStorage;
 
     @GetMapping
     public ApiResponse<List<PayoutRequestView>> list(
@@ -38,7 +44,7 @@ public class AdminPayoutController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        size = Math.min(size, 100);
+        if (page < 0 || size < 1 || size > 100) throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         Page<PayoutRequestView> result = payoutService.findAdminPayouts(status, PageRequest.of(page, size));
         return ApiResponse.page(result.getContent(), PageMeta.from(result));
     }
@@ -48,22 +54,25 @@ public class AdminPayoutController {
     public ApiResponse<PayoutRequestView> process(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,
-            @RequestBody ProcessPayoutRequest request
+            @Valid @RequestBody ProcessPayoutRequest request
     ) {
         return ApiResponse.ok(payoutService.processPayout(user.id(), id,
                 new ProcessPayoutCommand(request.version())));
     }
 
-    @PostMapping("/{id}/complete")
+    @PostMapping(value = "/{id}/complete", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Transactional
     @FinanceIdempotent(operation = "ADMIN_PAYOUT_COMPLETE", responseType = PayoutRequestView.class)
     public ApiResponse<PayoutRequestView> complete(
             @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable UUID id,
-            @Valid @RequestBody CompleteTransferRequest request
+            @Valid @RequestPart("metadata") CompleteTransferMetadata request,
+            @RequestPart("proof") MultipartFile proof
     ) {
+        var uploaded = proofStorage.upload(proof, "payout", id);
         return ApiResponse.ok(payoutService.completePayout(user.id(), id,
                 new CompleteTransferCommand(request.bankReference(), request.transferredAt(),
-                        request.proofPublicId(), request.proofUrl(), request.version())));
+                        uploaded.publicId(), uploaded.secureUrl(), request.version())));
     }
 
     @PostMapping("/{id}/reject")

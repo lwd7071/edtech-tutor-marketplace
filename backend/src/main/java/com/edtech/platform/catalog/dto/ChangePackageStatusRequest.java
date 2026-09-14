@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotNull;
 public record ChangePackageStatusRequest(
         @NotNull(message = "Trạng thái không được để trống")
         PackageStatus status,
-        @jakarta.validation.constraints.Min(value = 0, message = "Version không hợp lệ")
-        long version
+        @jakarta.validation.constraints.NotNull @jakarta.validation.constraints.Min(value = 0, message = "Version không hợp lệ")
+        Long version
 ) {
     public ChangePackageStatusRequest(PackageStatus status) {
         this(status, 0L);

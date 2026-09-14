@@ -1,15 +1,16 @@
 package com.edtech.platform.enrollment.facade.impl;
 
 import com.edtech.platform.enrollment.facade.EnrollmentFacade;
+import com.edtech.platform.enrollment.domain.StudentPackageStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import com.edtech.platform.enrollment.domain.StudentPackageStatus;
+import com.edtech.platform.common.exception.BusinessException;
+import com.edtech.platform.common.exception.ErrorCode;
 import java.time.Clock;
 
 @Service
@@ -74,17 +75,6 @@ public class EnrollmentFacadeImpl implements EnrollmentFacade {
     }
 
     @Override
-    public Page<com.edtech.platform.enrollment.domain.StudentPackage> findStudentPackages(UUID studentId, StudentPackageStatus status, Pageable pageable) {
-        return status == null ? studentPackageRepository.findByStudentId(studentId, pageable)
-                : studentPackageRepository.findByStudentIdAndStatus(studentId, status, pageable);
-    }
-
-    @Override
-    public java.util.Optional<com.edtech.platform.enrollment.domain.StudentPackage> findStudentPackage(UUID packageId, UUID studentId) {
-        return studentPackageRepository.findByIdAndStudentId(packageId, studentId);
-    }
-
-    @Override
     public com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot inspect(UUID packageId, UUID studentId) {
         var opt = (studentId == null)
                 ? studentPackageRepository.findById(packageId)
@@ -94,15 +84,22 @@ public class EnrollmentFacadeImpl implements EnrollmentFacade {
 
     @Override
     @org.springframework.transaction.annotation.Transactional
-    public com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot lockForFinanceAction(UUID packageId, UUID studentId, long expectedVersion) {
-        var pkg = studentPackageRepository.findByIdForUpdate(packageId)
-                .orElseThrow(() -> new IllegalArgumentException("package not found: " + packageId));
-        if (studentId != null && !pkg.getStudentId().equals(studentId)) {
-            throw new IllegalArgumentException("ownership mismatch");
-        }
+    public com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot lockOwnedPackageForFinance(UUID packageId, UUID studentId, long expectedVersion) {
+        var pkg = studentPackageRepository.findByIdAndStudentIdForUpdate(packageId, studentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
         if (pkg.getVersion() != expectedVersion) {
-            throw new com.edtech.platform.common.exception.BusinessException(
-                    com.edtech.platform.common.exception.ErrorCode.CONCURRENT_MODIFICATION);
+            throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
+        }
+        return com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot.from(pkg);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot lockPackageForFinance(UUID packageId, long expectedVersion) {
+        var pkg = studentPackageRepository.findByIdForUpdate(packageId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+        if (pkg.getVersion() != expectedVersion) {
+            throw new BusinessException(ErrorCode.CONCURRENT_MODIFICATION);
         }
         return com.edtech.platform.enrollment.facade.dto.EnrollmentPackageSnapshot.from(pkg);
     }
