@@ -117,4 +117,75 @@ public class RlsBehaviorVerificationTest extends AbstractIntegrationTest {
         Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM public.flyway_schema_history", Integer.class);
         assertThat(count).isNotNull().isGreaterThan(0);
     }
+
+    @Test
+    @DisplayName("V33: Enable RLS on users - Backend CRUD succeeds unimpeded while unprivileged role is blocked")
+    void verifyRlsBehaviorOnUsers() throws Exception {
+        // Verify RLS is enabled on users
+        Map<String, Object> rlsStatus = jdbcTemplate.queryForMap(
+                "SELECT rowsecurity FROM pg_tables WHERE schemaname = 'public' AND tablename = 'users'");
+        assertThat(rlsStatus.get("rowsecurity")).isEqualTo(true);
+
+        // 1. Backend CRUD operations via default connection (table owner / admin)
+        String testEmail = "rls_user_" + UUID.randomUUID().toString().substring(0, 8) + "@test.com";
+
+        int inserted = jdbcTemplate.update(
+                "INSERT INTO public.users (email, password_hash, full_name, role, status) VALUES (?, 'hash123', 'RLS Test User', 'STUDENT', 'ACTIVE')",
+                testEmail
+        );
+        assertThat(inserted).isEqualTo(1);
+
+        Map<String, Object> user = jdbcTemplate.queryForMap(
+                "SELECT email, full_name, role FROM public.users WHERE email = ?", testEmail);
+        assertThat(user.get("full_name")).isEqualTo("RLS Test User");
+
+        int updated = jdbcTemplate.update(
+                "UPDATE public.users SET full_name = 'RLS Test User Updated' WHERE email = ?", testEmail);
+        assertThat(updated).isEqualTo(1);
+
+        // 2. Simulate unprivileged role without BYPASSRLS
+        String testAnonUser = "test_anon_u_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        String testAnonPass = "P@ss_" + UUID.randomUUID().toString().substring(0, 8);
+
+        jdbcTemplate.execute("CREATE ROLE " + testAnonUser + " WITH LOGIN PASSWORD '" + testAnonPass + "' NOINHERIT;");
+        jdbcTemplate.execute("GRANT USAGE ON SCHEMA public TO " + testAnonUser + ";");
+        jdbcTemplate.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON public.users TO " + testAnonUser + ";");
+
+        try {
+            String jdbcUrl = POSTGRES_CONTAINER.getJdbcUrl();
+            try (Connection anonConn = DriverManager.getConnection(jdbcUrl, testAnonUser, testAnonPass);
+                 Statement anonStmt = anonConn.createStatement()) {
+
+                // SELECT: RLS default-deny should return 0 rows
+                try (ResultSet rs = anonStmt.executeQuery("SELECT COUNT(*) FROM public.users WHERE email = '" + testEmail + "'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt(1)).as("Unprivileged role must see 0 rows on users due to RLS default-deny").isEqualTo(0);
+                }
+
+                // INSERT: RLS default-deny should fail
+                assertThatThrownBy(() -> anonStmt.executeUpdate(
+                        "INSERT INTO public.users (email, password_hash, full_name, role, status) " +
+                        "VALUES ('hacker@test.com', 'hack', 'Hacker', 'STUDENT', 'ACTIVE')"
+                )).as("Unprivileged role must be blocked from INSERT by RLS")
+                  .hasMessageContaining("violates row-level security policy");
+
+                // UPDATE: 0 rows matched
+                int anonUpdated = anonStmt.executeUpdate(
+                        "UPDATE public.users SET full_name = 'Hacked' WHERE email = '" + testEmail + "'");
+                assertThat(anonUpdated).as("Unprivileged role must affect 0 rows on UPDATE due to RLS default-deny").isEqualTo(0);
+
+                // DELETE: 0 rows matched
+                int anonDeleted = anonStmt.executeUpdate(
+                        "DELETE FROM public.users WHERE email = '" + testEmail + "'");
+                assertThat(anonDeleted).as("Unprivileged role must affect 0 rows on DELETE due to RLS default-deny").isEqualTo(0);
+            }
+        } finally {
+            jdbcTemplate.execute("DROP OWNED BY " + testAnonUser + ";");
+            jdbcTemplate.execute("DROP ROLE " + testAnonUser + ";");
+        }
+
+        // Cleanup
+        int deleted = jdbcTemplate.update("DELETE FROM public.users WHERE email = ?", testEmail);
+        assertThat(deleted).isEqualTo(1);
+    }
 }

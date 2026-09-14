@@ -2,11 +2,15 @@
 
 ## Status
 
-Accepted and Applied (V32 deployed to Supabase production 2026-09-14).
+Accepted and Applied (V32 và V33 deployed to Supabase production 2026-09-14).
 
 ## Decision
 
-Bật PostgreSQL Row Level Security cho 8 bảng Backend-owned bằng migration append-only V32 (`refresh_tokens`, `teacher_documents`, `subject_proposals`, `subjects`, `pricing_packages`, `teacher_profiles`, `teacher_subjects`, `teacher_availabilities`). Không tạo policy cho `anon` hoặc `authenticated`, không dùng `FORCE ROW LEVEL SECURITY`, và giữ Spring Boot là đường truy cập duy nhất.
+Bật PostgreSQL Row Level Security cho các bảng Backend-owned bằng migration append-only:
+- V32: 8 bảng (`refresh_tokens`, `teacher_documents`, `subject_proposals`, `subjects`, `pricing_packages`, `teacher_profiles`, `teacher_subjects`, `teacher_availabilities`).
+- V33: bảng `users` (Identity & Core domain).
+
+Không tạo policy cho `anon` hoặc `authenticated`, không dùng `FORCE ROW LEVEL SECURITY`, và giữ Spring Boot là đường truy cập duy nhất.
 
 `flyway_schema_history` là bảng metadata nội bộ của Flyway và được quản lý riêng ngoài transaction của migration để tránh lock contention. Catalog public chỉ được mở bằng migration/ADR riêng sau này, với predicate loại bỏ dữ liệu inactive, chưa approved và soft-deleted.
 
