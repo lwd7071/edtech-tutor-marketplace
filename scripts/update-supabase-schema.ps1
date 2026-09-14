@@ -5,7 +5,13 @@ param(
     [Parameter(Mandatory = $true)]
     [int]$TargetVersion,
 
-    [switch]$Apply
+    [switch]$Apply,
+
+    [switch]$DongProductionApproval,
+
+    [switch]$BackupConfirmed,
+
+    [switch]$BackupWaivedByDong
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,6 +34,18 @@ if (-not (Test-Path -LiteralPath $envPath -PathType Leaf)) {
 }
 if ($TargetVersion -le $ExpectedCurrentVersion) {
     Stop-WithMessage "TargetVersion must be greater than ExpectedCurrentVersion."
+}
+if ($Apply -and -not $DongProductionApproval) {
+    Stop-WithMessage "Production apply is restricted to Đông; pass -DongProductionApproval only after Đông confirms the rollout."
+}
+if ($Apply -and -not ($BackupConfirmed -or $BackupWaivedByDong)) {
+    Stop-WithMessage "Confirm a Supabase backup/snapshot, or explicitly pass -BackupWaivedByDong when Đông accepts the data-loss risk."
+}
+if ($Apply -and $BackupConfirmed -and $BackupWaivedByDong) {
+    Stop-WithMessage "Choose exactly one of -BackupConfirmed or -BackupWaivedByDong."
+}
+if ($Apply -and $BackupWaivedByDong) {
+    Write-Warning "Backup waived by Đông; production migration proceeds without a recoverable snapshot."
 }
 
 $migrationFiles = @(Get-ChildItem -LiteralPath (Join-Path $backendRoot "src/main/resources/db/migration") -Filter ("V{0}__*.sql" -f $TargetVersion) -File)
@@ -64,7 +82,7 @@ foreach ($key in $requiredKeys) {
 }
 
 function Invoke-Flyway([string]$goal, [string[]]$extraArgs = @()) {
-    $args = @('-B', '--no-transfer-progress', ('org.flywaydb:flyway-maven-plugin:9.22.3:{0}' -f $goal)) + $extraArgs
+    $args = @('-B', '--no-transfer-progress', '-e', ('org.flywaydb:flyway-maven-plugin:9.22.3:{0}' -f $goal)) + $extraArgs
     Push-Location $backendRoot
     try {
         $output = @(& mvn @args 2>&1)

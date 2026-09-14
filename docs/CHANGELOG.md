@@ -5,7 +5,7 @@
 - Thêm preflight read-only kiểm kê grants/role/RLS cho 9 bảng và migration `V32__enable_rls_public_tables.sql` theo mô hình default-deny, không policy public và không `FORCE ROW LEVEL SECURITY`.
 - Cập nhật Flyway tests lên V32, thêm kiểm tra 9 bảng bật RLS và test local Backend/unprivileged role với cleanup sau mỗi test.
 - Script Supabase yêu cầu xác nhận backup và quyền apply riêng của Đông trước khi chạy production. Chưa kết nối hoặc mutate Supabase production.
-- Verification focused: Flyway `14/14`, RLS behavior `2/2` pass; full backend chưa chạy lại sau thay đổi V32.
+- Verification focused: Flyway `14/14`, RLS behavior `2/2` pass; Supabase read-only preflight V31→V32 pass, không apply. Backup/snapshot, production apply và Security Advisor verification còn chờ Đông; full backend sau V32 chưa hoàn tất do Maven test runner treo trên Windows.
 
 ## 2026-09-14 — Sửa lỗi 500 khi hoàn tất đăng ký Google OAuth
 
@@ -177,3 +177,4 @@ Mỗi đợt thêm một entry gồm ngày, hành vi thay đổi, contract/schem
 - 2026-09-14: Local HTTP smoke attempt — backend health `200`, nhưng tài khoản test chưa có trong local DB (`0` user/profile), login `401`; không phát sinh file test trên Cloudinary.
 - 2026-09-14: Cloud HTTP smoke attempt — Supabase/Flyway cloud startup pass và teacher login pass; upload bị `500` do `TeacherDocumentController` parse sai `principal.name` thành UUID trước khi gọi Cloudinary. Chưa phát sinh artifact.
 - 2026-09-14: Teacher controllers fix — chuẩn hóa `TeacherDocumentController`, `TeacherProfileController`, `TeacherAvailabilityController`, `TeacherSubjectController`, `TeacherSubjectProposalController` dùng `@AuthenticationPrincipal AuthenticatedUser` thay `Principal.getName()`. Bổ sung 6 test classes với 23/23 unit tests pass (`TeacherDocumentControllerTest`, `TeacherProfileControllerTest`, `TeacherAvailabilityControllerTest`, `TeacherSubjectControllerTest`, `TeacherSubjectProposalControllerTest`, `TeacherDocumentServiceTest`) và architecture tests (10/10) pass.
+- 2026-09-14: Supabase schema V32 — migration V32 (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY` trên 8 bảng backend-owned: `refresh_tokens`, `teacher_documents`, `subject_proposals`, `subjects`, `pricing_packages`, `teacher_profiles`, `teacher_subjects`, `teacher_availabilities`) apply thành công lên Supabase production (`State = Success`, schema version 32); clean V1→V32 và upgrade tests V27→V32, V30→V32, V31→V32 pass (`FlywayMigrationTest` 16/16). ADR 0011 accepted and applied.

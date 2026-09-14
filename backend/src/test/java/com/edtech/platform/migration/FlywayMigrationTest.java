@@ -57,13 +57,13 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Tất cả 31 file migration V1-V31 phải được apply và validate thành công")
+    @DisplayName("Tất cả 32 file migration V1-V32 phải được apply và validate thành công")
     void flyway_shouldApplyAllMigrationsSuccessfully() {
         assertThat(flyway).isNotNull();
         MigrationInfo[] appliedMigrations = flyway.info().applied();
 
         assertThat(appliedMigrations)
-                .hasSize(31)
+                .hasSize(32)
                 .allSatisfy(info -> {
                     assertThat(info.getState().isApplied()).isTrue();
                     assertThat(info.getVersion()).isNotNull();
@@ -157,7 +157,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword())
                 .load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("31");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("32");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
@@ -174,8 +174,8 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Database đang ở V30 phải nâng cấp riêng lên V31")
-    void v30DatabaseShouldUpgradeToV31() {
+    @DisplayName("Database đang ở V30 phải nâng cấp riêng lên V32")
+    void v30DatabaseShouldUpgradeToV32() {
         String databaseName = "edtech_v30_upgrade_" + UUID.randomUUID().toString().replace("-", "");
         jdbcTemplate.execute("CREATE DATABASE " + databaseName);
         String upgradeUrl = POSTGRES_CONTAINER.getJdbcUrl().replace(
@@ -186,8 +186,60 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v30.migrate().targetSchemaVersion.toString()).isEqualTo("30");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("31");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("32");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
+    }
+
+    @Test
+    @DisplayName("Database đang ở V31 phải nâng cấp riêng lên V32")
+    void v31DatabaseShouldUpgradeToV32() {
+        String databaseName = "edtech_v31_upgrade_" + UUID.randomUUID().toString().replace("-", "");
+        jdbcTemplate.execute("CREATE DATABASE " + databaseName);
+        String upgradeUrl = POSTGRES_CONTAINER.getJdbcUrl().replace(
+                "/" + POSTGRES_CONTAINER.getDatabaseName(), "/" + databaseName);
+        Flyway v31 = Flyway.configure()
+                .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword())
+                .target("31").load();
+        assertThat(v31.migrate().targetSchemaVersion.toString()).isEqualTo("31");
+        Flyway latest = Flyway.configure()
+                .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("32");
+        assertThat(latest.validateWithResult().validationSuccessful).isTrue();
+    }
+
+    @Test
+    @DisplayName("V32 phải bật RLS default-deny trên đúng 8 bảng nghiệp vụ backend")
+    void rlsShouldBeEnabledOnBackendOwnedTables() {
+        List<String> tables = jdbcTemplate.queryForList("""
+                SELECT tablename
+                FROM pg_tables
+                WHERE schemaname = 'public'
+                  AND tablename IN (
+                    'refresh_tokens', 'teacher_documents',
+                    'subject_proposals', 'subjects', 'pricing_packages',
+                    'teacher_profiles', 'teacher_subjects', 'teacher_availabilities'
+                  )
+                  AND rowsecurity = true
+                ORDER BY tablename
+                """, String.class);
+        assertThat(tables).containsExactlyInAnyOrder(
+                "refresh_tokens", "teacher_documents",
+                "subject_proposals", "subjects", "pricing_packages",
+                "teacher_profiles", "teacher_subjects", "teacher_availabilities");
+
+        Long policyCount = jdbcTemplate.queryForObject("""
+                SELECT count(*)
+                FROM pg_policy p
+                JOIN pg_class c ON c.oid = p.polrelid
+                JOIN pg_namespace n ON n.oid = c.relnamespace
+                WHERE n.nspname = 'public'
+                  AND c.relname IN (
+                    'refresh_tokens', 'teacher_documents',
+                    'subject_proposals', 'subjects', 'pricing_packages',
+                    'teacher_profiles', 'teacher_subjects', 'teacher_availabilities'
+                  )
+                """, Long.class);
+        assertThat(policyCount).isZero();
     }
 
     @Test
