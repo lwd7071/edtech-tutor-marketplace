@@ -98,13 +98,18 @@ describe('Finance & Admin APIs', () => {
       expect(result.data.totalCommissionVnd).toBe(2500000);
     });
 
-    it('calls completePayout with bankReference and proofUrl', async () => {
-      const payload = { bankReference: 'FT123456', proofUrl: 'https://proof.png', adminNote: 'Done', version: 1 };
+    it('calls completePayout with multipart metadata and proof', async () => {
+      const payload = { bankReference: 'FT123456', transferredAt: '2026-09-14T10:00:00Z', proof: new File(['proof'], 'proof.pdf', { type: 'application/pdf' }), version: 1 };
       (axiosClient.post as jest.Mock).mockResolvedValueOnce({ data: { success: true, data: { id: 'p-1', status: 'SUCCEEDED' } } });
 
       const result = await adminFinanceApi.completePayout('p-1', payload);
-      expect(axiosClient.post).toHaveBeenCalledWith('/api/admin/payout-requests/p-1/complete', payload,
-        expect.objectContaining({ headers: expect.objectContaining({ 'Idempotency-Key': expect.any(String) }) }));
+      const call = (axiosClient.post as jest.Mock).mock.calls[0];
+      expect(call[0]).toBe('/api/admin/payout-requests/p-1/complete');
+      expect(call[1]).toBeInstanceOf(FormData);
+      expect((call[1] as FormData).get('proof')).toBe(payload.proof);
+      expect(call[2]).toEqual(expect.objectContaining({ headers: expect.objectContaining({
+        'Idempotency-Key': expect.any(String), 'Content-Type': 'multipart/form-data'
+      }) }));
       expect(result.data.status).toBe('SUCCEEDED');
     });
   });

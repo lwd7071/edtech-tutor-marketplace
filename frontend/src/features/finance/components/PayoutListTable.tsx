@@ -26,8 +26,6 @@ export const getPayoutStatusTag = (status: PayoutStatus) => {
       return <Tag color="success">Đã chuyển</Tag>;
     case 'REJECTED':
       return <Tag color="default">Bị từ chối</Tag>;
-    case 'FAILED':
-      return <Tag color="error">Thất bại</Tag>;
     default:
       return <Tag>{status}</Tag>;
   }

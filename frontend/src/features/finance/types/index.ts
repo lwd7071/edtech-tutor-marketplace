@@ -59,7 +59,7 @@ export interface UpsertBankAccountRequest {
   version: number;
 }
 
-export type PayoutStatus = 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'REJECTED' | 'FAILED';
+export type PayoutStatus = 'PENDING' | 'PROCESSING' | 'SUCCEEDED' | 'REJECTED';
 
 export interface PayoutRequestView {
   id: string;
@@ -86,7 +86,7 @@ export interface CreatePayoutRequest {
   walletVersion: number;
 }
 
-export type RefundStatus = 'PENDING' | 'APPROVED' | 'PROCESSING' | 'REFUNDED' | 'REJECTED' | 'FAILED';
+export type RefundStatus = 'PENDING' | 'APPROVED' | 'REFUNDED' | 'REJECTED';
 
 export interface RefundRequestView {
   id: string;

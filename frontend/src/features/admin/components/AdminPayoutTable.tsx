@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Table, Tag, Typography, Button, Space, Modal, Form, Input, Tabs, Popconfirm } from 'antd';
+import { Table, Tag, Typography, Button, Space, Modal, Form, Input, Tabs, Popconfirm, Upload } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { CheckOutlined, CloseOutlined, SyncOutlined, EyeOutlined } from '@ant-design/icons';
 import { PayoutRequestView, PayoutStatus } from '@/features/finance';
@@ -38,7 +38,7 @@ export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
   const [selectedPayout, setSelectedPayout] = useState<PayoutRequestView | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const [completeForm] = Form.useForm<Omit<CompleteTransferRequest, 'version'>>();
+  const [completeForm] = Form.useForm<any>();
   const [rejectForm] = Form.useForm<Omit<RejectFinanceRequest, 'version'>>();
 
   const handleOpenComplete = (payout: PayoutRequestView) => {
@@ -58,7 +58,8 @@ export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
     try {
       const values = await completeForm.validateFields();
       setActionLoading(true);
-      await onCompletePayout(selectedPayout.id, { ...values, version: selectedPayout.version });
+      const proof = values.proof?.[0]?.originFileObj as File | undefined;
+      await onCompletePayout(selectedPayout.id, { ...values, proof, version: selectedPayout.version });
       setCompleteModalOpen(false);
     } finally {
       setActionLoading(false);
@@ -134,8 +135,6 @@ export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
             return <Tag color="success">Đã chuyển</Tag>;
           case 'REJECTED':
             return <Tag color="default">Bị từ chối</Tag>;
-          case 'FAILED':
-            return <Tag color="error">Thất bại</Tag>;
           default:
             return <Tag>{status}</Tag>;
         }
@@ -262,8 +261,12 @@ export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
             <Input placeholder="Ví dụ: FT260904123456" />
           </Form.Item>
 
-          <Form.Item label="Đường dẫn chứng từ ủy nhiệm chi (Proof URL)" name="proofUrl">
-            <Input placeholder="https://..." />
+          <Form.Item label="Chứng từ ủy nhiệm chi (JPG/PNG/PDF, tối đa 10 MB)" name="proof"
+                     valuePropName="fileList" getValueFromEvent={(event) => event?.fileList}
+                     rules={[{ required: true, message: 'Vui lòng tải lên chứng từ' }]}>
+            <Upload beforeUpload={() => false} maxCount={1} accept=".jpg,.jpeg,.png,.pdf">
+              <Button>Chọn file</Button>
+            </Upload>
           </Form.Item>
 
           <Form.Item label="Ghi chú admin (không bắt buộc)" name="adminNote">

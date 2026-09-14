@@ -1,5 +1,12 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-14 — Hoàn tất regression hardening Luna
+
+- Khóa ownership package bằng query `id + student_id`, map unknown/foreign ID thành `404 RESOURCE_NOT_FOUND`; stale version dùng `409 CONCURRENT_MODIFICATION`.
+- Complete refund/payout nhận multipart metadata + proof server-owned, kiểm tra MIME/size và fingerprint file cho idempotency; thêm cleanup khi rollback.
+- Bổ sung audit atomic cho refund/payout/extension/platform settings và migration append-only V31 yêu cầu chứng từ ở terminal state.
+- Verification: full backend Maven/Testcontainers `370/370` pass; Flyway clean V1→V31 và upgrade V30→V31 pass; Supabase preflight sạch, V31 apply/validate/info báo `Success`. Frontend typecheck pass; focused finance API Jest chạy qua `cmd` `7/7` pass; full Jest chưa chạy.
+
 ## 2026-09-13 — Apply V30 lên Supabase và khóa quy trình migration
 
 - Thêm Flyway Maven plugin và `scripts/update-supabase-schema.ps1` với preflight version/checksum, guard migration phá hủy và post-migrate validation; secret chỉ đọc từ `.env.cloud`, không in ra log.

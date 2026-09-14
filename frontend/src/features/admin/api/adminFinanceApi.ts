@@ -19,6 +19,13 @@ import {
   RejectRequest,
 } from '../types';
 
+const multipartTransfer = (data: CompleteTransferRequest) => {
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify({ bankReference: data.bankReference, transferredAt: data.transferredAt, version: data.version })], { type: 'application/json' }));
+  form.append('proof', data.proof);
+  return form;
+};
+
 const idempotencyConfig = (key?: string) => ({
   headers: { 'Idempotency-Key': key ?? globalThis.crypto.randomUUID() },
 });
@@ -41,9 +48,10 @@ export const adminFinanceApi = {
   },
 
   completePayout: async (id: string, data: CompleteTransferRequest, key?: string): Promise<ApiResponseWithData<PayoutRequestView>> => {
+    const config = idempotencyConfig(key);
     const response = await axiosClient.post<ApiResponse<PayoutRequestView>>(
       `/api/admin/payout-requests/${id}/complete`,
-      data, idempotencyConfig(key)
+      multipartTransfer(data), { ...config, headers: { ...config.headers, 'Content-Type': 'multipart/form-data' } }
     );
     return requireApiData(response.data);
   },
@@ -73,9 +81,10 @@ export const adminFinanceApi = {
   },
 
   completeRefund: async (id: string, data: CompleteTransferRequest, key?: string): Promise<ApiResponse<RefundRequestView>> => {
+    const config = idempotencyConfig(key);
     const response = await axiosClient.post<ApiResponse<RefundRequestView>>(
       `/api/admin/refund-requests/${id}/complete`,
-      data, idempotencyConfig(key)
+      multipartTransfer(data), { ...config, headers: { ...config.headers, 'Content-Type': 'multipart/form-data' } }
     );
     return response.data;
   },

@@ -633,13 +633,13 @@ Tất cả endpoint yêu cầu role `ADMIN`. Mọi action thay đổi trạng th
 | GET | `/api/admin/refund-requests` | `status?`, pagination | `RefundRequestView[]` |
 | POST | `/api/admin/refund-requests/{id}/approve` | `ApproveRefundRequest` | `RefundRequestView` |
 | POST | `/api/admin/refund-requests/{id}/reject` | `RejectRequest` | `RefundRequestView` |
-| POST | `/api/admin/refund-requests/{id}/complete` | `CompleteTransferRequest` | `RefundRequestView` |
+| POST | `/api/admin/refund-requests/{id}/complete` | multipart: `metadata` (`bankReference`, `transferredAt`, `version`) + required `proof` file | `RefundRequestView` |
 | GET | `/api/admin/extension-requests` | `status?`, pagination | `ExtensionRequestView[]` |
 | POST | `/api/admin/extension-requests/{id}/approve` | `ApproveExtensionRequest` | `ExtensionRequestView` |
 | POST | `/api/admin/extension-requests/{id}/reject` | `RejectRequest` | `ExtensionRequestView` |
 | GET | `/api/admin/payout-requests` | `status?`, pagination | `PayoutRequestView[]` |
 | POST | `/api/admin/payout-requests/{id}/process` | `{ "version": n }` | `PayoutRequestView` |
-| POST | `/api/admin/payout-requests/{id}/complete` | `CompleteTransferRequest` | `PayoutRequestView` |
+| POST | `/api/admin/payout-requests/{id}/complete` | multipart: `metadata` (`bankReference`, `transferredAt`, `version`) + required `proof` file | `PayoutRequestView` |
 | POST | `/api/admin/payout-requests/{id}/reject` | `RejectFinanceRequest` | `PayoutRequestView` |
 | PATCH | `/api/admin/users/{id}/status` | `ChangeUserStatusRequest` | `IdentitySnapshot` |
 | GET | `/api/admin/dashboard` | `from?`, `to?` | `AdminDashboardView` |
@@ -687,14 +687,15 @@ Với `LINK_EXISTING`, `existingSubjectId` bắt buộc và không gửi `code/n
 Backend tính `refundAmountVnd = floor(approvedSessions × purchasePriceVnd / totalSessions)` theo đơn vị VND; Admin không truyền số tiền này trong request. Nếu cùng một StudentPackage được duyệt refund nhiều lần, phần dư do làm tròn được cộng vào lần duyệt cuối. `RefundRequestView` trả `refundAmountVnd` đã được Backend tính.
 
 ```json
-// CompleteTransferRequest (multipart/form-data)
+// CompleteTransferMetadata (JSON part of multipart/form-data; proof is a separate file part)
 {
   "bankReference": "VCB202608190001",
   "transferredAt": "2026-08-19T14:30:00+07:00",
-  "version": 2,
-  "proof": "<JPG/PNG/PDF file>"
+  "version": 2
 }
 ```
+
+`proof` bắt buộc là đúng một JPG/PNG/PDF tối đa 10 MB; Backend kiểm tra MIME thực tế và tự sở hữu `proofPublicId/proofUrl` từ storage adapter. Client không được gửi URL hoặc public ID.
 
 ```json
 // ChangeUserStatusRequest

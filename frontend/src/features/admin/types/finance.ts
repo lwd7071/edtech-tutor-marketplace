@@ -43,7 +43,10 @@ export type AuditAction =
   | 'LOCK'
   | 'UNLOCK'
   | 'LOGIN'
-  | 'LOGOUT';
+  | 'LOGOUT'
+  | 'REFUND_APPROVED' | 'REFUND_REJECTED' | 'REFUND_COMPLETED'
+  | 'PAYOUT_PROCESSING' | 'PAYOUT_REJECTED' | 'PAYOUT_COMPLETED'
+  | 'EXTENSION_APPROVED' | 'EXTENSION_REJECTED' | 'PLATFORM_SETTINGS_UPDATED';
 
 export interface AuditLogView {
   id: string;
@@ -64,9 +67,8 @@ export interface ProcessPayoutRequest {
 
 export interface CompleteTransferRequest {
   bankReference: string;
-  transferredAt?: string;
-  proofPublicId?: string;
-  proofUrl?: string;
+  transferredAt: string;
+  proof: File;
   version: number;
 }
 

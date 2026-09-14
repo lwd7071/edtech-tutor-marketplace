@@ -1,12 +1,12 @@
 # Trạng thái dự án
 
-> Cập nhật: 2026-09-13. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
+> Cập nhật: 2026-09-14. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
 
 ## Mốc kỹ thuật
 
 - Backend modular monolith đã có các seam chính cho auth, mail, payment, finance, booking, learning và communication.
-- Migration mới nhất trong repository: `V30__fix_data_constraints_and_locking.sql` (Fix lỗi dữ liệu/migration); Supabase đã apply thành công đến V30.
+- Migration mới nhất trong repository: `V31__require_finance_terminal_proof.sql` (preflight + constraint chứng từ terminal). Đã preflight sạch và apply Supabase thành công; Flyway validate/info xác nhận V31 `Success`.
 - Không dùng Flyway `repair()`, không sửa migration đã áp dụng và không reset database người dùng.
 
 ## Trạng thái theo luồng
@@ -19,7 +19,7 @@
 | Assignment/attachment | Đã triển khai endpoint và view mới | Cần kiểm thử file thật |
 | Chat/notification/events | Đã triển khai event và mở conversation | Smoke test local đã xác nhận gửi/nhận giữa Student và Teacher qua STOMP tới backend `:8080`; cảnh báo browser extension không thuộc ứng dụng |
 | Teacher search/catalog | Đã triển khai V28, query/count/cache/config | Focused tests và PostgreSQL Testcontainers pass; V28 đã áp dụng trên Supabase; cloud smoke và load test chưa xác minh |
-| Finance/refund/payout/package | Đã harden domain, contract/UI, V30 và idempotency | Domain/backend focused và full backend đều pass; finance idempotency concurrency `2/2`, Flyway V1→V30/V27→V30 pass khi Docker hoạt động; frontend full check `252/252` pass; V30 đã apply Supabase bằng cloud Flyway user. |
+| Finance/refund/payout/package | Đã harden ownership, version, server-owned proof, audit và V31 | Full backend Maven/Testcontainers `370/370` pass; focused controller/Flyway/architecture pass; frontend typecheck pass; focused Jest chạy qua `cmd` `7/7` pass (PowerShell trước đó gặp `spawn EPERM`); Supabase V31 `Success`. |
 | Parent contact/requests/reports | Đã triển khai UI/API liên quan | Cần smoke test theo role |
 | Frontend Student Journey | Đã có route/component/API thay đổi | Playwright chưa chạy |
 
@@ -104,6 +104,7 @@
 - Verification mới nhất sau regression review: backend focused `15/15` và full backend `366/366` pass (`0` failure/error/skipped) với Docker Desktop/Testcontainers thật. Frontend focused `31/31` và `npm run check` pass: typecheck, lint, `97/97` suites, `252/252` tests và Next build. Docs check pass.
 - API contract focused backend sau đợt đồng bộ envelope/status/invoice/version: `26/26` pass (bao gồm `RestStatusContractTest`). Frontend typecheck pass; frontend Jest contract runner vẫn chưa xác minh vì bị treo trong môi trường hiện tại.
 - Full frontend Jest sau khi cập nhật regression contract/version tests: `97/97` suites, `252/252` tests pass.
+- Regression hardening 2026-09-14: full backend `370/370` pass; Flyway clean V1→V31 và upgrade V30→V31 pass; Supabase V31 apply/validate/info `Success`. Frontend typecheck pass; focused Jest finance API chạy qua `cmd` `7/7` pass; full Jest chưa chạy.
 - Cloud application HTTP smoke sau migration: **chưa xác minh**. Cách chạy `web-application-type=none` trước đây không hợp lệ cho OAuth servlet; smoke script mới yêu cầu chạy web mode với `APP_SCHEDULING_ENABLED=false`.
 - Cold-cache load test 25/50/80/100 users với pool 5/8/10 và warm-cache benchmark: **chưa chạy**; chưa có bằng chứng đạt các p95 mục tiêu.
 

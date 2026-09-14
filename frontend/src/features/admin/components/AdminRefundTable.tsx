@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Table, Tag, Typography, Button, Space, Modal, Form, Input, Tabs, Popconfirm } from 'antd';
+import { Table, Tag, Typography, Button, Space, Modal, Form, Input, Tabs, Popconfirm, Upload } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { CheckOutlined, CloseOutlined, EyeOutlined } from '@ant-design/icons';
 import { RefundRequestView, RefundStatus } from '@/features/finance';
@@ -41,7 +41,7 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
   const [actionLoading, setActionLoading] = useState(false);
 
   const [approveForm] = Form.useForm<Omit<ApproveRefundRequest, 'version'>>();
-  const [completeForm] = Form.useForm<Omit<CompleteTransferRequest, 'version'>>();
+  const [completeForm] = Form.useForm<any>();
   const [rejectForm] = Form.useForm<Omit<RejectFinanceRequest, 'version'>>();
 
   const handleOpenApprove = (refund: RefundRequestView) => {
@@ -80,7 +80,8 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
     try {
       const values = await completeForm.validateFields();
       setActionLoading(true);
-      await onCompleteRefund(selectedRefund.id, { ...values, version: selectedRefund.version });
+      const proof = values.proof?.[0]?.originFileObj as File | undefined;
+      await onCompleteRefund(selectedRefund.id, { ...values, proof, version: selectedRefund.version });
       setCompleteModalOpen(false);
     } finally {
       setActionLoading(false);
@@ -279,8 +280,12 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
             <Input placeholder="Ví dụ: REF2609041234" />
           </Form.Item>
 
-          <Form.Item label="Đường dẫn chứng từ ủy nhiệm chi" name="proofUrl">
-            <Input placeholder="https://..." />
+          <Form.Item label="Chứng từ ủy nhiệm chi (JPG/PNG/PDF, tối đa 10 MB)" name="proof"
+                     valuePropName="fileList" getValueFromEvent={(event) => event?.fileList}
+                     rules={[{ required: true, message: 'Vui lòng tải lên chứng từ' }]}>
+            <Upload beforeUpload={() => false} maxCount={1} accept=".jpg,.jpeg,.png,.pdf">
+              <Button>Chọn file</Button>
+            </Upload>
           </Form.Item>
 
         </Form>

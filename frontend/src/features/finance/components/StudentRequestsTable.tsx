@@ -19,14 +19,10 @@ export const getRefundStatusTag = (status: RefundStatus) => {
       return <Tag color="warning">Chờ duyệt</Tag>;
     case 'APPROVED':
       return <Tag color="processing">Đã duyệt</Tag>;
-    case 'PROCESSING':
-      return <Tag color="processing">Đang chuyển khoản</Tag>;
     case 'REFUNDED':
       return <Tag color="success">Đã hoàn tiền</Tag>;
     case 'REJECTED':
       return <Tag color="default">Bị từ chối</Tag>;
-    case 'FAILED':
-      return <Tag color="error">Thất bại</Tag>;
     default:
       return <Tag>{status}</Tag>;
   }
