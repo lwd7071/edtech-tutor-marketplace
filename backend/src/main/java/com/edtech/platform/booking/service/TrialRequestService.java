@@ -59,7 +59,7 @@ public class TrialRequestService {
         }
 
         if (trialRequestRepository.existsByTeacherIdAndStudentIdAndStatus(request.teacherId(), studentUserId, TrialRequestStatus.PENDING)) {
-            throw new BusinessException(ErrorCode.TRIAL_REQUEST_ALREADY_PENDING, "A pending trial request already exists for this pair");
+            throw new BusinessException(ErrorCode.TRIAL_REQUEST_ALREADY_PENDING, "Bạn đã có yêu cầu học thử đang chờ với gia sư này");
         }
         if (bookingRepository.existsByTeacherIdAndStudentIdAndStatusIn(request.teacherId(), studentUserId,
                 java.util.List.of(BookingStatus.SCHEDULED, BookingStatus.COMPLETED))) {
@@ -138,10 +138,10 @@ public class TrialRequestService {
 
         // Overlap checks
         if (bookingRepository.existsOverlapTeacher(teacherId, start, end)) {
-            throw new BusinessException(ErrorCode.BOOKING_TIME_CONFLICT, "Teacher has overlapping booking");
+            throw new BusinessException(ErrorCode.BOOKING_TIME_CONFLICT, "Gia sư đã có buổi học trùng thời gian");
         }
         if (bookingRepository.existsOverlapStudent(trialRequest.getStudentId(), start, end)) {
-            throw new BusinessException(ErrorCode.BOOKING_TIME_CONFLICT, "Student has overlapping booking");
+            throw new BusinessException(ErrorCode.BOOKING_TIME_CONFLICT, "Học viên đã có buổi học trùng thời gian");
         }
 
         boolean outsideAvailability = !teacherFacade.isWithinAvailability(teacherId, start, end);

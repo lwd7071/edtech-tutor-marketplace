@@ -38,7 +38,7 @@ public class StudentPackageController {
         try {
             if (status != null) parsed = StudentPackageStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException invalid) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Invalid package status");
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Trạng thái gói học không hợp lệ");
         }
         var result = packageReads.list(user.id(), parsed, PageRequest.of(page, Math.min(size, 100)));
         return ApiResponse.page(result.getContent(), PageMeta.from(result));

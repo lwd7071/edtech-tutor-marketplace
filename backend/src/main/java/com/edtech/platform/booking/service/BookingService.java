@@ -98,10 +98,10 @@ public class BookingService {
 
         // 7. Check Overlap
         if (bookingRepository.existsOverlapTeacher(teacherId, start, end)) {
-            throw new BusinessException(ErrorCode.BOOKING_TIME_CONFLICT, "Teacher has overlapping booking");
+            throw new BusinessException(ErrorCode.BOOKING_TIME_CONFLICT, "Gia sư đã có buổi học trùng thời gian");
         }
         if (bookingRepository.existsOverlapStudent(pkg.studentId(), start, end)) {
-            throw new BusinessException(ErrorCode.BOOKING_TIME_CONFLICT, "Student has overlapping booking");
+            throw new BusinessException(ErrorCode.BOOKING_TIME_CONFLICT, "Học viên đã có buổi học trùng thời gian");
         }
 
         // 8. Availability check

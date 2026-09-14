@@ -47,7 +47,7 @@ public class TeacherAssignmentService {
     @Transactional
     public AssignmentDetail createAssignment(UUID teacherUserId, CreateAssignmentRequest request) {
         validateRequest(request);
-        if (request.getVersion() == null || request.getVersion() != 0L) throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Create version must be 0");
+        if (request.getVersion() == null || request.getVersion() != 0L) throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Version khi tạo bài tập phải bằng 0");
         var teacher = teacherFacade.getTeacherByUserId(teacherUserId);
 
         if (identityFacade.getIdentity(request.getStudentId()).filter(i -> "STUDENT".equals(i.roleName())).isEmpty()) {

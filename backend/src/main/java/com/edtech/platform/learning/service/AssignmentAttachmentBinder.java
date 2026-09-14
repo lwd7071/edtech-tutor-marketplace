@@ -21,7 +21,7 @@ public class AssignmentAttachmentBinder {
             if ("IMAGE".equals(block.getType()) || "FILE".equals(block.getType())) {
                 if (block.getAttachmentId() == null) {
                     throw new BusinessException(ErrorCode.VALIDATION_ERROR,
-                            "Missing attachmentId for IMAGE/FILE block");
+                            "Khối IMAGE/FILE bắt buộc có attachmentId");
                 }
                 attachments.validateAndBind(block.getAttachmentId(), ownerId, attachableType, attachableId);
             }

@@ -58,7 +58,7 @@ public class TeacherSubjectService {
         }
 
         if (!subjectFacade.isSubjectActive(subjectId)) {
-            throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "Subject not found or inactive");
+            throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy môn học hoặc môn học đã ngừng hoạt động");
         }
 
         TeacherSubject newTeacherSubject = TeacherSubject.builder()

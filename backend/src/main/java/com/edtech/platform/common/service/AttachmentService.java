@@ -46,7 +46,7 @@ public class AttachmentService {
     @Transactional
     public AttachmentView uploadAttachment(UUID ownerId, AttachableType attachableType, MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "File is empty");
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Tệp tải lên không được để trống");
         }
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new BusinessException(ErrorCode.FILE_TOO_LARGE);

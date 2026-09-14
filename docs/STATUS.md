@@ -3,7 +3,7 @@
 > Cập nhật: 2026-09-14. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
 
-- Regression hardening đang thực hiện: request ID đã hợp nhất về `RequestLoggingFilter`; backend focused test pass. Frontend Jest hiện còn bị chặn không ổn định bởi `spawn EPERM` trong Next typecheck worker và cần chạy lại ngoài môi trường hiện tại.
+- Regression hardening đang thực hiện: request ID đã hợp nhất về `RequestLoggingFilter`; lỗi provider không còn lộ raw message; custom business messages đã được chuẩn hóa tiếng Việt. Backend focused tests pass. Frontend Jest hiện còn bị chặn bởi `spawn EPERM` trong Next typecheck worker.
 
 ## Mốc kỹ thuật
 

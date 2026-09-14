@@ -47,7 +47,7 @@ public class BankAccountService {
     public BankAccountView createAccount(UUID teacherUserId, UpsertBankAccountRequest request) {
         UUID teacherId = resolveTeacherId(teacherUserId);
         validateRequest(request);
-        if (request.version() != 0L) throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Create version must be 0");
+        if (request.version() != 0L) throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Version khi tạo tài khoản phải bằng 0");
 
         boolean isDefault = request.isDefault() != null && request.isDefault();
         boolean hasAccounts = bankAccountRepository.existsByTeacherId(teacherId);

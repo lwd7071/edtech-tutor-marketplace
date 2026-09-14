@@ -58,7 +58,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         returnUrl = returnUrl == null || returnUrl.isBlank() ? paymentProperties.getDefaultReturnUrl() : returnUrl;
         cancelUrl = cancelUrl == null || cancelUrl.isBlank() ? paymentProperties.getDefaultCancelUrl() : cancelUrl;
         if (returnUrl == null || cancelUrl == null) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Payment return/cancel URL is not configured");
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Hệ thống chưa cấu hình URL trả về hoặc hủy thanh toán");
         }
         requireConfiguredOrigin(returnUrl, paymentProperties.getDefaultReturnUrl(), "returnUrl");
         requireConfiguredOrigin(cancelUrl, paymentProperties.getDefaultCancelUrl(), "cancelUrl");
@@ -83,7 +83,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new BusinessException(ErrorCode.PRICING_PACKAGE_NOT_FOUND);
         }
         if (pkg.priceVnd() <= 0) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Package price must be positive");
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Giá gói học phải lớn hơn 0");
         }
 
         // 2. Build canonical SHA-256 fingerprint

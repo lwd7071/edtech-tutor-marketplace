@@ -30,6 +30,18 @@ class GlobalExceptionHandlerContractTest {
     }
 
     @Test
+    void businessErrorUsesSafeCustomUserMessage() {
+        ResponseEntity<ApiResponse<Void>> response = handler.handleBusinessException(
+                new BusinessException(ErrorCode.VALIDATION_ERROR, "Giá trị không hợp lệ"));
+
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().message()).isEqualTo("Giá trị không hợp lệ");
+        assertThat(response.getBody().errors()).singleElement()
+                .extracting(ApiErrorDetail::message)
+                .isEqualTo("Giá trị không hợp lệ");
+    }
+
+    @Test
     void malformedJsonDoesNotExposeParserMessage() {
         ResponseEntity<ApiResponse<Void>> response = handler.handleHttpMessageNotReadableException(
                 new HttpMessageNotReadableException("sensitive parser detail"));

@@ -55,7 +55,7 @@ public class RedisTokenService {
         try {
             return clazz.cast(payload);
         } catch (ClassCastException e) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Invalid token payload type");
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Dữ liệu token không đúng định dạng");
         }
     }
 

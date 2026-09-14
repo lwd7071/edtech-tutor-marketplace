@@ -32,14 +32,14 @@ public class RegistrationService {
             throw new BusinessException(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS);
         }
         if (request.role() == Role.ADMIN) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Cannot register as ADMIN");
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Không thể đăng ký với vai trò quản trị viên");
         }
 
         boolean teacher = request.role() == Role.TEACHER;
         if (teacher && (StringUtils.hasText(request.parentEmail())
                 || StringUtils.hasText(request.parentPhone())
                 || StringUtils.hasText(request.parentFullName()))) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Teacher cannot have parent contact info");
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Tài khoản giáo viên không được khai báo thông tin phụ huynh");
         }
         boolean notifyParent = !teacher
                 && (StringUtils.hasText(request.parentEmail()) || StringUtils.hasText(request.parentPhone()));
