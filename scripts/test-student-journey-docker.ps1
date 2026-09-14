@@ -15,8 +15,8 @@ try {
   Assert-LastExit 'docker compose config'
 
   $env:SPRING_PROFILES_ACTIVE = 'test'
-  $env:PAYMENT_PROVIDER = 'fake'
-  $env:MAIL_TRANSPORT = 'logging'
+  $env:APP_PAYMENT_PROVIDER = 'fake'
+  $env:APP_EMAIL_PROVIDER = 'logging'
   $env:TEST_STUDENT_EMAIL = 'student-journey@example.test'
   Push-Location (Join-Path $root 'backend')
   try {
@@ -36,7 +36,7 @@ try {
   } finally { Pop-Location }
 } finally {
   Pop-Location
-  Remove-Item Env:SPRING_PROFILES_ACTIVE,Env:PAYMENT_PROVIDER,Env:MAIL_TRANSPORT,Env:TEST_STUDENT_EMAIL -ErrorAction SilentlyContinue
+  Remove-Item Env:SPRING_PROFILES_ACTIVE,Env:APP_PAYMENT_PROVIDER,Env:APP_EMAIL_PROVIDER,Env:TEST_STUDENT_EMAIL -ErrorAction SilentlyContinue
 }
 
 Write-Host "Student journey checks passed. Logs: $logRoot"

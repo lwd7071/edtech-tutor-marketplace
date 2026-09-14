@@ -51,17 +51,6 @@ spring:
           starttls:
             enable: ${SPRING_MAIL_STARTTLS_ENABLE:${SPRING_MAIL_SMTP_STARTTLS_ENABLE:false}}
 
-  # --- Security OAuth2 ---
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
-            scope: email,profile
-
   # --- Database Migration ---
   flyway:
     enabled: true
@@ -93,8 +82,6 @@ app:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
   oauth2:
     frontend-redirect-uri: ${APP_OAUTH2_FRONTEND_CALLBACK_URI:${APP_OAUTH2_REDIRECT_URI:http://localhost:3000/oauth2/callback}}
-  cloudinary:
-    url: ${CLOUDINARY_URL}
   payment:
     provider: ${APP_PAYMENT_PROVIDER:disabled}
     client-id: ${PAYOS_CLIENT_ID:}
@@ -103,9 +90,6 @@ app:
     base-url: ${PAYOS_BASE_URL:https://api-merchant.payos.vn}
     connect-timeout: ${PAYOS_CONNECT_TIMEOUT:3s}
     read-timeout: ${PAYOS_READ_TIMEOUT:10s}
-  finance:
-    account-encryption:
-      key: ${EDTECH_ACCOUNT_ENCRYPTION_KEY}
 
 # --- Resilience4j Configuration ---
 resilience4j.circuitbreaker:

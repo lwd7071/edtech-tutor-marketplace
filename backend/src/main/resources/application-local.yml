@@ -12,6 +12,16 @@ spring:
     redis:
       url: ${REDIS_URL:redis://127.0.0.1:6379}
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:local-google-client-disabled}
+            client-secret: ${GOOGLE_CLIENT_SECRET:local-google-secret-disabled}
+            redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
+            scope: email,profile
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -25,6 +35,9 @@ app:
     secret: ${APP_JWT_SECRET:local-dev-only-secret-change-before-sharing-32chars}
   cloudinary:
     url: ${CLOUDINARY_URL:cloudinary://local:local@local}
+  finance:
+    account-encryption:
+      key: ${EDTECH_ACCOUNT_ENCRYPTION_KEY:local-dev-account-key-32-chars!!}
 
 management:
   health:

@@ -39,6 +39,10 @@ Google redirect có hai URL khác nhau:
 
 Cấu hình ứng dụng được bind qua các `@ConfigurationProperties` có validation: JWT, mail, OAuth, payment, mã hóa tài khoản, CORS và Cloudinary. Domain/application code không đọc trực tiếp environment hoặc system property. Secret chỉ đặt trong `.env.cloud` hoặc secret store và không commit.
 
+Ba profile có contract riêng: `cloud` là mặc định, tự nạp `.env.cloud` và fail-fast với secret thật; `local` phải được chọn rõ ràng và tự chứa các giá trị phát triển an toàn; `test` là nguồn cấu hình canonical cho Testcontainers/fake provider. Base config chỉ chứa thuộc tính dùng chung. Docker image mặc định `cloud`, còn `docker-compose.yml` phát triển ghi đè sang `local`.
+
+Spring runtime nạp `.env.cloud` qua `spring.config.import`; Flyway Maven không tự nạp file này và chỉ được gọi qua script migration có guard. Cloudinary cloud nhận ba credential rời và ghép URL trong profile. Preflight `scripts/check-backend-config.ps1` chỉ báo tên key thiếu, không in giá trị.
+
 Mail dùng `APP_EMAIL_PROVIDER=logging` khi phát triển không cần SMTP và `smtp` khi kiểm thử Mailpit/Gmail test. Outbox luôn được ghi trong transaction; delivery job claim bằng lease, gửi ngoài transaction giữ database lock rồi đánh dấu thành công hoặc retry.
 
 Teacher search dùng SQL projection và batch query cho subject, không hydrate entity graph. Keyword được normalize bằng functional indexes PostgreSQL theo quyết định tại [ADR-0004](../adr/0004-accent-insensitive-teacher-search.md). Cache search là tối ưu tùy chọn: Redis lỗi phải fallback về PostgreSQL, chỉ cache page 0–2 với size tối đa 50 và không thay đổi response contract.

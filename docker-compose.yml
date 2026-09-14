@@ -44,16 +44,15 @@ services:
       dockerfile: Dockerfile
     container_name: edtech_backend
     environment:
-      SPRING_PROFILES_ACTIVE: prod
+      SPRING_PROFILES_ACTIVE: local
       DB_URL: jdbc:postgresql://postgres:5432/edtech_db
       DB_USERNAME: edtech_user
       DB_PASSWORD: edtech_password
       REDIS_URL: redis://redis:6379
-      APP_JWT_SECRET: "your-256-bit-secret-key-change-this-in-production-environments-min-32-chars"
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/health"]
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/actuator/health"]
       interval: 30s
       timeout: 5s
       retries: 3

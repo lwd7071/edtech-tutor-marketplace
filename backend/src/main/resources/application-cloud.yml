@@ -19,6 +19,7 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
+            scope: email,profile
 
   jpa:
     hibernate:
@@ -29,3 +30,10 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: false
+
+app:
+  cloudinary:
+    url: cloudinary://${CLOUDINARY_API_KEY}:${CLOUDINARY_API_SECRET}@${CLOUDINARY_CLOUD_NAME}
+  finance:
+    account-encryption:
+      key: ${EDTECH_ACCOUNT_ENCRYPTION_KEY}

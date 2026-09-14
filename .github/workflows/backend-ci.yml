@@ -43,6 +43,28 @@ jobs:
         working-directory: backend
         run: mvn clean verify -B --no-transfer-progress -Dfile.encoding=UTF-8
 
+      - name: Smoke-test local Compose startup
+        run: |
+          docker compose up -d --build backend
+          for attempt in $(seq 1 30); do
+            status=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' edtech_backend)
+            if [ "$status" = "healthy" ]; then
+              curl --fail --silent http://127.0.0.1:8080/actuator/health >/dev/null
+              exit 0
+            fi
+            if [ "$status" = "exited" ]; then
+              docker compose logs backend
+              exit 1
+            fi
+            sleep 2
+          done
+          docker compose logs backend
+          exit 1
+
+      - name: Stop Compose services
+        if: always()
+        run: docker compose down -v
+
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v6

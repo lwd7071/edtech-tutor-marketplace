@@ -69,9 +69,26 @@ Chạy nhanh bằng Maven từ thư mục `backend`:
 mvn spring-boot:run
 ```
 
-Profile mặc định là `cloud` và đọc `.env.cloud` ở thư mục `backend` hoặc thư mục gốc. Để chạy hạ tầng local, đặt `SPRING_PROFILES_ACTIVE=local`. Sao chép `.env.example` thành file môi trường riêng; không commit secret.
+Profile mặc định là `cloud`. `mvn spring-boot:run` tự đọc `.env.cloud` ở thư mục `backend` hoặc thư mục gốc và fail-fast khi thiếu secret; không cần export thủ công từng biến. Kiểm tra tên biến trước khi chạy mà không in giá trị:
+
+```powershell
+.\scripts\check-backend-config.ps1 -Profile cloud
+```
+
+Cloudinary dùng ba biến `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`; ứng dụng tự ghép Cloudinary URL. `EDTECH_ACCOUNT_ENCRYPTION_KEY` phải có đúng 32 ký tự và phải giữ ổn định sau khi đã mã hóa dữ liệu tài khoản. Không tự tạo lại hoặc đổi khóa trên database đang có dữ liệu mã hóa.
+
+Khi chủ động chạy hạ tầng local, đặt `SPRING_PROFILES_ACTIVE=local`. Local dùng PostgreSQL/Redis trên máy, mail logging, payment disabled và credential giả chỉ dành cho các adapter chưa được gọi.
 
 Google OAuth dùng `GOOGLE_OAUTH_REDIRECT_URI` cho callback Backend và `APP_OAUTH2_FRONTEND_CALLBACK_URI` cho callback FE. Profile cloud không khởi động nếu thiếu `GOOGLE_CLIENT_ID` hoặc `GOOGLE_CLIENT_SECRET`.
+
+Để chạy toàn bộ stack local bằng container:
+
+```powershell
+docker compose up -d --build backend
+docker inspect --format '{{.State.Health.Status}}' edtech_backend
+```
+
+Health endpoint chuẩn là `http://localhost:8080/actuator/health`.
 
 ---
 

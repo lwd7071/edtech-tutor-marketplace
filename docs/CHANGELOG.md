@@ -1,5 +1,12 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-14 — Ổn định startup contract Backend
+
+- Giữ `cloud` làm profile mặc định và tự nạp `.env.cloud`; tách OAuth, Cloudinary và account-encryption theo local/test/cloud để từng môi trường có contract rõ ràng.
+- Cloudinary cloud nhận ba credential rời; thêm preflight báo key thiếu mà không in secret; hợp nhất cấu hình test về một nguồn canonical.
+- Đồng bộ Docker image/Compose profile, sửa healthcheck sang `/actuator/health`, sửa tên biến trong script test và thêm Compose startup smoke vào Backend CI.
+- Verification: config contract `9/9`, full backend Maven/Testcontainers `374/374`, Compose syntax/image build/startup health đều pass. Cloud smoke chưa chạy vì còn thiếu `EDTECH_ACCOUNT_ENCRYPTION_KEY` trong `.env.cloud`.
+
 ## 2026-09-14 — Hoàn tất regression hardening Luna
 
 - Khóa ownership package bằng query `id + student_id`, map unknown/foreign ID thành `404 RESOURCE_NOT_FOUND`; stale version dùng `409 CONCURRENT_MODIFICATION`.

@@ -8,6 +8,7 @@
 - Backend modular monolith đã có các seam chính cho auth, mail, payment, finance, booking, learning và communication.
 - Migration mới nhất trong repository: `V31__require_finance_terminal_proof.sql` (preflight + constraint chứng từ terminal). Đã preflight sạch và apply Supabase thành công; Flyway validate/info xác nhận V31 `Success`.
 - Không dùng Flyway `repair()`, không sửa migration đã áp dụng và không reset database người dùng.
+- Startup contract đã chuẩn hóa: cloud là mặc định và tự nạp `.env.cloud`, local được chọn rõ ràng, test có một file cấu hình canonical; Compose local đã khởi động healthy qua `/actuator/health`.
 
 ## Trạng thái theo luồng
 
@@ -105,6 +106,8 @@
 - API contract focused backend sau đợt đồng bộ envelope/status/invoice/version: `26/26` pass (bao gồm `RestStatusContractTest`). Frontend typecheck pass; frontend Jest contract runner vẫn chưa xác minh vì bị treo trong môi trường hiện tại.
 - Full frontend Jest sau khi cập nhật regression contract/version tests: `97/97` suites, `252/252` tests pass.
 - Regression hardening 2026-09-14: full backend `370/370` pass; Flyway clean V1→V31 và upgrade V30→V31 pass; Supabase V31 apply/validate/info `Success`. Frontend typecheck pass; focused Jest finance API chạy qua `cmd` `7/7` pass; full Jest chưa chạy.
+- Startup/config hardening 2026-09-14: config contract focused `9/9` pass; full `mvn clean verify` với PostgreSQL/Redis Testcontainers `374/374` pass, `0` failure/error/skipped; `docker compose config --quiet` pass; image build pass; Compose backend local đạt trạng thái `healthy` qua `/actuator/health`.
+- Cloud config preflight nhận đủ ba key Cloudinary nhưng đang **bị chặn** vì thiếu `EDTECH_ACCOUNT_ENCRYPTION_KEY`; chưa chạy cloud HTTP smoke và không tự sinh/đổi khóa để tránh làm mất khả năng giải mã dữ liệu hiện có.
 - Cloud application HTTP smoke sau migration: **chưa xác minh**. Cách chạy `web-application-type=none` trước đây không hợp lệ cho OAuth servlet; smoke script mới yêu cầu chạy web mode với `APP_SCHEDULING_ENABLED=false`.
 - Cold-cache load test 25/50/80/100 users với pool 5/8/10 và warm-cache benchmark: **chưa chạy**; chưa có bằng chứng đạt các p95 mục tiêu.
 

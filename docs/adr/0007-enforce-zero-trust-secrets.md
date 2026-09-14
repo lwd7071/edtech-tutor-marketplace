@@ -26,4 +26,13 @@ Chúng tôi quyết định áp dụng nguyên tắc **Zero-Trust Secrets** (Kh�
 - Các nhà phát triển và đội DevOps bắt buộc phải cung cấp đầy đủ các biến môi trường nhạy cảm trong file `.env.cloud` hoặc qua hệ thống quản lý secret (như AWS Secrets Manager) khi deploy.
 - Tăng độ an toàn và tính minh bạch cho quy trình vận hành. Ứng dụng sẽ báo ngay cấu hình thiếu sót qua log.
 
-Cloudinary tuân thủ cùng quy tắc: base/cloud chỉ dùng `${CLOUDINARY_URL}`; giá trị giả chỉ được phép ở profile local/test.
+Cloudinary tuân thủ cùng quy tắc: credential thật chỉ được yêu cầu ở cloud; giá trị giả chỉ được phép ở profile local/test.
+
+## Amendment 2026-09-14 — Profile ownership và startup contract
+
+- `cloud` là profile mặc định theo quy ước vận hành của dự án và tự nạp `.env.cloud`; `local` chỉ được dùng khi chủ động đặt `SPRING_PROFILES_ACTIVE=local`.
+- Secret/provider placeholder thuộc profile `cloud`, không thuộc base config. Local/test sở hữu giá trị phát triển deterministic và không kế thừa secret production.
+- Cloudinary cloud dùng ba biến rời `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`; URL chỉ được ghép trong runtime config và không được ghi log.
+- `EDTECH_ACCOUNT_ENCRYPTION_KEY` cloud vẫn bắt buộc, đúng 32 ký tự và ổn định trong toàn bộ vòng đời dữ liệu đã mã hóa.
+- Chỉ giữ một `application-test.yml` canonical trong main resources để tránh classpath phụ thuộc thứ tự.
+- Docker image mặc định `cloud`; Compose dành cho phát triển ghi đè sang `local`. Healthcheck chuẩn là `/actuator/health`.
