@@ -38,7 +38,7 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
         Objects.requireNonNull(payment, "payment is required");
         if (payment.providerReference() == null || payment.providerReference().isBlank()
                 || payment.orderCode() <= 0 || payment.amountVnd() <= 0 || payment.paidAt() == null) {
-            throw new BusinessException(ErrorCode.PAYMENT_PROVIDER_ERROR, "Verified payment identity is invalid");
+            throw new BusinessException(ErrorCode.PAYMENT_PROVIDER_ERROR);
         }
         log.info("Processing webhook for orderCode: {}, ref: {}", payment.orderCode(), payment.providerReference());
 
@@ -56,8 +56,7 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
         }
 
         if (paymentTransactionRepository.existsByProviderReference(payment.providerReference())) {
-            throw new BusinessException(ErrorCode.PAYMENT_ALREADY_PROCESSED,
-                    "Provider reference is already associated with another payment");
+            throw new BusinessException(ErrorCode.PAYMENT_ALREADY_PROCESSED);
         }
 
         // 3. Amount verification
@@ -89,13 +88,13 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
 
         UUID subjectId = invoice.getSubjectIdSnapshot();
         if (subjectId == null) {
-            throw new BusinessException(ErrorCode.SUBJECT_NOT_FOUND, "Package does not have associated subject");
+            throw new BusinessException(ErrorCode.SUBJECT_NOT_FOUND, "Gói học không có môn học liên kết");
         }
 
         // 7. Get Commission Rate
         BigDecimal commissionRate = invoice.getCommissionRateSnapshot();
         if (commissionRate == null) {
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "Commission rate is not configured");
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
         // 8. Create StudentPackage via EnrollmentFacade

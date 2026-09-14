@@ -129,7 +129,7 @@ public class StudentAssignmentService {
             }
         } else {
             if (request.getVersion() == null || request.getVersion() != 0L)
-                throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Create version must be 0");
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Version khi tạo bài nộp phải bằng 0");
             submission = Submission.builder()
                     .assignment(assignment)
                     .studentId(studentId)

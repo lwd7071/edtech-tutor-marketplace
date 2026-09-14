@@ -191,17 +191,17 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     private void requireConfiguredOrigin(String value, String configured, String field) {
         if (value == null || configured == null) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, field + " must be configured");
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, field + " bắt buộc phải được cấu hình");
         }
         try {
             URI actual = URI.create(value); URI allowed = URI.create(configured);
             int actualPort = actual.getPort() < 0 ? ("https".equalsIgnoreCase(actual.getScheme()) ? 443 : 80) : actual.getPort();
             int allowedPort = allowed.getPort() < 0 ? ("https".equalsIgnoreCase(allowed.getScheme()) ? 443 : 80) : allowed.getPort();
             if (!Objects.equals(actual.getScheme(), allowed.getScheme()) || !Objects.equals(actual.getHost(), allowed.getHost()) || actualPort != allowedPort) {
-                throw new BusinessException(ErrorCode.VALIDATION_ERROR, field + " has an untrusted origin");
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR, field + " có nguồn không được tin cậy");
             }
         } catch (IllegalArgumentException e) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, field + " must be a valid URL");
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, field + " phải là URL hợp lệ");
         }
     }
 }
