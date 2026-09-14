@@ -2,6 +2,7 @@
 
 ## 2026-09-14 — Ổn định startup contract Backend
 
+- Sửa regression CI của `FlywayMigrationTest`: giới hạn truy vấn constraint V31 vào schema hiện tại để các schema tạm không tạo kết quả trùng trên Linux runner.
 - Giữ `cloud` làm profile mặc định và tự nạp `.env.cloud`; tách OAuth, Cloudinary và account-encryption theo local/test/cloud để từng môi trường có contract rõ ràng.
 - Cloudinary cloud nhận ba credential rời; thêm preflight báo key thiếu mà không in secret; hợp nhất cấu hình test về một nguồn canonical.
 - Đồng bộ Docker image/Compose profile, sửa healthcheck sang `/actuator/health`, sửa tên biến trong script test và thêm Compose startup smoke vào Backend CI.

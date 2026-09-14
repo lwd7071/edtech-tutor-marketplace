@@ -167,6 +167,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         List<String> constraints = jdbcTemplate.queryForList("""
                 SELECT conname FROM pg_constraint
                 WHERE conname IN ('ck_payout_succeeded_transfer_proof', 'ck_refund_refunded_transfer_proof')
+                  AND connamespace = current_schema()::regnamespace
                 """, String.class);
         assertThat(constraints).containsExactlyInAnyOrder(
                 "ck_payout_succeeded_transfer_proof", "ck_refund_refunded_transfer_proof");
