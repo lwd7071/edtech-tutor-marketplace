@@ -422,4 +422,139 @@ public class RlsBehaviorVerificationTest extends AbstractIntegrationTest {
             jdbcTemplate.update("DELETE FROM public.users WHERE id IN (?, ?)", studentUserId, teacherUserId);
         }
     }
+
+    @Test
+    @DisplayName("V36: Enable RLS on communication tables - Backend succeeds unimpeded while unprivileged role is blocked")
+    void verifyRlsBehaviorOnCommunicationTables() throws Exception {
+        // 1. Verify rowsecurity = true on all 4 communication tables
+        List<String> rlsTables = jdbcTemplate.queryForList(
+                "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('conversations', 'messages', 'attachments', 'notifications') AND rowsecurity = true",
+                String.class
+        );
+        assertThat(rlsTables).containsExactlyInAnyOrder("conversations", "messages", "attachments", "notifications");
+
+        // 2. Setup test data via backend connection
+        UUID studentUserId = UUID.randomUUID();
+        UUID teacherUserId = UUID.randomUUID();
+        UUID teacherProfileId = UUID.randomUUID();
+        UUID conversationId = UUID.randomUUID();
+        UUID messageId = UUID.randomUUID();
+        UUID clientMsgId = UUID.randomUUID();
+        UUID attachmentId = UUID.randomUUID();
+        UUID notificationId = UUID.randomUUID();
+
+        jdbcTemplate.update(
+                "INSERT INTO public.users (id, email, password_hash, full_name, role, status) VALUES (?, ?, 'hash', 'Comm Student', 'STUDENT', 'ACTIVE')",
+                studentUserId, "comm_std_" + UUID.randomUUID().toString().substring(0, 8) + "@test.com"
+        );
+        jdbcTemplate.update(
+                "INSERT INTO public.users (id, email, password_hash, full_name, role, status) VALUES (?, ?, 'hash', 'Comm Teacher', 'TEACHER', 'ACTIVE')",
+                teacherUserId, "comm_tch_" + UUID.randomUUID().toString().substring(0, 8) + "@test.com"
+        );
+        jdbcTemplate.update(
+                "INSERT INTO public.teacher_profiles (id, user_id, bio, years_of_experience, profile_status, verified_badge, is_visible) VALUES (?, ?, 'Bio', 5, 'APPROVED', true, true)",
+                teacherProfileId, teacherUserId
+        );
+
+        // Backend creates attachment metadata
+        jdbcTemplate.update(
+                "INSERT INTO public.attachments (id, owner_id, attachable_type, attachable_id, secure_url, original_filename, mime_type, file_size) " +
+                "VALUES (?, ?, 'MESSAGE', ?, 'https://res.cloudinary.com/test/raw/upload/file.pdf', 'file.pdf', 'application/pdf', 1024)",
+                attachmentId, studentUserId, messageId
+        );
+
+        // Backend creates conversation
+        jdbcTemplate.update(
+                "INSERT INTO public.conversations (id, teacher_id, student_id, last_message_at) VALUES (?, ?, ?, now())",
+                conversationId, teacherProfileId, studentUserId
+        );
+
+        // Backend sends message
+        jdbcTemplate.update(
+                "INSERT INTO public.messages (id, conversation_id, sender_id, client_message_id, message_type, content, attachment_id) " +
+                "VALUES (?, ?, ?, ?, 'FILE', 'Xin chao thay', ?)",
+                messageId, conversationId, studentUserId, clientMsgId, attachmentId
+        );
+
+        // Backend creates notification
+        jdbcTemplate.update(
+                "INSERT INTO public.notifications (id, user_id, type, title, content, reference_type, reference_id, is_read) " +
+                "VALUES (?, ?, 'CHAT_MESSAGE', 'Tin nhan moi', 'Ban co tin nhan moi', 'CONVERSATION', ?, false)",
+                notificationId, teacherUserId, conversationId
+        );
+
+        // Verify backend can query all 4 tables
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM public.conversations WHERE id = ?", Long.class, conversationId)).isEqualTo(1L);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM public.messages WHERE id = ?", Long.class, messageId)).isEqualTo(1L);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM public.attachments WHERE id = ?", Long.class, attachmentId)).isEqualTo(1L);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM public.notifications WHERE id = ?", Long.class, notificationId)).isEqualTo(1L);
+
+        // 3. Test unprivileged role behavior
+        String testAnonUser = "test_anon_comm_" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+        String testAnonPass = "P@ss_" + UUID.randomUUID().toString().substring(0, 8);
+
+        jdbcTemplate.execute("CREATE ROLE " + testAnonUser + " WITH LOGIN PASSWORD '" + testAnonPass + "' NOINHERIT;");
+        jdbcTemplate.execute("GRANT USAGE ON SCHEMA public TO " + testAnonUser + ";");
+        jdbcTemplate.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON public.conversations, public.messages, public.attachments, public.notifications TO " + testAnonUser + ";");
+
+        try {
+            String jdbcUrl = POSTGRES_CONTAINER.getJdbcUrl();
+            try (Connection anonConn = DriverManager.getConnection(jdbcUrl, testAnonUser, testAnonPass);
+                 Statement anonStmt = anonConn.createStatement()) {
+
+                // SELECT conversations: RLS default-deny should return 0 rows
+                try (ResultSet rs = anonStmt.executeQuery("SELECT COUNT(*) FROM public.conversations WHERE id = '" + conversationId + "'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt(1)).as("Unprivileged role must see 0 rows on conversations").isEqualTo(0);
+                }
+
+                // SELECT messages: RLS default-deny should return 0 rows
+                try (ResultSet rs = anonStmt.executeQuery("SELECT COUNT(*) FROM public.messages WHERE id = '" + messageId + "'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt(1)).as("Unprivileged role must see 0 rows on messages").isEqualTo(0);
+                }
+
+                // SELECT notifications: RLS default-deny should return 0 rows
+                try (ResultSet rs = anonStmt.executeQuery("SELECT COUNT(*) FROM public.notifications WHERE id = '" + notificationId + "'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt(1)).as("Unprivileged role must see 0 rows on notifications").isEqualTo(0);
+                }
+
+                // INSERT messages: RLS default-deny should fail
+                UUID maliciousMsgId = UUID.randomUUID();
+                assertThatThrownBy(() -> anonStmt.executeUpdate(
+                        "INSERT INTO public.messages (id, conversation_id, sender_id, client_message_id, message_type, content) " +
+                        "VALUES ('" + maliciousMsgId + "', '" + conversationId + "', '" + studentUserId + "', gen_random_uuid(), 'TEXT', 'Hacked')"
+                )).as("Unprivileged role must be blocked from INSERT messages by RLS")
+                  .hasMessageContaining("violates row-level security policy");
+
+                // TRUNCATE conversations: Must fail with permission denied (REVOKE TRUNCATE)
+                assertThatThrownBy(() -> anonStmt.executeUpdate(
+                        "TRUNCATE public.conversations"
+                )).as("Unprivileged role must be denied from TRUNCATE conversations")
+                  .hasMessageContaining("permission denied");
+
+                // UPDATE conversations: 0 rows affected
+                int anonUpdated = anonStmt.executeUpdate(
+                        "UPDATE public.conversations SET is_deleted = true WHERE id = '" + conversationId + "'");
+                assertThat(anonUpdated).as("Unprivileged role must affect 0 rows on UPDATE conversations").isEqualTo(0);
+
+                // DELETE messages: 0 rows affected
+                int anonDeleted = anonStmt.executeUpdate(
+                        "DELETE FROM public.messages WHERE id = '" + messageId + "'");
+                assertThat(anonDeleted).as("Unprivileged role must affect 0 rows on DELETE messages").isEqualTo(0);
+            }
+        } finally {
+            jdbcTemplate.execute("DROP OWNED BY " + testAnonUser + ";");
+            jdbcTemplate.execute("DROP ROLE " + testAnonUser + ";");
+
+            // Clean up test data
+            jdbcTemplate.update("DELETE FROM public.notifications WHERE id = ?", notificationId);
+            jdbcTemplate.update("DELETE FROM public.messages WHERE id = ?", messageId);
+            jdbcTemplate.update("DELETE FROM public.attachments WHERE id = ?", attachmentId);
+            jdbcTemplate.update("DELETE FROM public.conversations WHERE id = ?", conversationId);
+            jdbcTemplate.update("DELETE FROM public.teacher_profiles WHERE id = ?", teacherProfileId);
+            jdbcTemplate.update("DELETE FROM public.users WHERE id IN (?, ?)", studentUserId, teacherUserId);
+        }
+    }
 }

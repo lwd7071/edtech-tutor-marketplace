@@ -1,5 +1,13 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-14 — Triển khai RLS V36 Cụm Communication & Notifications lên Supabase Production
+
+- Thêm migration `V36__enable_rls_communication_tables.sql` kích hoạt Row Level Security default-deny cho 4 bảng: `conversations`, `messages`, `attachments`, `notifications`.
+- Khắc phục lỗ hổng RLS bypass qua `TRUNCATE` bằng khối `REVOKE TRUNCATE ... FROM anon, authenticated`.
+- Bổ sung kiểm thử TDD: mở rộng `FlywayMigrationTest` (20 tests, clean V1->V36, upgrade V27..V35->V36, assert 30 bảng có RLS), mở rộng `RlsBehaviorVerificationTest` (chặn TRUNCATE và truy cập unprivileged trên `conversations`, `messages`, `notifications`), tạo mới `CommunicationRlsFlowIntegrationTest` (xác nhận luồng hội thoại, tin nhắn văn bản, file attachment, thông báo và trạng thái đã đọc trơn tru qua PostgreSQL superuser).
+- Verification: 27/27 tests local Testcontainers pass; preflight Supabase read-only validate 36 migrations pass; apply V36 thành công trên Supabase production (`State = Success`), post-migrate validation pass.
+- Đối soát dữ liệu trên Supabase: baseline 9 rows được bảo toàn 100% (`conversations`: 3, `messages`: 3, `attachments`: 0, `notifications`: 3) (0 data loss).
+
 ## 2026-09-14 — Triển khai RLS V35 Cụm Booking & Learning lên Supabase Production
 
 - Thêm migration `V35__enable_rls_booking_learning_tables.sql` kích hoạt Row Level Security default-deny cho 9 bảng: `student_packages`, `package_extension_requests`, `trial_requests`, `bookings`, `session_reports`, `reviews`, `teacher_stats`, `assignments`, `submissions`.
