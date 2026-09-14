@@ -1,14 +1,15 @@
 package com.edtech.platform.teacher.controller;
 
 import com.edtech.platform.common.response.ApiResponse;
+import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.teacher.dto.TeacherProfileDetail;
 import com.edtech.platform.teacher.dto.UpdateTeacherProfileRequest;
 import com.edtech.platform.teacher.service.TeacherProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.UUID;
 
 @RestController
@@ -19,22 +20,19 @@ public class TeacherProfileController {
     private final TeacherProfileService teacherProfileService;
 
     @GetMapping
-    public ApiResponse<TeacherProfileDetail> getProfile(Principal principal) {
-        UUID userId = UUID.fromString(principal.getName());
-        return ApiResponse.ok(teacherProfileService.getProfile(userId));
+    public ApiResponse<TeacherProfileDetail> getProfile(@AuthenticationPrincipal AuthenticatedUser user) {
+        return ApiResponse.ok(teacherProfileService.getProfile(user.id()));
     }
 
     @PutMapping
     public ApiResponse<TeacherProfileDetail> updateProfile(
             @Valid @RequestBody UpdateTeacherProfileRequest request,
-            Principal principal) {
-        UUID userId = UUID.fromString(principal.getName());
-        return ApiResponse.ok(teacherProfileService.updateProfile(userId, request));
+            @AuthenticationPrincipal AuthenticatedUser user) {
+        return ApiResponse.ok(teacherProfileService.updateProfile(user.id(), request));
     }
 
     @PostMapping("/submit")
-    public ApiResponse<TeacherProfileDetail> submitProfile(Principal principal) {
-        UUID userId = UUID.fromString(principal.getName());
-        return ApiResponse.ok(teacherProfileService.submitProfile(userId));
+    public ApiResponse<TeacherProfileDetail> submitProfile(@AuthenticationPrincipal AuthenticatedUser user) {
+        return ApiResponse.ok(teacherProfileService.submitProfile(user.id()));
     }
 }

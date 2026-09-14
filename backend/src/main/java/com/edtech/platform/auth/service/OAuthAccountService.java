@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -52,27 +51,26 @@ public class OAuthAccountService implements OAuthAuthorizationPort {
         return sessions.issue(user, null, ipAddress);
     }
 
-    @SuppressWarnings("unchecked")
     @Transactional
     public AuthResult completeRegistration(CompleteOAuthRegistrationRequest request, String ipAddress) {
         if (request.role() == Role.ADMIN) {
             throw new BusinessException(ErrorCode.AUTH_OAUTH_ROLE_REQUIRED);
         }
-        Map<String, String> payload = oneTimeTokens.consume(RedisTokenService.Purpose.OAUTH_REGISTRATION,
-                request.registrationToken(), Map.class);
-        String email = payload.get("email");
+        OAuthIdentity identity = oneTimeTokens.consume(RedisTokenService.Purpose.OAUTH_REGISTRATION,
+                request.registrationToken(), OAuthIdentity.class);
+        String email = identity.email();
         if (email == null || users.existsByEmailIgnoreCase(email)) {
             throw new BusinessException(ErrorCode.AUTH_OAUTH_LINK_NOT_ALLOWED);
         }
         User user = users.save(User.builder()
                 .email(email.toLowerCase())
                 .passwordHash(null)
-                .fullName(payload.get("fullName"))
+                .fullName(identity.fullName())
                 .role(request.role())
                 .status(UserStatus.ACTIVE)
                 .emailVerified(true)
-                .oauthProvider(payload.get("oauthProvider"))
-                .oauthSubject(payload.get("oauthSubject"))
+                .oauthProvider(identity.provider())
+                .oauthSubject(identity.subject())
                 .build());
         events.publishEvent(new UserRegisteredEvent(user.getId(), user.getEmail(), user.getRole(), user.getFullName()));
         return sessions.issue(user, null, ipAddress);
@@ -87,12 +85,12 @@ public class OAuthAccountService implements OAuthAuthorizationPort {
     }
 
     private OAuthAuthorizationResult authorizeRegistration(OAuthIdentity identity) {
-        Map<String, String> payload = Map.of(
-                "email", identity.email(),
-                "oauthProvider", identity.provider(),
-                "oauthSubject", identity.subject(),
-                "fullName", identity.fullName() == null ? "" : identity.fullName());
-        String token = oneTimeTokens.issue(RedisTokenService.Purpose.OAUTH_REGISTRATION, payload);
+        OAuthIdentity safeIdentity = new OAuthIdentity(
+                identity.provider(),
+                identity.subject(),
+                identity.email(),
+                identity.fullName() == null ? "" : identity.fullName());
+        String token = oneTimeTokens.issue(RedisTokenService.Purpose.OAUTH_REGISTRATION, safeIdentity);
         return new OAuthAuthorizationResult.RegistrationRequired(token);
     }
 }

@@ -1,7 +1,7 @@
 package com.edtech.platform.subject.controller;
 
 import com.edtech.platform.common.response.ApiResponse;
-
+import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.subject.dto.CreateSubjectProposalRequest;
 import com.edtech.platform.subject.dto.SubjectProposalView;
 import com.edtech.platform.subject.service.SubjectProposalService;
@@ -10,9 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,18 +27,16 @@ public class TeacherSubjectProposalController {
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<SubjectProposalView> createProposal(
             @Valid @RequestBody CreateSubjectProposalRequest request,
-            Principal principal) {
-        UUID userId = UUID.fromString(principal.getName());
-        return ApiResponse.created(subjectProposalService.createProposal(userId, request));
+            @AuthenticationPrincipal AuthenticatedUser user) {
+        return ApiResponse.created(subjectProposalService.createProposal(user.id(), request));
     }
 
     @GetMapping
-    public ApiResponse<java.util.List<SubjectProposalView>> getProposals(
+    public ApiResponse<List<SubjectProposalView>> getProposals(
             @RequestParam(required = false) String status,
             Pageable pageable,
-            Principal principal) {
-        UUID userId = UUID.fromString(principal.getName());
-        Page<SubjectProposalView> page = subjectProposalService.getProposals(userId, status, pageable);
+            @AuthenticationPrincipal AuthenticatedUser user) {
+        Page<SubjectProposalView> page = subjectProposalService.getProposals(user.id(), status, pageable);
         return ApiResponse.page(page.getContent(), com.edtech.platform.common.response.PageMeta.from(page));
     }
 }
