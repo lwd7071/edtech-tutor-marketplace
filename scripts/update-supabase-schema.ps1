@@ -53,9 +53,10 @@ if ($migrationFiles.Count -ne 1) {
     Stop-WithMessage ("Expected exactly one migration for V{0}, found {1}." -f $TargetVersion, $migrationFiles.Count)
 }
 
-$unsafePattern = '(?im)\b(DROP\s+TABLE|DROP\s+COLUMN|TRUNCATE|DELETE\s+FROM|ALTER\s+COLUMN\s+\S+\s+TYPE|RENAME\s+(TO|COLUMN))\b'
+$unsafePattern = '(?im)\b(DROP\s+TABLE|DROP\s+COLUMN|DELETE\s+FROM|ALTER\s+COLUMN\s+\S+\s+TYPE|RENAME\s+(TO|COLUMN))\b|(?im)(?<!REVOKE\s+|GRANT\s+)\bTRUNCATE\b'
 $migrationText = Get-Content -LiteralPath $migrationFiles[0].FullName -Raw
-if ($migrationText -match $unsafePattern) {
+$sqlWithoutComments = $migrationText -replace '(?m)--.*$', '' -replace '(?s)/\*.*?\*/', ''
+if ($sqlWithoutComments -match $unsafePattern) {
     Stop-WithMessage "Target migration contains a destructive or non-backward-compatible operation."
 }
 

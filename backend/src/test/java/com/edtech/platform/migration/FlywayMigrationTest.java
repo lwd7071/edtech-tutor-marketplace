@@ -57,13 +57,13 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Tất cả 33 file migration V1-V33 phải được apply và validate thành công")
+    @DisplayName("Tất cả 34 file migration V1-V34 phải được apply và validate thành công")
     void flyway_shouldApplyAllMigrationsSuccessfully() {
         assertThat(flyway).isNotNull();
         MigrationInfo[] appliedMigrations = flyway.info().applied();
 
         assertThat(appliedMigrations)
-                .hasSize(33)
+                .hasSize(34)
                 .allSatisfy(info -> {
                     assertThat(info.getState().isApplied()).isTrue();
                     assertThat(info.getVersion()).isNotNull();
@@ -157,7 +157,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword())
                 .load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("33");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("34");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
@@ -174,8 +174,8 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Database đang ở V30 phải nâng cấp riêng lên V33")
-    void v30DatabaseShouldUpgradeToV33() {
+    @DisplayName("Database đang ở V30 phải nâng cấp riêng lên V34")
+    void v30DatabaseShouldUpgradeToV34() {
         String databaseName = "edtech_v30_upgrade_" + UUID.randomUUID().toString().replace("-", "");
         jdbcTemplate.execute("CREATE DATABASE " + databaseName);
         String upgradeUrl = POSTGRES_CONTAINER.getJdbcUrl().replace(
@@ -186,13 +186,13 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v30.migrate().targetSchemaVersion.toString()).isEqualTo("30");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("33");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("34");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
     @Test
-    @DisplayName("Database đang ở V31 phải nâng cấp riêng lên V33")
-    void v31DatabaseShouldUpgradeToV33() {
+    @DisplayName("Database đang ở V31 phải nâng cấp riêng lên V34")
+    void v31DatabaseShouldUpgradeToV34() {
         String databaseName = "edtech_v31_upgrade_" + UUID.randomUUID().toString().replace("-", "");
         jdbcTemplate.execute("CREATE DATABASE " + databaseName);
         String upgradeUrl = POSTGRES_CONTAINER.getJdbcUrl().replace(
@@ -203,13 +203,13 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v31.migrate().targetSchemaVersion.toString()).isEqualTo("31");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("33");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("34");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
     @Test
-    @DisplayName("Database đang ở V32 phải nâng cấp riêng lên V33")
-    void v32DatabaseShouldUpgradeToV33() {
+    @DisplayName("Database đang ở V32 phải nâng cấp riêng lên V34")
+    void v32DatabaseShouldUpgradeToV34() {
         String databaseName = "edtech_v32_upgrade_" + UUID.randomUUID().toString().replace("-", "");
         jdbcTemplate.execute("CREATE DATABASE " + databaseName);
         String upgradeUrl = POSTGRES_CONTAINER.getJdbcUrl().replace(
@@ -220,12 +220,29 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v32.migrate().targetSchemaVersion.toString()).isEqualTo("32");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("33");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("34");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
     @Test
-    @DisplayName("V33 phải bật RLS default-deny trên users và 8 bảng nghiệp vụ backend")
+    @DisplayName("Database đang ở V33 phải nâng cấp riêng lên V34")
+    void v33DatabaseShouldUpgradeToV34() {
+        String databaseName = "edtech_v33_upgrade_" + UUID.randomUUID().toString().replace("-", "");
+        jdbcTemplate.execute("CREATE DATABASE " + databaseName);
+        String upgradeUrl = POSTGRES_CONTAINER.getJdbcUrl().replace(
+                "/" + POSTGRES_CONTAINER.getDatabaseName(), "/" + databaseName);
+        Flyway v33 = Flyway.configure()
+                .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword())
+                .target("33").load();
+        assertThat(v33.migrate().targetSchemaVersion.toString()).isEqualTo("33");
+        Flyway latest = Flyway.configure()
+                .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("34");
+        assertThat(latest.validateWithResult().validationSuccessful).isTrue();
+    }
+
+    @Test
+    @DisplayName("V34 phải bật RLS default-deny trên 17 bảng Backend-owned (9 cũ + 8 Finance)")
     void rlsShouldBeEnabledOnBackendOwnedTables() {
         List<String> tables = jdbcTemplate.queryForList("""
                 SELECT tablename
@@ -234,7 +251,9 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
                   AND tablename IN (
                     'users', 'refresh_tokens', 'teacher_documents',
                     'subject_proposals', 'subjects', 'pricing_packages',
-                    'teacher_profiles', 'teacher_subjects', 'teacher_availabilities'
+                    'teacher_profiles', 'teacher_subjects', 'teacher_availabilities',
+                    'wallets', 'ledger_entries', 'invoices', 'payment_transactions',
+                    'payout_requests', 'refund_requests', 'teacher_bank_accounts', 'finance_command_receipts'
                   )
                   AND rowsecurity = true
                 ORDER BY tablename
@@ -242,7 +261,9 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(tables).containsExactlyInAnyOrder(
                 "users", "refresh_tokens", "teacher_documents",
                 "subject_proposals", "subjects", "pricing_packages",
-                "teacher_profiles", "teacher_subjects", "teacher_availabilities");
+                "teacher_profiles", "teacher_subjects", "teacher_availabilities",
+                "wallets", "ledger_entries", "invoices", "payment_transactions",
+                "payout_requests", "refund_requests", "teacher_bank_accounts", "finance_command_receipts");
 
         Long policyCount = jdbcTemplate.queryForObject("""
                 SELECT count(*)
@@ -253,7 +274,9 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
                   AND c.relname IN (
                     'users', 'refresh_tokens', 'teacher_documents',
                     'subject_proposals', 'subjects', 'pricing_packages',
-                    'teacher_profiles', 'teacher_subjects', 'teacher_availabilities'
+                    'teacher_profiles', 'teacher_subjects', 'teacher_availabilities',
+                    'wallets', 'ledger_entries', 'invoices', 'payment_transactions',
+                    'payout_requests', 'refund_requests', 'teacher_bank_accounts', 'finance_command_receipts'
                   )
                 """, Long.class);
         assertThat(policyCount).isZero();

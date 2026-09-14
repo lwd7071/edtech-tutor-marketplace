@@ -1,6 +1,21 @@
 # Changelog theo đợt hoàn thành
 
-## 2026-09-14 — Chuẩn bị triển khai RLS V32
+## 2026-09-14 — Triển khai RLS V34 Cụm Finance & Payments lên Supabase Production
+
+- Thêm migration `V34__enable_rls_finance_tables.sql` bật Row Level Security default-deny cho 8 bảng: `wallets`, `ledger_entries`, `invoices`, `payment_transactions`, `payout_requests`, `refund_requests`, `teacher_bank_accounts`, `finance_command_receipts`.
+- Khắc phục lỗ hổng RLS bypass qua `TRUNCATE` bằng khối an toàn `REVOKE TRUNCATE ... FROM anon, authenticated`.
+- Bổ sung kiểm thử TDD: mở rộng `FlywayMigrationTest` (18 tests, clean V1->V34, upgrade V27..V33->V34), mở rộng `RlsBehaviorVerificationTest` (chặn TRUNCATE và truy cập unprivileged trên `teacher_bank_accounts`), tạo mới `FinanceRlsFlowIntegrationTest` (xác nhận luồng ví, invoice, ledger và idempotency receipt chạy qua PostgreSQL superuser bypass RLS).
+- Verification: 24/24 tests local Testcontainers pass; preflight Supabase read-only validate 34 migrations pass; apply V34 thành công trên Supabase production (`State = Success`), post-migrate validation pass.
+- Đối soát dữ liệu trên Supabase: baseline 32 rows được bảo toàn 100% (wallets: 20, ledger_entries: 4, invoices: 4, teacher_bank_accounts: 4; 4 bảng còn lại: 0) (0 data loss).
+
+## 2026-09-14 — Triển khai RLS V33 Bảng users lên Supabase Production
+
+- Thêm migration `V33__enable_rls_users.sql` kích hoạt Row Level Security default-deny cho bảng gốc `users`.
+- Bổ sung test tích hợp xuyên bảng `UserRlsCrossTableFlowIntegrationTest` (luồng `users` -> `teacher_profiles` -> `pricing_packages` -> `invoices` -> `student_packages` -> `bookings` trên Testcontainers).
+- Verification: clean/upgrade Flyway tests và test luồng pass 100%; apply V33 thành công trên Supabase production (`State = Success`), post-migrate validation pass.
+- Đối soát dữ liệu: baseline 55 users được bảo toàn 100% (0 data loss).
+
+## 2026-09-14 — Triển khai RLS V32 Bảng Backend-owned lên Supabase Production
 
 - Thêm preflight read-only kiểm kê grants/role/RLS cho 9 bảng và migration `V32__enable_rls_public_tables.sql` theo mô hình default-deny, không policy public và không `FORCE ROW LEVEL SECURITY`.
 - Cập nhật Flyway tests lên V32, thêm kiểm tra 9 bảng bật RLS và test local Backend/unprivileged role với cleanup sau mỗi test.
