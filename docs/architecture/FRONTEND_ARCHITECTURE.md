@@ -5,6 +5,7 @@
 - `app` định nghĩa route groups và compose màn hình. `(public)`, `(auth)` và `(workspace)` không làm thay đổi URL.
 - `features` sở hữu nghiệp vụ, wire DTO, API, query keys, mutation, model và UI của từng domain.
 - `shared/backend` sở hữu response envelope, error parser, API URL và transport dùng chung.
+- `parseApiError` đọc `X-Request-Id` từ response và chỉ nối mã tra cứu vào thông báo lỗi `5xx`; luồng nghiệp vụ luôn dựa vào `errors[].code`.
 - `shared/components/layout` sở hữu public shell và workspace shell.
 
 Luồng phụ thuộc chuẩn:

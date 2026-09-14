@@ -69,4 +69,14 @@ describe('API Types and Error Envelope Parser (TDD)', () => {
     expect(isConcurrentModification(error('CONCURRENT_MODIFICATION'))).toBe(true);
     expect(isConcurrentModification(error('BOOKING_TIME_CONFLICT'))).toBe(false);
   });
+
+  it('shows a request id only for server errors', () => {
+    const serverError = parseApiError({ response: { status: 500, headers: { 'x-request-id': 'REQ-500' }, data: {} } });
+    expect(serverError.requestId).toBe('REQ-500');
+    expect(serverError.message).toContain('Mã tra cứu: REQ-500');
+
+    const clientError = parseApiError({ response: { status: 400, headers: { 'x-request-id': 'REQ-400' }, data: {} } });
+    expect(clientError.requestId).toBe('REQ-400');
+    expect(clientError.message).not.toContain('Mã tra cứu');
+  });
 });

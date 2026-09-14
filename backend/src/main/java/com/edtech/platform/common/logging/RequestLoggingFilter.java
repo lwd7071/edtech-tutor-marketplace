@@ -8,12 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.UUID;
 
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class RequestLoggingFilter extends OncePerRequestFilter {
 
     public static final String REQUEST_ID_HEADER = "X-Request-Id";
@@ -30,7 +33,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
         String requestId = request.getHeader(REQUEST_ID_HEADER);
-        if (requestId == null || requestId.isBlank() || requestId.length() > 100) {
+        if (!isSafeRequestId(requestId)) {
             requestId = UUID.randomUUID().toString();
         }
 
@@ -42,12 +45,16 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             long durationMs = (System.nanoTime() - startedAt) / 1_000_000;
             int status = response.getStatus();
             if (status >= 500) {
-                log.error("HTTP {} {} -> {} ({} ms)", request.getMethod(), request.getRequestURI(), status, durationMs);
+                log.error("requestId={} HTTP {} {} -> {} ({} ms)", requestId, request.getMethod(), request.getRequestURI(), status, durationMs);
             } else if (status >= 400) {
-                log.warn("HTTP {} {} -> {} ({} ms)", request.getMethod(), request.getRequestURI(), status, durationMs);
+                log.warn("requestId={} HTTP {} {} -> {} ({} ms)", requestId, request.getMethod(), request.getRequestURI(), status, durationMs);
             } else {
-                log.info("HTTP {} {} -> {} ({} ms)", request.getMethod(), request.getRequestURI(), status, durationMs);
+                log.info("requestId={} HTTP {} {} -> {} ({} ms)", requestId, request.getMethod(), request.getRequestURI(), status, durationMs);
             }
         }
+    }
+
+    static boolean isSafeRequestId(String requestId) {
+        return requestId != null && requestId.length() <= 100 && requestId.matches("[A-Za-z0-9._:-]+");
     }
 }

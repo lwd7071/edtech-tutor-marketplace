@@ -30,12 +30,15 @@ export interface ParsedApiError {
   isAuthError: boolean;
   isForbiddenError: boolean;
   isNotFoundError: boolean;
+  requestId?: string;
 }
 
 export function parseApiError(error: unknown): ParsedApiError {
-  const errObj = error as { response?: { status?: number; data?: Partial<ApiResponse<unknown>> }; message?: string };
+  const errObj = error as { response?: { status?: number; data?: Partial<ApiResponse<unknown>>; headers?: Record<string, unknown> }; message?: string };
   const status = errObj?.response?.status;
   const data = errObj?.response?.data;
+  const requestIdHeader = errObj?.response?.headers?.['x-request-id'] ?? errObj?.response?.headers?.['X-Request-Id'];
+  const requestId = typeof requestIdHeader === 'string' && requestIdHeader.trim() ? requestIdHeader : undefined;
   const rawErrors = Array.isArray(data?.errors) ? data.errors : [];
   const fieldErrors = Object.fromEntries(rawErrors.filter((item) => item.field).map((item) => [item.field as string, item.message]));
 
@@ -54,11 +57,12 @@ export function parseApiError(error: unknown): ParsedApiError {
     FORBIDDEN_RESOURCE: 'Bạn không có quyền thực hiện thao tác này.',
     RESOURCE_NOT_FOUND: 'Không tìm thấy tài nguyên yêu cầu.',
   };
-  const message = (rawErrors.length === 1 ? rawErrors[0].message : data?.message || rawErrors[0]?.message)
+  let message = (rawErrors.length === 1 ? rawErrors[0].message : data?.message || rawErrors[0]?.message)
     || fallbackByCode[code]
     || (status === 500 ? 'Đã có lỗi xảy ra trên hệ thống. Vui lòng thử lại sau.' : undefined)
     || errObj.message
     || 'Đã có lỗi xảy ra. Vui lòng thử lại.';
+  if (status != null && status >= 500 && requestId) message = `${message} Mã tra cứu: ${requestId}`;
 
   return {
     code, message, fieldErrors, rawErrors, status,
@@ -67,5 +71,6 @@ export function parseApiError(error: unknown): ParsedApiError {
     isAuthError: code === 'UNAUTHORIZED' || status === 401 || code === 'AUTH_TOKEN_EXPIRED',
     isForbiddenError: code === 'FORBIDDEN_RESOURCE' || status === 403,
     isNotFoundError: code === 'RESOURCE_NOT_FOUND' || status === 404,
+    requestId,
   };
 }

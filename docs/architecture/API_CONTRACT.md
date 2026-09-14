@@ -109,6 +109,7 @@ Thất bại do nghiệp vụ:
 - Không trả HTTP `200` cùng `success=false`.
 - `204 No Content`, file/stream, WebSocket, OAuth redirect và webhook theo contract bên ngoài không bắt buộc dùng envelope này.
 - Không trả stack trace, secret, JWT, checksum key hay dữ liệu tài chính chưa mask.
+- Backend trả `X-Request-Id` trên response REST để hỗ trợ tra cứu log. Client có thể gửi ID hợp lệ; ID không hợp lệ sẽ được thay mới. FE chỉ hiển thị mã này cho lỗi HTTP `5xx`.
 
 ### 1.3. HTTP status
 

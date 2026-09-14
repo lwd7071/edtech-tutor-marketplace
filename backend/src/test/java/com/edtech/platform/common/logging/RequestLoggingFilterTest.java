@@ -19,4 +19,20 @@ class RequestLoggingFilterTest {
 
         assertThat(response.getHeader(RequestLoggingFilter.REQUEST_ID_HEADER)).isNotBlank();
     }
+
+    @Test
+    void preservesSafeIdAndRegeneratesUnsafeId() throws Exception {
+        var filter = new RequestLoggingFilter();
+        var request = new MockHttpServletRequest("GET", "/api/public/subjects");
+        request.addHeader(RequestLoggingFilter.REQUEST_ID_HEADER, "REQ-123:abc");
+        var response = new MockHttpServletResponse();
+        filter.doFilter(request, response, new MockFilterChain());
+        assertThat(response.getHeader(RequestLoggingFilter.REQUEST_ID_HEADER)).isEqualTo("REQ-123:abc");
+
+        var unsafe = new MockHttpServletRequest("GET", "/api/public/subjects");
+        unsafe.addHeader(RequestLoggingFilter.REQUEST_ID_HEADER, "bad value");
+        var unsafeResponse = new MockHttpServletResponse();
+        filter.doFilter(unsafe, unsafeResponse, new MockFilterChain());
+        assertThat(unsafeResponse.getHeader(RequestLoggingFilter.REQUEST_ID_HEADER)).matches("[A-Za-z0-9-]{36}");
+    }
 }
