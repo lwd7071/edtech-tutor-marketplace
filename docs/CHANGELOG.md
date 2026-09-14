@@ -1,5 +1,13 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-14 — Triển khai RLS V35 Cụm Booking & Learning lên Supabase Production
+
+- Thêm migration `V35__enable_rls_booking_learning_tables.sql` kích hoạt Row Level Security default-deny cho 9 bảng: `student_packages`, `package_extension_requests`, `trial_requests`, `bookings`, `session_reports`, `reviews`, `teacher_stats`, `assignments`, `submissions`.
+- Khắc phục lỗ hổng RLS bypass qua `TRUNCATE` bằng khối `REVOKE TRUNCATE ... FROM anon, authenticated`.
+- Bổ sung kiểm thử TDD: mở rộng `FlywayMigrationTest` (19 tests, clean V1->V35, upgrade V27..V34->V35, assert 26 bảng có RLS), mở rộng `RlsBehaviorVerificationTest` (chặn TRUNCATE và truy cập unprivileged trên `bookings`, `student_packages`, `reviews`), tạo mới `BookingLearningRlsFlowIntegrationTest` (xác nhận luồng mua gói, đặt lịch, session report, review/stats, assignment/submission chạy trơn tru qua PostgreSQL superuser).
+- Verification: 27/27 tests local Testcontainers pass; preflight Supabase read-only validate 35 migrations pass; apply V35 thành công trên Supabase production (`State = Success`), post-migrate validation pass.
+- Đối soát dữ liệu trên Supabase: baseline 32 rows được bảo toàn 100% (teacher_stats: 20, bookings: 3, student_packages: 3, trial_requests: 2, session_reports: 2, reviews: 2, các bảng còn lại: 0) (0 data loss).
+
 ## 2026-09-14 — Triển khai RLS V34 Cụm Finance & Payments lên Supabase Production
 
 - Thêm migration `V34__enable_rls_finance_tables.sql` bật Row Level Security default-deny cho 8 bảng: `wallets`, `ledger_entries`, `invoices`, `payment_transactions`, `payout_requests`, `refund_requests`, `teacher_bank_accounts`, `finance_command_receipts`.

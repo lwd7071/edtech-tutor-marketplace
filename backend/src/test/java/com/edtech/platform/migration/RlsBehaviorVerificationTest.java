@@ -305,4 +305,121 @@ public class RlsBehaviorVerificationTest extends AbstractIntegrationTest {
             jdbcTemplate.update("DELETE FROM public.users WHERE id = ?", teacherUserId);
         }
     }
+
+    @Test
+    @DisplayName("V35: Enable RLS on Booking & Learning tables - Backend CRUD succeeds while unprivileged role is blocked")
+    void verifyRlsBehaviorOnBookingAndLearningTables() throws Exception {
+        // 1. Verify RLS status
+        List<String> tables = List.of(
+                "student_packages", "package_extension_requests", "trial_requests",
+                "bookings", "session_reports", "reviews", "teacher_stats",
+                "assignments", "submissions");
+        for (String tbl : tables) {
+            Map<String, Object> rlsStatus = jdbcTemplate.queryForMap(
+                    "SELECT rowsecurity FROM pg_tables WHERE schemaname = 'public' AND tablename = ?", tbl);
+            assertThat(rlsStatus.get("rowsecurity")).as("Table %s must have RLS enabled", tbl).isEqualTo(true);
+        }
+
+        // 2. Setup test data via backend connection
+        UUID studentUserId = UUID.randomUUID();
+        UUID teacherUserId = UUID.randomUUID();
+        UUID teacherProfileId = UUID.randomUUID();
+        UUID subjectId = UUID.randomUUID();
+        UUID packageId = UUID.randomUUID();
+        UUID invoiceId = UUID.randomUUID();
+        UUID studentPackageId = UUID.randomUUID();
+        UUID bookingId = UUID.randomUUID();
+
+        String studentEmail = "rls_student_" + studentUserId.toString().substring(0, 8) + "@test.com";
+        String teacherEmail = "rls_teacher_" + teacherUserId.toString().substring(0, 8) + "@test.com";
+        String subjectCode = "RLS_SBJ_" + UUID.randomUUID().toString().substring(0, 6);
+        String invoiceNumber = "INV_" + UUID.randomUUID().toString().substring(0, 8);
+        UUID idempotencyKey = UUID.randomUUID();
+
+        jdbcTemplate.update("INSERT INTO public.users (id, email, password_hash, full_name, role, status) VALUES (?, ?, 'hash', 'Student', 'STUDENT', 'ACTIVE')",
+                studentUserId, studentEmail);
+        jdbcTemplate.update("INSERT INTO public.users (id, email, password_hash, full_name, role, status) VALUES (?, ?, 'hash', 'Teacher', 'TEACHER', 'ACTIVE')",
+                teacherUserId, teacherEmail);
+        jdbcTemplate.update("INSERT INTO public.teacher_profiles (id, user_id, bio, years_of_experience, profile_status, verified_badge, is_visible) VALUES (?, ?, 'Bio', 5, 'APPROVED', true, true)",
+                teacherProfileId, teacherUserId);
+        jdbcTemplate.update("INSERT INTO public.subjects (id, name, code, slug, education_level, is_active) VALUES (?, 'RLS Subj', ?, ?, 'HIGH_SCHOOL', true)",
+                subjectId, subjectCode, "slug-" + subjectCode.toLowerCase());
+        jdbcTemplate.update("INSERT INTO public.pricing_packages (id, teacher_id, subject_id, name, total_sessions, duration_days, price_vnd, session_duration_minutes, status) VALUES (?, ?, ?, 'Pkg', 10, 30, 1000000, 60, 'ACTIVE')",
+                packageId, teacherProfileId, subjectId);
+        jdbcTemplate.update("INSERT INTO public.invoices (id, invoice_number, student_id, teacher_id, pricing_package_id, amount_vnd, status, payos_order_code, idempotency_key, request_fingerprint, subject_id_snapshot, package_name_snapshot, total_sessions_snapshot, duration_days_snapshot, session_duration_minutes_snapshot, commission_rate_snapshot, version) VALUES (?, ?, ?, ?, ?, 1000000, 'PAID', nextval('payos_order_code_seq'), ?, 'fp_rls_test', ?, 'Pkg', 10, 30, 60, 15.00, 0)",
+                invoiceId, invoiceNumber, studentUserId, teacherProfileId, packageId, idempotencyKey, subjectId);
+        jdbcTemplate.update("INSERT INTO public.student_packages (id, student_id, teacher_id, subject_id, pricing_package_id, invoice_id, package_name_snapshot, total_sessions, remaining_sessions, reserved_sessions, completed_sessions, refunded_sessions, purchase_price_vnd, commission_rate, starts_at, expires_at, status) VALUES (?, ?, ?, ?, ?, ?, 'Pkg', 10, 10, 0, 0, 0, 1000000, 0.1500, now(), now() + interval '30 days', 'ACTIVE')",
+                studentPackageId, studentUserId, teacherProfileId, subjectId, packageId, invoiceId);
+        jdbcTemplate.update("INSERT INTO public.bookings (id, student_id, teacher_id, student_package_id, subject_id, start_time, end_time, delivery_mode, status, is_trial) VALUES (?, ?, ?, ?, ?, now() + interval '1 day', now() + interval '1 day 1 hour', 'ONLINE', 'SCHEDULED', false)",
+                bookingId, studentUserId, teacherProfileId, studentPackageId, subjectId);
+
+        try {
+            // 3. Verify Backend CRUD succeeds
+            Map<String, Object> booking = jdbcTemplate.queryForMap(
+                    "SELECT status FROM public.bookings WHERE id = ?", bookingId);
+            assertThat(booking.get("status")).isEqualTo("SCHEDULED");
+
+            // 4. Test unprivileged role behavior
+            String testAnonUser = "test_anon_bkg_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+            String testAnonPass = "P@ss_" + UUID.randomUUID().toString().substring(0, 8);
+
+            jdbcTemplate.execute("CREATE ROLE " + testAnonUser + " WITH LOGIN PASSWORD '" + testAnonPass + "' NOINHERIT;");
+            jdbcTemplate.execute("GRANT USAGE ON SCHEMA public TO " + testAnonUser + ";");
+            jdbcTemplate.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON public.bookings, public.student_packages, public.reviews TO " + testAnonUser + ";");
+
+            try {
+                String jdbcUrl = POSTGRES_CONTAINER.getJdbcUrl();
+                try (Connection anonConn = DriverManager.getConnection(jdbcUrl, testAnonUser, testAnonPass);
+                     Statement anonStmt = anonConn.createStatement()) {
+
+                    // SELECT bookings: RLS default-deny should return 0 rows
+                    try (ResultSet rs = anonStmt.executeQuery("SELECT COUNT(*) FROM public.bookings WHERE id = '" + bookingId + "'")) {
+                        assertThat(rs.next()).isTrue();
+                        assertThat(rs.getInt(1)).as("Unprivileged role must see 0 rows on bookings due to RLS default-deny").isEqualTo(0);
+                    }
+
+                    // SELECT student_packages: RLS default-deny should return 0 rows
+                    try (ResultSet rs = anonStmt.executeQuery("SELECT COUNT(*) FROM public.student_packages WHERE id = '" + studentPackageId + "'")) {
+                        assertThat(rs.next()).isTrue();
+                        assertThat(rs.getInt(1)).as("Unprivileged role must see 0 rows on student_packages due to RLS default-deny").isEqualTo(0);
+                    }
+
+                    // INSERT bookings: RLS default-deny should fail
+                    assertThatThrownBy(() -> anonStmt.executeUpdate(
+                            "INSERT INTO public.bookings (student_id, teacher_id, start_time, end_time, delivery_mode, status, is_trial) " +
+                            "VALUES ('" + studentUserId + "', '" + teacherProfileId + "', now() + interval '2 days', now() + interval '2 days 1 hour', 'ONLINE', 'SCHEDULED', false)"
+                    )).as("Unprivileged role must be blocked from INSERT bookings by RLS")
+                      .hasMessageContaining("violates row-level security policy");
+
+                    // TRUNCATE: Must fail with permission denied
+                    assertThatThrownBy(() -> anonStmt.executeUpdate(
+                            "TRUNCATE public.bookings"
+                    )).as("Unprivileged role must be denied from TRUNCATE")
+                      .hasMessageContaining("permission denied");
+
+                    // UPDATE: 0 rows affected
+                    int anonUpdated = anonStmt.executeUpdate(
+                            "UPDATE public.bookings SET status = 'CANCELLED' WHERE id = '" + bookingId + "'");
+                    assertThat(anonUpdated).as("Unprivileged role must affect 0 rows on UPDATE due to RLS default-deny").isEqualTo(0);
+
+                    // DELETE: 0 rows affected
+                    int anonDeleted = anonStmt.executeUpdate(
+                            "DELETE FROM public.bookings WHERE id = '" + bookingId + "'");
+                    assertThat(anonDeleted).as("Unprivileged role must affect 0 rows on DELETE due to RLS default-deny").isEqualTo(0);
+                }
+            } finally {
+                jdbcTemplate.execute("DROP OWNED BY " + testAnonUser + ";");
+                jdbcTemplate.execute("DROP ROLE " + testAnonUser + ";");
+            }
+
+        } finally {
+            jdbcTemplate.update("DELETE FROM public.bookings WHERE id = ?", bookingId);
+            jdbcTemplate.update("DELETE FROM public.student_packages WHERE id = ?", studentPackageId);
+            jdbcTemplate.update("DELETE FROM public.invoices WHERE id = ?", invoiceId);
+            jdbcTemplate.update("DELETE FROM public.pricing_packages WHERE id = ?", packageId);
+            jdbcTemplate.update("DELETE FROM public.subjects WHERE id = ?", subjectId);
+            jdbcTemplate.update("DELETE FROM public.teacher_profiles WHERE id = ?", teacherProfileId);
+            jdbcTemplate.update("DELETE FROM public.users WHERE id IN (?, ?)", studentUserId, teacherUserId);
+        }
+    }
 }
