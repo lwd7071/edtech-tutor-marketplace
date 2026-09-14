@@ -1,12 +1,13 @@
 package com.edtech.platform.finance.controller;
 
-import com.edtech.platform.admin.dto.request.CompleteTransferRequest;
-import com.edtech.platform.admin.dto.request.ProcessPayoutRequest;
+import com.edtech.platform.finance.dto.request.ProcessPayoutRequest;
+import com.edtech.platform.finance.dto.request.CompleteTransferMetadata;
 import com.edtech.platform.admin.dto.request.RejectRequest;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.finance.domain.PayoutStatus;
 import com.edtech.platform.finance.dto.response.PayoutRequestView;
 import com.edtech.platform.finance.service.PayoutService;
+import com.edtech.platform.finance.service.FinanceProofStorage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -35,6 +37,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,6 +48,7 @@ class AdminPayoutControllerTest {
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
     @Mock private PayoutService payoutService;
+    @Mock private FinanceProofStorage proofStorage;
     @InjectMocks private AdminPayoutController controller;
 
     private final UUID adminId = UUID.randomUUID();
@@ -106,7 +110,13 @@ class AdminPayoutControllerTest {
     @Test
     void completePayout_shouldReturn200() throws Exception {
         UUID payoutId = UUID.randomUUID();
-        CompleteTransferRequest req = new CompleteTransferRequest("VCB123", Instant.now(), "proof", "https://proof", 1L);
+        Instant transferredAt = Instant.now();
+        CompleteTransferMetadata req = new CompleteTransferMetadata("VCB123", transferredAt, 1L);
+        MockMultipartFile metadata = new MockMultipartFile("metadata", "metadata.json", MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(req));
+        MockMultipartFile proof = new MockMultipartFile("proof", "proof.pdf", "application/pdf", "%PDF-test".getBytes());
+        when(proofStorage.upload(any(), eq("payout"), eq(payoutId)))
+                .thenReturn(new com.edtech.platform.common.storage.FileStoragePort.UploadResult("proof", "https://proof", "application/pdf", 9));
 
         PayoutRequestView view = new PayoutRequestView(
                 payoutId, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
@@ -114,9 +124,8 @@ class AdminPayoutControllerTest {
         );
         when(payoutService.completePayout(eq(adminId), eq(payoutId), any())).thenReturn(view);
 
-        mockMvc.perform(post("/api/admin/payout-requests/" + payoutId + "/complete")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
+        mockMvc.perform(multipart("/api/admin/payout-requests/" + payoutId + "/complete")
+                        .file(metadata).file(proof))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.status").value("SUCCEEDED"));

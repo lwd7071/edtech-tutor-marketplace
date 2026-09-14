@@ -37,6 +37,15 @@ class SolidGuardrailsArchitectureTest {
     }
 
     @Test
+    void facadeInterfacesDoNotExposePersistenceOrDomainEntities() {
+        noClasses().that().resideInAPackage("..facade..")
+                .and().areInterfaces()
+                .should().dependOnClassesThat().areAnnotatedWith(Entity.class)
+                .allowEmptyShould(true)
+                .check(production);
+    }
+
+    @Test
     void configurationComesThroughValidatedPropertyObjects() {
         fields().that().areAnnotatedWith(Value.class)
                 .should().beDeclaredInClassesThat().resideInAPackage("..config..")

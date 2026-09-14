@@ -1,6 +1,6 @@
 package com.edtech.platform.finance.controller;
 
-import com.edtech.platform.admin.dto.request.ApproveExtensionRequest;
+import com.edtech.platform.finance.dto.request.ApproveExtensionRequest;
 import com.edtech.platform.admin.dto.request.RejectRequest;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.finance.domain.ExtensionStatus;

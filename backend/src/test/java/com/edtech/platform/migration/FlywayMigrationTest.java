@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.lang.reflect.Field;
 import jakarta.persistence.Version;
 
@@ -24,7 +25,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    @DisplayName("V30 version columns phải là bigint NOT NULL default 0")
+    @DisplayName("V31 version columns phải là bigint NOT NULL default 0")
     void optimisticLockColumnsShouldHaveExpectedMetadata() {
         Map<String, String> expected = Map.of(
                 "invoices", "version", "trial_requests", "version", "assignments", "version",
@@ -56,13 +57,13 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Tất cả 30 file migration V1-V30 phải được apply và validate thành công")
+    @DisplayName("Tất cả 31 file migration V1-V31 phải được apply và validate thành công")
     void flyway_shouldApplyAllMigrationsSuccessfully() {
         assertThat(flyway).isNotNull();
         MigrationInfo[] appliedMigrations = flyway.info().applied();
 
         assertThat(appliedMigrations)
-                .hasSize(30)
+                .hasSize(31)
                 .allSatisfy(info -> {
                     assertThat(info.getState().isApplied()).isTrue();
                     assertThat(info.getVersion()).isNotNull();
@@ -138,7 +139,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Database đang ở V27 phải nâng cấp lên V29 thành công")
+    @DisplayName("Database đang ở V27 phải nâng cấp lên V31 thành công")
     void teacherSearchMigrationShouldUpgradeASeparateV27Database() {
         String databaseName = "edtech_v27_upgrade";
         jdbcTemplate.execute("CREATE DATABASE " + databaseName);
@@ -156,7 +157,35 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword())
                 .load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("30");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("31");
+        assertThat(latest.validateWithResult().validationSuccessful).isTrue();
+    }
+
+    @Test
+    @DisplayName("V31 terminal finance rows phải có transfer proof constraints")
+    void financeTerminalProofConstraintsShouldExist() {
+        List<String> constraints = jdbcTemplate.queryForList("""
+                SELECT conname FROM pg_constraint
+                WHERE conname IN ('ck_payout_succeeded_transfer_proof', 'ck_refund_refunded_transfer_proof')
+                """, String.class);
+        assertThat(constraints).containsExactlyInAnyOrder(
+                "ck_payout_succeeded_transfer_proof", "ck_refund_refunded_transfer_proof");
+    }
+
+    @Test
+    @DisplayName("Database đang ở V30 phải nâng cấp riêng lên V31")
+    void v30DatabaseShouldUpgradeToV31() {
+        String databaseName = "edtech_v30_upgrade_" + UUID.randomUUID().toString().replace("-", "");
+        jdbcTemplate.execute("CREATE DATABASE " + databaseName);
+        String upgradeUrl = POSTGRES_CONTAINER.getJdbcUrl().replace(
+                "/" + POSTGRES_CONTAINER.getDatabaseName(), "/" + databaseName);
+        Flyway v30 = Flyway.configure()
+                .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword())
+                .target("30").load();
+        assertThat(v30.migrate().targetSchemaVersion.toString()).isEqualTo("30");
+        Flyway latest = Flyway.configure()
+                .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("31");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 

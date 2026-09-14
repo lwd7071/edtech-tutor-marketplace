@@ -1,12 +1,13 @@
 package com.edtech.platform.finance.controller;
 
-import com.edtech.platform.admin.dto.request.ApproveRefundRequest;
-import com.edtech.platform.admin.dto.request.CompleteTransferRequest;
+import com.edtech.platform.finance.dto.request.ApproveRefundRequest;
+import com.edtech.platform.finance.dto.request.CompleteTransferMetadata;
 import com.edtech.platform.admin.dto.request.RejectRequest;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.finance.domain.RefundStatus;
 import com.edtech.platform.finance.dto.response.RefundRequestView;
 import com.edtech.platform.finance.service.RefundService;
+import com.edtech.platform.finance.service.FinanceProofStorage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -35,6 +37,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,6 +48,7 @@ class AdminRefundControllerTest {
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
     @Mock private RefundService refundService;
+    @Mock private FinanceProofStorage proofStorage;
     @InjectMocks private AdminRefundController controller;
 
     private final UUID adminId = UUID.randomUUID();
@@ -103,5 +107,27 @@ class AdminRefundControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.approvedSessions").value(3))
                 .andExpect(jsonPath("$.data.refundAmountVnd").value(300000));
+    }
+
+    @Test
+    void completeRefund_shouldReturn200WithMultipartProof() throws Exception {
+        UUID refundId = UUID.randomUUID();
+        CompleteTransferMetadata req = new CompleteTransferMetadata("VCB-REF", Instant.now(), 1L);
+        MockMultipartFile metadata = new MockMultipartFile("metadata", "metadata.json", MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(req));
+        MockMultipartFile proof = new MockMultipartFile("proof", "proof.pdf", "application/pdf", "%PDF-test".getBytes());
+        when(proofStorage.upload(any(), eq("refund"), eq(refundId)))
+                .thenReturn(new com.edtech.platform.common.storage.FileStoragePort.UploadResult("proof", "https://proof", "application/pdf", 9));
+        RefundRequestView view = new RefundRequestView(
+                refundId, UUID.randomUUID(), UUID.randomUUID(), "Reason", 5, 3, 300000L,
+                RefundStatus.REFUNDED, null, "VCB", "970436", "******6789", "NGUYEN VAN A",
+                "VCB-REF", "https://proof", adminId, Instant.now(), 2L, Instant.now());
+        when(refundService.completeRefund(eq(adminId), eq(refundId), any())).thenReturn(view);
+
+        mockMvc.perform(multipart("/api/admin/refund-requests/" + refundId + "/complete")
+                        .file(metadata).file(proof))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("REFUNDED"));
     }
 }
