@@ -11,6 +11,8 @@ import com.edtech.platform.payment.dto.InvoiceDetail;
 import com.edtech.platform.payment.gateway.PaymentGateway;
 import com.edtech.platform.payment.gateway.PaymentLinkCommand;
 import com.edtech.platform.payment.gateway.PaymentLinkResult;
+import com.edtech.platform.payment.gateway.PaymentGatewayUnavailableException;
+import com.edtech.platform.payment.gateway.PaymentGatewayRejectedException;
 import com.edtech.platform.payment.repository.InvoiceCommandRepository;
 import com.edtech.platform.payment.repository.InvoiceQueryRepository;
 import com.edtech.platform.payment.repository.PaymentIdentifierRepository;
@@ -153,5 +155,60 @@ class InvoiceServiceTest {
         assertThatThrownBy(() -> invoiceService.createInvoiceAndPaymentLink(studentId, packageId, idempotencyKey))
                 .isInstanceOf(BusinessException.class)
                 .satisfies(e -> assertThat(((BusinessException) e).getErrorCode()).isEqualTo(ErrorCode.IDEMPOTENCY_KEY_REUSED));
+    }
+
+    @Test
+    void providerUnavailable_doesNotExposeProviderMessage() {
+        UUID studentId = stubInvoiceCreation(UUID.randomUUID());
+        when(paymentGateway.createPaymentLink(any())).thenThrow(new PaymentGatewayUnavailableException("SECRET_PROVIDER_PAYLOAD"));
+
+        assertThatThrownBy(() -> invoiceService.createInvoiceAndPaymentLink(studentId, currentPackageId, currentKey))
+                .isInstanceOfSatisfying(BusinessException.class, ex -> {
+                    assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.EXTERNAL_SERVICE_UNAVAILABLE);
+                    assertThat(ex.getMessage()).doesNotContain("SECRET_PROVIDER_PAYLOAD");
+                });
+    }
+
+    @Test
+    void providerRejected_doesNotExposeProviderMessage() {
+        UUID studentId = stubInvoiceCreation(UUID.randomUUID());
+        when(paymentGateway.createPaymentLink(any())).thenThrow(new PaymentGatewayRejectedException("SECRET_PROVIDER_PAYLOAD"));
+
+        assertThatThrownBy(() -> invoiceService.createInvoiceAndPaymentLink(studentId, currentPackageId, currentKey))
+                .isInstanceOfSatisfying(BusinessException.class, ex -> {
+                    assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PAYMENT_PROVIDER_ERROR);
+                    assertThat(ex.getMessage()).doesNotContain("SECRET_PROVIDER_PAYLOAD");
+                });
+    }
+
+    @Test
+    void unexpectedPaymentFailure_doesNotExposeProviderMessage() {
+        UUID studentId = stubInvoiceCreation(UUID.randomUUID());
+        when(paymentGateway.createPaymentLink(any())).thenThrow(new RuntimeException("SECRET_PROVIDER_PAYLOAD"));
+
+        assertThatThrownBy(() -> invoiceService.createInvoiceAndPaymentLink(studentId, currentPackageId, currentKey))
+                .isInstanceOfSatisfying(BusinessException.class, ex -> {
+                    assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PAYMENT_LINK_CREATION_FAILED);
+                    assertThat(ex.getMessage()).doesNotContain("SECRET_PROVIDER_PAYLOAD");
+                });
+    }
+
+    private UUID currentPackageId;
+    private UUID currentKey;
+
+    private UUID stubInvoiceCreation(UUID packageId) {
+        UUID studentId = UUID.randomUUID();
+        UUID teacherId = UUID.randomUUID();
+        UUID subjectId = UUID.randomUUID();
+        currentPackageId = packageId;
+        currentKey = UUID.randomUUID();
+        when(pricingPackageFacade.getPurchasablePackage(packageId)).thenReturn(
+                new PricingPackageSnapshot(packageId, teacherId, subjectId, "Math 101", 10, 30, 500000L, 60, "ACTIVE"));
+        when(invoiceQueryRepository.findByStudentIdAndIdempotencyKey(studentId, currentKey)).thenReturn(Optional.empty());
+        when(paymentIdentifierRepository.nextPayosOrderCode()).thenReturn(1001L);
+        when(paymentIdentifierRepository.nextInvoiceNumberSequence()).thenReturn(1L);
+        when(paymentGateway.findPaymentLink(1001L)).thenReturn(Optional.empty());
+        when(invoiceCommandRepository.insert(any(Invoice.class))).thenAnswer(i -> i.getArgument(0));
+        return studentId;
     }
 }

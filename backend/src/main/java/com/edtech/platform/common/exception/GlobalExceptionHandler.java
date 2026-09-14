@@ -93,7 +93,8 @@ public class GlobalExceptionHandler {
             if (msg.contains("availability_time_conflict")) return buildResponse(ErrorCode.AVAILABILITY_TIME_CONFLICT, null, null);
             if (msg.contains("uq_messages_sender_client")) return buildResponse(ErrorCode.MESSAGE_DUPLICATE, null, null);
         }
-        return buildResponse(ErrorCode.DUPLICATE_RESOURCE, null, null);
+        log.error("Unhandled data integrity violation, requestId={}", getRequestId(), ex);
+        return buildResponse(ErrorCode.INTERNAL_SERVER_ERROR, null, null);
     }
 
     @ExceptionHandler(AccessDeniedException.class)

@@ -162,13 +162,13 @@ public class InvoiceServiceImpl implements InvoiceService {
             }
         } catch (PaymentGatewayUnavailableException e) {
             log.error("Payment gateway unavailable for orderCode={}", pendingInvoice.getPayosOrderCode(), e);
-            throw new BusinessException(ErrorCode.EXTERNAL_SERVICE_UNAVAILABLE, e.getMessage());
+            throw new BusinessException(ErrorCode.EXTERNAL_SERVICE_UNAVAILABLE);
         } catch (PaymentGatewayRejectedException e) {
             log.error("Payment gateway rejected orderCode={}", pendingInvoice.getPayosOrderCode(), e);
-            throw new BusinessException(ErrorCode.PAYMENT_PROVIDER_ERROR, e.getMessage());
+            throw new BusinessException(ErrorCode.PAYMENT_PROVIDER_ERROR);
         } catch (Exception e) {
             log.error("Failed to create payment link for orderCode={}", pendingInvoice.getPayosOrderCode(), e);
-            throw new BusinessException(ErrorCode.PAYMENT_LINK_CREATION_FAILED, e.getMessage());
+            throw new BusinessException(ErrorCode.PAYMENT_LINK_CREATION_FAILED);
         }
 
         // 6. Phase 3: Local DB Transaction 2 (Attach Payment Link Info)
