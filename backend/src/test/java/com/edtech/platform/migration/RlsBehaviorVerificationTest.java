@@ -557,4 +557,121 @@ public class RlsBehaviorVerificationTest extends AbstractIntegrationTest {
             jdbcTemplate.update("DELETE FROM public.users WHERE id IN (?, ?)", studentUserId, teacherUserId);
         }
     }
+
+    @Test
+    @DisplayName("V37: Enable RLS on system tables - Backend succeeds unimpeded while unprivileged role is blocked")
+    void verifyRlsBehaviorOnSystemTables() throws Exception {
+        // 1. Verify rowsecurity = true on all 3 system tables
+        List<String> rlsTables = jdbcTemplate.queryForList(
+                "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('platform_settings', 'audit_logs', 'email_outbox') AND rowsecurity = true",
+                String.class
+        );
+        assertThat(rlsTables).containsExactlyInAnyOrder("platform_settings", "audit_logs", "email_outbox");
+
+        // 2. Setup test data via backend connection
+        UUID auditId = UUID.randomUUID();
+        UUID emailId = UUID.randomUUID();
+        UUID testUserId = UUID.randomUUID();
+
+        jdbcTemplate.update(
+                "INSERT INTO public.users (id, email, password_hash, full_name, role, status) VALUES (?, ?, 'hash', 'Admin Sys', 'ADMIN', 'ACTIVE')",
+                testUserId, "sys_adm_" + UUID.randomUUID().toString().substring(0, 8) + "@test.com"
+        );
+
+        // Platform settings is a singleton table: use existing row or create if absent
+        List<UUID> existingSettingIds = jdbcTemplate.queryForList("SELECT id FROM public.platform_settings LIMIT 1", UUID.class);
+        UUID settingId;
+        if (existingSettingIds.isEmpty()) {
+            settingId = UUID.randomUUID();
+            jdbcTemplate.update(
+                    "INSERT INTO public.platform_settings (id, commission_rate, bayesian_minimum_reviews, booking_reminder_hours, booking_expiration_hours) " +
+                    "VALUES (?, 15.00, 5, 24, 48)",
+                    settingId
+            );
+        } else {
+            settingId = existingSettingIds.get(0);
+        }
+
+        // Backend creates audit_log
+        jdbcTemplate.update(
+                "INSERT INTO public.audit_logs (id, actor_id, action, target_type, target_id) VALUES (?, ?, 'UPDATE_SETTINGS', 'PLATFORM_SETTINGS', ?)",
+                auditId, testUserId, settingId
+        );
+
+        // Backend creates email_outbox
+        jdbcTemplate.update(
+                "INSERT INTO public.email_outbox (id, recipient, subject, body, status) VALUES (?, 'user@test.com', 'Welcome', 'Hello', 'PENDING')",
+                emailId
+        );
+
+        // Verify backend can query all tables
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM public.platform_settings WHERE id = ?", Long.class, settingId)).isEqualTo(1L);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM public.audit_logs WHERE id = ?", Long.class, auditId)).isEqualTo(1L);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM public.email_outbox WHERE id = ?", Long.class, emailId)).isEqualTo(1L);
+
+        // 3. Test unprivileged role behavior
+        String testAnonUser = "test_anon_sys_" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+        String testAnonPass = "P@ss_" + UUID.randomUUID().toString().substring(0, 8);
+
+        jdbcTemplate.execute("CREATE ROLE " + testAnonUser + " WITH LOGIN PASSWORD '" + testAnonPass + "' NOINHERIT;");
+        jdbcTemplate.execute("GRANT USAGE ON SCHEMA public TO " + testAnonUser + ";");
+        // Grant DML to test RLS default-deny behavior
+        jdbcTemplate.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON public.platform_settings, public.audit_logs, public.email_outbox TO " + testAnonUser + ";");
+
+        try {
+            String jdbcUrl = POSTGRES_CONTAINER.getJdbcUrl();
+            try (Connection anonConn = DriverManager.getConnection(jdbcUrl, testAnonUser, testAnonPass);
+                 Statement anonStmt = anonConn.createStatement()) {
+
+                // SELECT platform_settings: RLS default-deny should return 0 rows
+                try (ResultSet rs = anonStmt.executeQuery("SELECT COUNT(*) FROM public.platform_settings WHERE id = '" + settingId + "'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt(1)).as("Unprivileged role must see 0 rows on platform_settings").isEqualTo(0);
+                }
+
+                // SELECT audit_logs: RLS default-deny should return 0 rows
+                try (ResultSet rs = anonStmt.executeQuery("SELECT COUNT(*) FROM public.audit_logs WHERE id = '" + auditId + "'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt(1)).as("Unprivileged role must see 0 rows on audit_logs").isEqualTo(0);
+                }
+
+                // SELECT email_outbox: RLS default-deny should return 0 rows
+                try (ResultSet rs = anonStmt.executeQuery("SELECT COUNT(*) FROM public.email_outbox WHERE id = '" + emailId + "'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt(1)).as("Unprivileged role must see 0 rows on email_outbox").isEqualTo(0);
+                }
+
+                // INSERT platform_settings: RLS default-deny should fail
+                UUID maliciousSettingId = UUID.randomUUID();
+                assertThatThrownBy(() -> anonStmt.executeUpdate(
+                        "INSERT INTO public.platform_settings (id, commission_rate) VALUES ('" + maliciousSettingId + "', 0.00)"
+                )).as("Unprivileged role must be blocked from INSERT platform_settings by RLS")
+                  .hasMessageContaining("violates row-level security policy");
+
+                // TRUNCATE platform_settings: Must fail with permission denied (REVOKE TRUNCATE)
+                assertThatThrownBy(() -> anonStmt.executeUpdate(
+                        "TRUNCATE public.platform_settings"
+                )).as("Unprivileged role must be denied from TRUNCATE platform_settings")
+                  .hasMessageContaining("permission denied");
+
+                // UPDATE platform_settings: 0 rows affected
+                int anonUpdated = anonStmt.executeUpdate(
+                        "UPDATE public.platform_settings SET commission_rate = 0.00 WHERE id = '" + settingId + "'");
+                assertThat(anonUpdated).as("Unprivileged role must affect 0 rows on UPDATE platform_settings").isEqualTo(0);
+
+                // DELETE audit_logs: 0 rows affected
+                int anonDeleted = anonStmt.executeUpdate(
+                        "DELETE FROM public.audit_logs WHERE id = '" + auditId + "'");
+                assertThat(anonDeleted).as("Unprivileged role must affect 0 rows on DELETE audit_logs").isEqualTo(0);
+            }
+        } finally {
+            jdbcTemplate.execute("DROP OWNED BY " + testAnonUser + ";");
+            jdbcTemplate.execute("DROP ROLE " + testAnonUser + ";");
+
+            // Clean up test data
+            jdbcTemplate.update("DELETE FROM public.audit_logs WHERE id = ?", auditId);
+            jdbcTemplate.update("DELETE FROM public.email_outbox WHERE id = ?", emailId);
+            jdbcTemplate.update("DELETE FROM public.users WHERE id = ?", testUserId);
+        }
+    }
 }

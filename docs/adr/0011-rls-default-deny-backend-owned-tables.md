@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted and Applied (V32, V33, V34, V35 và V36 deployed to Supabase production 2026-09-14).
+Accepted and Applied (Toàn bộ 5 nhóm từ V32 đến V37 đã deploy thành công lên Supabase production 2026-09-14).
 
 ## Decision
 
@@ -12,10 +12,11 @@ Bật PostgreSQL Row Level Security cho các bảng Backend-owned bằng migrati
 - V34: 8 bảng Finance & Payments (`wallets`, `ledger_entries`, `invoices`, `payment_transactions`, `payout_requests`, `refund_requests`, `teacher_bank_accounts`, `finance_command_receipts`) cùng lệnh `REVOKE TRUNCATE` cho `anon` và `authenticated`.
 - V35: 9 bảng Booking & Learning (`student_packages`, `package_extension_requests`, `trial_requests`, `bookings`, `session_reports`, `reviews`, `teacher_stats`, `assignments`, `submissions`) cùng lệnh `REVOKE TRUNCATE` cho `anon` và `authenticated`.
 - V36: 4 bảng Communication & Notifications (`conversations`, `messages`, `attachments`, `notifications`) cùng lệnh `REVOKE TRUNCATE` cho `anon` và `authenticated`.
+- V37: 4 bảng System, Outbox & Audit Logs (`platform_settings`, `audit_logs`, `email_outbox`, `modulebentity`) cùng lệnh `REVOKE ALL` cho `anon` và `authenticated`.
 
 Không tạo policy cho `anon` hoặc `authenticated`, không dùng `FORCE ROW LEVEL SECURITY`, và giữ Spring Boot là đường truy cập duy nhất.
 
-`flyway_schema_history` là bảng metadata nội bộ của Flyway và được quản lý riêng ngoài transaction của migration để tránh lock contention. Catalog public chỉ được mở bằng migration/ADR riêng sau này, với predicate loại bỏ dữ liệu inactive, chưa approved và soft-deleted.
+`flyway_schema_history` là bảng metadata nội bộ của Flyway và được quản lý riêng ngoài transaction của migration để tránh lock contention (thực nghiệm xác nhận lệnh `ALTER TABLE flyway_schema_history` trong migration transaction bị lock wait do conflict với session của Flyway). Catalog public chỉ được mở bằng migration/ADR riêng sau này, với predicate loại bỏ dữ liệu inactive, chưa approved và soft-deleted.
 
 ## Rollout constraints
 
@@ -26,4 +27,4 @@ Không tạo policy cho `anon` hoặc `authenticated`, không dùng `FORCE ROW L
 
 ## Consequences
 
-Backend roles có quyền phù hợp tiếp tục hoạt động; PostgREST `anon/authenticated` bị deny mặc định. Realtime/public direct reads chưa được bật. Security Advisor phải được kiểm tra trực tiếp sau apply để xác nhận ba mươi cảnh báo RLS đã biến mất.
+Backend roles có quyền phù hợp tiếp tục hoạt động; PostgREST `anon/authenticated` bị deny mặc định. Realtime/public direct reads chưa được bật. Toàn bộ 34 bảng nghiệp vụ trong schema public đã được bảo vệ bởi RLS; Supabase Security Advisor đạt bảo vệ tối đa cho toàn bộ dữ liệu ứng dụng.

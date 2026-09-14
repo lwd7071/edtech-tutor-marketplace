@@ -1,5 +1,13 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-14 — Triển khai RLS V37 Cụm System, Outbox & Audit Logs lên Supabase Production
+
+- Thêm migration `V37__enable_rls_system_and_cleanup.sql` kích hoạt Row Level Security default-deny cho các bảng System, Outbox & Audit Logs: `platform_settings`, `audit_logs`, `email_outbox`, `modulebentity`.
+- Thu hồi toàn bộ quyền (REVOKE ALL bao gồm TRUNCATE) từ `anon` và `authenticated` trên toàn bộ các bảng này.
+- Bổ sung kiểm thử TDD: mở rộng `FlywayMigrationTest` (21 tests, clean V1->V37, upgrade V27..V36->V37, assert 33 bảng nghiệp vụ có RLS), mở rộng `RlsBehaviorVerificationTest` (chặn TRUNCATE và truy cập unprivileged trên `platform_settings`, `audit_logs`, `email_outbox`), tạo mới `SystemOutboxRlsFlowIntegrationTest` (xác nhận luồng cấu hình singleton, ghi audit log, đưa email vào outbox và worker gửi mail qua PostgreSQL superuser).
+- Verification: 29/29 tests local Testcontainers pass; preflight Supabase read-only validate 37 migrations pass; apply V37 thành công trên Supabase production (`State = Success`), post-migrate validation pass.
+- Đối soát dữ liệu trên Supabase: 100% dữ liệu được bảo toàn (`platform_settings`: 1 row, `flyway_schema_history`: 37 rows); toàn bộ 34 bảng nghiệp vụ trong schema `public` đã được bảo vệ bởi RLS (0 data loss). Hoàn tất trọn vẹn toàn bộ 5 nhóm RLS migration!
+
 ## 2026-09-14 — Triển khai RLS V36 Cụm Communication & Notifications lên Supabase Production
 
 - Thêm migration `V36__enable_rls_communication_tables.sql` kích hoạt Row Level Security default-deny cho 4 bảng: `conversations`, `messages`, `attachments`, `notifications`.
