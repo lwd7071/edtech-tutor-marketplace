@@ -16,7 +16,7 @@ Bật PostgreSQL Row Level Security cho các bảng Backend-owned bằng migrati
 
 Không tạo policy cho `anon` hoặc `authenticated`, không dùng `FORCE ROW LEVEL SECURITY`, và giữ Spring Boot là đường truy cập duy nhất.
 
-`flyway_schema_history` là bảng metadata nội bộ của Flyway và được quản lý riêng ngoài transaction của migration để tránh lock contention (thực nghiệm xác nhận lệnh `ALTER TABLE flyway_schema_history` trong migration transaction bị lock wait do conflict với session của Flyway). Catalog public chỉ được mở bằng migration/ADR riêng sau này, với predicate loại bỏ dữ liệu inactive, chưa approved và soft-deleted.
+`flyway_schema_history` là bảng metadata nội bộ của Flyway và được quản lý riêng ngoài transaction của migration để tránh lock contention (thực nghiệm xác nhận lệnh `ALTER TABLE flyway_schema_history` trong migration transaction bị lock wait do conflict với session của Flyway). Bảng này đã được bật RLS default-deny và thu hồi toàn bộ quyền từ `anon`/`authenticated` qua session quản trị ngoài migration transaction. Catalog public chỉ được mở bằng migration/ADR riêng sau này, với predicate loại bỏ dữ liệu inactive, chưa approved và soft-deleted.
 
 ## Rollout constraints
 
@@ -27,4 +27,4 @@ Không tạo policy cho `anon` hoặc `authenticated`, không dùng `FORCE ROW L
 
 ## Consequences
 
-Backend roles có quyền phù hợp tiếp tục hoạt động; PostgREST `anon/authenticated` bị deny mặc định. Realtime/public direct reads chưa được bật. Toàn bộ 34 bảng nghiệp vụ trong schema public đã được bảo vệ bởi RLS; Supabase Security Advisor đạt bảo vệ tối đa cho toàn bộ dữ liệu ứng dụng.
+Backend roles có quyền phù hợp tiếp tục hoạt động; PostgREST `anon/authenticated` bị deny mặc định. Realtime/public direct reads chưa được bật. Toàn bộ 35 bảng trong schema public (34 bảng nghiệp vụ + 1 bảng metadata) đã được bảo vệ hoàn toàn bởi RLS; Supabase Security Advisor đạt 100% bảng xanh (0 Errors).

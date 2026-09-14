@@ -8,7 +8,7 @@
 ## Mốc kỹ thuật
 
 - Backend modular monolith đã có các seam chính cho auth, mail, payment, finance, booking, learning và communication.
-- Migration mới nhất trong repository: `V37__enable_rls_system_and_cleanup.sql` (RLS default-deny và REVOKE ALL trên các bảng System, Outbox & Audit Logs: `platform_settings`, `audit_logs`, `email_outbox`, `modulebentity`). Đã preflight sạch và apply Supabase thành công; Flyway validate/info xác nhận V37 `Success`. Toàn bộ 34 bảng nghiệp vụ trong schema `public` đã được bảo vệ bởi RLS.
+- Migration mới nhất trong repository: `V37__enable_rls_system_and_cleanup.sql` (RLS default-deny và REVOKE ALL trên các bảng System, Outbox & Audit Logs: `platform_settings`, `audit_logs`, `email_outbox`, `modulebentity`). Đã preflight sạch và apply Supabase thành công; Flyway validate/info xác nhận V37 `Success`. Toàn bộ 35 bảng trong schema `public` (34 bảng nghiệp vụ + 1 bảng metadata `flyway_schema_history`) đã được bảo vệ hoàn toàn bởi RLS (0 Errors trên Supabase Security Advisor).
 - Không dùng Flyway `repair()`, không sửa migration đã áp dụng và không reset database người dùng.
 - Startup contract đã chuẩn hóa: cloud là mặc định và tự nạp `.env.cloud`, local được chọn rõ ràng, test có một file cấu hình canonical; Compose local đã khởi động healthy qua `/actuator/health`.
 
