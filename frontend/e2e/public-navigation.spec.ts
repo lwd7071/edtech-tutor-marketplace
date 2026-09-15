@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('guest can navigate from homepage to tutor marketplace', async ({ page }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle(/Tutor Match/i);
+  await expect(page).toHaveTitle(/Edtech Tutor Marketplace/i);
   await page.getByRole('link', { name: /Tìm gia sư/i }).first().click();
   await expect(page).toHaveURL(/\/teachers/);
   await expect(page.getByRole('heading', { name: /gia sư/i }).first()).toBeVisible();

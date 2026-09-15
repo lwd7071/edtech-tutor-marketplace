@@ -375,7 +375,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("""
                 SELECT character_maximum_length FROM information_schema.columns
                 WHERE table_schema='public' AND table_name='ledger_entries' AND column_name='entry_type'
-                """, Integer.class)).isEqualTo(40);
+                """, Integer.class)).isEqualTo(30);
         assertThat(jdbcTemplate.queryForObject("""
                 SELECT count(*) FROM pg_trigger WHERE tgname='trg_platform_ledger_append_only'
                 """, Integer.class)).isEqualTo(1);

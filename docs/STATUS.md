@@ -3,7 +3,7 @@
 > Cập nhật: 2026-09-15. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
 
-- Two-party booking settlement V41 đang triển khai trong working tree: đã sửa tên ledger về giới hạn `varchar(30)`, thêm backfill settlement cho booking trả phí cũ, đồng bộ `netAmountVnd` và sửa admin queue trả `bookingId` đúng contract. Booking unit tests pass; migration/integration chưa xác minh vì Docker engine hiện không có socket hợp lệ. Frontend typecheck/lint đang chạy lại; Jest Docker và smoke ba vai trò chưa xác minh; Supabase V41 vẫn `Pending`.
+- Two-party booking settlement V41 đã sẵn sàng phát hành: tên ledger phù hợp `varchar(30)`, backfill settlement booking trả phí cũ, contract `netAmountVnd`/`bookingId` và admin actions đã đồng bộ. Full backend Testcontainers `474/474` pass; frontend Docker check `101/101` suites, `264/264` tests, typecheck/lint/build pass; Playwright E2E `4/4` pass. Supabase preflight xác nhận V40 hiện tại, V41 Pending; production apply đang chờ xác nhận trực tiếp.
 
 - Regression hardening: request ID đã hợp nhất về `RequestLoggingFilter`; lỗi provider không còn lộ raw message; custom business messages đã được chuẩn hóa tiếng Việt. Frontend Docker Jest full pass `101/101` suites và `264/264` tests; typecheck, lint và Next.js production build pass. Full backend suite PostgreSQL/Redis Testcontainers pass `466/466` tests (`0` failure, `0` error, `0` skipped). Supabase schema giữ nguyên ở V40 `Success` (read-only count `evidence_format = ''` là 0, không cần migration làm sạch credential; V41 hiện dùng cho settlement).
 
@@ -96,7 +96,7 @@
 - Docker image build validation trong cùng run: pass.
 - Full backend suite local với PostgreSQL 16/Redis Testcontainers: `341/341` pass, `0` failure, `0` error, `0` skipped; đã re-check sau khi Docker Engine hoạt động.
 - Scheduler toggle focused test: `3/3` pass. Lần `mvn clean verify` sau thay đổi không được ghi nhận là pass do Maven kết thúc exit code `1`; lần chạy lại các test Testcontainers bị chặn vì Docker Desktop mất Docker socket.
-- Jest/Playwright cho Student Journey: **chưa xác minh trong lượt này**.
+- Frontend Docker verification: `101/101` suites, `264/264` tests, typecheck/lint/build pass; Playwright public navigation `4/4` pass.
 - Teacher-search focused validation/cache/serialization + architecture guardrails: pass local (`15/15`).
 - Teacher-search PostgreSQL 16 Testcontainers: repository regression + EXPLAIN/index assertions `4/4` pass; Flyway clean schema, metadata và V27 → V28 upgrade `9/9` pass.
 - Supabase V28 migration bằng đúng Flyway connection/user: pass; Flyway validated 28 migrations, current version V27 và apply V28 thành công trên PostgreSQL 17.6. Migration DO preflight xác nhận `unaccent`/`pg_trgm` ở `public`.
@@ -135,8 +135,8 @@ Các con số trên chỉ là bằng chứng gần nhất đã có; benchmark v�
 
 ## Việc đang chờ
 
-1. Khi cần đối chiếu local, mở Docker và chạy `scripts/test-student-journey-docker.ps1`.
-2. Supabase production hiện đã ở schema V40 `Success`; không mutate database nếu không có migration mới.
+1. Apply và post-validate Supabase V41 sau khi có xác nhận production trực tiếp.
+2. Supabase production hiện ở schema V40 `Success`; V41 đã preflight read-only và chưa mutate.
 3. Chạy smoke test các role Student, Teacher và Admin.
 4. Cập nhật bảng này bằng số liệu thật sau mỗi lần chạy.
 5. Có thể chạy lại `scripts/preflight-teacher-search-extensions.sql` bằng Flyway user để bổ sung bằng chứng standalone; không deploy lại V28/V29.
