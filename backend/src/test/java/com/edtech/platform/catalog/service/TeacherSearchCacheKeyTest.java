@@ -12,7 +12,7 @@ class TeacherSearchCacheKeyTest {
         String key = TeacherSearchCacheKey.from(params("Toán", 0, 20));
 
         assertThat(key)
-                .startsWith("teacher-search:v1:keyword=toan:")
+                .startsWith("teacher-search:v2:keyword=toan:")
                 .isEqualTo(TeacherSearchCacheKey.from(params("  TOAN  ", 0, 20)));
     }
 

@@ -4,6 +4,8 @@ import {
   BookingFilterParams,
   CreateBookingRequest,
   CompleteBookingRequest,
+  ConfirmBookingRequest,
+  DisputeBookingRequest,
   CancelBookingRequest,
   CreateTrialRequest,
   AcceptTrialRequest,
@@ -57,6 +59,25 @@ export function useCompleteBooking() {
       queryClient.invalidateQueries({ queryKey: financeKeys.wallet() });
       queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() });
     },
+  });
+}
+
+export function useConfirmBooking() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: ConfirmBookingRequest }) => bookingApi.confirmBooking(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bookingKeys.all });
+      queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() });
+    },
+  });
+}
+
+export function useDisputeBooking() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: DisputeBookingRequest }) => bookingApi.disputeBooking(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: bookingKeys.all }),
   });
 }
 

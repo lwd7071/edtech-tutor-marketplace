@@ -25,6 +25,7 @@ export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
   const available = wallet?.availableBalanceVnd ?? 0;
   const pending = wallet?.pendingBalanceVnd ?? 0;
   const reserved = wallet?.reservedBalanceVnd ?? 0;
+  const held = wallet?.heldBalanceVnd ?? 0;
 
   const canPayout = available > 0;
 
@@ -87,6 +88,14 @@ export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
                 Yêu cầu rút tiền
               </Button>
             </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={12} md={8}>
+          <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)', border: '1px solid #fed7aa' }}>
+            <Typography.Text type="secondary"><LockOutlined style={{ marginRight: 6, color: '#c2410c' }} />Tiền buổi học đang giữ</Typography.Text>
+            <div style={{ fontSize: 24, fontWeight: 600, marginTop: 12 }}>{held.toLocaleString('vi-VN')} ₫</div>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>Chưa thể rút cho đến khi quyết toán</Typography.Text>
           </Card>
         </Col>
 

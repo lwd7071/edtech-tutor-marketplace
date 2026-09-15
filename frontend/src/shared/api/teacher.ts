@@ -9,6 +9,8 @@ export interface TeacherProfile {
   supportsOnline?: boolean;
   supportsOffline?: boolean;
   locationAddress?: string;
+  provinceCode?: string;
+  wardCode?: string;
   introductionVideoUrl?: string;
   profileStatus?: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
   experience?: string;
@@ -44,6 +46,7 @@ export interface TeacherSubjectProposal {
   reviewedAt?: string | null;
   createdSubjectId?: string | null;
 }
+export interface TeacherCredential { id: string; label: string; status: 'PENDING'|'APPROVED'|'REJECTED'; proofUrl?: string | null; rejectedReason?: string | null; verifiedAt?: string | null; version: number; }
 
 
 export interface ReplaceAvailabilityRequest {
@@ -88,6 +91,7 @@ const documentView = (d:DocumentWire):TeacherDocument => ({id:d.id,name:d.title|
 export const teacherApi = {
   getProfile: () => axiosClient.get<{data: TeacherProfile}>('/api/teacher/profile').then(res => ({...res.data.data, approvalStatus: res.data.data.profileStatus})),
   updateProfile: (data: TeacherProfile) => axiosClient.put<{data: TeacherProfile}>('/api/teacher/profile', data).then(res => res.data.data),
+  updateResidence: (data: Pick<TeacherProfile, 'provinceCode'|'wardCode'>) => axiosClient.put<{data: TeacherProfile}>('/api/teacher/profile/residence', data).then(res => res.data.data),
   submitProfile: () => axiosClient.post('/api/teacher/profile/submit').then(res => res.data),
   
   getDocuments: () => axiosClient.get<{data:DocumentWire[]}>('/api/teacher/documents').then(res => res.data.data.map(documentView)),
@@ -101,6 +105,10 @@ export const teacherApi = {
     }).then(res => documentView(res.data.data));
   },
   deleteDocument: (id: string) => axiosClient.delete(`/api/teacher/documents/${id}`).then(res => res.data),
+  getCredentials: () => axiosClient.get<{data: TeacherCredential[]}>('/api/teacher/credentials').then(res => res.data.data),
+  createCredential: (label: string, proof: File) => { const f = new FormData(); f.append('label', label); f.append('proof', proof); return axiosClient.post<{data: TeacherCredential}>('/api/teacher/credentials', f, {headers:{'Content-Type':'multipart/form-data'}}).then(res => res.data.data); },
+  updateCredential: (id: string, label: string, version: number, proof?: File) => { const f = new FormData(); f.append('label', label); f.append('version', String(version)); if (proof) f.append('proof', proof); return axiosClient.put<{data: TeacherCredential}>(`/api/teacher/credentials/${id}`, f, {headers:{'Content-Type':'multipart/form-data'}}).then(res => res.data.data); },
+  deleteCredential: (id: string, version: number) => axiosClient.delete(`/api/teacher/credentials/${id}`, {params:{version}}).then(res => res.data),
 
   getSubjects: () => axiosClient.get<{data:SubjectWire[]}>('/api/teacher/subjects').then(res => res.data.data.map(subjectView)),
   addSubject: (subjectId: string) => axiosClient.post<{data:SubjectWire}>(`/api/teacher/subjects/${subjectId}`, {}).then(res => subjectView(res.data.data)),

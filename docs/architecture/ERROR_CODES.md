@@ -141,6 +141,13 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | `BOOKING_CANCEL_REASON_REQUIRED` | 400 | Cancel không có lý do |
 | `BOOKING_STUDENT_CANCEL_NOT_ALLOWED` | 403 | Student gọi action hủy trực tiếp |
 | `BOOKING_SETTLEMENT_ALREADY_PROCESSED` | 409 | Settlement bị gọi lặp ngoài luồng idempotent |
+| `BOOKING_CONFIRMATION_TOO_EARLY` | 422 | Chỉ xác nhận sau khi buổi học kết thúc |
+| `BOOKING_CONFIRMATION_EXPIRED` | 422 | Đã quá hạn cửa sổ xác nhận |
+| `BOOKING_CONFIRMATION_ALREADY_EXISTS` | 409 | Bên gọi đã xác nhận booking |
+| `BOOKING_SETTLEMENT_INVALID_STATE` | 400 | Settlement không cho phép chuyển trạng thái |
+| `BOOKING_DISPUTE_INVALID_STATE` | 400 | Booking chưa ở trạng thái có thể khiếu nại |
+| `BOOKING_DISPUTE_REASON_REQUIRED` | 400 | Khiếu nại phải có lý do |
+| `BOOKING_REOPEN_INVALID_STATE` | 409 | Settlement chưa ở trạng thái được mở lại |
 | `TRIAL_ALREADY_USED` | 422 | Cặp Student–Teacher đã có Trial SCHEDULED/COMPLETED |
 | `TRIAL_REQUEST_ALREADY_PENDING` | 409 | Cặp Student–Teacher đã có yêu cầu học thử PENDING |
 | `TRIAL_REQUEST_INVALID_STATE` | 400 | Accept/reject request không còn PENDING |
@@ -219,6 +226,10 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | `MESSAGE_TYPE_INVALID` | 400 | Payload không khớp `TEXT/IMAGE/FILE` |
 | `MESSAGE_DUPLICATE` | 409 | Trùng `clientMessageId` ngoài replay hợp lệ |
 | `NOTIFICATION_NOT_FOUND` | 404 | Notification không tồn tại/không thuộc người gọi |
+| `CREDENTIAL_NOT_FOUND` | 404 | Không tìm thấy minh chứng năng lực |
+| `CREDENTIAL_INVALID_STATE` | 400 | Trạng thái minh chứng không cho phép thao tác |
+| `CREDENTIAL_LIMIT_REACHED` | 422 | Giáo viên đã đạt tối đa 10 minh chứng |
+| `CREDENTIAL_PROOF_REQUIRED` | 400 | Bắt buộc tải lên ảnh hoặc PDF minh chứng |
 
 ## 12. Nguyên tắc implement Backend
 

@@ -17,6 +17,15 @@ public record TeacherSnapshot(
         boolean supportsOffline,
         java.util.List<String> languages,
         String locationAddress,
-        String introductionVideoUrl
+        String introductionVideoUrl,
+        String provinceCode,
+        String wardCode
 ) {
+    public TeacherSnapshot(UUID id, UUID userId, String status, boolean isVerified, boolean isVisible,
+                           String fullName, String avatarUrl, String bioExcerpt, Integer yearsOfExperience,
+                           boolean supportsOnline, boolean supportsOffline, java.util.List<String> languages,
+                           String locationAddress, String introductionVideoUrl) {
+        this(id, userId, status, isVerified, isVisible, fullName, avatarUrl, bioExcerpt, yearsOfExperience,
+                supportsOnline, supportsOffline, languages, locationAddress, introductionVideoUrl, null, null);
+    }
 }

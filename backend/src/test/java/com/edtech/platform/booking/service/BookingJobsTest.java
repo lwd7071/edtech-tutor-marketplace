@@ -7,6 +7,9 @@ import com.edtech.platform.booking.domain.DeliveryMode;
 import com.edtech.platform.booking.facade.CommunicationFacade;
 import com.edtech.platform.booking.facade.EnrollmentBookingFacade;
 import com.edtech.platform.booking.repository.BookingRepository;
+import com.edtech.platform.booking.repository.BookingSettlementRepository;
+import com.edtech.platform.finance.facade.FinanceFacade;
+import com.edtech.platform.finance.facade.PackageMoneyAllocator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -16,6 +19,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Instant;
+import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +33,8 @@ import static org.mockito.Mockito.*;
 class BookingJobsTest {
 
     @Mock private BookingRepository bookingRepository;
+    @Mock private BookingSettlementRepository settlementRepository;
+    @Mock private FinanceFacade financeFacade;
     @Mock private CommunicationFacade communicationFacade;
     @Mock private PlatformSettingsFacade platformSettingsFacade;
     @Mock private EnrollmentBookingFacade enrollmentBookingFacade;
@@ -52,16 +58,20 @@ class BookingJobsTest {
     }
 
     @Test
-    void expiryJob_shouldExpireOverdueBookings_andReleasePackageSession() {
-        BookingExpiryJob job = new BookingExpiryJob(bookingRepository, enrollmentBookingFacade, transactionTemplate);
+    void expiryJob_shouldExpireTrialAfterTwelveHours() {
+        BookingExpiryJob job = new BookingExpiryJob(bookingRepository, settlementRepository, enrollmentBookingFacade,
+                financeFacade, new PackageMoneyAllocator(), transactionTemplate, Clock.systemUTC());
 
         UUID teacherId = UUID.randomUUID();
         UUID studentId = UUID.randomUUID();
-        UUID packageId = UUID.randomUUID();
-        Booking booking = spy(Booking.scheduleOfficial(teacherId, studentId, packageId, UUID.randomUUID(), Instant.now().minusSeconds(86400), Instant.now().minusSeconds(80000), DeliveryMode.ONLINE, null, null, false));
+        Booking booking = spy(Booking.scheduleTrial(teacherId, studentId, UUID.randomUUID(),
+                Instant.now().minusSeconds(50000), Instant.now().minusSeconds(49000),
+                DeliveryMode.ONLINE, null, null, false));
 
-        when(bookingRepository.findExpiryCandidates(any(), any()))
+        when(bookingRepository.findTrialExpiryCandidates(any(), any()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
+        when(bookingRepository.findPaidExpiryCandidates(any(), any())).thenReturn(new PageImpl<>(List.of()));
+        when(settlementRepository.findReopenedExpired(any(), any())).thenReturn(List.of());
         when(bookingRepository.findByIdForUpdate(any())).thenReturn(Optional.of(booking));
         doAnswer(inv -> {
             Consumer<TransactionStatus> consumer = inv.getArgument(0);
@@ -72,7 +82,7 @@ class BookingJobsTest {
         job.expire();
 
         assertThat(booking.getStatus()).isEqualTo(BookingStatus.EXPIRED);
-        verify(enrollmentBookingFacade).releaseReservedSession(packageId);
+        verifyNoInteractions(enrollmentBookingFacade, financeFacade);
     }
 
     @Test

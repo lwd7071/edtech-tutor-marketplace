@@ -12,7 +12,8 @@ describe('TeacherProfileHeader', () => {
     languages: ['Tiếng Việt', 'English'],
     supportsOnline: true,
     supportsOffline: false,
-    locationAddress: 'Hanoi',
+    provinceName: 'Hà Nội',
+    wardName: 'Phường Ba Đình',
     subjects: ['Toán', 'Lý'],
     averageRating: 4.8,
     reviewCount: 120
@@ -25,7 +26,7 @@ describe('TeacherProfileHeader', () => {
     expect(screen.getByText(/5 năm kinh nghiệm/)).toBeInTheDocument();
     expect(screen.getByText('Toán')).toBeInTheDocument();
     expect(screen.getByText('Lý')).toBeInTheDocument();
-    expect(screen.getByText('Hanoi')).toBeInTheDocument();
+    expect(screen.getByText(/Hà Nội/)).toBeInTheDocument();
   });
 
   it('renders rating and teaching languages', () => {

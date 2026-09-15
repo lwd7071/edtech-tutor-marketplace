@@ -13,7 +13,7 @@ import java.util.UUID;
 public class LedgerEntry {
     @Id private UUID id;
     @Column(name="wallet_id",nullable=false) private UUID walletId;
-    @Enumerated(EnumType.STRING) @Column(name="entry_type",nullable=false,length=30) private LedgerEntryType entryType;
+    @Enumerated(EnumType.STRING) @Column(name="entry_type",nullable=false,length=40) private LedgerEntryType entryType;
     @Column(name="amount_vnd",nullable=false) private long amountVnd;
     @Enumerated(EnumType.STRING) @Column(name="balance_bucket",nullable=false,length=20) private BalanceBucket balanceBucket;
     @Enumerated(EnumType.STRING) @Column(nullable=false,length=10) private LedgerDirection direction;

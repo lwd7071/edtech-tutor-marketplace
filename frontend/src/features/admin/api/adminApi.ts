@@ -10,8 +10,16 @@ import {
   ApproveSubjectProposalRequest,
   ChangeUserStatusRequest,
 } from '../types';
+import type { BookingSettlementAdminView } from '../types/finance';
 
 export const adminApi = {
+  getBookingSettlements: async (status?: string, page = 0, size = 20): Promise<ApiResponse<BookingSettlementAdminView[]>> => (await axiosClient.get('/api/admin/booking-settlements', { params: { status, page, size } })).data,
+  reopenBookingSettlement: async (id: string, data: { version: number; note: string }) => (await axiosClient.post(`/api/admin/booking-settlements/${id}/reopen`, data)).data,
+  releaseBookingSettlement: async (id: string, data: { version: number; note: string }) => (await axiosClient.post(`/api/admin/booking-settlements/${id}/release`, data)).data,
+  retainBookingSettlement: async (id: string, data: { version: number; note: string }) => (await axiosClient.post(`/api/admin/booking-settlements/${id}/retain`, data)).data,
+  getCredentialApprovals: async (status = 'PENDING'): Promise<ApiResponse<{id:string;teacherId:string;label:string;proofUrl:string;status:string;rejectedReason?:string;version:number}[]>> => (await axiosClient.get('/api/admin/credentials', {params:{status}})).data,
+  approveCredential: async (id: string, version: number) => (await axiosClient.post(`/api/admin/credentials/${id}/approve`, null, {params:{version}})).data,
+  rejectCredential: async (id: string, reason: string, version: number) => (await axiosClient.post(`/api/admin/credentials/${id}/reject`, null, {params:{reason,version}})).data,
   // 1. Phê duyệt hồ sơ giáo viên
   getTeacherApprovals: async (
     status: string = 'PENDING_APPROVAL',

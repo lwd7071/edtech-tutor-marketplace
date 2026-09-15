@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminFinanceApi } from '../api/adminFinanceApi';
+import { adminApi } from '../api/adminApi';
 import {
   AuditAction,
   ProcessPayoutRequest,
@@ -23,6 +24,7 @@ export const ADMIN_FINANCE_KEYS = {
   settings: () => [...ADMIN_FINANCE_KEYS.all, 'settings'] as const,
   auditLogs: (actorId?: string, action?: AuditAction, targetType?: string, page?: number, size?: number) =>
     [...ADMIN_FINANCE_KEYS.all, 'auditLogs', actorId, action, targetType, page, size] as const,
+  bookingSettlements: (status?: string, page?: number, size?: number) => [...ADMIN_FINANCE_KEYS.all, 'bookingSettlements', status, page, size] as const,
 };
 
 const commandKeys = new WeakMap<object, string>();
@@ -182,5 +184,22 @@ export function useAdminAuditLogs(
   return useQuery({
     queryKey: ADMIN_FINANCE_KEYS.auditLogs(actorId, action, targetType, page, size),
     queryFn: () => adminFinanceApi.getAuditLogs(actorId, action, targetType, page, size),
+  });
+}
+
+export function useAdminBookingSettlements(status?: string, page = 0, size = 20) {
+  return useQuery({ queryKey: ADMIN_FINANCE_KEYS.bookingSettlements(status, page, size), queryFn: () => adminApi.getBookingSettlements(status, page, size) });
+}
+
+export function useBookingSettlementAction(action: 'reopen' | 'release' | 'retain') {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, version, note }: { id: string; version: number; note: string }) => {
+      const data = { version, note };
+      if (action === 'reopen') return adminApi.reopenBookingSettlement(id, data);
+      if (action === 'release') return adminApi.releaseBookingSettlement(id, data);
+      return adminApi.retainBookingSettlement(id, data);
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.bookingSettlements() }); queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.dashboard() }); },
   });
 }

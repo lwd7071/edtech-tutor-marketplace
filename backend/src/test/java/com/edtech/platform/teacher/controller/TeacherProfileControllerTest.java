@@ -70,7 +70,8 @@ class TeacherProfileControllerTest {
     @Test
     void getProfile_shouldReturn200() throws Exception {
         TeacherProfileDetail detail = new TeacherProfileDetail(
-                UUID.randomUUID(), "Bio", 5, List.of("Vietnamese"), true, false, "HN", null,
+                UUID.randomUUID(), "Bio", 5, List.of("Vietnamese"), true, false, "HN", null, null,
+                null,
                 ProfileStatus.DRAFT, null, false, false
         );
         when(teacherProfileService.getProfile(teacherUserId)).thenReturn(detail);
@@ -85,10 +86,11 @@ class TeacherProfileControllerTest {
     @Test
     void updateProfile_shouldReturn200() throws Exception {
         UpdateTeacherProfileRequest request = new UpdateTeacherProfileRequest(
-                "Updated Bio", 6, List.of("English"), true, true, "HCM", null
+                "Updated Bio", 6, List.of("English"), true, true, "HCM", null, null, null
         );
         TeacherProfileDetail detail = new TeacherProfileDetail(
-                UUID.randomUUID(), "Updated Bio", 6, List.of("English"), true, true, "HCM", null,
+                UUID.randomUUID(), "Updated Bio", 6, List.of("English"), true, true, "HCM", null, null,
+                null,
                 ProfileStatus.DRAFT, null, false, false
         );
         when(teacherProfileService.updateProfile(eq(teacherUserId), any())).thenReturn(detail);
@@ -105,7 +107,8 @@ class TeacherProfileControllerTest {
     @Test
     void submitProfile_shouldReturn200() throws Exception {
         TeacherProfileDetail detail = new TeacherProfileDetail(
-                UUID.randomUUID(), "Bio", 5, List.of("Vietnamese"), true, false, "HN", null,
+                UUID.randomUUID(), "Bio", 5, List.of("Vietnamese"), true, false, "HN", null, null,
+                null,
                 ProfileStatus.PENDING_APPROVAL, null, false, false
         );
         when(teacherProfileService.submitProfile(teacherUserId)).thenReturn(detail);

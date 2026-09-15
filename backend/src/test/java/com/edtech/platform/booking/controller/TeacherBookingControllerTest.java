@@ -9,6 +9,7 @@ import com.edtech.platform.booking.dto.request.CreateBookingRequest;
 import com.edtech.platform.booking.dto.request.SessionReportRequest;
 import com.edtech.platform.booking.dto.response.BookingDetail;
 import com.edtech.platform.booking.service.BookingService;
+import com.edtech.platform.booking.service.BookingReadService;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -46,6 +47,7 @@ class TeacherBookingControllerTest {
 
     @Mock
     private BookingService bookingService;
+    @Mock private BookingReadService bookingReadService;
 
     @InjectMocks
     private TeacherBookingController controller;
@@ -82,6 +84,7 @@ class TeacherBookingControllerTest {
                 start, end, DeliveryMode.ONLINE, BookingStatus.SCHEDULED, false, false, null, 0L
         );
         when(bookingService.create(eq(teacherUserId), any())).thenReturn(detail);
+        when(bookingReadService.detail(teacherUserId, detail.id(), true)).thenReturn(java.util.Map.of("status", "SCHEDULED"));
 
         mockMvc.perform(post("/api/teacher/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -101,6 +104,7 @@ class TeacherBookingControllerTest {
                 BookingStatus.COMPLETED, false, false, null, 1L
         );
         when(bookingService.complete(eq(teacherUserId), eq(bookingId), any())).thenReturn(detail);
+        when(bookingReadService.detail(teacherUserId, bookingId, true)).thenReturn(java.util.Map.of("status", "COMPLETED"));
 
         mockMvc.perform(post("/api/teacher/bookings/" + bookingId + "/complete")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -120,6 +124,7 @@ class TeacherBookingControllerTest {
                 BookingStatus.CANCELLED, false, false, "Cancelled by teacher", 1L
         );
         when(bookingService.cancel(eq(teacherUserId), eq(bookingId), any())).thenReturn(detail);
+        when(bookingReadService.detail(teacherUserId, bookingId, true)).thenReturn(java.util.Map.of("status", "CANCELLED"));
 
         mockMvc.perform(post("/api/teacher/bookings/" + bookingId + "/cancel")
                 .contentType(MediaType.APPLICATION_JSON)

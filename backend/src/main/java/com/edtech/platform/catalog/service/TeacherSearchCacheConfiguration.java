@@ -18,7 +18,6 @@ public class TeacherSearchCacheConfiguration implements RedisCacheConfigurationC
         return Map.of(
                 RedisCacheConfig.POPULAR_SEARCH,
                 defaultConfiguration.entryTtl(Duration.ofMinutes(5))
-                        .disableKeyPrefix()
                         .serializeValuesWith(SerializationPair.fromSerializer(serializer())));
     }
 

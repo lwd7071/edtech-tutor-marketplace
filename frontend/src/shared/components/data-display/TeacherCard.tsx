@@ -4,10 +4,11 @@ interface TeacherCardProps {
   id: string; name: string; avatarUrl?: string; isVerified?: boolean; subjects?: string[];
   rating?: number; reviewCount?: number; lowestPrice?: number; yearsOfExperience?: number;
   supportsOnline?: boolean; supportsOffline?: boolean; variant?: 'full' | 'compact';
+  locationLabel?: string;
   onClick?: () => void; className?: string; hoverable?: boolean;
 }
 
-export default function TeacherCard({ name, avatarUrl, isVerified = false, subjects = [], rating = 0, reviewCount = 0, lowestPrice, yearsOfExperience, supportsOnline, supportsOffline, onClick, className = '' }: TeacherCardProps) {
+export default function TeacherCard({ name, avatarUrl, isVerified = false, subjects = [], rating = 0, reviewCount = 0, lowestPrice, yearsOfExperience, supportsOnline, supportsOffline, locationLabel, onClick, className = '' }: TeacherCardProps) {
   return (
     <article className={`tm-tutor-card ${className}`} onClick={onClick}>
       <div className="tm-tutor-header">
@@ -22,6 +23,7 @@ export default function TeacherCard({ name, avatarUrl, isVerified = false, subje
         </div>
       </div>
       <div className="tm-tutor-meta">
+        {locationLabel && <span>Ở {locationLabel}</span>}
         {yearsOfExperience !== undefined && <span>{yearsOfExperience} năm kinh nghiệm</span>}
         {supportsOnline && <span>· Online</span>}
         {supportsOffline && <span>· Trực tiếp</span>}

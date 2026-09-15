@@ -1,5 +1,5 @@
 import React from 'react';
-import { Drawer, Typography, Descriptions, Divider, Rate, Button } from 'antd';
+import { Drawer, Typography, Descriptions, Divider, Rate, Button, Tag } from 'antd';
 import { VideoCameraOutlined, EnvironmentOutlined, MessageOutlined, BookOutlined } from '@ant-design/icons';
 import { BookingDetail } from '../types';
 import { BookingStatusTag } from './BookingStatusTag';
@@ -83,6 +83,12 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
           <Descriptions.Item label="Địa chỉ">{booking.locationAddress}</Descriptions.Item>
         )}
       </Descriptions>
+      {!booking.trial && booking.settlementStatus && (
+        <div style={{ marginTop: 16 }}>
+          <Typography.Text strong>Quyết toán: </Typography.Text><Tag color={booking.settlementStatus === 'RELEASED' ? 'green' : booking.settlementStatus === 'HELD' ? 'orange' : 'blue'}>{booking.settlementStatus}</Tag>
+          {booking.settlement?.confirmationDeadline && <Typography.Text type="secondary" style={{ display: 'block', marginTop: 6 }}>Hạn xác nhận: {new Date(booking.settlement.confirmationDeadline).toLocaleString('vi-VN')}</Typography.Text>}
+        </div>
+      )}
 
       {/* Báo cáo buổi học (SessionReport) nếu đã hoàn thành */}
       {booking.status === 'COMPLETED' && booking.sessionReport && (

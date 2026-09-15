@@ -10,6 +10,7 @@ export interface WalletView {
   availableBalanceVnd: number;
   reservedBalanceVnd: number;
   version: number;
+  heldBalanceVnd?: number;
 }
 
 export type LedgerEntryType =

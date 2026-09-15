@@ -232,6 +232,8 @@ Page<T>     data: T[], meta: PageMeta
 | Method | Endpoint | Query/Request | Response `data` |
 |---|---|---|---|
 | GET | `/api/public/subjects` | `keyword`, `educationLevel`, `page`, `size`, `sort` | `SubjectSummary[]` |
+| GET | `/api/public/locations/provinces` | — | `{ code, name }[]` |
+| GET | `/api/public/locations/provinces/{provinceCode}/wards` | — | `{ code, provinceCode, name }[]` |
 | GET | `/api/public/teachers` | `TeacherSearchParams` | `TeacherCard[]` |
 | GET | `/api/public/teachers/{id}` | — | `TeacherPublicDetail` |
 | GET | `/api/public/teachers/{id}/packages` | `page`, `size`, `sort` | `PricingPackageView[]` |
@@ -242,7 +244,7 @@ Page<T>     data: T[], meta: PageMeta
 `TeacherSearchParams`:
 
 ```text
-keyword, subjectId, minPrice, maxPrice, minRating,
+keyword, subjectId, minPrice, maxPrice, minRating, provinceCode, wardCode,
 deliveryMode=ONLINE|OFFLINE, dayOfWeek=MONDAY..SUNDAY,
 startTime=HH:mm:ss, endTime=HH:mm:ss, page, size, sort
 ```
@@ -267,7 +269,9 @@ Khi filter giờ rảnh, phải truyền đủ `dayOfWeek`, `startTime`, `endTim
   "averageRating": 4.8,
   "bayesianRating": 4.65,
   "reviewCount": 35,
-  "globalRank": 4
+  "globalRank": 4,
+  "provinceName": "Hồ Chí Minh",
+  "wardName": "Thủ Đức"
 }
 ```
 
@@ -283,6 +287,7 @@ Tất cả endpoint yêu cầu role `TEACHER`; endpoint bán gói/booking yêu c
 |---|---|---|---|
 | GET | `/api/teacher/profile` | — | `TeacherProfileDetail` |
 | PUT | `/api/teacher/profile` | `UpdateTeacherProfileRequest` | `TeacherProfileDetail` |
+| PUT | `/api/teacher/profile/residence` | `UpdateTeacherResidenceRequest` | `TeacherProfileDetail` |
 | POST | `/api/teacher/profile/submit` | — | `TeacherProfileDetail` |
 | POST | `/api/teacher/documents` | `multipart/form-data` | `TeacherDocumentView` (`201`) |
 | DELETE | `/api/teacher/documents/{id}` | — | — (`204`) |
@@ -303,6 +308,8 @@ Tất cả endpoint yêu cầu role `TEACHER`; endpoint bán gói/booking yêu c
   "supportsOnline": true,
   "supportsOffline": false,
   "locationAddress": null,
+  "provinceCode": null,
+  "wardCode": null,
   "introductionVideoUrl": "https://youtube.com/watch?v=..."
 }
 ```
@@ -310,6 +317,11 @@ Tất cả endpoint yêu cầu role `TEACHER`; endpoint bán gói/booking yêu c
 `bio` tối đa 5.000 ký tự và không chứa HTML; `yearsOfExperience` từ 0 đến 80;
 `languages` tối đa 10 giá trị, mỗi giá trị 1–50 ký tự; `locationAddress` tối đa 500 ký tự;
 `introductionVideoUrl` nếu có phải là URL HTTP/HTTPS hợp lệ, có host.
+
+`provinceCode` là mã tỉnh/thành 2 chữ số và `wardCode` là mã xã/phường 5 chữ số từ
+reference tables V38. Hai field có thể để trống; nếu truyền `wardCode` phải truyền
+`provinceCode`. `PUT /api/teacher/profile/residence` chỉ cập nhật nơi ở và không đưa
+profile đã `APPROVED` về `DRAFT` hoặc yêu cầu duyệt lại.
 
 Upload document dùng parts `file`, `documentType`, `title`. MIME/size theo `CODING_CONVENTION.md` và spec upload.
 
@@ -399,7 +411,7 @@ PUT availability thay toàn bộ danh sách trong một transaction; overlap tr�
 }
 ```
 
-Hoàn thành Booking và tạo SessionReport là một transaction. Response không được có Booking `COMPLETED` thiếu `sessionReport`.
+Gia sư xác nhận booking trả phí và nộp `SessionReport` trong cùng một request/transaction. Booking trả phí `COMPLETED` do hết hạn có thể chưa có report. Với trial, endpoint complete giữ hành vi hoàn thành và report hiện tại.
 
 StudentPackage phải `ACTIVE` tại thời điểm tạo Booking mới. Nếu package chuyển `LOCKED_EXPIRED` sau khi Booking đã được tạo, Booking `SCHEDULED` đó vẫn được giữ nguyên và diễn ra bình thường; hệ thống không tự động hủy hoặc hoàn lượt chỉ vì package hết hạn.
 
@@ -416,7 +428,22 @@ StudentPackage phải `ACTIVE` tại thời điểm tạo Booking mới. Nếu p
 
 Accept tạo Booking trial và đổi TrialRequest sang `ACCEPTED` trong cùng transaction; vẫn phải kiểm tra conflict Teacher/Student.
 
-### 4.3. Learning, wallet và payout
+### 4.3. Xác nhận buổi học và quyết toán
+
+Booking trả phí có settlement riêng. Gia sư dùng endpoint complete hiện có để nộp report và xác nhận; học viên xác nhận bằng:
+
+| POST | `/api/student/bookings/{id}/confirm` | `{ "version": n }` | `BookingDetail` |
+| POST | `/api/teacher/bookings/{id}/dispute` | `{ "version": n, "reason": "..." }` | `BookingDetail` |
+
+Chỉ nhận xác nhận sau `endTime` và trước hạn hiệu lực (đúng thời điểm hạn đã quá hạn). Hạn đầu là `endTime + 24h`. Đủ hai bên trong hạn đầu thì tiêu thụ một lượt và chuyển tiền ròng từ pending sang available cho Teacher. Thiếu xác nhận khi hết hạn thì lượt vẫn bị tiêu thụ và tiền chuyển sang escrow nền tảng. Sau hạn đầu không nhận xác nhận cho tới khi Admin mở lại. Admin có thể mở lại đúng một lần, tạo hạn thứ hai bằng thời điểm mở + 24 giờ; chỉ bên còn thiếu xác nhận. Nếu vẫn thiếu khi hết hạn, tiền tiếp tục ở escrow cho tới quyết định cuối. Admin có thể từ chối mở lại và retain kèm lý do.
+
+`BookingDetail` trả thêm `settlementStatus`, `settlement`, `canConfirm`, `canDispute`, `canReview`. Trial trả `settlementStatus: null`.
+
+`booking.version` dùng cho xác nhận Student, xác nhận kèm report của Teacher và khiếu nại; `settlement.version` dùng cho action Admin. `settlement.netAmountVnd` là `null` trước khi tiêu thụ lượt. `completedSessions` của gói là **lượt đã tiêu thụ**, gồm cả buổi đang giữ tiền. Các lỗi cửa sổ và trạng thái dùng mã riêng trong `ERROR_CODES.md`.
+
+`GET /api/teacher/wallet` trả `heldBalanceVnd` bên cạnh `pendingBalanceVnd`, `availableBalanceVnd` và `reservedBalanceVnd`. `heldBalanceVnd` là số dư ESCROW của các booking thuộc gia sư, chỉ để hiển thị; không nằm trong số dư có thể rút.
+
+### 4.4. Learning, wallet và payout
 
 | Method | Endpoint | Request | Response `data` |
 |---|---|---|---|
@@ -853,7 +880,19 @@ Response xác nhận tối giản theo yêu cầu provider; không bắt buộc 
 
 Backend validate field theo `type`; không chấp nhận attachment không thuộc người gọi hoặc sai attachable context.
 
-## 10. Enum chính
+## 10. Credential badges
+
+### 10.1. Residence location (self-declared)
+
+`GET /api/public/locations/provinces` and `GET /api/public/locations/provinces/{provinceCode}/wards` return the two-level reference catalog. `PUT /api/teacher/profile/residence` updates nullable `provinceCode` and `wardCode`; a province may be selected without a ward, while a ward always requires and must belong to the selected province. This command never changes profile approval status. Public teacher DTOs expose only `provinceName` and `wardName`, never the legacy detailed `locationAddress`.
+
+Teacher dùng `POST/PUT/GET/DELETE /api/teacher/credentials` với multipart `label`, `version` khi update/delete và proof JPG/PNG/PDF tối đa 10MB. Proof được lưu authenticated trên Cloudinary và chỉ backend proxy cho owner/admin với `Cache-Control: no-store`; public tuyệt đối không nhận URL/bytes. Admin dùng `POST /api/admin/credentials/{id}/approve|reject` với `version`; reject bắt buộc có lý do. Sai version trả `409 CONCURRENT_MODIFICATION`. Public teacher detail chỉ trả `credentials: [{id,label}]` cho mục `APPROVED`; chỉnh mục đã duyệt chuyển về `PENDING` và evict cache profile/search.
+
+## 11. Admin booking settlement actions
+
+Admin đọc hàng đợi qua `GET /api/admin/booking-settlements?status=&page=&size=` (response phân trang), rồi dùng `POST /api/admin/booking-settlements/{id}/reopen`, `POST /api/admin/booking-settlements/{id}/release`, `POST /api/admin/booking-settlements/{id}/retain` với `{ "version": n, "note": "..." }`. Version này là `settlement.version`. `retain` từ `DISPUTE_PENDING` là từ chối mở lại có lý do; sau khi mở lại, `release`/`retain` thủ công chỉ hợp lệ tại hoặc sau hạn thứ hai. Mọi action kiểm tra optimistic version và ghi audit.
+
+## 12. Enum chính
 
 | Nhóm | Giá trị |
 |---|---|

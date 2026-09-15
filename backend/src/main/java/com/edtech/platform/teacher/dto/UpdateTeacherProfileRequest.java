@@ -19,9 +19,13 @@ public record UpdateTeacherProfileRequest(
         @NotNull Boolean supportsOnline,
         @NotNull Boolean supportsOffline,
         @Size(max = 500)
-        String locationAddress,
-        @Size(max = 500)
         @ValidHttpUrl(message = "Introduction video URL must be a valid HTTP or HTTPS URL")
         String introductionVideoUrl
 ) {
+    /** Compatibility constructor for clients compiled against the pre-residence contract. */
+    public UpdateTeacherProfileRequest(String bio, Integer yearsOfExperience, List<String> languages,
+            Boolean supportsOnline, Boolean supportsOffline, String locationAddress,
+            String provinceCode, String wardCode, String introductionVideoUrl) {
+        this(bio, yearsOfExperience, languages, supportsOnline, supportsOffline, introductionVideoUrl);
+    }
 }

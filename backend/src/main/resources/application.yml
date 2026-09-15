@@ -90,6 +90,13 @@ app:
     base-url: ${PAYOS_BASE_URL:https://api-merchant.payos.vn}
     connect-timeout: ${PAYOS_CONNECT_TIMEOUT:3s}
     read-timeout: ${PAYOS_READ_TIMEOUT:10s}
+  cache:
+    revalidation:
+      enabled: ${APP_CACHE_REVALIDATION_ENABLED:true}
+      url: ${APP_CACHE_REVALIDATION_URL:${app.email.frontend-url:http://localhost:3000}/api/internal/revalidate-public}
+      secret: ${APP_INTERNAL_REVALIDATE_SECRET:local-internal-revalidate-secret}
+      timeout-ms: ${APP_CACHE_REVALIDATION_TIMEOUT_MS:2000}
+
 
 # --- Resilience4j Configuration ---
 resilience4j.circuitbreaker:

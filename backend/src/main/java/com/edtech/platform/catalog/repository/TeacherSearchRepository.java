@@ -39,6 +39,8 @@ public class TeacherSearchRepository {
             FROM teacher_profiles tp
             JOIN users u ON tp.user_id = u.id
             LEFT JOIN teacher_stats ts ON ts.teacher_id = tp.id
+            LEFT JOIN provinces p ON p.code = tp.province_code
+            LEFT JOIN wards w ON w.code = tp.ward_code
             """;
 
     private static final String BASE_WHERE = """
@@ -64,6 +66,8 @@ public class TeacherSearchRepository {
                 COALESCE(ts.bayesian_rating, 0.0) AS bayesian_rating,
                 COALESCE(ts.review_count, 0) AS review_count,
                 COALESCE(ts.global_rank, 999999) AS global_rank,
+                p.name AS province_name,
+                w.name AS ward_name,
                 price.min_price
         """);
         sql.append(BASE_FROM).append(PRICE_JOIN).append(BASE_WHERE);
@@ -168,6 +172,16 @@ public class TeacherSearchRepository {
             }
         }
 
+        if (params.provinceCode() != null) {
+            sql.append(" AND tp.province_code = :provinceCode");
+            sqlParams.addValue("provinceCode", params.provinceCode());
+        }
+
+        if (params.wardCode() != null) {
+            sql.append(" AND tp.ward_code = :wardCode");
+            sqlParams.addValue("wardCode", params.wardCode());
+        }
+
     }
 
     private void appendSorting(StringBuilder sql, TeacherSearchParams params) {
@@ -211,6 +225,8 @@ public class TeacherSearchRepository {
                     rs.getDouble("bayesian_rating"),
                     rs.getInt("review_count"),
                     rs.getInt("global_rank")
+                    ,rs.getString("province_name")
+                    ,rs.getString("ward_name")
             );
         });
     }
@@ -245,7 +261,8 @@ public class TeacherSearchRepository {
                         original.id(), original.fullName(), original.avatarUrl(), original.bioExcerpt(),
                         original.yearsOfExperience(), original.verifiedBadge(), original.supportsOnline(),
                         original.supportsOffline(), subjs, original.startingPriceVnd(),
-                        original.averageRating(), original.bayesianRating(), original.reviewCount(), original.globalRank()
+                        original.averageRating(), original.bayesianRating(), original.reviewCount(), original.globalRank(),
+                        original.provinceName(), original.wardName()
                 ));
             }
         }

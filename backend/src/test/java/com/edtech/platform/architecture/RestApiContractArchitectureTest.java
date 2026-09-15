@@ -42,7 +42,10 @@ class RestApiContractArchitectureTest {
                 boolean documentedException = (controller.getSimpleName().equals("PayOsWebhookController")
                         && method.getName().equals("handleWebhook"))
                         || (controller.getSimpleName().equals("HealthController")
-                        && method.getName().equals("health"));
+                        && method.getName().equals("health"))
+                        || (method.getName().equals("proof")
+                        && (controller.getSimpleName().equals("TeacherCredentialController")
+                        || controller.getSimpleName().equals("AdminCredentialController")));
                 if (!sharedEnvelope && !noContent && !documentedException) {
                     violations.add(controller.getSimpleName() + "#" + method.getName() + " -> "
                             + method.getGenericReturnType().getTypeName());

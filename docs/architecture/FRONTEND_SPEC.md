@@ -102,6 +102,9 @@ Menu: Dashboard, Duyệt gia sư, Đề xuất môn, Hoàn tiền, Gia hạn, R�
 | `/admin/refunds`, `/admin/extensions`, `/admin/payouts` | Xử lý các yêu cầu tài chính |
 | `/admin/settings` | Cấu hình nền tảng |
 | `/admin/audit-logs` | Nhật ký quản trị |
+| `/admin/booking-settlements` | Hàng đợi escrow/khiếu nại; lọc trạng thái, xem xác nhận và report, mở lại hoặc quyết định tiền với ghi chú |
+
+Buổi trả phí hiển thị `settlementStatus` độc lập với `BookingStatus`: học viên chỉ xác nhận khi `canConfirm`, gia sư chỉ xác nhận kèm report trong cửa sổ hiện hành và chỉ khiếu nại khi `canDispute`. `HELD`/`DISPUTE_PENDING`/`REOPENED`/`AWAITING_ADMIN_DECISION` phải có nhãn và hạn phù hợp trên cả danh sách lẫn chi tiết. Ví gia sư hiển thị khoản `heldBalanceVnd` riêng, không cộng vào `availableBalanceVnd` hay số có thể rút. Admin action gửi `settlement.version` và ghi chú; danh sách admin có phân trang/lọc trạng thái.
 
 ## Ma trận quyền
 

@@ -10,6 +10,8 @@ import com.edtech.platform.booking.repository.TrialRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.edtech.platform.booking.repository.BookingSettlementRepository;
+import com.edtech.platform.booking.domain.SettlementStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +23,7 @@ public class BookingEligibilityFacadeImpl implements BookingEligibilityFacade {
 
     private final BookingRepository bookingRepository;
     private final TrialRequestRepository trialRequestRepository;
+    private final BookingSettlementRepository settlementRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -37,6 +40,8 @@ public class BookingEligibilityFacadeImpl implements BookingEligibilityFacade {
     public Optional<UUID> getTeacherIdForReviewableBooking(UUID studentId, UUID bookingId) {
         return bookingRepository.findById(bookingId)
                 .filter(b -> b.getStatus() == BookingStatus.COMPLETED && studentId.equals(b.getStudentId()))
+                .filter(b -> b.isTrial() || settlementRepository.findByBookingIdForRead(b.getId())
+                        .map(s -> s.getStatus() == SettlementStatus.RELEASED).orElse(false))
                 .map(Booking::getTeacherId);
     }
 

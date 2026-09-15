@@ -141,7 +141,9 @@ public class TeacherFacadeImpl implements TeacherFacade {
                 profile.isSupportsOffline(),
                 profile.getLanguages() != null ? profile.getLanguages() : java.util.List.of(),
                 profile.getLocationAddress(),
-                profile.getIntroductionVideoUrl()
+                profile.getIntroductionVideoUrl(),
+                profile.getProvinceCode(),
+                profile.getWardCode()
         );
     }
 

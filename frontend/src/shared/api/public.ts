@@ -44,7 +44,12 @@ export interface TeacherCard {
   verifiedBadge?: boolean;
   supportsOnline?: boolean;
   supportsOffline?: boolean;
+  provinceName?: string;
+  wardName?: string;
 }
+
+export interface AdministrativeProvince { code: string; name: string; }
+export interface AdministrativeWard { code: string; provinceCode: string; name: string; }
 
 export interface GetPublicSubjectsParams {
   keyword?: string;
@@ -63,6 +68,8 @@ export interface TeacherSearchParams {
   maxPrice?: number;
   minRating?: number;
   deliveryMode?: string;
+  provinceCode?: string;
+  wardCode?: string;
   sort?: string;
   page?: number;
   size?: number;
@@ -86,11 +93,13 @@ export interface TeacherPublicDetail {
   languages: string[];
   supportsOnline: boolean;
   supportsOffline: boolean;
-  locationAddress?: string;
+  provinceName?: string | null;
+  wardName?: string | null;
   introductionVideoUrl?: string;
   subjects: string[];
   averageRating: number;
   reviewCount: number;
+  credentials?: { id: string; label: string }[];
 }
 
 export interface PricingPackageView {
@@ -139,6 +148,16 @@ export const getPublicSubjects = async (params?: GetPublicSubjectsParams): Promi
 export const getPublicTeachers = async (params?: TeacherSearchParams): Promise<PaginatedApiResponse<TeacherCard>> => {
   const response = await axiosClient.get<ApiResponseWithData<TeacherCard[]>>('/api/public/teachers', { params });
   return paginated(requireApiData(response.data));
+};
+
+export const getPublicProvinces = async (): Promise<AdministrativeProvince[]> => {
+  const response = await axiosClient.get<ApiResponseWithData<AdministrativeProvince[]>>('/api/public/locations/provinces');
+  return requireApiData(response.data).data;
+};
+
+export const getPublicWards = async (provinceCode: string): Promise<AdministrativeWard[]> => {
+  const response = await axiosClient.get<ApiResponseWithData<AdministrativeWard[]>>(`/api/public/locations/provinces/${provinceCode}/wards`);
+  return requireApiData(response.data).data;
 };
 
 export const getTeacherDetail = async (id: string): Promise<TeacherPublicDetail> => {

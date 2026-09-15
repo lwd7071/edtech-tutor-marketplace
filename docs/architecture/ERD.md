@@ -492,6 +492,8 @@ V30 bổ sung `version bigint NOT NULL DEFAULT 0` cho `invoices`, `trial_request
 | `reviews` | `UNIQUE(booking_id)`; `CHECK(rating BETWEEN 1 AND 5)` |
 | `wallets` | `UNIQUE(teacher_id)`; các balance `>= 0` |
 | `ledger_entries` | `UNIQUE(idempotency_key)`; `amount_vnd > 0`; bucket `PENDING/AVAILABLE/RESERVED`; entry type theo allow-list V20; append-only |
+| `booking_settlements` | `UNIQUE(booking_id)`; status `AWAITING_CONFIRMATION/HELD/DISPUTE_PENDING/REOPENED/AWAITING_ADMIN_DECISION/RELEASED/RETAINED`; mốc xác nhận/hạn đầu/hạn mở lại; `net_amount_vnd` nullable trước khi tiêu thụ lượt; optimistic `version` |
+| `platform_ledger_entries` | `UNIQUE(idempotency_key)`; bucket `ESCROW/REVENUE`, direction `CREDIT/DEBIT`, `amount_vnd > 0`; append-only, RLS default-deny |
 | `teacher_bank_accounts` | tối đa một tài khoản default cho mỗi teacher bằng partial unique index |
 | `refund_requests` | `requested_sessions > 0`; `approved_sessions >= 0`; tối đa một request đang xử lý cho mỗi package; `refund_amount_vnd = floor(approved_sessions × purchase_price_vnd / total_sessions)`, dồn phần dư vào lần duyệt cuối của cùng package |
 | `package_extension_requests` | tối đa một request `PENDING` cho mỗi package |
@@ -547,14 +549,15 @@ Availability cũng phải được kiểm tra overlap trong transaction. Có th�
 4. `student_packages.total_sessions = remaining_sessions + reserved_sessions + completed_sessions + refunded_sessions`.
 5. Booking chính thức phải khớp student, teacher và subject của StudentPackage; `end_time <= expires_at`.
 6. Khi StudentPackage chuyển `LOCKED_EXPIRED`, các Booking `SCHEDULED` đã được tạo trước đó vẫn được giữ nguyên và diễn ra bình thường vì lượt học đã chuyển sang `reserved_sessions`; trạng thái này chỉ chặn tạo Booking mới.
-7. Booking `COMPLETED` luôn có đúng một SessionReport và settlement được thực hiện idempotent.
+7. Booking trả phí `COMPLETED` là lượt đã tiêu thụ; chỉ có SessionReport nếu gia sư đã xác nhận. Trạng thái tiền nằm ở `booking_settlements` và mọi chuyển tiền idempotent.
 8. Trial `SCHEDULED/COMPLETED` tối đa một bản ghi cho mỗi cặp Student–Teacher; trial không tạo ledger.
-9. Review chỉ do Student của Booking `COMPLETED` tạo, mỗi Booking tối đa một review.
+9. Review chỉ do Student tạo, mỗi Booking tối đa một review; booking trả phí phải có settlement `RELEASED`, trial giữ điều kiện hoàn thành cũ.
 10. Wallet balance chỉ thay đổi cùng transaction với LedgerEntry; ledger không update/delete.
 11. Payment webhook hợp lệ chỉ tạo một PaymentTransaction/StudentPackage/ledger effect dù được gửi lặp.
 12. Khi đăng ký Student có ít nhất `parent_email` hoặc `parent_phone`, Service tự đặt `notify_parent = true`; phụ huynh không có role/tài khoản đăng nhập và chỉ là kênh liên hệ bị động.
 13. `refund_amount_vnd = floor(approved_sessions × purchase_price_vnd / total_sessions)` theo đơn vị VND. Nếu một gói được duyệt refund nhiều lần, phần dư do làm tròn được cộng dồn vào lần duyệt cuối để tổng tiền refund khớp phần giá trị các lượt được hoàn.
 14. Refund/payout/settlement lock theo thứ tự thống nhất và kiểm tra `version` để tránh lost update.
+15. Booking trả phí có `booking_settlements` và `platform_ledger_entries`: lượt được tiêu thụ khi hết cửa sổ 24 giờ, còn tiền thiếu xác nhận nằm ở ESCROW cho tới khi release hoặc retain; `completed_sessions` bao gồm cả lượt escrow.
 
 ## 7. Bổ sung để khép kín đặc tả
 

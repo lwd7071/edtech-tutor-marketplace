@@ -13,15 +13,17 @@ import com.edtech.platform.ranking.facade.dto.TeacherStatsSnapshot;
 import com.edtech.platform.subject.facade.SubjectFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import com.edtech.platform.teacher.service.TeacherCredentialService;
+import com.edtech.platform.catalog.repository.AdministrativeLocationRepository;
 
 @Service
-@RequiredArgsConstructor
 public class TeacherMarketplaceService {
 
     private final TeacherFacade teacherFacade;
@@ -30,6 +32,26 @@ public class TeacherMarketplaceService {
     private final SubjectFacade subjectFacade;
     private final PricingPackageService pricingPackageService;
     private final TeacherSearchCache teacherSearchCache;
+    private final TeacherCredentialService credentialService;
+    private final AdministrativeLocationRepository locationRepository;
+
+    @Autowired
+    public TeacherMarketplaceService(TeacherFacade teacherFacade, IdentityFacade identityFacade,
+            TeacherStatsFacade teacherStatsFacade, SubjectFacade subjectFacade,
+            PricingPackageService pricingPackageService, TeacherSearchCache teacherSearchCache,
+            TeacherCredentialService credentialService, AdministrativeLocationRepository locationRepository) {
+        this.teacherFacade = teacherFacade; this.identityFacade = identityFacade;
+        this.teacherStatsFacade = teacherStatsFacade; this.subjectFacade = subjectFacade;
+        this.pricingPackageService = pricingPackageService; this.teacherSearchCache = teacherSearchCache;
+        this.credentialService = credentialService;
+        this.locationRepository = locationRepository;
+    }
+
+    public TeacherMarketplaceService(TeacherFacade teacherFacade, IdentityFacade identityFacade,
+            TeacherStatsFacade teacherStatsFacade, SubjectFacade subjectFacade,
+            PricingPackageService pricingPackageService, TeacherSearchCache teacherSearchCache) {
+        this(teacherFacade, identityFacade, teacherStatsFacade, subjectFacade, pricingPackageService, teacherSearchCache, null, null);
+    }
 
     public org.springframework.data.domain.Page<TeacherCard> searchTeachers(TeacherSearchParams params) {
         return teacherSearchCache.search(params).toPage();
@@ -57,13 +79,15 @@ public class TeacherMarketplaceService {
             ts.languages() != null ? ts.languages() : List.of(),
             ts.supportsOnline(),
             ts.supportsOffline(),
-            ts.locationAddress(),
+            locationRepository == null || ts.provinceCode() == null ? null : locationRepository.findProvinceName(ts.provinceCode()),
+            locationRepository == null || ts.wardCode() == null ? null : locationRepository.findWardName(ts.wardCode(), ts.provinceCode()),
             ts.introductionVideoUrl(),
             subjectNames,
             stats != null ? stats.averageRating() : 0.0,
             stats != null ? stats.bayesianRating() : 0.0,
             stats != null ? stats.reviewCount() : 0,
-            stats != null ? stats.globalRank() : 999999
+            stats != null ? stats.globalRank() : 999999,
+            credentialService == null ? List.of() : credentialService.approvedBadges(teacherId)
         );
     }
 }

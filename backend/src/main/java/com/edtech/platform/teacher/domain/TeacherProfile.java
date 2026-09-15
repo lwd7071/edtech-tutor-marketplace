@@ -55,6 +55,12 @@ public class TeacherProfile extends BaseEntity {
     @Column(name = "location_address", columnDefinition = "text")
     private String locationAddress;
 
+    @Column(name = "province_code", length = 2)
+    private String provinceCode;
+
+    @Column(name = "ward_code", length = 5)
+    private String wardCode;
+
     @Column(name = "introduction_video_url", length = 500)
     private String introductionVideoUrl;
 

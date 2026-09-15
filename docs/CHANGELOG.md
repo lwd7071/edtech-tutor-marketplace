@@ -1,5 +1,59 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-15 — Hardening settlement V41 (working tree)
+
+- Giữ `ledger_entries.entry_type` ở `varchar(30)` bằng tên `SESSION_ESCROW_HELD`/`SESSION_ESCROW_RELEASED`, thêm backfill settlement cho booking trả phí cũ, bật RLS cho `provinces`/`wards`, đồng bộ `netAmountVnd` và sửa admin queue dùng `bookingId`.
+- Booking unit tests pass; migration/Testcontainers chưa xác minh do Docker engine không có socket hợp lệ. Supabase V41 vẫn Pending; chưa apply production.
+
+## 2026-09-14 — Tiếp tục hoàn thiện xác nhận hai bên và escrow V41 (working tree)
+
+- Tách trạng thái tiêu thụ lượt khỏi quyền nhận tiền; bổ sung xác nhận hai bên, timeout giữ hộ, khiếu nại/mở lại một lần và quyết định admin. Ghi debit/credit ở cả ledger ví và platform ledger; hiển thị số tiền đang giữ riêng khỏi số có thể rút.
+- Bổ sung hàng đợi admin, trạng thái/hạn xác nhận trên booking và các kiểm tra migration V40→V41. Frontend typecheck, lint, production build và docs check pass; backend focused và PostgreSQL integration đang được kiểm tra lại sau sửa cuối. Supabase read-only xác nhận V40 `Success`, V41 `Pending`; chưa deploy V41.
+
+## 2026-09-14 — Hoàn tất bốn phần hardening Luna & On-demand Next Data Cache Revalidation
+
+- Supabase production đã áp dụng thành công toàn bộ migration V38–V40 (`State = Success`); kiểm tra read-only xác nhận 0 bản ghi `evidence_format = ''`, giữ nguyên schema V40 và không cần tạo V41.
+- Sửa `evidence_format` đồng nhất cho cả create và update bằng MIME do Apache Tika xác nhận (`jpg`, `png`, `pdf`), không phụ thuộc extension hay Content-Type client gửi.
+- Bổ sung bộ regression tests credential toàn diện:
+  - Unit tests: `TeacherCredentialServiceTest` (15/15 pass) kiểm tra MIME mapping, chặn file rỗng/quá khổ/extension giả trước khi upload, audit trail và concurrency.
+  - Controller contract tests: `TeacherCredentialControllerTest` (4/4 pass) và `AdminCredentialControllerTest` (4/4 pass) kiểm tra HTTP status, envelope, phân quyền admin và `Cache-Control: no-store`.
+  - Integration tests: `TeacherCredentialIntegrationTest` (5/5 pass) trên PostgreSQL Testcontainers kiểm tra xử lý xung đột đồng thời trả 409 `CONCURRENT_MODIFICATION`, rollback storage cleanup xóa proof mới, after-commit cleanup xóa proof cũ, và public detail chỉ trả badge ID/label đã duyệt (không lộ URL/bytes).
+  - Architecture guardrails: `ArchitectureTest` và `SolidGuardrailsArchitectureTest` (10/10 pass).
+- Kích hoạt Next Data Cache on-demand tag revalidation:
+  - Route Handler nội bộ `POST /api/internal/revalidate-public` với shared secret header `x-internal-secret` (`INTERNAL_REVALIDATE_SECRET`, không dùng `NEXT_PUBLIC_*`) và `revalidateTag(tag, { expire: 0 })` chuẩn Next 16.
+  - Mapping tag: duyệt hoặc sửa/xóa credential đã duyệt invalidate `public-teacher:{id}`; đổi nơi ở invalidate `public-teacher:{id}` và `public-teachers`.
+  - Backend gửi callback sau commit (`afterCommit`) qua `PublicCacheRevalidationClient` (3/3 pass), lỗi callback được log an toàn không làm hỏng command, transaction rollback không gửi sự kiện; giữ nguyên TTL 60–300s làm fallback.
+  - Next.js production build pass 62 static/SSG pages và dynamic route handler.
+- Kết quả kiểm thử nghiệm thu toàn diện:
+  - Backend: `mvn test` pass `466/466` tests (`0` failure, `0` error, `0` skipped) trên PostgreSQL 16 và Redis Testcontainers.
+  - Frontend: `npm run check` trong Docker pass toàn bộ (typecheck, lint, `101/101` test suites, `264/264` tests và Next.js production build).
+
+## 2026-09-14 — Credential badges V40 (local)
+
+- Thêm credential teacher với proof Cloudinary authenticated, workflow teacher CRUD và admin approve/reject; public chỉ hiển thị label đã duyệt.
+- Giới hạn 10 credential/teacher, file JPG/PNG/PDF tối đa 10MB; local Flyway validate/clean tới V40 pass. Chưa preflight/apply Supabase.
+
+## 2026-09-14 — Thêm reference địa giới hành chính V38 (local)
+
+- Thêm `provinces` và `wards` theo cấu trúc hành chính Việt Nam 2025 (34 tỉnh/thành, 3.321 xã/phường), seed từ Open Admin Data.
+- Local Flyway clean/upgrade tới V38 và kiểm tra cardinality/FK/code format đã pass; chưa triển khai Supabase production.
+
+## 2026-09-14 — Thêm nơi ở một tỉnh/xã cho teacher profile V39 (local)
+
+- Thêm `province_code`/`ward_code` nullable và FK composite bảo đảm xã thuộc đúng tỉnh.
+- Thêm endpoint `PUT /api/teacher/profile/residence`; đổi nơi ở không làm profile `APPROVED` quay về `DRAFT`.
+- Local Flyway clean/upgrade tới V39 và focused teacher profile/Flyway tests pass; chưa triển khai Supabase production.
+
+## 2026-09-14 — Public location API và teacher search filter (local)
+
+- Thêm API cascading tỉnh/xã và filter search trực tiếp trên `teacher_profiles.province_code`/`ward_code`.
+- Cache key teacher search bao gồm location; card projection trả tên tỉnh/xã; focused search tests pass.
+
+## 2026-09-14 — Frontend cascading location filter (local)
+
+- Thêm dropdown tỉnh → xã cho hồ sơ teacher và trang tìm kiếm public; card hiển thị khu vực tổng quát.
+- Typecheck pass; Jest Windows host còn bị `spawn EPERM`, chưa xác nhận test pass trong lượt này.
+
 ## 2026-09-14 — Triển khai RLS V37 Cụm System, Outbox & Audit Logs lên Supabase Production
 
 - Thêm migration `V37__enable_rls_system_and_cleanup.sql` kích hoạt Row Level Security default-deny cho các bảng System, Outbox & Audit Logs: `platform_settings`, `audit_logs`, `email_outbox`, `modulebentity`.
@@ -144,6 +198,8 @@ Các entry dưới đây ghi hành vi và bằng chứng quan trọng. Danh sác
 
 ## 2026-09-11 — Finance state, contract và V29 hardening
 
+- 2026-09-14: Residence/credential lifecycle hardening — credential version fields and 409 contract, audit hooks, MIME+extension validation, rollback/after-commit asset cleanup, and UI version propagation added. Full backend `mvn clean verify` 438/438 pass; admin pagination, Next tag revalidation and real Cloudinary upload smoke remain unverified.
+
 - Đơn giản hóa transition Refund/Payout và siết invariant counter của StudentPackage; focused backend finance `20/20` pass.
 - Đồng bộ payload/version và endpoint Admin Refund/Payout ở frontend; focused Jest finance/UI `6 suites, 22 tests` và TypeScript typecheck pass.
 - Thêm V29 fail-fast preflight, `transferred_at`, active-request partial unique indexes và bảng receipt idempotency; Flyway Testcontainers clean V1→V29 và V27→V29 pass.
@@ -212,6 +268,7 @@ Các entry dưới đây ghi hành vi và bằng chứng quan trọng. Danh sác
 ## Quy tắc ghi entry mới
 
 Mỗi đợt thêm một entry gồm ngày, hành vi thay đổi, contract/schema/config liên quan, lệnh kiểm thử và phần chưa xác minh. Không ghi secret hoặc token.
+- 2026-09-14: Bổ sung xác nhận hai bên cho booking trả phí, settlement 24 giờ, escrow ledger V41 và admin reopen/release/retain actions; frontend đã có xác nhận học viên, khiếu nại gia sư và hiển thị trạng thái giữ tiền. Backend compile pass; full workflow, Supabase apply và frontend Jest chưa xác minh.
 - 2026-09-14: Cloudinary flow audit — cloud key preflight pass without exposing values; real endpoint smoke remains unverified; teacher-document cleanup calls Cloudinary, generic attachment cleanup is missing.
 - 2026-09-14: Local HTTP smoke attempt — backend health `200`, nhưng tài khoản test chưa có trong local DB (`0` user/profile), login `401`; không phát sinh file test trên Cloudinary.
 - 2026-09-14: Cloud HTTP smoke attempt — Supabase/Flyway cloud startup pass và teacher login pass; upload bị `500` do `TeacherDocumentController` parse sai `principal.name` thành UUID trước khi gọi Cloudinary. Chưa phát sinh artifact.

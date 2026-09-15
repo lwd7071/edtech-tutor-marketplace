@@ -1,0 +1,15 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Button, Input, Modal, Select, Table, Tag, message } from 'antd';
+import { useAdminBookingSettlements, useBookingSettlementAction } from '../hooks/useAdminFinance';
+import type { BookingSettlementAdminView } from '../types/finance';
+
+const labels: Record<string, string> = { HELD: 'Đang giữ tiền', DISPUTE_PENDING: 'Chờ khiếu nại', REOPENED: 'Đã mở lại', AWAITING_ADMIN_DECISION: 'Chờ quyết định', RELEASED: 'Đã giải ngân', RETAINED: 'Đã giữ lại' };
+
+export const AdminBookingSettlementsPage: React.FC = () => {
+  const [status, setStatus] = useState<string>(); const [page, setPage] = useState(0); const [selected, setSelected] = useState<BookingSettlementAdminView | null>(null); const [action, setAction] = useState<'reopen'|'release'|'retain' | null>(null); const [note, setNote] = useState('');
+  const query = useAdminBookingSettlements(status, page, 20); const mutation = useBookingSettlementAction(action ?? 'retain');
+  const run = async () => { if (!selected || !action || !note.trim()) return; try { await mutation.mutateAsync({ id: selected.bookingId, version: selected.version, note: note.trim() }); message.success('Đã cập nhật quyết toán.'); setSelected(null); setAction(null); setNote(''); } catch { message.error('Không thể cập nhật. Dữ liệu có thể đã thay đổi, vui lòng tải lại.'); } };
+  return <div className="tm-stack"><div className="tm-toolbar"><h1>Quyết toán buổi học</h1><Select allowClear placeholder="Lọc trạng thái" value={status} onChange={setStatus} options={Object.entries(labels).map(([value,label])=>({value,label}))} /></div><Table rowKey="bookingId" loading={query.isLoading} dataSource={query.data?.data ?? []} pagination={{ current: page + 1, pageSize: 20, total: query.data?.meta?.totalElements, onChange: p => setPage(p - 1) }} columns={[{ title: 'Booking', dataIndex: 'bookingId' }, { title: 'Trạng thái', dataIndex: 'status', render: (v: string) => <Tag>{labels[v] ?? v}</Tag> }, { title: 'Tiền gia sư', dataIndex: 'netAmountVnd', render: (v: number) => `${(v ?? 0).toLocaleString('vi-VN')} ₫` }, { title: 'Hạn xử lý', dataIndex: 'reopenDeadline', render: (v: string) => v ? new Date(v).toLocaleString('vi-VN') : '—' }, { title: 'Thao tác', render: (_: unknown, row: BookingSettlementAdminView) => <span className="tm-inline">{row.status === 'DISPUTE_PENDING' && <Button onClick={() => { setSelected(row); setAction('reopen'); }}>Mở lại</Button>}{row.status === 'AWAITING_ADMIN_DECISION' && <><Button type="primary" onClick={() => { setSelected(row); setAction('release'); }}>Chuyển gia sư</Button><Button danger onClick={() => { setSelected(row); setAction('retain'); }}>Giữ nền tảng</Button></>}</span> }]} /><Modal open={!!action} title="Ghi chú quyết toán" onCancel={() => { setAction(null); setSelected(null); }} onOk={run} okButtonProps={{ loading: mutation.isPending, disabled: !note.trim() }}><Input.TextArea rows={4} value={note} onChange={e => setNote(e.target.value)} placeholder="Nêu lý do xử lý" /></Modal></div>;
+};

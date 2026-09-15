@@ -33,7 +33,12 @@ public class AdminDashboardRepository {
                 Long.class);
 
         Long completedBookings = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM bookings WHERE status = 'COMPLETED' AND is_deleted = false",
+                """
+                SELECT COUNT(*) FROM bookings b
+                LEFT JOIN booking_settlements s ON s.booking_id = b.id
+                WHERE b.status = 'COMPLETED' AND b.is_deleted = false
+                  AND (b.is_trial = true OR s.id IS NULL OR s.status = 'RELEASED')
+                """,
                 Long.class);
 
         Long scheduledBookings = jdbcTemplate.queryForObject(

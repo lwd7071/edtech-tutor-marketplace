@@ -18,6 +18,20 @@ export interface AdminDashboardView {
   pendingRefundsCount: number;
 }
 
+export interface BookingSettlementAdminView {
+  bookingId: string;
+  studentId?: string;
+  teacherId?: string;
+  status: string;
+  teacherConfirmedAt?: string | null;
+  studentConfirmedAt?: string | null;
+  confirmationDeadline?: string | null;
+  reopenDeadline?: string | null;
+  netAmountVnd?: number | null;
+  disputeReason?: string | null;
+  version: number;
+}
+
 export interface PlatformSettingsView {
   id: string;
   commissionRate: number;

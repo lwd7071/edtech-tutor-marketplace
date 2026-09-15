@@ -24,6 +24,9 @@ spring:
     scheduling:
       enabled: false
 app:
+  cache:
+    revalidation:
+      enabled: false
   scheduling:
     enabled: false
   cloudinary:

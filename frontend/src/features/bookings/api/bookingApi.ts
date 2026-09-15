@@ -5,6 +5,8 @@ import {
   BookingFilterParams,
   CreateBookingRequest,
   CompleteBookingRequest,
+  ConfirmBookingRequest,
+  DisputeBookingRequest,
   CancelBookingRequest,
   TrialRequestView,
   CreateTrialRequest,
@@ -68,6 +70,16 @@ export const bookingApi = {
       `/api/teacher/bookings/${id}/complete`,
       data
     );
+    return requireApiData(response.data);
+  },
+
+  confirmBooking: async (id: string, data: ConfirmBookingRequest): Promise<ApiResponseWithData<BookingDetail>> => {
+    const response = await axiosClient.post<ApiResponse<BookingDetail>>(`/api/student/bookings/${id}/confirm`, data);
+    return requireApiData(response.data);
+  },
+
+  disputeBooking: async (id: string, data: DisputeBookingRequest): Promise<ApiResponseWithData<BookingDetail>> => {
+    const response = await axiosClient.post<ApiResponse<BookingDetail>>(`/api/teacher/bookings/${id}/dispute`, data);
     return requireApiData(response.data);
   },
 

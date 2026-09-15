@@ -1,6 +1,7 @@
 package com.edtech.platform.booking.service;
 
 import com.edtech.platform.auth.facade.IdentityFacade;
+import com.edtech.platform.admin.facade.AuditTrailFacade;
 import com.edtech.platform.booking.domain.*;
 import com.edtech.platform.booking.dto.request.*;
 import com.edtech.platform.booking.dto.response.BookingDetail;
@@ -9,6 +10,7 @@ import com.edtech.platform.booking.facade.CommunicationFacade;
 import com.edtech.platform.booking.facade.EnrollmentBookingFacade;
 import com.edtech.platform.booking.facade.dto.BookingPackageSnapshot;
 import com.edtech.platform.booking.repository.BookingRepository;
+import com.edtech.platform.booking.repository.BookingSettlementRepository;
 import com.edtech.platform.booking.repository.SessionReportRepository;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
@@ -44,6 +46,8 @@ import static org.mockito.Mockito.*;
 class BookingServiceTest {
 
     @Mock private BookingRepository bookingRepository;
+    @Mock private BookingSettlementRepository settlementRepository;
+    @Mock private AuditTrailFacade auditTrail;
     @Mock private EnrollmentBookingFacade enrollmentBookingFacade;
     @Mock private SessionReportRepository sessionReportRepository;
     @Mock private FinanceFacade financeFacade;
@@ -72,14 +76,18 @@ class BookingServiceTest {
                 communicationFacade,
                 teacherFacade,
                 identityFacade,
-                Clock.systemUTC()
+                Clock.systemUTC(),
+                settlementRepository,
+                auditTrail
         );
         bookingReadService = new BookingReadService(
                 bookingRepository,
                 sessionReportRepository,
                 teacherFacade,
                 identityFacade,
-                subjectFacade
+                subjectFacade,
+                settlementRepository,
+                Clock.systemUTC()
         );
     }
 
@@ -168,10 +176,14 @@ class BookingServiceTest {
         Instant start = Instant.now().minusSeconds(7200);
         Instant end = Instant.now().minusSeconds(3600);
         Booking booking = spy(Booking.scheduleOfficial(teacherId, studentId, packageId, subjectId, start, end, DeliveryMode.ONLINE, null, null, false));
+        ReflectionTestUtils.setField(booking, "id", bookingId);
 
         when(teacherFacade.getTeacherByUserId(teacherUserId)).thenReturn(mockTeacherSnapshot());
         when(bookingRepository.findByIdForUpdate(bookingId)).thenReturn(Optional.of(booking));
         when(sessionReportRepository.existsByBookingId(bookingId)).thenReturn(false);
+        BookingSettlement settlement = BookingSettlement.awaiting(bookingId, end.plusSeconds(86400), null);
+        settlement.confirmStudent(Instant.now());
+        when(settlementRepository.findByBookingId(bookingId)).thenReturn(Optional.of(settlement));
 
         BookingPackageSnapshot pkg = new BookingPackageSnapshot(
                 packageId, studentId, teacherId, subjectId, "ACTIVE",
@@ -205,10 +217,14 @@ class BookingServiceTest {
         Booking booking = spy(Booking.scheduleOfficial(
                 teacherId, studentId, packageId, subjectId, start, end,
                 DeliveryMode.ONLINE, null, null, false));
+        ReflectionTestUtils.setField(booking, "id", bookingId);
 
         when(teacherFacade.getTeacherByUserId(teacherUserId)).thenReturn(mockTeacherSnapshot());
         when(bookingRepository.findByIdForUpdate(bookingId)).thenReturn(Optional.of(booking));
         when(sessionReportRepository.existsByBookingId(bookingId)).thenReturn(false);
+        BookingSettlement settlement = BookingSettlement.awaiting(bookingId, end.plusSeconds(86400), null);
+        settlement.confirmStudent(Instant.now());
+        when(settlementRepository.findByBookingId(bookingId)).thenReturn(Optional.of(settlement));
         when(enrollmentBookingFacade.inspect(packageId, studentId)).thenReturn(new BookingPackageSnapshot(
                 packageId, studentId, teacherId, subjectId, "ACTIVE",
                 9, 1, 0, 0, 10, 1L, BigDecimal.ZERO,

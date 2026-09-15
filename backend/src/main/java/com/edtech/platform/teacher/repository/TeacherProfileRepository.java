@@ -17,6 +17,10 @@ import org.springframework.data.repository.query.Param;
 @Repository
 public interface TeacherProfileRepository extends JpaRepository<TeacherProfile, UUID> {
     Optional<TeacherProfile> findByUserId(UUID userId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select t from TeacherProfile t where t.userId = :userId")
+    Optional<TeacherProfile> findByUserIdForUpdate(@Param("userId") UUID userId);
     
     @org.springframework.data.jpa.repository.Query("SELECT t.id FROM TeacherProfile t WHERE t.profileStatus = 'APPROVED'")
     java.util.List<UUID> findApprovedTeacherIds();

@@ -4,6 +4,7 @@ import com.edtech.platform.finance.domain.Wallet;
 import com.edtech.platform.finance.dto.response.LedgerEntryView;
 import com.edtech.platform.finance.dto.response.WalletView;
 import com.edtech.platform.finance.repository.LedgerEntryRepository;
+import com.edtech.platform.finance.repository.PlatformLedgerEntryRepository;
 import com.edtech.platform.finance.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,13 +23,14 @@ public class WalletQueryService {
 
     private final WalletRepository walletRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
+    private final PlatformLedgerEntryRepository platformLedgerEntryRepository;
 
     @Transactional
     public WalletView getOrCreateWallet(UUID teacherId) {
         walletRepository.ensureForTeacher(teacherId);
         Wallet wallet = walletRepository.findByTeacherId(teacherId)
                 .orElseGet(() -> walletRepository.save(Wallet.forTeacher(teacherId)));
-        return WalletView.from(wallet);
+        return WalletView.from(wallet, platformLedgerEntryRepository.heldBalanceForTeacher(teacherId));
     }
 
     public Page<LedgerEntryView> getLedgerEntries(UUID teacherId, Pageable pageable) {

@@ -16,12 +16,14 @@ public final class TeacherSearchCacheKey {
         String slot = params.dayOfWeek() == null
                 ? "none"
                 : value(params.dayOfWeek()) + "," + value(params.startTime()) + "," + value(params.endTime());
-        return "teacher-search:v1"
+        return "teacher-search:v2"
                 + ":keyword=" + normalizeKeyword(params.keyword())
                 + ":subject=" + value(params.subjectId())
                 + ":price=" + value(params.minPrice()) + "-" + value(params.maxPrice())
                 + ":rating=" + value(params.minRating())
                 + ":mode=" + value(params.deliveryMode()).toLowerCase(Locale.ROOT)
+                + ":province=" + value(params.provinceCode())
+                + ":ward=" + value(params.wardCode())
                 + ":slot=" + slot.toLowerCase(Locale.ROOT)
                 + ":page=" + page(params)
                 + ":size=" + size(params)

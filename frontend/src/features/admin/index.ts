@@ -19,6 +19,7 @@ export * from './pages/AdminSubjectsPage';
 export * from './pages/AdminDashboardPage';
 export * from './pages/AdminPayoutsPage';
 export * from './pages/AdminRefundsPage';
+export * from './pages/AdminBookingSettlementsPage';
 export * from './pages/AdminExtensionsPage';
 export * from './pages/AdminSettingsPage';
 export * from './pages/AdminAuditLogsPage';

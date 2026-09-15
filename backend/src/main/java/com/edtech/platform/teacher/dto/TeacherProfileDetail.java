@@ -13,6 +13,8 @@ public record TeacherProfileDetail(
         boolean supportsOnline,
         boolean supportsOffline,
         String locationAddress,
+        String provinceCode,
+        String wardCode,
         String introductionVideoUrl,
         ProfileStatus profileStatus,
         String rejectionReason,

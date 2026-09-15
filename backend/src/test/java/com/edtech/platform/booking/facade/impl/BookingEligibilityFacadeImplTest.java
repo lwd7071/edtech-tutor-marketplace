@@ -1,12 +1,14 @@
 package com.edtech.platform.booking.facade.impl;
 
 import com.edtech.platform.booking.domain.Booking;
+import com.edtech.platform.booking.domain.BookingSettlement;
 import com.edtech.platform.booking.domain.BookingStatus;
 import com.edtech.platform.booking.domain.DeliveryMode;
 import com.edtech.platform.booking.domain.TrialRequestStatus;
 import com.edtech.platform.booking.facade.dto.BookingStatsSnapshot;
 import com.edtech.platform.booking.repository.BookingRepository;
 import com.edtech.platform.booking.repository.TrialRequestRepository;
+import com.edtech.platform.booking.repository.BookingSettlementRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +23,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +35,9 @@ class BookingEligibilityFacadeImplTest {
 
     @Mock
     private TrialRequestRepository trialRequestRepository;
+
+    @Mock
+    private BookingSettlementRepository settlementRepository;
 
     @InjectMocks
     private BookingEligibilityFacadeImpl bookingEligibilityFacade;
@@ -56,6 +63,9 @@ class BookingEligibilityFacadeImplTest {
         booking.complete(Instant.now().minusSeconds(3600));
 
         when(bookingRepository.findById(eq(bookingId))).thenReturn(Optional.of(booking));
+        BookingSettlement settlement = BookingSettlement.awaiting(bookingId, Instant.now().plusSeconds(3600), 100L);
+        settlement.release();
+        when(settlementRepository.findByBookingIdForRead(nullable(UUID.class))).thenReturn(Optional.of(settlement));
 
         Optional<UUID> result = bookingEligibilityFacade.getTeacherIdForReviewableBooking(studentId, bookingId);
 

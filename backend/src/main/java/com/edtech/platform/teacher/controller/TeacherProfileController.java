@@ -4,6 +4,7 @@ import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.teacher.dto.TeacherProfileDetail;
 import com.edtech.platform.teacher.dto.UpdateTeacherProfileRequest;
+import com.edtech.platform.teacher.dto.UpdateTeacherResidenceRequest;
 import com.edtech.platform.teacher.service.TeacherProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,13 @@ public class TeacherProfileController {
             @Valid @RequestBody UpdateTeacherProfileRequest request,
             @AuthenticationPrincipal AuthenticatedUser user) {
         return ApiResponse.ok(teacherProfileService.updateProfile(user.id(), request));
+    }
+
+    @PutMapping("/residence")
+    public ApiResponse<TeacherProfileDetail> updateResidence(
+            @Valid @RequestBody UpdateTeacherResidenceRequest request,
+            @AuthenticationPrincipal AuthenticatedUser user) {
+        return ApiResponse.ok(teacherProfileService.updateResidence(user.id(), request));
     }
 
     @PostMapping("/submit")

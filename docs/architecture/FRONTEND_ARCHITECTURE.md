@@ -38,6 +38,14 @@ Query key nằm trong `features/<domain>/data` và chứa mọi tham số làm t
 
 Public Server Components dùng `shared/api/public.server.ts` với native `fetch` và Next Data Cache. Subjects, teacher profile/list và packages dùng TTL 300 giây; availability, reviews và ranking dùng TTL 60 giây. Browser Axios adapter không được import vào server adapter. Dữ liệu cá nhân của workspace dùng React Query; Student dashboard gọi một read-model endpoint và cache client tối đa 30 giây.
 
+Next Data Cache hỗ trợ on-demand revalidation qua Route Handler nội bộ `POST /api/internal/revalidate-public`, nhận callback từ backend sau khi transaction commit:
+- Xác thực bằng shared secret qua header `x-internal-secret` (lưu tại biến môi trường `INTERNAL_REVALIDATE_SECRET`, không phơi bày qua `NEXT_PUBLIC_*`).
+- Tag mapping:
+  - Credential được duyệt hoặc credential đã duyệt bị sửa/xóa: invalidate `public-teacher:{id}` qua `revalidateTag(tag, { expire: 0 })`.
+  - Nơi ở gia sư thay đổi: invalidate `public-teacher:{id}` và `public-teachers` để trang tìm kiếm cập nhật ngay.
+  - Tạo credential mới ở trạng thái `PENDING` không đổi dữ liệu công khai nên không invalidate tag.
+- TTL hiện tại (60–300s) đóng vai trò fallback bảo đảm dữ liệu luôn tươi mới ngay cả khi callback nội bộ timeout hoặc gặp sự cố mạng tạm thời.
+
 Chat tải lịch sử qua REST. STOMP chỉ quản kết nối, subscription và publish. Payload realtime được kiểm tra bằng Zod trước khi vào state; reducer thay optimistic message theo `clientMessageId`, chống trùng theo id và sắp xếp theo thời gian.
 
 ## Kiểm thử

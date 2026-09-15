@@ -31,6 +31,7 @@ Frontend tổ chức theo route group và feature. Feature gọi API qua shared 
 - Invoice giữ snapshot điều khoản mua; webhook không đọc lại giá hoặc commission hiện tại của package.
 - Migration đã áp dụng là bất biến; không tự `repair()` hoặc sửa checksum lịch sử.
 - Side effect SMTP, realtime và notification chạy sau khi transaction nghiệp vụ commit.
+- Booking trả phí phải ghi nhận xác nhận độc lập của Student/Teacher; thiếu xác nhận sau 24 giờ vẫn tiêu thụ lượt nhưng tiền đi vào escrow nền tảng và chỉ release/retain qua settlement workflow.
 
 ## Quy ước ổn định
 

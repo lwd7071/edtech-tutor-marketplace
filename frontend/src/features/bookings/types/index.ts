@@ -4,6 +4,8 @@
  */
 
 export type BookingStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED';
+export type SettlementStatus = 'AWAITING_CONFIRMATION' | 'HELD' | 'DISPUTE_PENDING' | 'REOPENED' | 'AWAITING_ADMIN_DECISION' | 'RELEASED' | 'RETAINED';
+export interface BookingSettlementView { status: SettlementStatus; teacherConfirmedAt?: string | null; studentConfirmedAt?: string | null; confirmationDeadline: string; reopenDeadline?: string | null; netAmountVnd?: number | null; disputeReason?: string | null; disputedAt?: string | null; version: number; }
 
 export type DeliveryMode = 'ONLINE' | 'OFFLINE';
 
@@ -42,6 +44,11 @@ export interface BookingDetail {
   outsideAvailabilityWarning: boolean;
   sessionReport?: SessionReport | null;
   version: number;
+  settlementStatus?: SettlementStatus | null;
+  settlement?: BookingSettlementView | null;
+  canConfirm?: boolean;
+  canDispute?: boolean;
+  canReview?: boolean;
 }
 
 export interface CreateBookingRequest {
@@ -57,6 +64,9 @@ export interface CompleteBookingRequest {
   version: number;
   report: SessionReport;
 }
+
+export interface ConfirmBookingRequest { version: number; }
+export interface DisputeBookingRequest { version: number; reason: string; }
 
 export interface CancelBookingRequest {
   version: number;
