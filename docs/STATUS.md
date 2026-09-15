@@ -3,7 +3,7 @@
 > Cập nhật: 2026-09-15. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
 
-- Two-party booking settlement V41 đã sẵn sàng phát hành: tên ledger phù hợp `varchar(30)`, backfill settlement booking trả phí cũ, contract `netAmountVnd`/`bookingId` và admin actions đã đồng bộ. Full backend Testcontainers `474/474` pass; frontend Docker check `101/101` suites, `264/264` tests, typecheck/lint/build pass; Playwright E2E `4/4` pass. Supabase preflight xác nhận V40 hiện tại, V41 Pending; production apply đang chờ xác nhận trực tiếp.
+- Two-party booking settlement V41 đã hoàn tất rollout: tên ledger phù hợp `varchar(30)`, backfill settlement booking trả phí cũ, contract `netAmountVnd`/`bookingId` và admin actions đã đồng bộ. Full backend Testcontainers `474/474` pass; frontend Docker check `101/101` suites, `264/264` tests, typecheck/lint/build pass; Playwright E2E `4/4` pass. Supabase apply và post-validate thành công, schema version 41 `Success` ngày 2026-09-15.
 
 - Regression hardening: request ID đã hợp nhất về `RequestLoggingFilter`; lỗi provider không còn lộ raw message; custom business messages đã được chuẩn hóa tiếng Việt. Frontend Docker Jest full pass `101/101` suites và `264/264` tests; typecheck, lint và Next.js production build pass. Full backend suite PostgreSQL/Redis Testcontainers pass `466/466` tests (`0` failure, `0` error, `0` skipped). Supabase schema giữ nguyên ở V40 `Success` (read-only count `evidence_format = ''` là 0, không cần migration làm sạch credential; V41 hiện dùng cho settlement).
 
@@ -135,8 +135,8 @@ Các con số trên chỉ là bằng chứng gần nhất đã có; benchmark v�
 
 ## Việc đang chờ
 
-1. Apply và post-validate Supabase V41 sau khi có xác nhận production trực tiếp.
-2. Supabase production hiện ở schema V40 `Success`; V41 đã preflight read-only và chưa mutate.
+1. Chạy smoke test các role Student, Teacher và Admin trên môi trường có dữ liệu đại diện.
+2. Supabase production hiện ở schema V41 `Success`; không sửa migration đã apply.
 3. Chạy smoke test các role Student, Teacher và Admin.
 4. Cập nhật bảng này bằng số liệu thật sau mỗi lần chạy.
 5. Có thể chạy lại `scripts/preflight-teacher-search-extensions.sql` bằng Flyway user để bổ sung bằng chứng standalone; không deploy lại V28/V29.

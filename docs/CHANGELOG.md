@@ -268,7 +268,7 @@ Các entry dưới đây ghi hành vi và bằng chứng quan trọng. Danh sác
 ## Quy tắc ghi entry mới
 
 Mỗi đợt thêm một entry gồm ngày, hành vi thay đổi, contract/schema/config liên quan, lệnh kiểm thử và phần chưa xác minh. Không ghi secret hoặc token.
-- 2026-09-15: Hoàn tất verification cho booking settlement V41 và frontend navigation. Backend Testcontainers `474/474` pass; frontend Docker check `101/101` suites, `264/264` tests, typecheck/lint/build pass; Playwright `4/4` pass. Đồng bộ E2E title assertion với metadata `Edtech Tutor Marketplace`. Supabase preflight V40→V41 pass, V41 còn Pending chờ production approval trực tiếp.
+- 2026-09-15: Hoàn tất verification và rollout booking settlement V41, đồng bộ E2E title assertion với metadata `Edtech Tutor Marketplace`. Backend Testcontainers `474/474` pass; frontend Docker check `101/101` suites, `264/264` tests, typecheck/lint/build pass; Playwright `4/4` pass. Supabase preflight V40→V41, apply và post-validate đều pass; schema V41 `Success`.
 - 2026-09-14: Bổ sung xác nhận hai bên cho booking trả phí, settlement 24 giờ, escrow ledger V41 và admin reopen/release/retain actions; frontend đã có xác nhận học viên, khiếu nại gia sư và hiển thị trạng thái giữ tiền. Backend compile pass; full workflow, Supabase apply và frontend Jest chưa xác minh.
 - 2026-09-14: Cloudinary flow audit — cloud key preflight pass without exposing values; real endpoint smoke remains unverified; teacher-document cleanup calls Cloudinary, generic attachment cleanup is missing.
 - 2026-09-14: Local HTTP smoke attempt — backend health `200`, nhưng tài khoản test chưa có trong local DB (`0` user/profile), login `401`; không phát sinh file test trên Cloudinary.
