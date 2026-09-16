@@ -1,16 +1,16 @@
 # Trạng thái dự án
 
-> Cập nhật: 2026-09-15. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
+> Cập nhật: 2026-09-16. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
 
 - Two-party booking settlement V41 đã hoàn tất rollout: tên ledger phù hợp `varchar(30)`, backfill settlement booking trả phí cũ, contract `netAmountVnd`/`bookingId` và admin actions đã đồng bộ. Full backend Testcontainers `474/474` pass; frontend Docker check `101/101` suites, `264/264` tests, typecheck/lint/build pass; Playwright E2E `4/4` pass. Supabase apply và post-validate thành công, schema version 41 `Success` ngày 2026-09-15.
 
-- Regression hardening: request ID đã hợp nhất về `RequestLoggingFilter`; lỗi provider không còn lộ raw message; custom business messages đã được chuẩn hóa tiếng Việt. Frontend Docker Jest full pass `101/101` suites và `264/264` tests; typecheck, lint và Next.js production build pass. Full backend suite PostgreSQL/Redis Testcontainers pass `466/466` tests (`0` failure, `0` error, `0` skipped). Supabase schema giữ nguyên ở V40 `Success` (read-only count `evidence_format = ''` là 0, không cần migration làm sạch credential; V41 hiện dùng cho settlement).
+- Regression hardening: request ID đã hợp nhất về `RequestLoggingFilter`; lỗi provider không còn lộ raw message; custom business messages đã được chuẩn hóa tiếng Việt. Mốc credential/cache riêng đạt `466/466`; mốc tích hợp cuối sau V41 đạt `474/474` tests (`0` failure, `0` error, `0` skipped). Frontend Docker Jest full pass `101/101` suites và `264/264` tests; typecheck, lint, Next.js production build và Playwright E2E `4/4` pass. Supabase hiện ở V41 `Success`.
 
 ## Mốc kỹ thuật
 
 - Backend modular monolith đã có các seam chính cho auth, mail, payment, finance, booking, learning và communication.
-- Migration mới nhất đã viết trong working tree là V41 (`booking_settlements` và `platform_ledger_entries`); V38–V40 đã apply trên Supabase, hiện ở V40 `Success`. Preflight Flyway read-only 2026-09-14 xác nhận V41 `Pending`. Không sửa các migration đã apply.
+- Migration mới nhất là V41 (`booking_settlements` và `platform_ledger_entries`); V38–V41 đã commit trong `c2de235`, các kiểm thử bổ sung ở `8308b62`, tài liệu rollout ở `5c4e1a1`, và toàn bộ đã push lên `origin/dev`. Supabase production hiện ở V41 `Success`; không sửa các migration đã apply.
 - Không dùng Flyway `repair()`, không sửa migration đã áp dụng và không reset database người dùng.
 - Startup contract đã chuẩn hóa: cloud là mặc định và tự nạp `.env.cloud`, local được chọn rõ ràng, test có một file cấu hình canonical; Compose local đã khởi động healthy qua `/actuator/health`.
 
@@ -26,7 +26,7 @@
 | Teacher search/catalog | Đã triển khai V28, query/count/cache/config | Focused tests và PostgreSQL Testcontainers pass; V28 đã áp dụng trên Supabase; cloud smoke và load test chưa xác minh |
 | Finance/refund/payout/package | Đã harden ownership, version, server-owned proof, audit, V31 và V34 RLS default-deny | Full backend Maven/Testcontainers pass; Supabase V31 và V34 `Success`; 8 bảng Finance đã bật RLS và revoke TRUNCATE; baseline 32 rows bảo toàn 100%. |
 | Parent contact/requests/reports | Đã triển khai UI/API liên quan | Cần smoke test theo role |
-| Frontend Student Journey | Đã có route/component/API thay đổi | Playwright chưa chạy |
+| Frontend Student Journey | Đã có route/component/API thay đổi | Frontend Docker checks pass; Playwright public navigation `4/4` pass |
 
 ## Những gì đã có trong code hiện tại
 
@@ -97,6 +97,7 @@
 - Full backend suite local với PostgreSQL 16/Redis Testcontainers: `341/341` pass, `0` failure, `0` error, `0` skipped; đã re-check sau khi Docker Engine hoạt động.
 - Scheduler toggle focused test: `3/3` pass. Lần `mvn clean verify` sau thay đổi không được ghi nhận là pass do Maven kết thúc exit code `1`; lần chạy lại các test Testcontainers bị chặn vì Docker Desktop mất Docker socket.
 - Frontend Docker verification: `101/101` suites, `264/264` tests, typecheck/lint/build pass; Playwright public navigation `4/4` pass.
+- Rollout verification 2026-09-15: Flyway preflight V40→V41, apply và post-validate đều pass; production schema version 41 ở trạng thái `Success`. GitHub run `34943918942` của chuỗi push cũ fail tại bước Maven Testcontainers với annotation tổng quát `Process completed with exit code 1`; không có log chi tiết public để kết luận test cụ thể. Local Docker run trước rollout đã pass `474/474`.
 - Teacher-search focused validation/cache/serialization + architecture guardrails: pass local (`15/15`).
 - Teacher-search PostgreSQL 16 Testcontainers: repository regression + EXPLAIN/index assertions `4/4` pass; Flyway clean schema, metadata và V27 → V28 upgrade `9/9` pass.
 - Supabase V28 migration bằng đúng Flyway connection/user: pass; Flyway validated 28 migrations, current version V27 và apply V28 thành công trên PostgreSQL 17.6. Migration DO preflight xác nhận `unaccent`/`pg_trgm` ở `public`.
@@ -137,12 +138,11 @@ Các con số trên chỉ là bằng chứng gần nhất đã có; benchmark v�
 
 1. Chạy smoke test các role Student, Teacher và Admin trên môi trường có dữ liệu đại diện.
 2. Supabase production hiện ở schema V41 `Success`; không sửa migration đã apply.
-3. Chạy smoke test các role Student, Teacher và Admin.
-4. Cập nhật bảng này bằng số liệu thật sau mỗi lần chạy.
-5. Có thể chạy lại `scripts/preflight-teacher-search-extensions.sql` bằng Flyway user để bổ sung bằng chứng standalone; không deploy lại V28/V29.
-6. Finance same-key concurrency/rollback integration đã được xác minh `2/2`; nếu mở rộng reconciliation nghiệp vụ riêng thì thực hiện ở đợt finance tiếp theo.
-7. Benchmark bằng `node scripts/benchmark-teacher-search.mjs` với từng pool candidate; ghi riêng cold-cache và warm-cache.
+3. Cập nhật bảng này bằng số liệu thật sau mỗi lần chạy.
+4. Có thể chạy lại `scripts/preflight-teacher-search-extensions.sql` bằng Flyway user để bổ sung bằng chứng standalone; không deploy lại V28/V29.
+5. Finance same-key concurrency/rollback integration đã được xác minh `2/2`; nếu mở rộng reconciliation nghiệp vụ riêng thì thực hiện ở đợt finance tiếp theo.
+6. Benchmark bằng `node scripts/benchmark-teacher-search.mjs` với từng pool candidate; ghi riêng cold-cache và warm-cache.
 
 ## Provider chưa xác minh
 
-Google OAuth thật, PayOS thật, Cloudinary thật, SMTP tới người dùng thật và production deployment chưa được tính là pass trong trạng thái này.
+Google OAuth thật, PayOS thật, Cloudinary thật, SMTP tới người dùng thật và application deployment production chưa được tính là pass trong trạng thái này. Database schema production đã rollout tới V41 `Success`.
