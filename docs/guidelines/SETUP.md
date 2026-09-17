@@ -90,6 +90,19 @@ docker inspect --format '{{.State.Health.Status}}' edtech_backend
 
 Health endpoint chuẩn là `http://localhost:8080/actuator/health`.
 
+### 4.4. Deploy Backend lên Render
+
+Repository có `render.yaml` tại thư mục gốc để cố định các thiết lập deploy: nhánh `main`, root directory `backend`, Docker runtime và health check `/actuator/health`. Docker image giới hạn heap JVM ở 256 MiB và giảm connection pool mặc định xuống 5 để còn đủ native memory trên Render Free 512 MiB.
+
+Với service đã tạo thủ công trước đây, vào **Settings** và đối chiếu:
+
+- Root Directory: `backend`
+- Runtime: Docker; Dockerfile Path: `./Dockerfile`
+- Health Check Path: `/actuator/health`
+- Branch: `main`; Auto-Deploy bật cho commit
+
+Giữ toàn bộ secret hiện có trong **Environment** của Render; không chép giá trị secret vào `render.yaml`. Sau khi push, deploy thành công chỉ khi `/actuator/health` trả `2xx` và Metrics không vượt giới hạn RAM. Nếu service vẫn vượt 512 MiB trong tải thật, chuyển sang plan có RAM lớn hơn thay vì tăng `-Xmx` trên Free.
+
 ---
 
 ## 5. Hướng dẫn thiết lập Frontend (React + Vite) để Code

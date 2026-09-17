@@ -1,5 +1,12 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-17 — Hardening deploy Render 512 MiB
+
+- Chẩn đoán log deploy xác nhận backend khởi động xong nhưng bị Render dừng vì vượt 512 MiB; probe mặc định `HEAD /` đồng thời nhận 401.
+- Giới hạn JVM container ở heap 128–256 MiB, metaspace 128 MiB, code cache 64 MiB, Serial GC và stack 512 KiB; giảm pool DB container mặc định còn 5 và hỗ trợ biến `PORT` của Render.
+- Thêm Blueprint `render.yaml` cho service Docker trên nhánh `main`, root `backend` và health check `/actuator/health`; không đưa secret vào source.
+- Contract tests cấu hình `7/7` pass, Maven package pass. Health integration bị chặn do Docker daemon local không khả dụng; cần xác minh deploy mới và RAM thực trên Render. Không có migration mới và không kết nối Supabase.
+
 ## 2026-09-17 — Sửa kiểm tra metadata Flyway trên CI
 
 - Giới hạn ba truy vấn `pg_constraint`/`pg_trigger` trong `FlywayMigrationTest` vào đúng bảng thuộc schema `public`, tránh đếm đối tượng từ các schema thử nghiệm cùng database. Run `35169842151` trước sửa có 472/474 test pass; run `35170433438` sau sửa pass 474/474 test, Compose startup smoke và Docker image build. Không thay đổi migration hoặc schema production.
