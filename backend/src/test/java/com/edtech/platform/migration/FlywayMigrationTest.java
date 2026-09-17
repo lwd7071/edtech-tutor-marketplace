@@ -86,7 +86,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     void teacherResidenceColumnsShouldHaveExpectedMetadata() {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='teacher_profiles' AND column_name IN ('province_code','ward_code')", Integer.class)).isEqualTo(2);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='teacher_profiles' AND column_name IN ('province_code','ward_code') AND is_nullable='YES'", Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM pg_constraint WHERE conname IN ('fk_teacher_profiles_province','fk_teacher_profiles_ward','ck_teacher_profiles_residence_ward_requires_province')", Integer.class)).isEqualTo(3);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM pg_constraint WHERE conrelid = 'public.teacher_profiles'::regclass AND conname IN ('fk_teacher_profiles_province','fk_teacher_profiles_ward','ck_teacher_profiles_residence_ward_requires_province')", Integer.class)).isEqualTo(3);
     }
 
     @Test
@@ -369,7 +369,8 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
                 """, String.class)).containsExactlyInAnyOrder("booking_settlements", "platform_ledger_entries");
         String ledgerConstraint = jdbcTemplate.queryForObject("""
                 SELECT pg_get_constraintdef(oid) FROM pg_constraint
-                WHERE conname='ck_ledger_entries_entry_type'
+                WHERE conrelid = 'public.ledger_entries'::regclass
+                  AND conname='ck_ledger_entries_entry_type'
                 """, String.class);
         assertThat(ledgerConstraint).contains("SESSION_ESCROW_HELD", "SESSION_ESCROW_RELEASED");
         assertThat(jdbcTemplate.queryForObject("""
@@ -377,7 +378,9 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
                 WHERE table_schema='public' AND table_name='ledger_entries' AND column_name='entry_type'
                 """, Integer.class)).isEqualTo(30);
         assertThat(jdbcTemplate.queryForObject("""
-                SELECT count(*) FROM pg_trigger WHERE tgname='trg_platform_ledger_append_only'
+                SELECT count(*) FROM pg_trigger
+                WHERE tgrelid = 'public.platform_ledger_entries'::regclass
+                  AND tgname='trg_platform_ledger_append_only'
                 """, Integer.class)).isEqualTo(1);
         for (String role : List.of("anon", "authenticated")) {
             boolean exists = Boolean.TRUE.equals(jdbcTemplate.queryForObject(

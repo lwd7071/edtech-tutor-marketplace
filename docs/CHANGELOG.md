@@ -1,5 +1,9 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-17 — Sửa kiểm tra metadata Flyway trên CI
+
+- Giới hạn ba truy vấn `pg_constraint`/`pg_trigger` trong `FlywayMigrationTest` vào đúng bảng thuộc schema `public`, tránh đếm đối tượng từ các schema thử nghiệm cùng database. Run `35169842151` trước sửa có 472/474 test pass; CI sau sửa đang chờ. Không thay đổi migration hoặc schema production.
+
 ## 2026-09-15 — Hardening settlement V41 (working tree)
 
 - Giữ `ledger_entries.entry_type` ở `varchar(30)` bằng tên `SESSION_ESCROW_HELD`/`SESSION_ESCROW_RELEASED`, thêm backfill settlement cho booking trả phí cũ, bật RLS cho `provinces`/`wards`, đồng bộ `netAmountVnd` và sửa admin queue dùng `bookingId`.

@@ -1,9 +1,11 @@
 # Trạng thái dự án
 
-> Cập nhật: 2026-09-16. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
+> Cập nhật: 2026-09-17. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
 
 - Two-party booking settlement V41 đã hoàn tất rollout: tên ledger phù hợp `varchar(30)`, backfill settlement booking trả phí cũ, contract `netAmountVnd`/`bookingId` và admin actions đã đồng bộ. Full backend Testcontainers `474/474` pass; frontend Docker check `101/101` suites, `264/264` tests, typecheck/lint/build pass; Playwright E2E `4/4` pass. Supabase apply và post-validate thành công, schema version 41 `Success` ngày 2026-09-15.
+
+- GitHub Backend CI trên `main` commit `2c0f7b4` (run `35169842151`) đã chạy 474 test: 472 pass, 1 failure, 1 error. Cả hai lỗi ở `FlywayMigrationTest`: truy vấn catalog PostgreSQL chỉ lọc tên constraint, nên đếm lẫn đối tượng trong schema thử nghiệm; truy vấn ledger nhận nhiều dòng. Đã sửa test để lọc theo bảng trong `public`; CI xác minh lại đang chờ. Docker Desktop local chưa có daemon, nên chưa chạy lại Testcontainers tại máy này. Không có migration mới và không kết nối Supabase trong đợt sửa test.
 
 - Regression hardening: request ID đã hợp nhất về `RequestLoggingFilter`; lỗi provider không còn lộ raw message; custom business messages đã được chuẩn hóa tiếng Việt. Mốc credential/cache riêng đạt `466/466`; mốc tích hợp cuối sau V41 đạt `474/474` tests (`0` failure, `0` error, `0` skipped). Frontend Docker Jest full pass `101/101` suites và `264/264` tests; typecheck, lint, Next.js production build và Playwright E2E `4/4` pass. Supabase hiện ở V41 `Success`.
 
