@@ -12,7 +12,7 @@ class TeacherSearchParamsValidationTest {
         try (var validatorFactory = Validation.buildDefaultValidatorFactory()) {
             var params = new TeacherSearchParams(
                     "a".repeat(101), null, null, null, null, null, null,
-                    null, null, null, 0, 20
+                    null, null, null, null, null, 0, 20
             );
 
             assertThat(validatorFactory.getValidator().validate(params))

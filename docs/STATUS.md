@@ -1,7 +1,9 @@
 # Trạng thái dự án
 
-> Cập nhật: 2026-09-17. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
+> Cập nhật: 2026-09-20. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
+
+- Teacher search HTTP binding: đã tái hiện lỗi Render bằng `MockMvc` với `GET /api/public/teachers?sort=rating_desc&page=0&size=6`; trước sửa Spring MVC ném `No primary or single unique constructor found` vì `TeacherSearchParams` có canonical constructor 14 tham số và constructor phụ 12 tham số. Đã xóa constructor phụ, chuyển test sang canonical constructor và thêm regression test qua MVC binder. Focused teacher-search `12/12` pass; full backend PostgreSQL 16/Redis Testcontainers `478/478` pass (`0` failure, `0` error, `0` skipped). Không có migration mới; không kết nối hoặc mutate Supabase. Deploy Render sau commit vẫn cần smoke test endpoint production trước khi gọi là đã xác minh.
 
 - Render deploy hardening (working tree): log production xác nhận process vượt giới hạn 512 MiB sau khi startup; Docker runtime nay giới hạn heap 128–256 MiB, metaspace 128 MiB, code cache 64 MiB, dùng Serial GC, stack 512 KiB và pool DB mặc định 5. `render.yaml` cố định root `backend`, nhánh `main` và health check công khai `/actuator/health`; server nhận `${PORT:8080}`. Contract tests cấu hình `7/7` pass và Maven package pass. Test health tích hợp chưa chạy lại vì Docker daemon local không khả dụng; deploy Render mới và memory metrics chưa xác minh. Không có migration mới; không kết nối hoặc mutate Supabase.
 

@@ -29,14 +29,6 @@ public record TeacherSearchParams(
         @Min(value = 1, message = "Kích thước trang phải lớn hơn hoặc bằng 1")
         @Max(value = 100, message = "Kích thước trang không được vượt quá 100") Integer size
 ) {
-    public TeacherSearchParams(
-            String keyword, UUID subjectId, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime,
-            Long minPrice, Long maxPrice, Double minRating, String deliveryMode, String sort,
-            Integer page, Integer size) {
-        this(keyword, subjectId, dayOfWeek, startTime, endTime, minPrice, maxPrice, minRating,
-                deliveryMode, sort, null, null, page, size);
-    }
-
     @AssertTrue(message = "Giá tối thiểu phải nhỏ hơn hoặc bằng giá tối đa")
     public boolean isValidPriceRange() {
         if (minPrice == null || maxPrice == null) return true;

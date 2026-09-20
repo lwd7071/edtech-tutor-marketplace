@@ -120,7 +120,7 @@ class TeacherSearchRepositoryIntegrationTest extends AbstractIntegrationTest {
         var result = repository.searchTeachers(
                 new TeacherSearchParams(
                         "xep hang", null, null, null, null, null, null, null,
-                        null, "rating_desc", 0, 100),
+                        null, "rating_desc", null, null, 0, 100),
                 org.springframework.data.domain.PageRequest.of(0, 100));
 
         List<UUID> ids = result.getContent().stream().map(card -> card.id()).toList();
@@ -153,6 +153,6 @@ class TeacherSearchRepositoryIntegrationTest extends AbstractIntegrationTest {
     private TeacherSearchParams params(String keyword) {
         return new TeacherSearchParams(
                 keyword, null, null, null, null, null, null, null,
-                null, null, 0, 20);
+                null, null, null, null, 0, 20);
     }
 }

@@ -1,5 +1,12 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-20 — Sửa Spring MVC binding cho teacher search
+
+- Tái hiện lỗi production bằng request MVC thật tới `GET /api/public/teachers?sort=rating_desc&page=0&size=6`: Spring ném `No primary or single unique constructor found` vì record `TeacherSearchParams` có hai constructor.
+- Xóa constructor phụ 12 tham số, dùng duy nhất canonical constructor 14 tham số và cập nhật các test fixture liên quan.
+- Thêm regression test đi qua `MockMvc` để khóa đúng seam HTTP. Focused teacher-search `12/12` pass; full backend PostgreSQL 16/Redis Testcontainers `478/478` pass (`0` failure, `0` error, `0` skipped).
+- Không có migration mới; không kết nối hoặc mutate Supabase. Cần smoke test endpoint production sau khi Render redeploy.
+
 ## 2026-09-17 — Hardening deploy Render 512 MiB
 
 - Chẩn đoán log deploy xác nhận backend khởi động xong nhưng bị Render dừng vì vượt 512 MiB; probe mặc định `HEAD /` đồng thời nhận 401.

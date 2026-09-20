@@ -54,7 +54,7 @@ class TeacherMarketplaceCacheTest {
     private TeacherSearchParams params(String keyword, Integer page, Integer size) {
         return new TeacherSearchParams(
                 keyword, null, null, null, null, null, null, null,
-                null, "rating_desc", page, size);
+                null, "rating_desc", null, null, page, size);
     }
 
     @Configuration
