@@ -4,7 +4,7 @@
 
 - Thêm timeout 15 giây cho mọi Axios request từ browser, bao gồm refresh token; request không còn có thể giữ loading vô hạn khi Render cold-start hoặc redeploy.
 - React Query chỉ retry lỗi timeout một lần rồi chuyển sang error state có thao tác thử lại; thêm regression assertions cho cấu hình Axios và retry policy.
-- Production bundle dùng đúng Render API URL và CORS preflight từ Vercel trả `200`; các log `GET/HEAD / -> 401` là request vào backend root, không phải API workspace. Không có migration mới.
+- Frontend CI run `35604116297` pass toàn bộ unit tests, build và Playwright E2E; Vercel deploy thành công và bundle production đã nhúng timeout 15 giây. Production bundle dùng đúng Render API URL, CORS preflight từ Vercel trả `200`; các log `GET/HEAD / -> 401` là request vào backend root, không phải API workspace. Không có migration mới.
 
 ## 2026-09-21 — Tự phục hồi landing page sau Render cold start
 
