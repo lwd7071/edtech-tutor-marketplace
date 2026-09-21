@@ -23,6 +23,11 @@ jest.mock('@/features/marketplace/components/TeacherGrid', () => {
   MockTeacherGrid.displayName = 'MockTeacherGrid';
   return MockTeacherGrid;
 });
+jest.mock('@/features/marketplace/components/PublicDataRecovery', () => {
+  const MockPublicDataRecovery = ({ hasError }: { hasError: boolean }) => <div data-testid="public-data-recovery" data-error={hasError} />;
+  MockPublicDataRecovery.displayName = 'MockPublicDataRecovery';
+  return MockPublicDataRecovery;
+});
 jest.mock('@/features/marketplace/components/TrustSection', () => {
   const MockTrustSection = () => <div data-testid="trust-section" />;
   MockTrustSection.displayName = 'MockTrustSection';
@@ -45,10 +50,21 @@ describe('LandingPage', () => {
     expect(screen.getByTestId('hero-search')).toBeInTheDocument();
     expect(screen.getByTestId('subject-grid')).toBeInTheDocument();
     expect(screen.getByTestId('teacher-grid')).toBeInTheDocument();
+    expect(screen.getByTestId('public-data-recovery')).toHaveAttribute('data-error', 'false');
     expect(screen.getByText('Một khởi đầu rõ ràng')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Trở thành gia sư/i })).toBeInTheDocument();
 
     expect(getPublicSubjectsServer).toHaveBeenCalled();
     expect(getPublicTeachersServer).toHaveBeenCalled();
+  });
+
+  it('enables client recovery when a server-side public request fails', async () => {
+    (getPublicSubjectsServer as jest.Mock).mockRejectedValue(new Error('backend unavailable'));
+    (getPublicTeachersServer as jest.Mock).mockResolvedValue({ data: [], meta: {} });
+
+    const Page = await LandingPage();
+    render(Page);
+
+    expect(screen.getByTestId('public-data-recovery')).toHaveAttribute('data-error', 'true');
   });
 });
