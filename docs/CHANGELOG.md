@@ -1,5 +1,10 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-21 — Chặn cấu hình Brevo placeholder trên Render
+
+- Preflight cloud mặc định kiểm tra Brevo khi `APP_EMAIL_PROVIDER` bỏ trống, từ chối placeholder literal và validate định dạng `BREVO_SENDER_EMAIL`.
+- Blueprint Render khai báo `BREVO_API_KEY`, `BREVO_SENDER_EMAIL` và `BREVO_SENDER_NAME` dạng `sync: false`, không đưa secret vào source.
+
 ## 2026-09-21 — Hardening Vercel prerender public pages
 
 - Thêm timeout 10 giây cho server-side public fetch; route landing/ranking không còn treo build khi backend cold start hoặc tạm thời không phản hồi.

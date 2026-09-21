@@ -43,13 +43,20 @@ foreach ($line in Get-Content -LiteralPath $EnvironmentFile) {
 
 $missing = @($required | Where-Object { -not $configured.ContainsKey($_) -or [string]::IsNullOrWhiteSpace($configured[$_]) })
 
-if ($configured['APP_EMAIL_PROVIDER'] -eq 'brevo') {
+$emailProvider = if ([string]::IsNullOrWhiteSpace($configured['APP_EMAIL_PROVIDER'])) { 'brevo' } else { $configured['APP_EMAIL_PROVIDER'] }
+if ($emailProvider -eq 'brevo') {
   $brevoRequired = @('BREVO_API_KEY', 'BREVO_SENDER_EMAIL', 'BREVO_SENDER_NAME')
   $missing += @($brevoRequired | Where-Object {
     -not $configured.ContainsKey($_) -or
     [string]::IsNullOrWhiteSpace($configured[$_]) -or
-    $configured[$_] -match '^replace-with-'
+    $configured[$_] -match '^replace-with-' -or
+    $configured[$_] -match '^\$\{[A-Za-z_][A-Za-z0-9_]*\}$'
   })
+
+  if (-not [string]::IsNullOrWhiteSpace($configured['BREVO_SENDER_EMAIL']) -and
+      $configured['BREVO_SENDER_EMAIL'] -notmatch '^[^\s@]+@[^\s@]+\.[^\s@]+$') {
+    throw 'Cloud configuration is invalid: BREVO_SENDER_EMAIL must be a valid email address.'
+  }
 }
 
 $missing = @($missing | Select-Object -Unique)

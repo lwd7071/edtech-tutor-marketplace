@@ -13,6 +13,7 @@
 
 - Backend đã thay SMTP bằng Brevo Transactional Email API qua HTTPS, giữ transactional outbox và dùng `email_outbox.id` làm idempotency key ổn định qua retry.
 - Local/test dùng logging transport; cloud fail-fast khi thiếu `BREVO_API_KEY`, `BREVO_SENDER_EMAIL` hoặc `BREVO_SENDER_NAME`; endpoint và timeout dùng default nội bộ. Focused mail và architecture tests pass; full backend suite và gửi email thật chưa chạy.
+- Render deploy mới nhất bị chặn ở startup vì `BREVO_SENDER_EMAIL` trên service đang nhận literal placeholder `${BREVO_SENDER_EMAIL}`, không phải địa chỉ email. Đã bổ sung preflight nhận diện placeholder/email sai và khai báo ba biến Brevo trong `render.yaml` với `sync: false`; cần sửa giá trị trong Render Environment rồi redeploy.
 - Không có migration mới; không kết nối hoặc mutate Supabase.
 
 ## Minh chứng năng lực (working tree, 2026-09-21)
