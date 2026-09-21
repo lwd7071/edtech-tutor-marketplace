@@ -38,4 +38,19 @@ class MailDeliveryJobTest {
         verify(outbox, never()).markSent(first.id());
         verify(outbox).markSent(second.id());
     }
+
+    @Test
+    void permanentTransportFailureDoesNotQueueAnotherRetry() {
+        var outbox = mock(MailOutboxLease.class);
+        var transport = mock(MailTransport.class);
+        var mail = new OutboundMail(UUID.randomUUID(), "invalid@example.test", "Verify", "Link", 0);
+        when(outbox.claimBatch()).thenReturn(List.of(mail));
+        doThrow(new PermanentMailDeliveryException("Rejected")).when(transport).send(mail);
+
+        new MailDeliveryJob(outbox, transport).deliver();
+
+        verify(outbox).markPermanentlyFailed(mail.id());
+        verify(outbox, never()).markFailed(any());
+        verify(outbox, never()).markSent(any());
+    }
 }

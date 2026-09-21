@@ -54,4 +54,12 @@ class MailOutboxRepository {
                 where id=?
                 """, id);
     }
+
+    void markPermanentlyFailed(UUID id) {
+        jdbc.update("""
+                update email_outbox
+                set attempts=attempts+1, status='FAILED', body=''
+                where id=?
+                """, id);
+    }
 }

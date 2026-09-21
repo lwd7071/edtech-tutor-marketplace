@@ -19,6 +19,10 @@ public class MailDeliveryJob {
                 transport.send(mail);
                 outbox.markSent(mail.id());
                 log.info("Mail delivered emailId={} attempts={}", mail.id(), mail.attempts() + 1);
+            } catch (PermanentMailDeliveryException failure) {
+                outbox.markPermanentlyFailed(mail.id());
+                log.warn("Mail delivery permanently failed emailId={} attempts={} cause={}",
+                        mail.id(), mail.attempts() + 1, failure.getClass().getSimpleName());
             } catch (RuntimeException failure) {
                 outbox.markFailed(mail.id());
                 log.warn("Mail delivery failed emailId={} attempts={} cause={}",

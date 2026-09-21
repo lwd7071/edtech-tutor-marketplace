@@ -24,6 +24,8 @@ spring:
     scheduling:
       enabled: false
 app:
+  email:
+    provider: logging
   cache:
     revalidation:
       enabled: false

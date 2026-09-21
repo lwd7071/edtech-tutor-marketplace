@@ -26,4 +26,9 @@ class MailOutboxLease {
     public void markFailed(UUID id) {
         outbox.markFailed(id);
     }
+
+    @Transactional
+    public void markPermanentlyFailed(UUID id) {
+        outbox.markPermanentlyFailed(id);
+    }
 }

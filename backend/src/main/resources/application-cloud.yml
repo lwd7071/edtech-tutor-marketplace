@@ -32,6 +32,11 @@ spring:
     baseline-on-migrate: false
 
 app:
+  email:
+    provider: ${APP_EMAIL_PROVIDER:brevo}
+    from: ${BREVO_SENDER_EMAIL}
+    sender-name: ${BREVO_SENDER_NAME}
+    api-key: ${BREVO_API_KEY}
   cloudinary:
     url: cloudinary://${CLOUDINARY_API_KEY}:${CLOUDINARY_API_SECRET}@${CLOUDINARY_CLOUD_NAME}
   finance:

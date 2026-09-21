@@ -42,6 +42,17 @@ foreach ($line in Get-Content -LiteralPath $EnvironmentFile) {
 }
 
 $missing = @($required | Where-Object { -not $configured.ContainsKey($_) -or [string]::IsNullOrWhiteSpace($configured[$_]) })
+
+if ($configured['APP_EMAIL_PROVIDER'] -eq 'brevo') {
+  $brevoRequired = @('BREVO_API_KEY', 'BREVO_SENDER_EMAIL', 'BREVO_SENDER_NAME')
+  $missing += @($brevoRequired | Where-Object {
+    -not $configured.ContainsKey($_) -or
+    [string]::IsNullOrWhiteSpace($configured[$_]) -or
+    $configured[$_] -match '^replace-with-'
+  })
+}
+
+$missing = @($missing | Select-Object -Unique)
 if ($missing.Count -gt 0) {
   throw "Cloud configuration is incomplete. Missing or blank keys: $($missing -join ', ')"
 }

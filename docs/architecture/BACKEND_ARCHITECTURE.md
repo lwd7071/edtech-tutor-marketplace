@@ -7,7 +7,7 @@ Backend là modular monolith Spring Boot. Mỗi module trong `com.edtech.platfor
 | Module | Trách nhiệm | Điểm mở rộng |
 |---|---|---|
 | `auth` | Đăng ký, phiên đăng nhập, xác minh, khôi phục mật khẩu, OAuth và liên hệ phụ huynh | `OAuthAuthorizationPort`, `IdentityFacade` |
-| `mail` | Template, transactional outbox, lease/retry và vận chuyển email | `MailTransport`: SMTP hoặc logging |
+| `mail` | Template, transactional outbox, lease/retry và vận chuyển email | `MailTransport`: Brevo HTTPS hoặc logging |
 | `payment` | Invoice, webhook và cổng thanh toán | `PaymentGateway` |
 | `finance` | Wallet, ledger, refund, payout và mã hóa tài khoản | `AccountNumberProtector`, finance commands |
 | `booking` | Tạo, hoàn thành, hủy và đọc lịch học | command service và `BookingReadService` |
@@ -16,7 +16,7 @@ Backend là modular monolith Spring Boot. Mỗi module trong `com.edtech.platfor
 | `catalog` | Public teacher search/profile và subject catalog | SQL projection, `TeacherSearchCache`, cache configuration contributor |
 | `dashboard` | Read-model tổng hợp cho các màn hình cá nhân | `StudentDashboardRepository` dùng một SQL projection, không sở hữu mutation/invariant |
 
-Các side effect ra SMTP, WebSocket và notification chỉ chạy sau khi transaction nghiệp vụ commit. Các invariant về tiền, ledger, lượt học và lock order vẫn nằm trong transaction của module sở hữu.
+Các side effect ra email provider, WebSocket và notification chỉ chạy sau khi transaction nghiệp vụ commit. Các invariant về tiền, ledger, lượt học và lock order vẫn nằm trong transaction của module sở hữu.
 
 ## Identity và OAuth
 
@@ -44,7 +44,7 @@ Ba profile có contract riêng: `cloud` là mặc định, tự nạp `.env.clou
 
 Spring runtime nạp `.env.cloud` qua `spring.config.import`; Flyway Maven không tự nạp file này và chỉ được gọi qua script migration có guard. Cloudinary cloud nhận ba credential rời và ghép URL trong profile. Preflight `scripts/check-backend-config.ps1` chỉ báo tên key thiếu, không in giá trị.
 
-Mail dùng `APP_EMAIL_PROVIDER=logging` khi phát triển không cần SMTP và `smtp` khi kiểm thử Mailpit/Gmail test. Outbox luôn được ghi trong transaction; delivery job claim bằng lease, gửi ngoài transaction giữ database lock rồi đánh dấu thành công hoặc retry.
+Mail dùng `APP_EMAIL_PROVIDER=logging` ở local/test và `brevo` trên cloud. Cloud yêu cầu `BREVO_API_KEY`, `BREVO_SENDER_EMAIL` và `BREVO_SENDER_NAME`; API URL và timeout có default nội bộ. Delivery gọi Brevo Transactional Email API qua HTTPS, dùng `email_outbox.id` làm idempotency key; lỗi mạng, `429` và `5xx` được retry, response idempotency trùng được coi là request đã nhận, còn request bị từ chối vĩnh viễn chuyển `FAILED`. Outbox luôn được ghi trong transaction; delivery job claim bằng lease, gửi ngoài transaction giữ database lock rồi mới đánh dấu kết quả.
 
 Teacher search dùng SQL projection và batch query cho subject, không hydrate entity graph. Keyword được normalize bằng functional indexes PostgreSQL theo quyết định tại [ADR-0004](../adr/0004-accent-insensitive-teacher-search.md). Cache search là tối ưu tùy chọn: Redis lỗi phải fallback về PostgreSQL, chỉ cache page 0–2 với size tối đa 50 và không thay đổi response contract.
 

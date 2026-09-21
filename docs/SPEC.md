@@ -51,7 +51,7 @@ Bao gồm:
 - Spring Data JPA/Hibernate.
 - Bean Validation.
 - Spring WebSocket/STOMP.
-- Spring Mail.
+- Brevo Transactional Email API qua HTTPS.
 - Flyway Migration.
 - PostgreSQL Driver.
 - Redis.
