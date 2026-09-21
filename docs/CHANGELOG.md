@@ -1,5 +1,11 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-21 — Sửa Google OAuth complete-registration
+
+- Đặt `notifyParent=false` khi tạo user mới qua Google OAuth, khớp invariant `users.notify_parent NOT NULL DEFAULT false`.
+- Thêm regression assertion cho OAuth registration; OAuth focused suite `13/13` pass.
+- Không có migration mới và chưa redeploy production.
+
 ## 2026-09-20 — Sửa Spring MVC binding cho teacher search
 
 - Tái hiện lỗi production bằng request MVC thật tới `GET /api/public/teachers?sort=rating_desc&page=0&size=6`: Spring ném `No primary or single unique constructor found` vì record `TeacherSearchParams` có hai constructor.

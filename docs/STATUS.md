@@ -1,7 +1,9 @@
 # Trạng thái dự án
 
-> Cập nhật: 2026-09-20. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
+> Cập nhật: 2026-09-21. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
+
+- Google OAuth complete-registration: đã sửa lỗi tạo user mới thiếu `notifyParent`, khiến PostgreSQL từ chối `NULL` trên cột `users.notify_parent` và API trả `INTERNAL_SERVER_ERROR`. Backend đặt giá trị `false` cho tài khoản OAuth; regression test nằm trong `OAuthAccountServiceTest`. OAuth focused suite `13/13` pass. Không có migration mới; chưa redeploy production.
 
 - Teacher search HTTP binding: đã tái hiện lỗi Render bằng `MockMvc` với `GET /api/public/teachers?sort=rating_desc&page=0&size=6`; trước sửa Spring MVC ném `No primary or single unique constructor found` vì `TeacherSearchParams` có canonical constructor 14 tham số và constructor phụ 12 tham số. Đã xóa constructor phụ, chuyển test sang canonical constructor và thêm regression test qua MVC binder. Focused teacher-search `12/12` pass; full backend PostgreSQL 16/Redis Testcontainers `478/478` pass (`0` failure, `0` error, `0` skipped). Không có migration mới; không kết nối hoặc mutate Supabase. Deploy Render sau commit vẫn cần smoke test endpoint production trước khi gọi là đã xác minh.
 

@@ -69,6 +69,7 @@ public class OAuthAccountService implements OAuthAuthorizationPort {
                 .role(request.role())
                 .status(UserStatus.ACTIVE)
                 .emailVerified(true)
+                .notifyParent(false)
                 .oauthProvider(identity.provider())
                 .oauthSubject(identity.subject())
                 .build());

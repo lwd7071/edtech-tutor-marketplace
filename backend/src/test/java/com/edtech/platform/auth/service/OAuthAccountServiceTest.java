@@ -96,6 +96,7 @@ class OAuthAccountServiceTest {
         assertThat(userToSave.getOauthProvider()).isEqualTo("GOOGLE");
         assertThat(userToSave.getOauthSubject()).isEqualTo("google-123");
         assertThat(userToSave.getEmailVerified()).isTrue();
+        assertThat(userToSave.getNotifyParent()).isFalse();
 
         // Verify domain event was published
         ArgumentCaptor<UserRegisteredEvent> eventCaptor = ArgumentCaptor.forClass(UserRegisteredEvent.class);
