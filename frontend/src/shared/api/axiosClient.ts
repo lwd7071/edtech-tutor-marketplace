@@ -5,8 +5,11 @@ import { BASE_API_URL } from '@/shared/backend/config';
 
 export { BASE_API_URL };
 
+export const BROWSER_API_TIMEOUT_MS = 15_000;
+
 export const axiosClient = axios.create({
   baseURL: BASE_API_URL,
+  timeout: BROWSER_API_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },

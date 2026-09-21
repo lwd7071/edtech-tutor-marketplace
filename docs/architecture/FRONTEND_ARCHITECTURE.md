@@ -27,6 +27,8 @@ Session persisted có `sessionId` sinh bằng `crypto.randomUUID()`; local HTTP 
 
 Axios phải gắn snapshot `sessionId` vào request và snapshot refresh token khi bắt đầu refresh. Chỉ phiên có cùng `sessionId` và refresh token hiện tại mới được rotate hoặc clear; response refresh cũ phải bị bỏ qua để không ghi đè phiên đăng nhập mới. Giả định hiện tại là một origin dùng một danh tính; multi-account switch không qua logout chưa phải capability được hỗ trợ.
 
+Mọi request Axios từ browser có timeout 15 giây. React Query chỉ retry timeout một lần; sau đó màn hình phải thoát skeleton sang error state có thao tác thử lại. Quy tắc này bao gồm refresh token, để một backend cold-start/redeploy không giữ toàn bộ workspace ở trạng thái loading vô hạn.
+
 API session công khai chỉ gồm:
 
 ```text

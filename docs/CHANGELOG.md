@@ -1,5 +1,11 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-21 — Chặn workspace skeleton vô hạn
+
+- Thêm timeout 15 giây cho mọi Axios request từ browser, bao gồm refresh token; request không còn có thể giữ loading vô hạn khi Render cold-start hoặc redeploy.
+- React Query chỉ retry lỗi timeout một lần rồi chuyển sang error state có thao tác thử lại; thêm regression assertions cho cấu hình Axios và retry policy.
+- Production bundle dùng đúng Render API URL và CORS preflight từ Vercel trả `200`; các log `GET/HEAD / -> 401` là request vào backend root, không phải API workspace. Không có migration mới.
+
 ## 2026-09-21 — Tự phục hồi landing page sau Render cold start
 
 - Giảm TTL output landing fallback từ 300 xuống 30 giây nhưng giữ cache dữ liệu public 300 giây khi fetch thành công.

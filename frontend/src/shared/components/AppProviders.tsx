@@ -87,6 +87,11 @@ export function createDefaultQueryClient(): QueryClient {
           if (status === 401 || status === 403 || status === 404 || status === 422) {
             return false;
           }
+          // Một lần retry là đủ để vượt lỗi mạng ngắn; không giữ toàn bộ workspace
+          // ở skeleton gần một phút khi backend Render đang cold-start hoặc redeploy.
+          if (error?.code === 'ECONNABORTED' || error?.code === 'ETIMEDOUT') {
+            return failureCount < 1;
+          }
           return failureCount < 2;
         },
       },

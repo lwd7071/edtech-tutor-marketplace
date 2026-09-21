@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AppProviders, ErrorBoundary } from './AppProviders';
+import { AppProviders, createDefaultQueryClient, ErrorBoundary } from './AppProviders';
 import { useQuery } from '@tanstack/react-query';
 
 // Component giả lập dùng react-query để kiểm tra provider
@@ -52,5 +52,14 @@ describe('AppProviders & ErrorBoundary (TDD)', () => {
 
     const reloadBtn = screen.getByRole('button', { name: /Thử lại/i });
     expect(reloadBtn).toBeInTheDocument();
+  });
+
+  it('retries timed-out workspace requests only once', () => {
+    const retry = createDefaultQueryClient().getDefaultOptions().queries?.retry;
+    expect(typeof retry).toBe('function');
+    const shouldRetry = retry as (failureCount: number, error: unknown) => boolean;
+
+    expect(shouldRetry(0, { code: 'ECONNABORTED' })).toBe(true);
+    expect(shouldRetry(1, { code: 'ECONNABORTED' })).toBe(false);
   });
 });

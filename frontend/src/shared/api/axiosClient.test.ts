@@ -19,6 +19,15 @@ jest.mock('axios', () => {
   };
 });
 
+describe('AxiosClient default configuration', () => {
+  it('bounds browser requests so workspace loading states cannot hang forever', () => {
+    expect(axios.create).toHaveBeenCalledWith(expect.objectContaining({
+      timeout: 15_000,
+    }));
+    expect(axiosClient).toBeDefined();
+  });
+});
+
 describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
   let requestInterceptor: (config: any) => any;
   let responseSuccessInterceptor: (response: any) => any;
