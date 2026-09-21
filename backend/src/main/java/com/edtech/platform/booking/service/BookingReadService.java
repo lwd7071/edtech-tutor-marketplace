@@ -102,7 +102,9 @@ public class BookingReadService {
         result.put("outsideAvailabilityWarning",b.isOutsideAvailabilityWarning());result.put("version",b.getVersion());result.put("cancelReason",b.getCancelReason());
         result.put("meetingLink",b.getMeetingLink());result.put("locationAddress",b.getLocationAddress());
         var t=teachers.getTeacher(b.getTeacherId());var studentIdentity=identities.getIdentity(b.getStudentId());
-        result.put("teacher",Map.of("id",b.getTeacherId(),"fullName",t==null?"Gia sư":t.fullName()));
+        String teacherName = t == null || t.fullName() == null || t.fullName().isBlank()
+                ? "Gia sư" : t.fullName();
+        result.put("teacher",Map.of("id",b.getTeacherId(),"fullName",teacherName));
         result.put("student",Map.of("id",b.getStudentId(),"fullName",studentIdentity.map(i->i.fullName()).orElse("Học viên")));
         result.put("subject",Map.of("id",b.getSubjectId(),"name",subjects.getSubject(b.getSubjectId()).name()));
         result.put("sessionReport",reports.findByBookingId(b.getId()).map(r->{

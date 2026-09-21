@@ -3,6 +3,16 @@
 > Cập nhật: 2026-09-21. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
 
+## Nullable audit snapshots và booking teacher-name fallback (working tree, 2026-09-21)
+
+- Đã sửa AuditLog để shallow-copy map ngoài bằng LinkedHashMap không sửa được, giữ value null cho JSONB null, và kiểm tra toàn bộ key trước khi tạo map đích. AuditTrailFacade.append vẫn dùng transaction bắt buộc; BookingReadService.view dùng "Gia sư" cho teacher snapshot/name thiếu, null hoặc blank ở cả list/detail.
+- RED hợp lệ đã được xác minh trước sửa: AuditLogTest fail tại Map.copyOf với snapshot nullable; booking regression fail tại BookingReadService.view với Map.of khi tên null. Sau sửa, focused unit pass: AuditLogTest 3/3 và BookingServiceTest 9/9.
+- Đã thêm TeacherResidenceIntegrationTest gồm HTTP success/no-change/validation/rollback với UUID fixture riêng, so sánh audit missing-vs-explicit-null; mở rộng AuditLogPersistenceIntegrationTest kiểm tra JSONB key tồn tại và jsonb_typeof(...)=null.
+- Focused integration gate đã chạy thành công sau khi Docker Desktop hoạt động: TeacherResidenceIntegrationTest và AuditLogPersistenceIntegrationTest tổng cộng 14/14 pass, 0 failure, 0 error, 0 skipped. Lần chạy này xác nhận HTTP residence, audit JSONB nullable, rollback và validation.
+- scripts/check-docs.ps1 pass (27 Markdown files); git diff --check pass. Sau full suite, docker container prune -f, docker volume prune -f và docker system prune -f đều chạy thành công, mỗi lệnh thu hồi 0B. Không chạy image prune và không thêm --volumes.
+- Full mvn clean verify đã pass theo phiên chạy ngày 2026-09-21: 500/500 tests, 0 failure, 0 error, 0 skipped; JAR và Spring Boot repackage thành công. Migration diff trống; không kết nối hoặc mutate Supabase. Chưa commit/push/redeploy và chưa gọi production smoke là pass.
+- Trong lần focused chạy đầu, hai lỗi test harness đã được phát hiện và sửa: JdbcTemplate coi toán tử JSONB ? là placeholder, và assertion JSON raw phụ thuộc khoảng trắng. Đã đổi sang jsonb_exists và parse JSON tree; lần chạy sau sửa do người dùng thực hiện đã pass 14/14.
+
 ## Vercel prerender hardening (working tree, 2026-09-21)
 
 - Deployment `dpl_7HmovQAREVxDrcr1BQVq7dYnEqjP` fail vì `/` và `/ranking` server-side fetch vượt 60 giây trong cả 3 lần retry; compile và TypeScript đều pass.

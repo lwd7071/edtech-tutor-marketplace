@@ -1,5 +1,15 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-21 — Nullable audit snapshots và booking teacher-name fallback
+
+- Sửa AuditLog snapshot để giữ JSONB null, từ chối null key trước khi copy và chỉ shallow-copy map ngoài; audit vẫn bắt buộc cùng transaction nghiệp vụ.
+- Thêm regression test residence/persistence và booking list/detail cho teacher name thiếu, null, blank và hợp lệ. Hai integration suite đang blocked cục bộ vì Docker Desktop không lắng nghe.
+- Cập nhật contract, architecture và ADR; không thay đổi migration.
+- Tinh chỉnh assertion integration: dùng jsonb_exists thay cho toán tử ? trong JdbcTemplate và so sánh JSON qua tree để không phụ thuộc whitespace.
+- Focused integration sau sửa pass 14/14 (0 failure/error/skipped), xác nhận Docker/Testcontainers và toàn bộ residence/audit persistence scenarios.
+- Full backend clean verify sau đó pass 500/500 tests, 0 failure/error/skipped; package và Spring Boot repackage pass.
+- Docker cleanup sau full suite hoàn tất: container, volume và system prune đều thành công, thu hồi 0B.
+
 ## 2026-09-21 — Chặn workspace skeleton vô hạn
 
 - Thêm timeout 15 giây cho mọi Axios request từ browser, bao gồm refresh token; request không còn có thể giữ loading vô hạn khi Render cold-start hoặc redeploy.

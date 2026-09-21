@@ -50,6 +50,12 @@ Teacher search dùng SQL projection và batch query cho subject, không hydrate 
 
 Student dashboard là read-model cross-domain chỉ đọc. Controller chỉ gọi service; service gọi `StudentDashboardRepository` đúng một lần. Repository dùng một SQL projection có các scalar subquery trên bảng booking, enrollment, learning, communication và finance, lọc theo `studentId` từ principal. Module này không expose entity và không được dùng cho command/mutation.
 
+## Audit snapshot và thay đổi nơi ở
+
+AuditLog shallow-copy map snapshot ở boundary persistence: map ngoài được copy thành LinkedHashMap không sửa được, giữ nguyên value null để Hibernate ghi thành JSONB null, còn key null bị từ chối trước khi tạo map đích. Nested object không deep-copy. AuditTrailFacade.append dùng transaction hiện tại (Propagation.MANDATORY), vì vậy audit của các command như cập nhật nơi ở phải commit hoặc rollback cùng nghiệp vụ.
+
+PUT /api/teacher/profile/residence chỉ ghi audit khi một trong hai field thực sự thay đổi. DTO dùng String; field thiếu và field gửi null đều bind thành Java null, còn invariant “đã chọn xã thì phải có tỉnh” được kiểm tra bởi Bean Validation trước service.
+
 ## Kiểm thử và guardrail
 
 Từ thư mục `backend`:

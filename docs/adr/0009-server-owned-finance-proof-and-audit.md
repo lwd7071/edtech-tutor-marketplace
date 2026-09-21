@@ -12,6 +12,8 @@ All finance, extension and platform-settings state changes append an `AuditLog` 
 
 Migration V31 adds fail-fast preflight and terminal-state proof constraints. Existing migrations and historical rows are not rewritten or backfilled automatically.
 
+Audit snapshot maps preserve nullable values as JSON null, reject null keys before copying, and shallow-copy only the outer map. AuditTrailFacade.append remains mandatory in the caller transaction; audit failure is not swallowed. This also applies to teacher residence changes, whose before/after snapshots contain nullable province and ward fields.
+
 ## Consequences
 
 - Client-supplied proof URLs/public IDs are no longer trusted.

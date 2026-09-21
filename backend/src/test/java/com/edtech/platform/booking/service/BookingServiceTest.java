@@ -19,6 +19,7 @@ import com.edtech.platform.finance.facade.PackageMoneyAllocator;
 import com.edtech.platform.teacher.facade.TeacherFacade;
 import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import com.edtech.platform.subject.facade.SubjectFacade;
+import com.edtech.platform.subject.facade.dto.SubjectSnapshot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -305,5 +307,47 @@ class BookingServiceTest {
         assertThat(view.teacherId()).isEqualTo(teacherId);
         assertThat(view.subjectId()).isEqualTo(subjectId);
         assertThat(view.content()).isEqualTo("Content");
+    }
+
+    @Test
+    void listAndDetail_shouldFallbackTeacherNameWhenSnapshotMissingOrBlank() {
+        Booking booking = Booking.scheduleTrial(
+                teacherId, studentId, subjectId,
+                Instant.now().minusSeconds(3600), Instant.now(),
+                DeliveryMode.ONLINE, null, null, false
+        );
+        ReflectionTestUtils.setField(booking, "id", UUID.randomUUID());
+        when(subjectFacade.getSubject(subjectId))
+                .thenReturn(new SubjectSnapshot(subjectId, "MATH", "Toán", "HIGH_SCHOOL", true));
+        when(identityFacade.getIdentity(studentId)).thenReturn(Optional.empty());
+        when(sessionReportRepository.findByBookingId(booking.getId())).thenReturn(Optional.empty());
+        when(bookingRepository.findStudent(eq(studentId), isNull(), isNull(), isNull(), any()))
+                .thenReturn(new PageImpl<>(List.of(booking)));
+        when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
+
+        List<String> expectedNames = List.of("Gia sư", "Gia sư", "Gia sư", "Teacher Name");
+        List<TeacherSnapshot> snapshots = java.util.Arrays.asList(
+                null,
+                new TeacherSnapshot(teacherId, teacherUserId, "APPROVED", true, true,
+                        null, null, "Bio", 5, true, false, List.of("VIETNAMESE"), null, null),
+                new TeacherSnapshot(teacherId, teacherUserId, "APPROVED", true, true,
+                        "   ", null, "Bio", 5, true, false, List.of("VIETNAMESE"), null, null),
+                mockTeacherSnapshot()
+        );
+
+        for (int i = 0; i < snapshots.size(); i++) {
+            reset(teacherFacade);
+            when(teacherFacade.getTeacher(teacherId)).thenReturn(snapshots.get(i));
+
+            Map<String, Object> listView = bookingReadService
+                    .list(studentId, false, null, null, null, PageRequest.of(0, 20))
+                    .getContent().get(0);
+            Map<String, Object> detailView = bookingReadService.detail(studentId, booking.getId(), false);
+
+            assertThat(((Map<?, ?>) listView.get("teacher")).get("id")).isEqualTo(teacherId);
+            assertThat(((Map<?, ?>) listView.get("teacher")).get("fullName")).isEqualTo(expectedNames.get(i));
+            assertThat(((Map<?, ?>) detailView.get("teacher")).get("id")).isEqualTo(teacherId);
+            assertThat(((Map<?, ?>) detailView.get("teacher")).get("fullName")).isEqualTo(expectedNames.get(i));
+        }
     }
 }

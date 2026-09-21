@@ -884,6 +884,10 @@ Backend validate field theo `type`; không chấp nhận attachment không thu�
 
 ### 10.1. Residence location (self-declared)
 
+The request DTO uses ordinary String fields, so an omitted field and an explicit JSON null both bind to Java null. Bean Validation (@Valid plus the DTO invariant) rejects a request that contains a ward without a province; a province without a ward is valid. A changed residence appends one audit with both nullable keys present in the before/after JSON snapshots; an unchanged residence appends no audit.
+
+Booking list and detail responses use the same read mapping. When the teacher snapshot is missing or its name is null, empty, or whitespace-only, teacher.fullName is the data fallback "Gia sư"; a non-blank name is returned unchanged. This fallback is not an i18n message key.
+
 `GET /api/public/locations/provinces` and `GET /api/public/locations/provinces/{provinceCode}/wards` return the two-level reference catalog. `PUT /api/teacher/profile/residence` updates nullable `provinceCode` and `wardCode`; a province may be selected without a ward, while a ward always requires and must belong to the selected province. This command never changes profile approval status. Public teacher DTOs expose only `provinceName` and `wardName`, never the legacy detailed `locationAddress`.
 
 Teacher dùng `POST/PUT/GET/DELETE /api/teacher/credentials` với multipart `label`, `version` khi update/delete và proof JPG/PNG/PDF tối đa 5MB. Proof được lưu authenticated trên Cloudinary và chỉ backend proxy cho owner/admin với `Cache-Control: no-store`; public tuyệt đối không nhận URL/bytes. Admin dùng `POST /api/admin/credentials/{id}/approve|reject` với `version`; reject bắt buộc có lý do. Sai version trả `409 CONCURRENT_MODIFICATION`. Public teacher detail chỉ trả `credentials: [{id,label}]` cho mục `APPROVED`; chỉnh mục đã duyệt chuyển về `PENDING` và evict cache profile/search.

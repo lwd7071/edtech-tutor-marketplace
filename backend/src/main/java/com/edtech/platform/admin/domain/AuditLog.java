@@ -15,7 +15,10 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -65,10 +68,21 @@ public class AuditLog {
         this.action = action;
         this.targetType = targetType;
         this.targetId = targetId;
-        this.beforeData = beforeData == null ? null : Map.copyOf(beforeData);
-        this.afterData = afterData == null ? null : Map.copyOf(afterData);
+        this.beforeData = copySnapshot(beforeData);
+        this.afterData = copySnapshot(afterData);
         this.ipAddress = ipAddress;
         this.userAgent = userAgent;
+    }
+
+    /**
+     * Copies only the outer audit snapshot map. Nullable values are preserved in
+     * the copy, while keys must always be non-null. Nested objects are intentionally
+     * not deep-copied and retain their original references.
+     */
+    private static Map<String, Object> copySnapshot(Map<String, Object> source) {
+        if (source == null) return null;
+        source.keySet().forEach(key -> Objects.requireNonNull(key, "Audit snapshot key must not be null"));
+        return Collections.unmodifiableMap(new LinkedHashMap<>(source));
     }
 
     @PrePersist
