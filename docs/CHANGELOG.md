@@ -1,5 +1,10 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-21 — Làm nhẹ health check Render
+
+- Đổi health check của Render từ `/actuator/health` sang `/health`, endpoint public nhẹ chỉ xác nhận process HTTP đã sẵn sàng, tránh phụ thuộc Redis/DB health contributor trong lúc deploy.
+- Đồng bộ Docker với Render bằng `PORT=10000`, `EXPOSE 10000` và bind `0.0.0.0`; log deploy trước đó xác nhận ứng dụng đã start port 10000 nhưng port scanner vẫn timeout, cần xác minh lại bằng redeploy production.
+
 ## 2026-09-21 — Chặn cấu hình Brevo placeholder trên Render
 
 - Preflight cloud mặc định kiểm tra Brevo khi `APP_EMAIL_PROVIDER` bỏ trống, từ chối placeholder literal và validate định dạng `BREVO_SENDER_EMAIL`.

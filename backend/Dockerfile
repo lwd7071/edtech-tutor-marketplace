@@ -31,7 +31,7 @@ COPY --from=builder /build/snapshot-dependencies/ ./
 COPY --from=builder /build/application/ ./
 
 # Container environment
-ENV PORT=8080
+ENV PORT=10000
 ENV SPRING_PROFILES_ACTIVE=cloud
 ENV DB_POOL_MAX_SIZE=5
 ENV DB_POOL_MIN_IDLE=1
@@ -40,7 +40,7 @@ ENV DB_POOL_MIN_IDLE=1
 # the heap consume 75% of the container by itself.
 ENV JAVA_OPTS="-Xms128m -Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=64m -Xss512k -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom"
 
-EXPOSE 8080
+EXPOSE 10000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5m --retries=3 CMD wget -q -O - "http://127.0.0.1:${PORT:-8080}/actuator/health" || exit 1
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher"]

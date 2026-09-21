@@ -43,6 +43,7 @@ spring:
 
 server:
   port: ${PORT:8080}
+  address: ${SERVER_ADDRESS:0.0.0.0}
   servlet:
     encoding:
       charset: UTF-8

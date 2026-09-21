@@ -11,13 +11,13 @@ class RenderDeploymentConfigurationContractTest {
     private static final Path REPOSITORY_ROOT = Path.of("..");
 
     @Test
-    void renderUsesThePublicActuatorHealthEndpoint() throws Exception {
+    void renderUsesTheLightweightPublicHealthEndpoint() throws Exception {
         String blueprint = Files.readString(REPOSITORY_ROOT.resolve("render.yaml"));
 
         assertThat(blueprint)
                 .contains("runtime: docker")
                 .contains("rootDir: backend")
-                .contains("healthCheckPath: /actuator/health");
+                .contains("healthCheckPath: /health");
     }
 
     @Test
@@ -38,6 +38,13 @@ class RenderDeploymentConfigurationContractTest {
     void serverListensOnThePortProvidedByRender() throws Exception {
         String application = Files.readString(Path.of("src/main/resources/application.yml"));
 
-        assertThat(application).contains("port: ${PORT:8080}");
+        assertThat(application)
+                .contains("port: ${PORT:8080}")
+                .contains("address: ${SERVER_ADDRESS:0.0.0.0}");
+
+        String dockerfile = Files.readString(Path.of("Dockerfile"));
+        assertThat(dockerfile)
+                .contains("ENV PORT=10000")
+                .contains("EXPOSE 10000");
     }
 }
