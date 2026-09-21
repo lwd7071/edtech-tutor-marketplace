@@ -33,7 +33,7 @@ export default function DocumentList({ documents, onDelete }: DocumentListProps)
           <div key={item.id} role="listitem" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 0', borderBottom: '1px solid var(--color-border)' }}>
             <FileOutlined style={{ fontSize: 24, color: 'var(--color-primary-500)' }} />
             <div style={{ flex: 1 }}>
-              <a href={item.url} target="_blank" rel="noopener noreferrer">{item.name}</a>
+              <Text strong>{item.name}</Text>
               <div><Text type="secondary" style={{ marginRight: 8 }}>{new Date(item.uploadedAt).toLocaleDateString('vi-VN')}</Text>{getStatusTag(item.status)}</div>
             </div>
             <Popconfirm

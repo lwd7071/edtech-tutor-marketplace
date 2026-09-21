@@ -46,9 +46,9 @@ export default function DocumentUploadBox({ onSuccess }: DocumentUploadBoxProps)
       <p className="ant-upload-drag-icon">
         <InboxOutlined />
       </p>
-      <p className="ant-upload-text">Kéo thả hoặc nhấp để tải tài liệu lên</p>
+      <p className="ant-upload-text">Kéo thả hoặc nhấp để tải giấy tờ tùy thân lên</p>
       <p className="ant-upload-hint">
-        Hỗ trợ tải lên nhiều file cùng lúc. Các định dạng được hỗ trợ: PDF, PNG, JPG, JPEG.
+        Chỉ nhận PDF, PNG, JPG, JPEG. File chỉ admin được xem.
       </p>
     </Dragger>
   );

@@ -85,8 +85,8 @@ export interface UpdatePackageRequest {
 
 type SubjectWire = {id:string;subject:{id:string;name:string;educationLevel:string}};
 const subjectView = (s:SubjectWire):TeacherSubject => ({id:s.subject.id,subjectId:s.subject.id,name:s.subject.name,category:s.subject.educationLevel});
-type DocumentWire = {id:string;title:string;secureUrl:string;documentType:string;verificationStatus:TeacherDocument['status'];verifiedAt:string};
-const documentView = (d:DocumentWire):TeacherDocument => ({id:d.id,name:d.title||d.documentType,url:d.secureUrl,type:d.documentType,status:d.verificationStatus,uploadedAt:d.verifiedAt});
+type DocumentWire = {id:string;title:string;secureUrl?:string|null;documentType:string;verificationStatus:TeacherDocument['status'];verifiedAt:string};
+const documentView = (d:DocumentWire):TeacherDocument => ({id:d.id,name:d.title||'Giấy tờ định danh',url:'',type:d.documentType,status:d.verificationStatus,uploadedAt:d.verifiedAt});
 
 export const teacherApi = {
   getProfile: () => axiosClient.get<{data: TeacherProfile}>('/api/teacher/profile').then(res => ({...res.data.data, approvalStatus: res.data.data.profileStatus})),
@@ -98,7 +98,7 @@ export const teacherApi = {
   uploadDocument: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('documentType', 'OTHER');
+    formData.append('documentType', 'IDENTITY');
     formData.append('title', file.name);
     return axiosClient.post<{data:DocumentWire}>('/api/teacher/documents', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -109,6 +109,7 @@ export const teacherApi = {
   createCredential: (label: string, proof: File) => { const f = new FormData(); f.append('label', label); f.append('proof', proof); return axiosClient.post<{data: TeacherCredential}>('/api/teacher/credentials', f, {headers:{'Content-Type':'multipart/form-data'}}).then(res => res.data.data); },
   updateCredential: (id: string, label: string, version: number, proof?: File) => { const f = new FormData(); f.append('label', label); f.append('version', String(version)); if (proof) f.append('proof', proof); return axiosClient.put<{data: TeacherCredential}>(`/api/teacher/credentials/${id}`, f, {headers:{'Content-Type':'multipart/form-data'}}).then(res => res.data.data); },
   deleteCredential: (id: string, version: number) => axiosClient.delete(`/api/teacher/credentials/${id}`, {params:{version}}).then(res => res.data),
+  getCredentialProof: (id: string) => axiosClient.get<Blob>(`/api/teacher/credentials/${id}/proof`, {responseType:'blob'}).then(res => res.data),
 
   getSubjects: () => axiosClient.get<{data:SubjectWire[]}>('/api/teacher/subjects').then(res => res.data.data.map(subjectView)),
   addSubject: (subjectId: string) => axiosClient.post<{data:SubjectWire}>(`/api/teacher/subjects/${subjectId}`, {}).then(res => subjectView(res.data.data)),

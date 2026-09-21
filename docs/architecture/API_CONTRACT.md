@@ -289,7 +289,7 @@ Tất cả endpoint yêu cầu role `TEACHER`; endpoint bán gói/booking yêu c
 | PUT | `/api/teacher/profile` | `UpdateTeacherProfileRequest` | `TeacherProfileDetail` |
 | PUT | `/api/teacher/profile/residence` | `UpdateTeacherResidenceRequest` | `TeacherProfileDetail` |
 | POST | `/api/teacher/profile/submit` | — | `TeacherProfileDetail` |
-| POST | `/api/teacher/documents` | `multipart/form-data` | `TeacherDocumentView` (`201`) |
+| POST | `/api/teacher/documents` | `multipart/form-data` (`documentType=IDENTITY`) | `TeacherDocumentView` (`201`) |
 | DELETE | `/api/teacher/documents/{id}` | — | — (`204`) |
 | GET | `/api/teacher/subjects` | — | `TeacherSubjectView[]` |
 | POST | `/api/teacher/subjects/{subjectId}` | `AssignSubjectRequest` | `TeacherSubjectView` (`201`) |
@@ -323,7 +323,7 @@ reference tables V38. Hai field có thể để trống; nếu truyền `wardCod
 `provinceCode`. `PUT /api/teacher/profile/residence` chỉ cập nhật nơi ở và không đưa
 profile đã `APPROVED` về `DRAFT` hoặc yêu cầu duyệt lại.
 
-Upload document dùng parts `file`, `documentType`, `title`. MIME/size theo `CODING_CONVENTION.md` và spec upload.
+Upload document dùng parts `file`, `documentType=IDENTITY`, `title`. Đây là giấy tờ tùy thân riêng tư; `TeacherDocumentView` không serialize `secureUrl`, và file chỉ được admin xem trong luồng duyệt hồ sơ. Bằng cấp/chứng chỉ dùng credential API ở mục 10. MIME/size theo `CODING_CONVENTION.md` và spec upload.
 
 ```json
 // ReplaceAvailabilityRequest
@@ -886,7 +886,7 @@ Backend validate field theo `type`; không chấp nhận attachment không thu�
 
 `GET /api/public/locations/provinces` and `GET /api/public/locations/provinces/{provinceCode}/wards` return the two-level reference catalog. `PUT /api/teacher/profile/residence` updates nullable `provinceCode` and `wardCode`; a province may be selected without a ward, while a ward always requires and must belong to the selected province. This command never changes profile approval status. Public teacher DTOs expose only `provinceName` and `wardName`, never the legacy detailed `locationAddress`.
 
-Teacher dùng `POST/PUT/GET/DELETE /api/teacher/credentials` với multipart `label`, `version` khi update/delete và proof JPG/PNG/PDF tối đa 10MB. Proof được lưu authenticated trên Cloudinary và chỉ backend proxy cho owner/admin với `Cache-Control: no-store`; public tuyệt đối không nhận URL/bytes. Admin dùng `POST /api/admin/credentials/{id}/approve|reject` với `version`; reject bắt buộc có lý do. Sai version trả `409 CONCURRENT_MODIFICATION`. Public teacher detail chỉ trả `credentials: [{id,label}]` cho mục `APPROVED`; chỉnh mục đã duyệt chuyển về `PENDING` và evict cache profile/search.
+Teacher dùng `POST/PUT/GET/DELETE /api/teacher/credentials` với multipart `label`, `version` khi update/delete và proof JPG/PNG/PDF tối đa 5MB. Proof được lưu authenticated trên Cloudinary và chỉ backend proxy cho owner/admin với `Cache-Control: no-store`; public tuyệt đối không nhận URL/bytes. Admin dùng `POST /api/admin/credentials/{id}/approve|reject` với `version`; reject bắt buộc có lý do. Sai version trả `409 CONCURRENT_MODIFICATION`. Public teacher detail chỉ trả `credentials: [{id,label}]` cho mục `APPROVED`; chỉnh mục đã duyệt chuyển về `PENDING` và evict cache profile/search.
 
 ## 11. Admin booking settlement actions
 

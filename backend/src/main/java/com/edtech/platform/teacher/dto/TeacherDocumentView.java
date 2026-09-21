@@ -5,12 +5,13 @@ import com.edtech.platform.teacher.domain.VerificationStatus;
 
 import java.time.Instant;
 import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public record TeacherDocumentView(
         UUID id,
         DocumentType documentType,
         String title,
-        String secureUrl,
+        @JsonIgnore String secureUrl,
         String mimeType,
         Long fileSize,
         VerificationStatus verificationStatus,

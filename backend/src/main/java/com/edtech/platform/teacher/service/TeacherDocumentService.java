@@ -43,6 +43,10 @@ public class TeacherDocumentService {
 
     @Transactional
     public TeacherDocumentView uploadDocument(UUID userId, MultipartFile file, DocumentType documentType, String title) {
+        if (documentType != DocumentType.IDENTITY) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR,
+                    "Tài liệu xác minh chỉ nhận giấy tờ định danh");
+        }
         if (file == null || file.isEmpty()) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Tệp tải lên không được để trống");
         }

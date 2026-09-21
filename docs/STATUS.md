@@ -3,6 +3,18 @@
 > Cập nhật: 2026-09-21. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
 
+## Minh chứng năng lực (working tree, 2026-09-21)
+
+- Trang gia sư đã có form dọc, vùng kéo thả JPG/PNG/PDF, preview ảnh/tên PDF, danh sách trạng thái tiếng Việt và thao tác xem/sửa/xóa qua API credential hiện có. Trang admin cũng lấy proof qua API có xác thực để xem trong modal. Public detail vẫn chỉ chứa tên badge đã duyệt.
+- Giới hạn upload credential mới và file thay thế là 5MB ở FE/backend. Schema V40 vẫn có trần 10MB để dữ liệu cũ hợp lệ; không có migration mới và không kết nối hoặc mutate Supabase.
+- Backend focused `TeacherCredentialServiceTest` 15/15 pass; frontend focused Jest 2/2 pass, typecheck, lint và Next production build pass. Full frontend/backend suite, Cloudinary thật và production smoke chưa chạy trong đợt này.
+
+## Xác minh danh tính (working tree, 2026-09-21)
+
+- Khu vực `/teacher/documents` đã đổi tên thành “Xác minh danh tính”, upload chỉ gửi `documentType=IDENTITY`; bằng cấp/chứng chỉ không còn thuộc luồng tài liệu này.
+- `TeacherDocumentView` không serialize `secureUrl` cho teacher; admin vẫn xem giấy tờ trong luồng duyệt hồ sơ. Không có migration mới và chưa kết nối/mutate Supabase.
+- Focused test cho document và full frontend chưa chạy lại sau thay đổi này.
+
 ## Đợt sửa auth đổi vai trò và đồng bộ session (working tree, chưa nghiệm thu production)
 
 - Đã triển khai: redirect sau login được chọn sau khi biết `AuthResult.user.role`; chỉ giữ các query/hash trong allowlist; Admin chỉ về `/admin` theo contract hiện tại.

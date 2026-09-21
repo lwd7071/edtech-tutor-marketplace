@@ -106,8 +106,8 @@ class TeacherDocumentServiceTest {
 
         TeacherDocument savedDoc = mock(TeacherDocument.class);
         when(savedDoc.getId()).thenReturn(UUID.randomUUID());
-        when(savedDoc.getDocumentType()).thenReturn(DocumentType.CERTIFICATE);
-        when(savedDoc.getTitle()).thenReturn("Toeic Cert");
+        when(savedDoc.getDocumentType()).thenReturn(DocumentType.IDENTITY);
+        when(savedDoc.getTitle()).thenReturn("CCCD");
         when(savedDoc.getSecureUrl()).thenReturn(uploadResult.secureUrl());
         when(savedDoc.getMimeType()).thenReturn(uploadResult.mimeType());
         when(savedDoc.getFileSize()).thenReturn(uploadResult.fileSize());
@@ -115,13 +115,23 @@ class TeacherDocumentServiceTest {
 
         when(teacherDocumentRepository.save(any(TeacherDocument.class))).thenReturn(savedDoc);
 
-        TeacherDocumentView view = teacherDocumentService.uploadDocument(userId, file, DocumentType.CERTIFICATE, "Toeic Cert");
+        TeacherDocumentView view = teacherDocumentService.uploadDocument(userId, file, DocumentType.IDENTITY, "CCCD");
 
         assertNotNull(view);
-        assertEquals("Toeic Cert", view.title());
-        assertEquals(uploadResult.secureUrl(), view.secureUrl());
+        assertEquals("CCCD", view.title());
         verify(fileStoragePort).upload(eq(file), eq("teacher_documents/" + teacherProfileId));
         verify(teacherDocumentRepository).save(any(TeacherDocument.class));
+    }
+
+    @Test
+    void uploadDocument_rejectsNonIdentityDocumentType() {
+        MockMultipartFile file = new MockMultipartFile("file", "degree.pdf", "application/pdf", "pdf".getBytes());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> teacherDocumentService.uploadDocument(userId, file, DocumentType.DEGREE, "Bằng đại học"));
+
+        assertEquals(ErrorCode.VALIDATION_ERROR, ex.getErrorCode());
+        verifyNoInteractions(fileStoragePort, teacherDocumentRepository);
     }
 
     @Test
@@ -129,7 +139,7 @@ class TeacherDocumentServiceTest {
         MockMultipartFile emptyFile = new MockMultipartFile("file", "empty.png", "image/png", new byte[0]);
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> teacherDocumentService.uploadDocument(userId, emptyFile, DocumentType.DEGREE, "Title"));
+                () -> teacherDocumentService.uploadDocument(userId, emptyFile, DocumentType.IDENTITY, "Title"));
         assertEquals(ErrorCode.VALIDATION_ERROR, ex.getErrorCode());
     }
 
@@ -139,7 +149,7 @@ class TeacherDocumentServiceTest {
         MockMultipartFile txtFile = new MockMultipartFile("file", "note.txt", "text/plain", txtBytes);
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> teacherDocumentService.uploadDocument(userId, txtFile, DocumentType.DEGREE, "Title"));
+                () -> teacherDocumentService.uploadDocument(userId, txtFile, DocumentType.IDENTITY, "Title"));
         assertEquals(ErrorCode.FILE_TYPE_NOT_ALLOWED, ex.getErrorCode());
     }
 
@@ -151,7 +161,7 @@ class TeacherDocumentServiceTest {
         when(teacherProfileRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> teacherDocumentService.uploadDocument(userId, file, DocumentType.DEGREE, "Title"));
+                () -> teacherDocumentService.uploadDocument(userId, file, DocumentType.IDENTITY, "Title"));
         assertEquals(ErrorCode.TEACHER_PROFILE_NOT_FOUND, ex.getErrorCode());
     }
 

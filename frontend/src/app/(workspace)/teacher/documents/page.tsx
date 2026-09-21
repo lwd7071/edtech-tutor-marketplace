@@ -49,7 +49,10 @@ export default function DocumentsPage() {
 
   return (
     <div style={{ maxWidth: 880, margin: '0 auto' }}>
-      <Title level={2}>Tài liệu & Chứng chỉ</Title>
+      <Title level={2}>Xác minh danh tính</Title>
+      <Typography.Paragraph type="secondary">
+        Cập nhật giấy tờ tùy thân để admin xác minh hồ sơ. File này là riêng tư và không hiển thị trên hồ sơ công khai.
+      </Typography.Paragraph>
       
       {error && <Alert type="error" title={error} style={{ marginBottom: 24 }} />}
       

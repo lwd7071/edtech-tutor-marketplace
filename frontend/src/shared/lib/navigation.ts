@@ -53,7 +53,7 @@ export const workspaceLinks: Record<UserRole, { href: string; label: string }[]>
  ].map(([href,label]) => ({href,label})),
  TEACHER: [
  ['/teacher','Tổng quan'], ['/teacher/bookings','Lịch dạy'], ['/teacher/students','Học viên'], ['/teacher/trial-requests','Yêu cầu học thử'],
- ['/teacher/profile','Hồ sơ gia sư'], ['/teacher/credentials','Chứng chỉ'], ['/teacher/subjects','Môn đang dạy'], ['/teacher/documents','Tài liệu xác minh'],
+ ['/teacher/profile','Hồ sơ gia sư'], ['/teacher/credentials','Minh chứng năng lực'], ['/teacher/subjects','Môn đang dạy'], ['/teacher/documents','Xác minh danh tính'],
  ['/teacher/subject-proposals','Đề xuất môn học'], ['/teacher/packages','Gói học'], ['/teacher/availability','Lịch rảnh'],
  ['/teacher/assignments','Bài tập'], ['/teacher/wallet','Ví thu nhập'], ['/teacher/payouts','Yêu cầu rút tiền'],
  ['/teacher/bank-accounts','Ngân hàng'], ['/teacher/stats','Thống kê'], ['/teacher/messages','Tin nhắn'], ['/teacher/notifications','Thông báo'],

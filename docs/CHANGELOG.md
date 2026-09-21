@@ -1,5 +1,17 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-21 — Tách xác minh danh tính khỏi minh chứng năng lực
+
+- Đổi khu vực tài liệu teacher thành “Xác minh danh tính”, chỉ nhận `IDENTITY`; bằng cấp/chứng chỉ dùng khu vực Minh chứng năng lực.
+- Ẩn `secureUrl` khỏi DTO teacher và cập nhật copy UI/admin để giấy tờ tùy thân được coi là riêng tư.
+- Không có migration mới; dữ liệu cũ được giữ nguyên.
+
+## 2026-09-21 — Làm rõ giao diện Minh chứng năng lực
+
+- Thiết kế lại form chứng chỉ với field dọc, dropzone, preview, CTA màu chủ đạo và danh sách trạng thái/chỉnh sửa/xóa; sửa màn hình admin xem proof qua API có xác thực.
+- Đồng bộ giới hạn proof JPG/PNG/PDF xuống 5MB tại frontend, backend và API contract; giữ schema hiện có.
+- File proof chỉ được mở qua API owner có xác thực; public badge chỉ hiển thị nhãn đã duyệt. Không có migration mới, không kết nối Supabase.
+
 ## 2026-09-21 — Sửa đổi role auth và đồng bộ session nhiều tab
 
 - Validate return URL cùng role sau login; loại query/hash không nằm trong allowlist và redirect lồng.

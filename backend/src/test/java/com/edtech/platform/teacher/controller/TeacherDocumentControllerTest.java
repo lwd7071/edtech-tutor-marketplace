@@ -70,8 +70,8 @@ class TeacherDocumentControllerTest {
     void list_shouldReturn200AndDocuments() throws Exception {
         TeacherDocumentView view = new TeacherDocumentView(
                 UUID.randomUUID(),
-                DocumentType.DEGREE,
-                "Bang dai hoc",
+                DocumentType.IDENTITY,
+                "CCCD",
                 "https://res.cloudinary.com/demo/image/upload/v1/degree.pdf",
                 "application/pdf",
                 1024L,
@@ -84,8 +84,9 @@ class TeacherDocumentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].id").value(view.id().toString()))
-                .andExpect(jsonPath("$.data[0].title").value("Bang dai hoc"))
-                .andExpect(jsonPath("$.data[0].documentType").value("DEGREE"));
+                .andExpect(jsonPath("$.data[0].title").value("CCCD"))
+                .andExpect(jsonPath("$.data[0].documentType").value("IDENTITY"))
+                .andExpect(jsonPath("$.data[0].secureUrl").doesNotExist());
 
         verify(teacherDocumentService).getDocuments(teacherUserId);
     }
@@ -97,8 +98,8 @@ class TeacherDocumentControllerTest {
         );
         TeacherDocumentView view = new TeacherDocumentView(
                 UUID.randomUUID(),
-                DocumentType.DEGREE,
-                "Bang dai hoc",
+                DocumentType.IDENTITY,
+                "CCCD",
                 "https://res.cloudinary.com/demo/image/upload/v1/degree.png",
                 "image/png",
                 (long) "dummy-image-content".getBytes().length,
@@ -106,19 +107,19 @@ class TeacherDocumentControllerTest {
                 null
         );
 
-        when(teacherDocumentService.uploadDocument(eq(teacherUserId), any(), eq(DocumentType.DEGREE), eq("Bang dai hoc")))
+        when(teacherDocumentService.uploadDocument(eq(teacherUserId), any(), eq(DocumentType.IDENTITY), eq("CCCD")))
                 .thenReturn(view);
 
         mockMvc.perform(multipart("/api/teacher/documents")
                         .file(file)
-                        .param("documentType", "DEGREE")
-                        .param("title", "Bang dai hoc"))
+                        .param("documentType", "IDENTITY")
+                        .param("title", "CCCD"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.id").value(view.id().toString()))
-                .andExpect(jsonPath("$.data.secureUrl").value(view.secureUrl()))
-                .andExpect(jsonPath("$.data.documentType").value("DEGREE"));
+                .andExpect(jsonPath("$.data.secureUrl").doesNotExist())
+                .andExpect(jsonPath("$.data.documentType").value("IDENTITY"));
 
-        verify(teacherDocumentService).uploadDocument(eq(teacherUserId), any(), eq(DocumentType.DEGREE), eq("Bang dai hoc"));
+        verify(teacherDocumentService).uploadDocument(eq(teacherUserId), any(), eq(DocumentType.IDENTITY), eq("CCCD"));
     }
 
     @Test

@@ -110,8 +110,8 @@ export function TeacherDetailDrawer({ open, teacher, onClose }: TeacherDetailDra
         </Card>
       )}
 
-      <Divider titlePlacement="left">Danh sách Bằng cấp & Chứng chỉ</Divider>
-      {teacher.documents.length === 0 ? <Empty description="Chưa có chứng chỉ hoặc tài liệu nào được đính kèm." /> : (
+      <Divider titlePlacement="left">Giấy tờ xác minh danh tính</Divider>
+      {teacher.documents.length === 0 ? <Empty description="Chưa có giấy tờ định danh nào được đính kèm." /> : (
         <div role="list">{teacher.documents.map((doc) => (
           <div key={doc.id} role="listitem" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, padding: '12px 0', borderBottom: '1px solid var(--color-border)' }}>
             <div><Typography.Text strong>{doc.title}</Typography.Text><div><Typography.Text type="secondary">Loại: {doc.type} · Dung lượng: {(doc.fileSize / 1024).toFixed(0)} KB</Typography.Text></div></div>

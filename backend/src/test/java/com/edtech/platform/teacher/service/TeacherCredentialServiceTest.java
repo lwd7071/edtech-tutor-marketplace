@@ -125,7 +125,7 @@ class TeacherCredentialServiceTest {
         when(profiles.findByUserId(user)).thenReturn(Optional.of(p));
         when(repository.countByTeacherIdAndDeletedFalse(teacherId)).thenReturn(0L);
 
-        byte[] largeBytes = new byte[10 * 1024 * 1024 + 1];
+        byte[] largeBytes = new byte[5 * 1024 * 1024 + 1];
         var largeFile = new MockMultipartFile("proof", "large.pdf", "application/pdf", largeBytes);
         BusinessException ex = assertThrows(BusinessException.class, () -> service.create(user, "Big", largeFile));
         assertEquals(ErrorCode.FILE_TOO_LARGE, ex.getErrorCode());

@@ -51,7 +51,7 @@ export function TeacherApprovalTable() {
       render: (years: number) => (years ? `${years} năm` : 'Chưa cập nhật'),
     },
     {
-      title: 'Chứng chỉ',
+      title: 'Giấy tờ định danh',
       dataIndex: 'documents',
       key: 'documents',
       render: (docs: any[]) => `${docs?.length || 0} tài liệu`,
