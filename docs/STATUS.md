@@ -3,6 +3,15 @@
 > Cập nhật: 2026-09-21. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
 
+## Đợt sửa auth đổi vai trò và đồng bộ session (working tree, chưa nghiệm thu production)
+
+- Đã triển khai: redirect sau login được chọn sau khi biết `AuthResult.user.role`; chỉ giữ các query/hash trong allowlist; Admin chỉ về `/admin` theo contract hiện tại.
+- Đã triển khai: logout gọi revoke best-effort tối đa 2 giây, sau đó luôn clear local session + toàn bộ React Query cache và `router.replace('/auth/login')` ngay tại tab nguồn.
+- Đã triển khai: `sessionId = crypto.randomUUID()` cho mỗi lần establish, revision không chứa token qua `localStorage`, đồng bộ tab bằng `storage` + `visibilitychange`, và snapshot guard cho refresh Axios. Giả định hiện tại là một origin chỉ có một danh tính; multi-account switch thực sự chưa được hỗ trợ.
+- Đã thêm regression tests cho cùng tab, hai page trong cùng Playwright context, redirect lồng, Admin, cache clear và refresh response về muộn; thêm frontend CI chạy Jest/typecheck/lint/build/E2E mock-auth.
+- Bằng chứng kiểm thử đã hoàn tất trong Docker Linux engine: frontend lint pass, Jest `103/103` suites và `268/268` tests pass, Next production build pass, Chromium Playwright E2E `6/6` pass (bao gồm cùng tab và hai page trong cùng context). Lỗi Windows `spawn EPERM`/treo không còn là blocker khi chạy qua Docker.
+- Migration diff không có thay đổi; không kết nối hoặc mutate Supabase. Production smoke chưa đạt vì backend Render vẫn cần xác minh healthy; frontend chưa được coi là đã rollout production cho tới khi deploy và smoke thành công.
+
 - Google OAuth complete-registration: đã sửa lỗi tạo user mới thiếu `notifyParent`, khiến PostgreSQL từ chối `NULL` trên cột `users.notify_parent` và API trả `INTERNAL_SERVER_ERROR`. Backend đặt giá trị `false` cho tài khoản OAuth; regression test nằm trong `OAuthAccountServiceTest`. OAuth focused suite `13/13` pass. Không có migration mới; chưa redeploy production.
 
 - Teacher search HTTP binding: đã tái hiện lỗi Render bằng `MockMvc` với `GET /api/public/teachers?sort=rating_desc&page=0&size=6`; trước sửa Spring MVC ném `No primary or single unique constructor found` vì `TeacherSearchParams` có canonical constructor 14 tham số và constructor phụ 12 tham số. Đã xóa constructor phụ, chuyển test sang canonical constructor và thêm regression test qua MVC binder. Focused teacher-search `12/12` pass; full backend PostgreSQL 16/Redis Testcontainers `478/478` pass (`0` failure, `0` error, `0` skipped). Không có migration mới; không kết nối hoặc mutate Supabase. Deploy Render sau commit vẫn cần smoke test endpoint production trước khi gọi là đã xác minh.

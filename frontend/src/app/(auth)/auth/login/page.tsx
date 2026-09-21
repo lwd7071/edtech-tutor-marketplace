@@ -13,6 +13,7 @@ import { BASE_API_URL } from '@/shared/backend';
 import { useAuthStore } from '@/features/auth';
 import { ErrorState } from '@/shared/components/feedback/ErrorState';
 import { roleHome, safeReturnTo } from '@/shared/lib/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 const { Title, Text } = Typography;
 
@@ -28,6 +29,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const establish = useAuthStore((state) => state.establish);
+  const queryClient = useQueryClient();
   
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -52,9 +54,10 @@ function LoginForm() {
       const res = await authApi.login(payload);
       
       if (res.data) {
+        queryClient.clear();
         establish(res.data, values.remember);
-        const redirectPath = safeReturnTo(searchParams.get('redirect'), roleHome(res.data.user.role));
-        router.push(redirectPath);
+        const redirectPath = safeReturnTo(searchParams.get('redirect'), res.data.user.role, roleHome(res.data.user.role));
+        router.replace(redirectPath);
       }
     } catch (error: any) {
       const code = error.response?.data?.errorCode;

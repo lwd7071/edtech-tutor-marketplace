@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { clearSessionStorage, readSession, writeSession, writeTokens } from './sessionPersistence';
+import { clearSessionStorage, createSessionId, publishSessionChange, readSession, readSessionChange, writeSession, writeTokens } from './sessionPersistence';
 
 export type UserRole = 'STUDENT' | 'TEACHER' | 'ADMIN';
 export type UserStatus = 'ACTIVE' | 'LOCKED' | 'PENDING' | 'APPROVED' | string;
@@ -27,6 +27,8 @@ interface SessionState {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
+  sessionId: string | null;
+  revision: string | null;
   remember: boolean;
   isAuthenticated: boolean;
   hydrate: () => void;
@@ -40,6 +42,8 @@ const anonymousState = {
   user: null,
   accessToken: null,
   refreshToken: null,
+  sessionId: null,
+  revision: null,
   remember: false,
   isAuthenticated: false,
 };
@@ -49,6 +53,8 @@ export const useAuthStore = create<SessionState>((set, get) => ({
   user: null,
   accessToken: null,
   refreshToken: null,
+  sessionId: null,
+  revision: null,
   remember: false,
   isAuthenticated: false,
 
@@ -56,10 +62,12 @@ export const useAuthStore = create<SessionState>((set, get) => ({
     const session = readSession();
     if (!session) {
       clearSessionStorage();
-      set(anonymousState);
+      set({ ...anonymousState, revision: readSessionChange()?.revision ?? null });
       return;
     }
-    set({ ...session, status: 'authenticated', isAuthenticated: true });
+    const upgradedSession = session.sessionId ? session : { ...session, sessionId: createSessionId() };
+    if (!session.sessionId) writeSession(upgradedSession);
+    set({ ...upgradedSession, status: 'authenticated', isAuthenticated: true, revision: readSessionChange()?.revision ?? null });
   },
 
   establish: (result, remember = false) => {
@@ -68,20 +76,25 @@ export const useAuthStore = create<SessionState>((set, get) => ({
       accessToken: result.accessToken,
       refreshToken: result.refreshToken ?? null,
       remember,
+      sessionId: createSessionId(),
     };
     writeSession(session);
-    set({ ...session, status: 'authenticated', isAuthenticated: true });
+    const change = publishSessionChange('establish', session.sessionId);
+    set({ ...session, status: 'authenticated', isAuthenticated: true, revision: change?.revision ?? null });
   },
 
   rotate: (accessToken, refreshToken) => {
     const current = get();
     const nextRefreshToken = refreshToken === undefined ? current.refreshToken : refreshToken;
     writeTokens(accessToken, nextRefreshToken, current.remember);
-    set({ accessToken, refreshToken: nextRefreshToken });
+    const change = publishSessionChange('rotate', current.sessionId);
+    set({ accessToken, refreshToken: nextRefreshToken, revision: change?.revision ?? current.revision });
   },
 
   clear: () => {
     clearSessionStorage();
-    set(anonymousState);
+    const change = publishSessionChange('clear', get().sessionId);
+    set({ ...anonymousState, revision: change?.revision ?? null });
   },
+
 }));

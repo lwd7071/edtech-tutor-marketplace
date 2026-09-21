@@ -5,8 +5,12 @@ describe('workspace navigation', () => {
     expect(roleHome('STUDENT')).toBe('/student');
     expect(roleHome('TEACHER')).toBe('/teacher');
     expect(roleHome('ADMIN')).toBe('/admin');
-    expect(safeReturnTo('/student/bookings?status=SCHEDULED', '/student')).toBe('/student/bookings?status=SCHEDULED');
-    expect(safeReturnTo('//outside.test', '/student')).toBe('/student');
+    expect(safeReturnTo('/student/bookings?status=SCHEDULED', 'STUDENT')).toBe('/student/bookings?status=SCHEDULED');
+    expect(safeReturnTo('/student/bookings?status=SCHEDULED', 'TEACHER')).toBe('/teacher');
+    expect(safeReturnTo('/student/bookings?redirect=https://evil.test&status=SCHEDULED', 'STUDENT')).toBe('/student/bookings?status=SCHEDULED');
+    expect(safeReturnTo('/teachers/t1?packageId=p1&redirect=https://evil.test#packages', 'STUDENT')).toBe('/teachers/t1?packageId=p1#packages');
+    expect(safeReturnTo('/admin', 'ADMIN')).toBe('/admin');
+    expect(safeReturnTo('//outside.test', 'STUDENT')).toBe('/student');
   });
 
   it('matches detail pages to their most specific navigation item', () => {

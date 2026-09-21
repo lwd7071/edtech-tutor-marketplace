@@ -29,6 +29,7 @@ describe('session store', () => {
       refreshToken: 'refresh-1',
       isAuthenticated: true,
     });
+    expect(useAuthStore.getState().sessionId).toEqual(expect.any(String));
     expect(Cookies.get('accessToken')).toBe('access-1');
 
     useAuthStore.getState().rotate('access-2', 'refresh-2');
@@ -45,6 +46,7 @@ describe('session store', () => {
       accessToken: null,
       isAuthenticated: false,
     });
+    expect(useAuthStore.getState().sessionId).toBeNull();
   });
 
   it('rejects malformed persisted users during hydration', () => {

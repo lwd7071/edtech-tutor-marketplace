@@ -1,7 +1,48 @@
 import type { UserRole } from '@/features/auth';
 export const roleHome = (role?: UserRole) => role === 'ADMIN' ? '/admin' : role === 'TEACHER' ? '/teacher' : '/student';
-export function safeReturnTo(value: string | null, fallback: string) {
-  return value && value.startsWith('/') && !value.startsWith('//') && !value.includes('\\') ? value : fallback;
+const rolePrefixes: Record<UserRole, string> = {
+  STUDENT: '/student',
+  TEACHER: '/teacher',
+  ADMIN: '/admin',
+};
+
+const publicReturnPaths = ['/', '/teachers', '/subjects', '/ranking', '/how-it-works', '/become-a-tutor', '/terms', '/privacy', '/support'];
+
+function isRolePath(pathname: string, role: UserRole) {
+  const prefix = rolePrefixes[role];
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
+function isPublicPath(pathname: string) {
+  return publicReturnPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+}
+
+function filteredReturnQuery(url: URL) {
+  const params = new URLSearchParams();
+  const allowedByPath: Record<string, string[]> = {
+    '/student/bookings': ['status'],
+    '/student/payments/callback': ['invoiceId'],
+  };
+  const allowed = allowedByPath[url.pathname] ?? (url.pathname.startsWith('/teachers/') ? ['packageId'] : []);
+  for (const key of allowed) {
+    const value = url.searchParams.get(key);
+    if (value) params.set(key, value);
+  }
+  return params.toString();
+}
+
+export function safeReturnTo(value: string | null, role: UserRole, fallback = roleHome(role)) {
+  if (!value || value.includes('\\') || /[\u0000-\u001f\u007f]/.test(value)) return fallback;
+  try {
+    const url = new URL(value, window.location.origin);
+    if (url.origin !== window.location.origin || !url.pathname.startsWith('/') || url.pathname.startsWith('//')) return fallback;
+    if (!isRolePath(url.pathname, role) && !isPublicPath(url.pathname)) return fallback;
+    const query = filteredReturnQuery(url);
+    const hash = url.pathname.startsWith('/teachers/') && ['#packages', '#trial'].includes(url.hash) ? url.hash : '';
+    return `${url.pathname}${query ? `?${query}` : ''}${hash}`;
+  } catch {
+    return fallback;
+  }
 }
 export const workspaceLinks: Record<UserRole, { href: string; label: string }[]> = {
  STUDENT: [

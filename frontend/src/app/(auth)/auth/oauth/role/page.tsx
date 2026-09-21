@@ -7,6 +7,7 @@ import { authApi } from '@/shared/api/auth';
 import { useAuthStore } from '@/features/auth';
 import RadioCard from '@/shared/components/ui/RadioCard';
 import { roleHome } from '@/shared/lib/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 const { Title, Text } = Typography;
 
@@ -15,6 +16,7 @@ function OAuthRoleContent() {
   const searchParams = useSearchParams();
   const registrationToken = searchParams.get('registrationToken');
   const establish = useAuthStore((state) => state.establish);
+  const queryClient = useQueryClient();
 
   const [role, setRole] = useState<'STUDENT' | 'TEACHER'>('STUDENT');
   const [loading, setLoading] = useState(false);
@@ -34,8 +36,9 @@ function OAuthRoleContent() {
       const res = await authApi.completeOAuthRegistration(payload);
 
       if (res.data) {
+        queryClient.clear();
         establish(res.data, true);
-        router.push(roleHome(res.data.user.role));
+        router.replace(roleHome(res.data.user.role));
       }
     } catch (error: any) {
       setErrorMsg(error.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại sau.');

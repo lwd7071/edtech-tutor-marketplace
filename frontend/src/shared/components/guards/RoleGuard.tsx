@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button, Result } from 'antd';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore, type UserRole } from '@/features/auth';
+import { readSessionChange } from '@/features/auth/session/sessionPersistence';
 
 interface RoleGuardProps {
   children: React.ReactNode;
@@ -20,7 +21,10 @@ export function RoleGuard({ children, allowedRoles, fallback }: RoleGuardProps) 
 
   useEffect(() => {
     if (status === 'anonymous') {
-      router.replace(`/auth/login?redirect=${encodeURIComponent(pathname)}`);
+      const redirect = readSessionChange()?.kind === 'clear'
+        ? '/auth/login'
+        : `/auth/login?redirect=${encodeURIComponent(pathname)}`;
+      router.replace(redirect);
     } else if (status === 'authenticated' && !hasAllowedRole && !fallback) {
       router.replace('/forbidden');
     }

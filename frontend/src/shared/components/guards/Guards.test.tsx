@@ -52,6 +52,12 @@ describe('Route Guards & Access Control (TDD)', () => {
   });
 
   describe('RoleGuard', () => {
+    it('does not reattach the stale workspace redirect after logout', () => {
+      render(<RoleGuard allowedRoles={['STUDENT']}><div>Workspace</div></RoleGuard>);
+
+      expect(mockReplace).toHaveBeenCalledWith('/auth/login');
+    });
+
     it('should block access when user role is not in allowedRoles', () => {
       useAuthStore.getState().establish({ user: {
         id: '1',

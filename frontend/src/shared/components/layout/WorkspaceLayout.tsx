@@ -4,14 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button, Drawer } from 'antd';
 import { MenuOutlined, LogoutOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { useAuthStore, type UserRole } from '@/features/auth';
-import { authApi } from '@/shared/api/auth';
+import { useAuthStore, useLogout, type UserRole } from '@/features/auth';
 import { isWorkspaceLinkActive, workspaceLinks } from '@/shared/lib/navigation';
 export default function WorkspaceLayout({ role, children }: { role: UserRole; children: React.ReactNode }) {
  const [open, setOpen] = useState(false);
  const pathname = usePathname();
- const { user, refreshToken, clear } = useAuthStore();
- const logout = async () => { try { if (refreshToken) await authApi.logout(refreshToken); } finally { clear(); } };
+ const user = useAuthStore((state) => state.user);
+ const logout = useLogout();
  const links = workspaceLinks[role];
  const active = [...links].sort((a,b) => b.href.length-a.href.length).find(item => isWorkspaceLinkActive(pathname,item.href));
  const nav = <><Link className="tm-brand" href="/">tutor<span>match</span><span className="tm-brand-dot">.</span></Link><p className="tm-eyebrow">{role==='STUDENT'?'Không gian học tập':role==='TEACHER'?'Không gian gia sư':'Quản trị hệ thống'}</p><nav aria-label="Điều hướng không gian làm việc" className="tm-workspace-nav">{links.map(item=><Link key={item.href} href={item.href} onClick={()=>setOpen(false)} aria-current={active?.href===item.href?'page':undefined}>{item.label}</Link>)}</nav><Link className="tm-back" href="/"><ArrowLeftOutlined /> Khám phá gia sư</Link></>;

@@ -4,6 +4,7 @@ import LoginPage from './page';
 import { authApi } from '@/shared/api/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BASE_API_URL } from '@/shared/backend';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 jest.mock('@/shared/api/auth');
 jest.mock('next/navigation', () => ({
@@ -17,12 +18,14 @@ describe('LoginPage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
+    (useRouter as jest.Mock).mockReturnValue({ push: mockPush, replace: mockPush });
     (useSearchParams as jest.Mock).mockReturnValue({ get: mockGetParams });
   });
 
+  const renderLogin = () => render(<QueryClientProvider client={new QueryClient()}><LoginPage /></QueryClientProvider>);
+
   it('renders login form correctly', () => {
-    render(<LoginPage />);
+    renderLogin();
     expect(screen.getByRole('heading', { name: 'Đăng nhập' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Nhập email của bạn')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Nhập mật khẩu')).toBeInTheDocument();
@@ -31,7 +34,7 @@ describe('LoginPage', () => {
   });
 
   it('shows validation errors for empty fields', async () => {
-    render(<LoginPage />);
+    renderLogin();
     await act(async () => {
       fireEvent.submit(document.querySelector('form')!);
     });
@@ -47,7 +50,7 @@ describe('LoginPage', () => {
       response: { data: { errorCode: 'ACCOUNT_LOCKED' } }
     });
 
-    render(<LoginPage />);
+    renderLogin();
     
     fireEvent.change(screen.getByPlaceholderText('Nhập email của bạn'), { target: { value: 'locked@example.com' } });
     fireEvent.change(screen.getByPlaceholderText('Nhập mật khẩu'), { target: { value: 'password123' } });

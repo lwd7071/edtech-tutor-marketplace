@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import Navbar from './Navbar';
 import { useAuthStore } from '@/features/auth';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
@@ -9,13 +10,14 @@ jest.mock('next/navigation', () => ({
 }));
 
 describe('Navbar Component', () => {
+  const renderNavbar = () => render(<QueryClientProvider client={new QueryClient()}><Navbar /></QueryClientProvider>);
   beforeEach(() => {
     // Reset store before each test
     useAuthStore.setState({ user: null, isAuthenticated: false, accessToken: null });
   });
 
   it('renders guest links when not authenticated', () => {
-    render(<Navbar />);
+    renderNavbar();
     
     // Should see Logo
     expect(screen.getByRole('link', { name: /tutor match/i })).toBeInTheDocument();
@@ -34,7 +36,7 @@ describe('Navbar Component', () => {
       isAuthenticated: true 
     });
 
-    render(<Navbar />);
+    renderNavbar();
     
     // Should NOT see Login/Register
     expect(screen.queryByRole('link', { name: /đăng nhập/i })).not.toBeInTheDocument();

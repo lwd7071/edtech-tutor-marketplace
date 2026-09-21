@@ -118,7 +118,9 @@ Buổi trả phí hiển thị `settlementStatus` độc lập với `BookingSta
 | Ví và yêu cầu rút tiền |  |  | ✓ |  |
 | Duyệt và cấu hình hệ thống |  |  |  | ✓ |
 
-Guest bấm hành động cần tài khoản được đưa tới đăng nhập kèm URL quay lại. Người sai vai trò không thấy CTA; truy cập URL trực tiếp được guard chuyển sang `/forbidden`.
+Guest bấm hành động cần tài khoản được đưa tới đăng nhập kèm URL quay lại. Sau login, URL quay lại phải thuộc role vừa đăng nhập hoặc là public URL nằm trong allowlist; nếu không thì về trang home của role. Admin hiện chỉ có workspace `/admin`; impersonation không thuộc contract. Người sai vai trò không thấy CTA; truy cập URL trực tiếp được guard chuyển sang `/forbidden`.
+
+Logout gọi revoke refresh token theo best-effort với timeout ngắn, sau đó luôn xóa session local, xóa toàn bộ React Query cache cá nhân và dùng `replace('/auth/login')` không giữ redirect cũ. Tab khác đồng bộ qua `storage`/`visibilitychange`; tab nguồn tự xử lý login/logout vì browser không phát `storage` event cho chính tab ghi dữ liệu.
 
 ## Quy tắc trạng thái
 

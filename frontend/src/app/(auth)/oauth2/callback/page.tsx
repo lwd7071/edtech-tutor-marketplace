@@ -7,11 +7,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
 import { useAuthStore } from '@/features/auth';
 import { roleHome } from '@/shared/lib/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 function OAuthCallbackContent() {
   const router = useRouter();
   const params = useSearchParams();
   const establish = useAuthStore((state) => state.establish);
+  const queryClient = useQueryClient();
   const handled = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,13 +41,14 @@ function OAuthCallbackContent() {
     authApi.exchangeOAuthToken({ exchangeCode })
       .then((result) => {
         if (!result.data) throw new Error('OAuth response has no data');
+        queryClient.clear();
         establish(result.data, true);
         router.replace(roleHome(result.data.user.role));
       })
       .catch((requestError) => {
         setError(requestError.response?.data?.message || 'Khong the hoan tat dang nhap Google.');
       });
-  }, [params, router, establish]);
+  }, [params, router, establish, queryClient]);
 
   if (error) {
     return (

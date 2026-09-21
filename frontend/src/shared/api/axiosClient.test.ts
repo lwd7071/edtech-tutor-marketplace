@@ -23,6 +23,7 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
   let requestInterceptor: (config: any) => any;
   let responseSuccessInterceptor: (response: any) => any;
   let responseErrorInterceptor: (error: any) => Promise<any>;
+  const user = { id: 'user-1', email: 'user@example.test', fullName: 'User', role: 'STUDENT' as const, status: 'ACTIVE' };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -50,7 +51,7 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
   });
 
   it('should attach Bearer token to request headers when user is authenticated', () => {
-    useAuthStore.getState().rotate('valid-access-token', 'valid-refresh-token');
+    useAuthStore.getState().establish({ user, accessToken: 'valid-access-token', refreshToken: 'valid-refresh-token' });
 
     const config = { headers: {} };
     const modifiedConfig = requestInterceptor(config);
@@ -68,7 +69,7 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
   });
 
   it('should handle concurrent 401s: refresh token once and retry all queued requests', async () => {
-    useAuthStore.getState().rotate('expired-access-token', 'valid-refresh-token');
+    useAuthStore.getState().establish({ user, accessToken: 'expired-access-token', refreshToken: 'valid-refresh-token' });
 
     const mockClient = axios.create();
     const mockPost = mockClient.post as jest.Mock;
@@ -86,15 +87,16 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
 
     // Giả lập 3 requests bị lỗi 401 cùng lúc
     const error1 = {
-      config: { url: '/api/v1/bookings', headers: {} },
+      config: requestInterceptor({ url: '/api/v1/bookings', headers: {} }),
       response: { status: 401 },
       isAxiosError: true,
     };
     const error2 = {
-      config: { url: '/api/v1/packages', headers: {} },
+      config: requestInterceptor({ url: '/api/v1/packages', headers: {} }),
       response: { status: 401 },
       isAxiosError: true,
     };
+    expect(error1.config._authSessionId).toBe(useAuthStore.getState().sessionId);
 
     // Khi retry chạy lại qua mockClient
     (mockClient as any).mockImplementation = jest.fn().mockResolvedValue({ data: { success: true } });
@@ -117,7 +119,7 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
   });
 
   it('should clear tokens and logout when refresh token fails', async () => {
-    useAuthStore.getState().rotate('expired-access-token', 'invalid-refresh-token');
+    useAuthStore.getState().establish({ user, accessToken: 'expired-access-token', refreshToken: 'invalid-refresh-token' });
 
     const mockClient = axios.create();
     const mockPost = mockClient.post as jest.Mock;
@@ -128,7 +130,7 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
     });
 
     const error = {
-      config: { url: '/api/v1/user/me', headers: {} },
+      config: requestInterceptor({ url: '/api/v1/user/me', headers: {} }),
       response: { status: 401 },
       isAxiosError: true,
     };
@@ -138,5 +140,31 @@ describe('AxiosClient with Refresh-Token Queue (TDD)', () => {
     // Store đã bị logout
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
     expect(useAuthStore.getState().accessToken).toBeNull();
+  });
+
+  it('does not let a late refresh response overwrite a new login session', async () => {
+    useAuthStore.getState().establish({ user, accessToken: 'expired-access-token', refreshToken: 'old-refresh-token' });
+    const mockClient = axios.create();
+    let resolveRefresh!: (value: unknown) => void;
+    (mockClient.post as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { resolveRefresh = resolve; }));
+
+    const error = {
+      config: requestInterceptor({ url: '/api/v1/user/me', headers: {} }),
+      response: { status: 401 },
+      isAxiosError: true,
+    };
+    expect(error.config._authSessionId).toBe(useAuthStore.getState().sessionId);
+    const pending = responseErrorInterceptor(error);
+
+    useAuthStore.getState().establish({
+      user: { ...user, id: 'teacher-1', email: 'teacher@example.test', role: 'TEACHER' },
+      accessToken: 'teacher-access-token',
+      refreshToken: 'teacher-refresh-token',
+    });
+    resolveRefresh({ data: { success: true, data: { accessToken: 'old-new-access', refreshToken: 'old-new-refresh' } } });
+
+    await expect(pending).rejects.toBeDefined();
+    expect(useAuthStore.getState().accessToken).toBe('teacher-access-token');
+    expect(useAuthStore.getState().refreshToken).toBe('teacher-refresh-token');
   });
 });

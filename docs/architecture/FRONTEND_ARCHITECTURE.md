@@ -21,6 +21,12 @@ UI không gọi Axios trực tiếp. Admin chỉ dùng contract Finance qua `@/f
 
 Session browser có ba trạng thái: `booting`, `anonymous`, `authenticated`. Public shell không chờ hydrate. Workspace guard chờ trạng thái rõ ràng, chuyển người chưa đăng nhập về login với `redirect`, và chuyển sai vai trò tới `/forbidden`.
 
+Sau khi login, return URL được kiểm tra cùng lúc với `AuthResult.user.role`: Student chỉ nhận workspace `/student`, Teacher chỉ nhận `/teacher`, Admin chỉ nhận `/admin`; URL public được phép theo allowlist. Query/hash chỉ được giữ theo allowlist của từng flow, và các tham số lồng như `redirect`, `next`, `returnTo`, `callbackUrl` bị loại bỏ. Login và logout của tab nguồn tự điều hướng bằng `router.replace`, không chờ sự kiện từ tab khác.
+
+Session persisted có `sessionId` sinh bằng `crypto.randomUUID()`; local HTTP test/dev dùng UUID-compatible `crypto.getRandomValues()` fallback nếu browser không expose `randomUUID()` ngoài secure context. Mỗi establish/logout/rotate ghi một revision không chứa token vào `localStorage`; tab khác nghe `storage`, còn tab nguồn xử lý ngay tại call site. `visibilitychange` đồng bộ lại session khi tab được mở lại. Khi danh tính đổi hoặc logout, React Query dùng `queryClient.clear()` toàn bộ.
+
+Axios phải gắn snapshot `sessionId` vào request và snapshot refresh token khi bắt đầu refresh. Chỉ phiên có cùng `sessionId` và refresh token hiện tại mới được rotate hoặc clear; response refresh cũ phải bị bỏ qua để không ghi đè phiên đăng nhập mới. Giả định hiện tại là một origin dùng một danh tính; multi-account switch không qua logout chưa phải capability được hỗ trợ.
+
 API session công khai chỉ gồm:
 
 ```text

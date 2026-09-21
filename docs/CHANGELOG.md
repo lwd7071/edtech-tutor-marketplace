@@ -1,5 +1,15 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-21 — Sửa đổi role auth và đồng bộ session nhiều tab
+
+- Validate return URL cùng role sau login; loại query/hash không nằm trong allowlist và redirect lồng.
+- Logout luôn dọn local session/cache và điều hướng tab nguồn về login; tab khác đồng bộ qua storage revision và visibility change.
+- Thêm session identity bằng `crypto.randomUUID()`, chống refresh response cũ ghi đè phiên mới và clear toàn bộ React Query cache khi đổi danh tính.
+- Thêm regression tests cùng tab, hai page cùng browser context và frontend CI workflow; chưa gọi production smoke khi Render backend còn 502.
+- Bổ sung UUID-compatible CSPRNG fallback cho local HTTP test và chặn RoleGuard gắn lại `?redirect=` sau logout.
+- Docker verification hoàn tất: Jest `103/103` suites, `268/268` tests, lint, typecheck, Next build và Playwright Chromium E2E `6/6` đều pass.
+- Không có migration mới và không kết nối hoặc mutate Supabase.
+
 ## 2026-09-21 — Sửa Google OAuth complete-registration
 
 - Đặt `notifyParent=false` khi tạo user mới qua Google OAuth, khớp invariant `users.notify_parent NOT NULL DEFAULT false`.
