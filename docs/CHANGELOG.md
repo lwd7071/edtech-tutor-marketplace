@@ -8,6 +8,7 @@
 - Thêm regression tests cùng tab, hai page cùng browser context và frontend CI workflow; chưa gọi production smoke khi Render backend còn 502.
 - Bổ sung UUID-compatible CSPRNG fallback cho local HTTP test và chặn RoleGuard gắn lại `?redirect=` sau logout.
 - Docker verification hoàn tất: Jest `103/103` suites, `268/268` tests, lint, typecheck, Next build và Playwright Chromium E2E `6/6` đều pass.
+- GitHub Frontend CI run `35581295953` pass toàn bộ; Render health probe vẫn trả `503 Service Unavailable`, nên chưa gọi production smoke/deploy là hoàn tất.
 - Không có migration mới và không kết nối hoặc mutate Supabase.
 
 ## 2026-09-21 — Sửa Google OAuth complete-registration
