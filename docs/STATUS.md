@@ -8,7 +8,7 @@
 - Deployment `dpl_7HmovQAREVxDrcr1BQVq7dYnEqjP` fail vì `/` và `/ranking` server-side fetch vượt 60 giây trong cả 3 lần retry; compile và TypeScript đều pass.
 - Đã thêm timeout 10 giây cho public server fetch và giữ fallback `Promise.allSettled`; public pages không còn làm Vercel build treo khi backend cold start/outage.
 - Production smoke sau khi Render warm xác nhận `/health`, subjects và teachers đều trả `200` trong dưới 1 giây; Vercel từng giữ landing fallback lỗi được tạo trong lúc backend deploy. Landing output nay revalidate 30 giây và client tự refresh sau 5 giây/mỗi 15 giây khi public data lỗi để phục hồi mà không cần người dùng reload.
-- Regression test `public.server.test.ts` `2/2` pass; local Next production build pass 63/63 route. Vercel redeploy sau commit mới chưa xác minh.
+- Frontend CI run `35600022117` trên commit `794ddb2` pass typecheck, lint, toàn bộ unit tests, production build và Playwright E2E trong `2m24s`. Vercel deploy thành công; production smoke xác nhận landing không còn fallback lỗi và hiển thị dữ liệu môn học/gia sư. Local Next production build pass đủ 63 route; Windows Jest vẫn bị `spawn EPERM`, Docker daemon local không chạy.
 
 ## Brevo email transport (working tree, 2026-09-21)
 

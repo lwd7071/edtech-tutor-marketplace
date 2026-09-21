@@ -4,7 +4,7 @@
 
 - Giảm TTL output landing fallback từ 300 xuống 30 giây nhưng giữ cache dữ liệu public 300 giây khi fetch thành công.
 - Khi subjects hoặc teachers fail trong server render, client tự refresh sau 5 giây và mỗi 15 giây cho tới khi backend phục hồi; thêm regression tests cho bật/tắt vòng retry.
-- Production smoke trực tiếp xác nhận health, subjects và teachers đều trả `200`; không có migration mới và không mutate Supabase.
+- Frontend CI run `35600022117` pass unit tests, build và Playwright E2E; Vercel production smoke xác nhận landing có dữ liệu, health/subjects/teachers đều trả `200`. Không có migration mới và không mutate Supabase.
 
 ## 2026-09-21 — Làm nhẹ health check Render
 
