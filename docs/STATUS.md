@@ -3,6 +3,18 @@
 > Cập nhật: 2026-09-21. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
 
+## Vercel prerender hardening (working tree, 2026-09-21)
+
+- Deployment `dpl_7HmovQAREVxDrcr1BQVq7dYnEqjP` fail vì `/` và `/ranking` server-side fetch vượt 60 giây trong cả 3 lần retry; compile và TypeScript đều pass.
+- Đã thêm timeout 10 giây cho public server fetch và giữ fallback `Promise.allSettled`; public pages không còn làm Vercel build treo khi backend cold start/outage.
+- Regression test `public.server.test.ts` `2/2` pass; local Next production build pass 63/63 route. Vercel redeploy sau commit mới chưa xác minh.
+
+## Brevo email transport (working tree, 2026-09-21)
+
+- Backend đã thay SMTP bằng Brevo Transactional Email API qua HTTPS, giữ transactional outbox và dùng `email_outbox.id` làm idempotency key ổn định qua retry.
+- Local/test dùng logging transport; cloud fail-fast khi thiếu `BREVO_API_KEY`, `BREVO_SENDER_EMAIL` hoặc `BREVO_SENDER_NAME`; endpoint và timeout dùng default nội bộ. Focused mail và architecture tests pass; full backend suite và gửi email thật chưa chạy.
+- Không có migration mới; không kết nối hoặc mutate Supabase.
+
 ## Minh chứng năng lực (working tree, 2026-09-21)
 
 - Trang gia sư đã có form dọc, vùng kéo thả JPG/PNG/PDF, preview ảnh/tên PDF, danh sách trạng thái tiếng Việt và thao tác xem/sửa/xóa qua API credential hiện có. Trang admin cũng lấy proof qua API có xác thực để xem trong modal. Public detail vẫn chỉ chứa tên badge đã duyệt.
@@ -175,4 +187,4 @@ Các con số trên chỉ là bằng chứng gần nhất đã có; benchmark v�
 
 ## Provider chưa xác minh
 
-Google OAuth thật, PayOS thật, Cloudinary thật, SMTP tới người dùng thật và application deployment production chưa được tính là pass trong trạng thái này. Database schema production đã rollout tới V41 `Success`.
+Google OAuth thật, PayOS thật, Cloudinary thật, Brevo tới người dùng thật và application deployment production chưa được tính là pass trong trạng thái này. Database schema production đã rollout tới V41 `Success`.

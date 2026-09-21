@@ -28,7 +28,11 @@ describe('public server API', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://backend.example.test/api/public/teachers/ranking?subjectId=subject+A&page=1&size=10',
-      expect.objectContaining({ cache: 'force-cache', next: { revalidate: 60, tags: ['public-ranking', 'public-ranking:subject A'] } }),
+      expect.objectContaining({
+        cache: 'force-cache',
+        next: { revalidate: 60, tags: ['public-ranking', 'public-ranking:subject A'] },
+        signal: expect.any(AbortSignal),
+      }),
     );
   });
 

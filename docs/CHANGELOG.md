@@ -1,5 +1,16 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-21 — Hardening Vercel prerender public pages
+
+- Thêm timeout 10 giây cho server-side public fetch; route landing/ranking không còn treo build khi backend cold start hoặc tạm thời không phản hồi.
+- Thêm regression assertion cho timeout signal; local Next production build pass đủ 63 route.
+
+## 2026-09-21 — Chuyển email production từ SMTP sang Brevo
+
+- Thay SMTP transport bằng Brevo Transactional Email API qua HTTPS; giữ transactional outbox và dùng ID outbox làm idempotency key.
+- Phân loại lỗi tạm thời để retry và lỗi request vĩnh viễn để dừng retry; local/test tiếp tục dùng logging transport.
+- Bỏ Spring Mail và cấu hình SMTP; cloud chỉ cần API key, sender email và sender name của Brevo, còn endpoint/timeout dùng default nội bộ; preflight không in secret. Không có migration mới và không kết nối Supabase.
+
 ## 2026-09-21 — Tách xác minh danh tính khỏi minh chứng năng lực
 
 - Đổi khu vực tài liệu teacher thành “Xác minh danh tính”, chỉ nhận `IDENTITY`; bằng cấp/chứng chỉ dùng khu vực Minh chứng năng lực.

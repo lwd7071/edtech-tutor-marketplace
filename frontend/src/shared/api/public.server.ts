@@ -22,6 +22,8 @@ type ServerPaginatedResponse<T> = {
   meta: PageMeta;
 };
 
+const SERVER_FETCH_TIMEOUT_MS = 10_000;
+
 export class PublicApiError extends Error {
   constructor(
     readonly status: number,
@@ -60,6 +62,7 @@ async function serverApiGet<T>(
     cache: 'force-cache',
     next: { revalidate: policy.revalidate, tags: policy.tags },
     headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(SERVER_FETCH_TIMEOUT_MS),
   });
   const body = await response.json() as ApiResponse<T>;
   const error = body.errors?.[0];
@@ -78,6 +81,7 @@ async function serverApiGetPage<T>(
     cache: 'force-cache',
     next: { revalidate: policy.revalidate, tags: policy.tags },
     headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(SERVER_FETCH_TIMEOUT_MS),
   });
   const body = await response.json() as ApiResponse<T[]>;
   const error = body.errors?.[0];

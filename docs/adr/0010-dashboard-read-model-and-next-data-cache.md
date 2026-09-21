@@ -8,6 +8,7 @@ Accepted
 
 - Student dashboard dùng endpoint `GET /api/student/dashboard` với một SQL read projection tổng hợp các counter cần hiển thị. Module dashboard chỉ đọc, không sở hữu mutation và không expose entity.
 - Public Server Components gọi backend qua server-only native `fetch`, dùng Next Data Cache với TTL 300 giây cho catalog/profile/package và 60 giây cho availability/review/ranking.
+- Server-side public fetch có timeout 10 giây; route public xử lý lỗi bằng fallback để backend cold start hoặc outage không làm Vercel build treo.
 - Browser Axios adapter tiếp tục phục vụ các Client Component và authenticated request. Không dùng chung adapter để tránh kéo session/cookie code vào server.
 - Đợt đầu không thêm public revalidation webhook; dữ liệu public chấp nhận bounded staleness theo TTL. Cache tags được gắn để mở rộng invalidation sau này.
 
