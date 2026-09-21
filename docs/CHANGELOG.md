@@ -1,5 +1,12 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-22 — Cập nhật bộ dữ liệu seed Supabase đồng bộ Schema V41
+
+- Làm mới `supabase_seed_data.sql` đồng bộ với schema V41: thêm khối `TRUNCATE TABLE ... CASCADE` dọn dẹp sạch dữ liệu cũ các bảng nghiệp vụ, bảo tồn lịch sử `flyway_schema_history` và danh mục `provinces`/`wards`.
+- Bổ sung các cột bắt buộc: 6 trường snapshot cho `invoices` (V26), địa chỉ tỉnh/xã cho `teacher_profiles` (V39), chứng chỉ đã duyệt cho `teacher_credentials` (V40), bản ghi quyết toán hai bên cho `booking_settlements` (V41).
+- Bổ sung dữ liệu thực tế cho bài tập `assignments`/`submissions` (V12), trao đổi `conversations`/`messages` (V13) và thông báo `notifications` (V13/V20).
+- Không có migration Flyway mới; không mutate Supabase từ repository.
+
 ## 2026-09-21 — Nullable audit snapshots và booking teacher-name fallback
 
 - Sửa AuditLog snapshot để giữ JSONB null, từ chối null key trước khi copy và chỉ shallow-copy map ngoài; audit vẫn bắt buộc cùng transaction nghiệp vụ.

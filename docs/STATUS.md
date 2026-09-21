@@ -1,7 +1,13 @@
 # Trạng thái dự án
 
-> Cập nhật: 2026-09-21. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
+> Cập nhật: 2026-09-22. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
+
+## Bộ dữ liệu seed Supabase đồng bộ Schema V41 (working tree, 2026-09-22)
+
+- Đã viết lại `supabase_seed_data.sql` đồng bộ với schema V41: hỗ trợ dọn dẹp sạch dữ liệu cũ qua `TRUNCATE TABLE ... CASCADE` mà không ảnh hưởng `flyway_schema_history` và `provinces`/`wards`.
+- Bổ sung đầy đủ 6 trường snapshot cho `invoices` (V26), địa chỉ `teacher_profiles` (V39), chứng chỉ `teacher_credentials` (V40), quyết toán hai bên `booking_settlements` (V41), bài tập `assignments`/`submissions` (V12) và trao đổi `conversations`/`messages` (V13).
+- Không có migration Flyway mới; không kết nối hoặc mutate Supabase. scripts/check-docs.ps1 pass.
 
 ## Nullable audit snapshots và booking teacher-name fallback (working tree, 2026-09-21)
 
