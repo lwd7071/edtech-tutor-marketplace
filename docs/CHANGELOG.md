@@ -38,7 +38,7 @@
   - Integration tests: `TeacherCredentialIntegrationTest` (5/5 pass) trên PostgreSQL Testcontainers kiểm tra xử lý xung đột đồng thời trả 409 `CONCURRENT_MODIFICATION`, rollback storage cleanup xóa proof mới, after-commit cleanup xóa proof cũ, và public detail chỉ trả badge ID/label đã duyệt (không lộ URL/bytes).
   - Architecture guardrails: `ArchitectureTest` và `SolidGuardrailsArchitectureTest` (10/10 pass).
 - Kích hoạt Next Data Cache on-demand tag revalidation:
-  - Route Handler nội bộ `POST /api/internal/revalidate-public` với shared secret header `x-internal-secret` (`INTERNAL_REVALIDATE_SECRET`, không dùng `NEXT_PUBLIC_*`) và `revalidateTag(tag, { expire: 0 })` chuẩn Next 16.
+  - Route Handler nội bộ `POST /api/internal/revalidate-public` với shared secret header `x-internal-secret` (`APP_INTERNAL_REVALIDATE_SECRET`, không dùng `NEXT_PUBLIC_*`) và `revalidateTag(tag, { expire: 0 })` chuẩn Next 16.
   - Mapping tag: duyệt hoặc sửa/xóa credential đã duyệt invalidate `public-teacher:{id}`; đổi nơi ở invalidate `public-teacher:{id}` và `public-teachers`.
   - Backend gửi callback sau commit (`afterCommit`) qua `PublicCacheRevalidationClient` (3/3 pass), lỗi callback được log an toàn không làm hỏng command, transaction rollback không gửi sự kiện; giữ nguyên TTL 60–300s làm fallback.
   - Next.js production build pass 62 static/SSG pages và dynamic route handler.

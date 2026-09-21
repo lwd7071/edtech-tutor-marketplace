@@ -16,7 +16,7 @@ describe('POST /api/internal/revalidate-public', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env = { ...originalEnv, INTERNAL_REVALIDATE_SECRET: validSecret };
+    process.env = { ...originalEnv, APP_INTERNAL_REVALIDATE_SECRET: validSecret };
   });
 
   afterEach(() => {

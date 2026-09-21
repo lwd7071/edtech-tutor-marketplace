@@ -39,7 +39,7 @@ Query key nằm trong `features/<domain>/data` và chứa mọi tham số làm t
 Public Server Components dùng `shared/api/public.server.ts` với native `fetch` và Next Data Cache. Subjects, teacher profile/list và packages dùng TTL 300 giây; availability, reviews và ranking dùng TTL 60 giây. Browser Axios adapter không được import vào server adapter. Dữ liệu cá nhân của workspace dùng React Query; Student dashboard gọi một read-model endpoint và cache client tối đa 30 giây.
 
 Next Data Cache hỗ trợ on-demand revalidation qua Route Handler nội bộ `POST /api/internal/revalidate-public`, nhận callback từ backend sau khi transaction commit:
-- Xác thực bằng shared secret qua header `x-internal-secret` (lưu tại biến môi trường `INTERNAL_REVALIDATE_SECRET`, không phơi bày qua `NEXT_PUBLIC_*`).
+- Xác thực bằng shared secret qua header `x-internal-secret` (lưu tại biến môi trường `APP_INTERNAL_REVALIDATE_SECRET`, không phơi bày qua `NEXT_PUBLIC_*`).
 - Tag mapping:
   - Credential được duyệt hoặc credential đã duyệt bị sửa/xóa: invalidate `public-teacher:{id}` qua `revalidateTag(tag, { expire: 0 })`.
   - Nơi ở gia sư thay đổi: invalidate `public-teacher:{id}` và `public-teachers` để trang tìm kiếm cập nhật ngay.

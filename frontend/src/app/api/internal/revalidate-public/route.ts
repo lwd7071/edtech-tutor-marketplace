@@ -12,7 +12,7 @@ const RevalidatePayloadSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const configuredSecret = process.env.INTERNAL_REVALIDATE_SECRET;
+  const configuredSecret = process.env.APP_INTERNAL_REVALIDATE_SECRET;
   const secretHeader = request.headers.get('x-internal-secret');
 
   if (!configuredSecret || !secretHeader || secretHeader !== configuredSecret) {
