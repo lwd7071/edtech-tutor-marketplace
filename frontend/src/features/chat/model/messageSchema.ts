@@ -7,7 +7,14 @@ export const incomingMessageSchema = z.object({
   senderId: z.string().min(1),
   senderName: z.string().optional(),
   senderAvatar: z.string().nullable().optional(),
-  content: z.string(),
+  content: z.string().nullable().optional(),
+  messageType: z.enum(['TEXT', 'IMAGE', 'FILE']).optional(),
+  attachmentId: z.string().nullable().optional(),
+  attachmentUrl: z.string().nullable().optional(),
+  attachment: z.object({
+    id: z.string(), secureUrl: z.string(), originalFilename: z.string(),
+    mimeType: z.string(), fileSize: z.number(),
+  }).nullable().optional(),
   sentAt: z.string().optional(),
   createdAt: z.string().optional(),
 });

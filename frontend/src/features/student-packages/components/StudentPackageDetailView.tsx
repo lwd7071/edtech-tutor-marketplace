@@ -107,12 +107,12 @@ export const StudentPackageDetailView: React.FC<StudentPackageDetailViewProps> =
 
         <div style={{ marginTop: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontSize: 13, color: 'var(--color-text-secondary, #57534E)' }}>
+            <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
               Tiến độ hoàn thành gói học ({packageData.completedSessions}/{packageData.totalSessions} buổi)
             </span>
             <span style={{ fontSize: 13, fontWeight: 600 }}>{completedPercent}%</span>
           </div>
-          <Progress percent={completedPercent} showInfo={false} strokeColor="var(--color-primary-600, #0F766E)" />
+          <Progress percent={completedPercent} showInfo={false} strokeColor="var(--color-primary-600)" />
         </div>
       </Card>
 
@@ -125,7 +125,7 @@ export const StudentPackageDetailView: React.FC<StudentPackageDetailViewProps> =
         <Row gutter={[24, 16]}>
           <Col xs={24} sm={12}>
             <Space align="start">
-              <UserOutlined style={{ fontSize: 18, color: 'var(--color-primary-600, #0F766E)', marginTop: 2 }} />
+              <UserOutlined style={{ fontSize: 18, color: 'var(--color-primary-600)', marginTop: 2 }} />
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>Gia sư phụ trách</Typography.Text>
                 <div><strong>{packageData.teacher.fullName}</strong></div>
@@ -135,7 +135,7 @@ export const StudentPackageDetailView: React.FC<StudentPackageDetailViewProps> =
 
           <Col xs={24} sm={12}>
             <Space align="start">
-              <BookOutlined style={{ fontSize: 18, color: 'var(--color-primary-600, #0F766E)', marginTop: 2 }} />
+              <BookOutlined style={{ fontSize: 18, color: 'var(--color-primary-600)', marginTop: 2 }} />
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>Môn học</Typography.Text>
                 <div><strong>{packageData.subject.name}</strong></div>
@@ -145,7 +145,7 @@ export const StudentPackageDetailView: React.FC<StudentPackageDetailViewProps> =
 
           <Col xs={24} sm={12}>
             <Space align="start">
-              <CalendarOutlined style={{ fontSize: 18, color: 'var(--color-primary-600, #0F766E)', marginTop: 2 }} />
+              <CalendarOutlined style={{ fontSize: 18, color: 'var(--color-primary-600)', marginTop: 2 }} />
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>Thời gian hiệu lực</Typography.Text>
                 <div>{formatDate(packageData.startsAt)} — {formatDate(packageData.expiresAt)}</div>
@@ -155,10 +155,10 @@ export const StudentPackageDetailView: React.FC<StudentPackageDetailViewProps> =
 
           <Col xs={24} sm={12}>
             <Space align="start">
-              <ClockCircleOutlined style={{ fontSize: 18, color: 'var(--color-primary-600, #0F766E)', marginTop: 2 }} />
+              <ClockCircleOutlined style={{ fontSize: 18, color: 'var(--color-primary-600)', marginTop: 2 }} />
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>Giá trị gói học</Typography.Text>
-                <div style={{ color: 'var(--color-primary-600, #0F766E)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+                <div style={{ color: 'var(--color-primary-600)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
                   {formatVnd(packageData.purchasePriceVnd)}
                 </div>
               </div>

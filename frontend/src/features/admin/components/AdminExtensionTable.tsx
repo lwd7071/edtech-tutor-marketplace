@@ -102,7 +102,7 @@ export const AdminExtensionTable: React.FC<AdminExtensionTableProps> = ({
       key: 'createdAt',
       width: 150,
       render: (val: string) => (
-        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary, #57534E)' }}>
+        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
           {formatLedgerTime(val)}
         </Typography.Text>
       ),
@@ -127,7 +127,7 @@ export const AdminExtensionTable: React.FC<AdminExtensionTableProps> = ({
         <Typography.Text
           style={{
             fontSize: 13,
-            color: val ? 'var(--color-success-600, #15803D)' : undefined,
+            color: val ? 'var(--color-success-600)' : undefined,
             fontWeight: val ? 600 : undefined,
           }}
         >
@@ -176,7 +176,7 @@ export const AdminExtensionTable: React.FC<AdminExtensionTableProps> = ({
   ];
 
   return (
-    <div style={{ background: 'var(--color-surface, #FFFFFF)', borderRadius: 'var(--radius-lg, 12px)', padding: 20 }}>
+    <div style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-lg, 12px)', padding: 20 }}>
       <Tabs
         defaultActiveKey="ALL"
         onChange={(key) => onFilterStatus?.(key === 'ALL' ? undefined : key)}

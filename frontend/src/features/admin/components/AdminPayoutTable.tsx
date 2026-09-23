@@ -96,7 +96,7 @@ export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
       key: 'createdAt',
       width: 150,
       render: (val: string) => (
-        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary, #57534E)' }}>
+        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
           {formatLedgerTime(val)}
         </Typography.Text>
       ),
@@ -113,7 +113,7 @@ export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
             fontWeight: 700,
             fontSize: 15,
             fontVariantNumeric: 'tabular-nums',
-            color: 'var(--color-primary-600, #0F766E)',
+            color: 'var(--color-primary-600)',
           }}
         >
           {amt.toLocaleString('vi-VN')} ₫
@@ -195,7 +195,7 @@ export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
               <Button
                 type="primary"
                 size="small"
-                style={{ background: 'var(--color-success-600, #15803D)' }}
+                style={{ background: 'var(--color-success-600)' }}
                 icon={<CheckOutlined />}
                 onClick={() => handleOpenComplete(record)}
               >
@@ -214,7 +214,7 @@ export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
   ];
 
   return (
-    <div style={{ background: 'var(--color-surface, #FFFFFF)', borderRadius: 'var(--radius-lg, 12px)', padding: 20 }}>
+    <div style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-lg, 12px)', padding: 20 }}>
       <Tabs
         defaultActiveKey="ALL"
         onChange={(key) => onFilterStatus?.(key === 'ALL' ? undefined : key)}

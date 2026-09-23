@@ -1,7 +1,42 @@
 # Trạng thái dự án
 
-> Cập nhật: 2026-09-22. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
-> Phạm vi snapshot: code Student Journey đang có trong working tree; các thay đổi chưa được commit vẫn được đánh dấu là chưa nghiệm thu đầy đủ.
+> Cập nhật: 2026-09-23. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
+> Phạm vi snapshot: backend vẫn có trong working tree; frontend đã được khôi phục từ `origin/main` của GitHub và đang có thay đổi hardening chưa commit. Dependencies local đã cài lại từ lockfile; dev server đã smoke-test trước đợt sửa này.
+
+## Hoàn thiện ba lỗi logic còn lại (working tree, 2026-09-23)
+
+- Booking detail hiển thị `cancelReason` cho booking `CANCELLED`, giữ nguyên xuống dòng/ký tự và toàn bộ nội dung tối đa 1.000 UTF-16 code units; backend trả `400 VALIDATION_ERROR` khi vượt giới hạn.
+- Admin settlement dùng typed read model chung cho list/detail, batch lookup booking/student/teacher và drawer hiển thị ngữ cảnh trước action. Thiếu dispute reason ở `DISPUTE_PENDING` được báo lỗi và chặn action.
+- Thêm API/trang `/admin/users` với search submit, filter, sort, pagination, moderation action và deep-link audit theo user; audit API/UI đọc `targetId`. Directory đi qua auth facade, không cho admin module truy cập repository/entity auth.
+- Xác minh: frontend `npm run check` pass (116 Jest suites/298 tests, TypeScript, lint, Next build); Playwright Chromium 9/9 pass với `--workers=1`. Backend focused tests 21/21 pass, gồm ArchitectureTest. `mvn clean verify` chưa pass: Testcontainers không tìm thấy Docker; tổng run 501 test có 102 lỗi khởi tạo DB/Docker, và một vi phạm ArchUnit đã được sửa rồi xác nhận ArchitectureTest pass riêng. Các integration test cần database chưa được xác minh. `scripts/check-docs.ps1` pass với 27 Markdown files; `git diff --check` pass.
+- Không có migration mới; không kết nối hoặc mutate Supabase.
+
+## Frontend hardening sau khôi phục (working tree, 2026-09-23)
+
+- Đã sửa formatter và bộ lọc ngày theo `Asia/Ho_Chi_Minh`, kể cả booking form, deadline, learning, finance và admin. Booking detail dùng `canReview` từ backend, chỉ mở báo cáo hoàn thành sau giờ kết thúc hoặc theo nhánh reopened hợp lệ, và hiển thị `outsideAvailabilityWarning`.
+- Chat có accessible label, gửi file/ảnh qua attachment API `MESSAGE`, trạng thái optimistic chờ server echo, retry với cùng `clientMessageId`, và giữ scroll khi tải tin cũ. Admin settlement hiển thị action theo trạng thái, xử lý conflict bằng refetch. Mutation invoice/payout/refund/extension/bank account và admin finance giữ idempotency key ổn định qua retry cùng payload.
+- Teacher workspace đã group navigation theo workflow và overview đọc dữ liệu thật từ API hiện có. Notification item có action semantic; `TeacherCard` bỏ click trên article; motion của `PackageCard` không còn `transition: all`. Token màu CSS và Ant theme dùng chung một nguồn trong `shared/design-system`, nhưng vẫn còn các màu hard-code cũ ở một số component/CSS chưa dọn hết; chưa gọi là hoàn tất visual consistency.
+- Student assignment đã nối đúng hai intent backend: lưu `DRAFT` và nộp `SUBMITTED`, đồng thời hiển thị bản nháp khác bài chờ chấm. Admin credential queue có filter `PENDING`/`APPROVED`/`REJECTED`, chống response cũ ghi đè khi đổi filter nhanh, và chỉ hiện duyệt/từ chối cho item đang chờ. `UserModerationModal` vẫn không được gắn route vì backend chưa có user-directory endpoint; không tạo danh sách người dùng giả.
+- Xác minh hiện tại: `npm run typecheck`, `npm run lint`, `npm run build` pass; Jest 111/111 suites, 289/289 tests pass. Jest trả exit code 0 nhưng còn cảnh báo asynchronous handle sau khi hoàn tất. Playwright Chromium 8/8 pass với `--workers=1`; run mặc định trước đó 6/8 do hai auth tests timeout dưới tải song song, rồi cả hai pass khi chạy riêng. Đã chụp lại desktop/mobile Teacher overview bằng API fixture sau khi bỏ heading navigation bị lặp; hierarchy, spacing và proportion của màn này PASS, ảnh ở `frontend/test-results/teacher-workspace-*/teacher-overview-*.png` (artifact local không commit). Chưa chạy authenticated journey với backend thật/visual regression toàn hệ thống; không gọi các luồng tích hợp thật là pass. Migration diff trống; không kết nối hoặc mutate Supabase.
+
+## Diagnose đối chiếu API và thao tác UI (2026-09-22)
+
+- Rà controller backend, adapter API frontend và route/component consumer. Khoảng trống admin khóa/mở khóa tài khoản vẫn chưa có đường vào vì không có user-directory API. Hai mismatch đã được sửa trong đợt hardening: lưu bài nộp `DRAFT` và filter trạng thái admin credential.
+- Xác nhận sai điều kiện UI: nút hoàn thành booking hiện khi buổi `SCHEDULED` chưa kết thúc dù backend từ chối `BOOKING_NOT_ENDED`; nút đánh giá dựa vào `COMPLETED` thay vì `canReview`, nên booking tiền đang `HELD`/`RETAINED` vẫn có thể hiện nút rồi bị backend từ chối. Backend trả `outsideAvailabilityWarning` nhưng chưa có UI hiển thị cảnh báo đó.
+- Đối chiếu tiếp trên working tree ngày 2026-09-23 xác nhận ba khoảng trống còn lại: admin settlement nhận `disputeReason`, thời gian và actor ID từ backend nhưng bảng quyết toán không hiển thị các dữ liệu này trước action; booking detail nhận `cancelReason` nhưng type/UI bỏ qua; API khóa/mở khóa người dùng và modal đã có nhưng thiếu API/list UI để admin chọn người dùng. Năm mismatch booking/assignment/credential nêu trên đã được sửa trong đợt hardening ngày 2026-09-23.
+- Xác minh đợt này: frontend `npm run typecheck` pass; backend focused `BookingServiceTest` 9/9, `AdminApprovalServiceTest` 1/1, `TeacherCredentialServiceTest` 15/15 pass. Đây là đối chiếu source và test hiện có; chưa chạy E2E role hoặc HTTP runtime cho các tình huống lỗi trên. Migration diff trống; không kết nối hoặc mutate Supabase. Chưa sửa hành vi sản phẩm trong đợt diagnose.
+
+## Frontend audit đối chiếu sau khôi phục (2026-09-22)
+
+- Đối chiếu tĩnh với frontend/backend xác nhận các điểm cần xử lý: teacher navigation phẳng, teacher overview thiên về link hub, token màu trùng giữa `globals.css` và Ant theme, chat thiếu label/attachment send và scroll chưa phân biệt tải tin cũ, `PackageCard` dùng `transition: all`, notification dùng `div role="button"` thiếu Enter/Space, và nhiều booking/learning/admin timestamp vẫn dùng timezone thiết bị.
+- `TeacherCard` hiện được bọc bằng `Link` ở search flow nên chưa thể kết luận keyboard flow hiện tại bị hỏng; rủi ro nằm ở API component cho phép `onClick` trên `article`. Admin settlement đã có Mở lại/Chuyển gia sư/Giữ nền tảng; nhận định cũ “thiếu action” là lỗi thời.
+- Student chỉ có API tạo booking phía teacher và hủy booking phía teacher; không có favorites API/UI hay user-directory API đã xác nhận. UserModerationModal có export/test nhưng chưa thấy route consumer qua tìm kiếm tĩnh; chưa xóa. Responsive, focus runtime, settlement conflict journey và E2E coverage vẫn cần kiểm tra runtime/Playwright, chưa gọi là pass.
+
+## Frontend — khôi phục từ GitHub (2026-09-22)
+
+- Đã chạy fetch remote và khôi phục toàn bộ thư mục `frontend` từ commit hiện tại của `origin/main`; working tree frontend khớp remote.
+- Chạy `npm ci` trong `frontend` thành công (760 packages, audit 0 vulnerabilities). `npm run dev -- --hostname 127.0.0.1` khởi động Next.js 16.3.4 và `GET /` trả HTTP 200 (200662 bytes). Chưa chạy full check/typecheck/build trong đợt khôi phục này.
+- Các docs rebuild-only trước đó vẫn đã xóa theo yêu cầu; không sửa backend/migration hoặc kết nối Supabase.
 
 ## Bộ dữ liệu seed Supabase đồng bộ Schema V41 (working tree, 2026-09-22)
 
@@ -86,10 +121,12 @@
 | Chat/notification/events | Đã triển khai event, mở conversation và V36 RLS default-deny | Testcontainers flow và RLS behavior pass; Supabase V36 `Success`; 4 bảng liên quan (`conversations`, `messages`, `attachments`, `notifications`) đã bật RLS và revoke TRUNCATE; baseline 9 rows bảo toàn 100%. |
 | Teacher search/catalog | Đã triển khai V28, query/count/cache/config | Focused tests và PostgreSQL Testcontainers pass; V28 đã áp dụng trên Supabase; cloud smoke và load test chưa xác minh |
 | Finance/refund/payout/package | Đã harden ownership, version, server-owned proof, audit, V31 và V34 RLS default-deny | Full backend Maven/Testcontainers pass; Supabase V31 và V34 `Success`; 8 bảng Finance đã bật RLS và revoke TRUNCATE; baseline 32 rows bảo toàn 100%. |
-| Parent contact/requests/reports | Đã triển khai UI/API liên quan | Cần smoke test theo role |
-| Frontend Student Journey | Đã có route/component/API thay đổi | Frontend Docker checks pass; Playwright public navigation `4/4` pass |
+| Parent contact/requests/reports | Backend API còn; frontend đã xóa | UI cần xây lại và smoke test theo role |
+| Frontend toàn hệ thống | Đã khôi phục từ `origin/main`, đang harden trong working tree | Typecheck/lint/build pass ở đợt hiện tại; full unit và role E2E chưa nghiệm thu, một số trang còn màu hard-code/visual debt |
 
-## Những gì đã có trong code hiện tại
+## Backend hiện có và ghi chép frontend lịch sử
+
+Các câu nhắc tới UI/FE trong phần dưới là mô tả phiên bản trước khi xóa, không phải hiện trạng working tree. Chỉ backend còn là cơ sở triển khai mới.
 
 ### Architecture và Module Isolation
 
@@ -130,12 +167,6 @@
 - Lifecycle event cho payment/trial/booking/assignment/refund/extension tạo notification sau commit; notification hỗ trợ lọc `referenceType`.
 - Chat có query phân trang, duplicate protection bằng `clientMessageId` và tải lại khi realtime gặp conversation mới.
 
-### Frontend route và navigation
-
-- Student dashboard hiển thị booking sắp tới, session còn lại, assignment cần làm, notification chưa đọc và request đang chờ.
-- Có các trang `/student/requests`, `/student/session-reports`, `/terms`, `/privacy` và `/support`.
-- Workspace guard, typed API boundary, feature query keys và file viewer/upload đã được chuẩn hóa theo frontend architecture.
-
 ### Teacher search/catalog
 
 - Keyword public search được trim, giới hạn 100 ký tự và normalize không phân biệt dấu/hoa thường.
@@ -149,9 +180,7 @@
 ## Bằng chứng kiểm thử gần nhất
 
 - Backend focused Student tests: `36/36` pass.
-- Frontend typecheck: pass.
-- Frontend lint: pass.
-- Frontend build: pass.
+- Frontend hiện tại: không có ứng dụng để chạy typecheck, lint hoặc build; các kết quả frontend trước ngày xóa là bằng chứng lịch sử, không phải pass của bản rebuild.
 - CI regression focused suite (`StudentInvoiceControllerTest`, `ArchitectureTest`, `SolidGuardrailsArchitectureTest`): `9/9` pass sau khi bỏ mapping assignment trùng, sửa principal test và chuyển package read controller về module enrollment.
 - GitHub Backend CI full Maven/Testcontainers: `325/325` pass, `0` failure, `0` error, `0` skipped tại run `34558136980`.
 - Docker image build validation trong cùng run: pass.

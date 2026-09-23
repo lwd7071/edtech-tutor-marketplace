@@ -1,4 +1,5 @@
 'use client';
+import { formatVietnamDate, formatVietnamDateTime } from '@/shared/lib/vietnamTime';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -23,9 +24,9 @@ export const StudentRequestsPage = () => {
   return <div className="tm-stack">
     <header className="tm-page-heading"><p className="tm-eyebrow">Theo dõi xử lý</p><h1>Yêu cầu của tôi</h1><p>Xem yêu cầu học thử, hoàn tiền và gia hạn theo từng trạng thái.</p></header>
     <section className="tm-panel"><Tabs items={[
-      { key:'trial', label:'Học thử', children:<>{list(trials.isLoading, (trials.data?.data ?? []).map(item => <article key={item.id} className="tm-list-row"><div><strong>{new Date(item.preferredStartTime).toLocaleString('vi-VN')}</strong><p>{item.note || 'Không có ghi chú'}{item.rejectionReason ? ` · Lý do: ${item.rejectionReason}` : ''}</p></div>{status(item.status)}</article>), 'Bạn chưa gửi yêu cầu học thử.')}<Pager page={trialPage} response={trials.data} onChange={setTrialPage} /></> },
+      { key:'trial', label:'Học thử', children:<>{list(trials.isLoading, (trials.data?.data ?? []).map(item => <article key={item.id} className="tm-list-row"><div><strong>{formatVietnamDateTime(item.preferredStartTime)}</strong><p>{item.note || 'Không có ghi chú'}{item.rejectionReason ? ` · Lý do: ${item.rejectionReason}` : ''}</p></div>{status(item.status)}</article>), 'Bạn chưa gửi yêu cầu học thử.')}<Pager page={trialPage} response={trials.data} onChange={setTrialPage} /></> },
       { key:'refund', label:'Hoàn tiền', children:<>{list(refunds.isLoading, (refunds.data?.data ?? []).map(item => <article key={item.id} className="tm-list-row"><div><strong>{item.requestedSessions} buổi · {item.refundAmountVnd != null ? `${item.refundAmountVnd.toLocaleString('vi-VN')} ₫` : 'Số tiền đang được ước tính'}</strong><p>{item.adminNote || item.reason}</p></div>{status(item.status)}</article>), 'Bạn chưa gửi yêu cầu hoàn tiền.')}<Pager page={refundPage} response={refunds.data} onChange={setRefundPage} /></> },
-      { key:'extension', label:'Gia hạn', children:<>{list(extensions.isLoading, (extensions.data?.data ?? []).map(item => <article key={item.id} className="tm-list-row"><div><strong>Xin gia hạn đến {new Date(item.requestedExpiryDate).toLocaleDateString('vi-VN')}</strong><p>{item.adminNote || item.reason}</p></div>{status(item.status)}</article>), 'Bạn chưa gửi yêu cầu gia hạn.')}<Pager page={extensionPage} response={extensions.data} onChange={setExtensionPage} /></> },
+      { key:'extension', label:'Gia hạn', children:<>{list(extensions.isLoading, (extensions.data?.data ?? []).map(item => <article key={item.id} className="tm-list-row"><div><strong>Xin gia hạn đến {formatVietnamDate(item.requestedExpiryDate)}</strong><p>{item.adminNote || item.reason}</p></div>{status(item.status)}</article>), 'Bạn chưa gửi yêu cầu gia hạn.')}<Pager page={extensionPage} response={extensions.data} onChange={setExtensionPage} /></> },
     ]} /></section>
   </div>;
 };

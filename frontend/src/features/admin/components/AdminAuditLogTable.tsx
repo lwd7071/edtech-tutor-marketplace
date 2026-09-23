@@ -18,20 +18,10 @@ interface AdminAuditLogTableProps {
 
 export const getAuditActionTag = (action: AuditAction) => {
   switch (action) {
-    case 'CREATE':
-      return <Tag color="success">CREATE</Tag>;
-    case 'UPDATE':
-      return <Tag color="processing">UPDATE</Tag>;
-    case 'DELETE':
-      return <Tag color="error">DELETE</Tag>;
-    case 'APPROVE':
-      return <Tag color="success">APPROVE</Tag>;
-    case 'REJECT':
-      return <Tag color="default">REJECT</Tag>;
-    case 'LOCK':
-      return <Tag color="error">LOCK</Tag>;
-    case 'UNLOCK':
-      return <Tag color="warning">UNLOCK</Tag>;
+    case 'USER_LOCKED':
+      return <Tag color="error">USER_LOCKED</Tag>;
+    case 'USER_UNLOCKED':
+      return <Tag color="warning">USER_UNLOCKED</Tag>;
     default:
       return <Tag>{action}</Tag>;
   }
@@ -60,7 +50,7 @@ export const AdminAuditLogTable: React.FC<AdminAuditLogTableProps> = ({
       key: 'createdAt',
       width: 170,
       render: (val: string) => (
-        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary, #57534E)' }}>
+        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
           {formatLedgerTime(val)}
         </Typography.Text>
       ),
@@ -127,7 +117,7 @@ export const AdminAuditLogTable: React.FC<AdminAuditLogTableProps> = ({
   ];
 
   return (
-    <div style={{ background: 'var(--color-surface, #FFFFFF)', borderRadius: 'var(--radius-lg, 12px)', padding: 20 }}>
+    <div style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-lg, 12px)', padding: 20 }}>
       <Table<AuditLogView>
         rowKey="id"
         columns={columns}
@@ -154,7 +144,7 @@ export const AdminAuditLogTable: React.FC<AdminAuditLogTableProps> = ({
           <Typography.Title level={5}>Dữ liệu trước thay đổi (Before):</Typography.Title>
           <pre
             style={{
-              background: 'var(--color-surface-sunken, #F5F3EF)',
+              background: 'var(--color-surface-sunken)',
               padding: 12,
               borderRadius: 8,
               fontSize: 12,
@@ -170,7 +160,7 @@ export const AdminAuditLogTable: React.FC<AdminAuditLogTableProps> = ({
           </Typography.Title>
           <pre
             style={{
-              background: 'var(--color-surface-sunken, #F5F3EF)',
+              background: 'var(--color-surface-sunken)',
               padding: 12,
               borderRadius: 8,
               fontSize: 12,

@@ -26,7 +26,7 @@ export default function TrustSection() {
   ];
 
   return (
-    <section style={{ padding: 'var(--space-16, 64px) 0', backgroundColor: 'var(--color-surface, #FFFFFF)' }}>
+    <section style={{ padding: 'var(--space-16, 64px) 0', backgroundColor: 'var(--color-surface)' }}>
       <div style={{ textAlign: 'center', marginBottom: 'var(--space-12, 48px)' }}>
         <Title level={2}>Quy trình 3 bước đơn giản</Title>
         <Paragraph type="secondary" style={{ fontSize: '16px' }}>

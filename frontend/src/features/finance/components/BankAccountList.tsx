@@ -98,8 +98,8 @@ export const BankAccountList: React.FC<BankAccountListProps> = ({
                 style={{
                   borderRadius: 'var(--radius-lg, 12px)',
                   border: acc.isDefault
-                    ? '1px solid var(--color-primary-500, #14B8A6)'
-                    : '1px solid var(--color-border, #E7E3DC)',
+                    ? '1px solid var(--color-primary-500)'
+                    : '1px solid var(--color-border)',
                   boxShadow: acc.isDefault ? 'var(--shadow-sm)' : undefined,
                 }}
                 actions={[
@@ -128,7 +128,7 @@ export const BankAccountList: React.FC<BankAccountListProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography.Text strong style={{ fontSize: 15 }}>
-                      <BankOutlined style={{ marginRight: 8, color: 'var(--color-primary-600, #0F766E)' }} />
+                      <BankOutlined style={{ marginRight: 8, color: 'var(--color-primary-600)' }} />
                       {acc.bankName}
                     </Typography.Text>
                     {acc.isDefault && (
@@ -144,7 +144,7 @@ export const BankAccountList: React.FC<BankAccountListProps> = ({
                       fontSize: 16,
                       fontFamily: 'var(--font-mono)',
                       letterSpacing: '0.05em',
-                      color: 'var(--color-text-primary, #1C1917)',
+                      color: 'var(--color-text-primary)',
                     }}
                   >
                     {acc.accountNumberMasked}

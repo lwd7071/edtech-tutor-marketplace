@@ -20,15 +20,21 @@ export interface AdminDashboardView {
 
 export interface BookingSettlementAdminView {
   bookingId: string;
-  studentId?: string;
-  teacherId?: string;
+  studentId: string;
+  studentName: string;
+  teacherId: string;
+  teacherName: string;
+  bookingStatus: string;
+  startTime: string;
+  endTime: string;
   status: string;
   teacherConfirmedAt?: string | null;
   studentConfirmedAt?: string | null;
-  confirmationDeadline?: string | null;
+  confirmationDeadline: string;
   reopenDeadline?: string | null;
   netAmountVnd?: number | null;
   disputeReason?: string | null;
+  disputedAt?: string | null;
   version: number;
 }
 
@@ -49,18 +55,16 @@ export interface UpdatePlatformSettingsRequest {
 }
 
 export type AuditAction =
-  | 'CREATE'
-  | 'UPDATE'
-  | 'DELETE'
-  | 'APPROVE'
-  | 'REJECT'
-  | 'LOCK'
-  | 'UNLOCK'
-  | 'LOGIN'
-  | 'LOGOUT'
+  | 'TEACHER_APPROVED' | 'TEACHER_REJECTED'
+  | 'SUBJECT_PROPOSAL_APPROVED' | 'SUBJECT_PROPOSAL_REJECTED'
+  | 'USER_LOCKED' | 'USER_UNLOCKED'
   | 'REFUND_APPROVED' | 'REFUND_REJECTED' | 'REFUND_COMPLETED'
   | 'PAYOUT_PROCESSING' | 'PAYOUT_REJECTED' | 'PAYOUT_COMPLETED'
-  | 'EXTENSION_APPROVED' | 'EXTENSION_REJECTED' | 'PLATFORM_SETTINGS_UPDATED';
+  | 'EXTENSION_APPROVED' | 'EXTENSION_REJECTED' | 'PLATFORM_SETTINGS_UPDATED'
+  | 'TEACHER_RESIDENCE_UPDATED'
+  | 'TEACHER_CREDENTIAL_CREATED' | 'TEACHER_CREDENTIAL_UPDATED' | 'TEACHER_CREDENTIAL_DELETED'
+  | 'TEACHER_CREDENTIAL_APPROVED' | 'TEACHER_CREDENTIAL_REJECTED'
+  | 'BOOKING_SETTLEMENT_REOPENED' | 'BOOKING_SETTLEMENT_RELEASED' | 'BOOKING_SETTLEMENT_RETAINED';
 
 export interface AuditLogView {
   id: string;

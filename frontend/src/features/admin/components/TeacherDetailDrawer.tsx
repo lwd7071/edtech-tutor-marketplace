@@ -105,7 +105,7 @@ export function TeacherDetailDrawer({ open, teacher, onClose }: TeacherDetailDra
       </Descriptions>
 
       {teacher.rejectionReason && (
-        <Card title="Lý do từ chối trước đó" style={{ marginTop: 'var(--space-4)', borderColor: 'var(--color-error-300)' }}>
+        <Card title="Lý do từ chối trước đó" style={{ marginTop: 'var(--space-4)', borderColor: 'var(--color-error-600)' }}>
           <Typography.Text type="danger">{teacher.rejectionReason}</Typography.Text>
         </Card>
       )}

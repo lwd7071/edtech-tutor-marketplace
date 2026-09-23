@@ -40,6 +40,7 @@ export interface BookingDetail {
   meetingLink?: string | null;
   locationAddress?: string | null;
   status: BookingStatus;
+  cancelReason?: string | null;
   trial: boolean;
   outsideAvailabilityWarning: boolean;
   sessionReport?: SessionReport | null;

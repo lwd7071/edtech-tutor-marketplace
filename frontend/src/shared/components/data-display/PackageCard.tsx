@@ -64,7 +64,7 @@ export default function PackageCard({
         .package-card {
           border-radius: var(--radius-lg);
           border: var(--border-default);
-          transition: all var(--duration-base) var(--ease-standard);
+          transition: border-color var(--duration-base) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard);
         }
         .package-card:hover {
           border-color: var(--color-primary-500);
@@ -138,6 +138,9 @@ export default function PackageCard({
         }
         .package-card.purchased:hover .play-cta {
           color: var(--color-primary-700);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .package-card { transition: none; }
         }
       `}</style>
     </Card>

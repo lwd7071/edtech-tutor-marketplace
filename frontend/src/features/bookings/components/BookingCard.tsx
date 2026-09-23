@@ -12,6 +12,7 @@ import {
 import { BookingDetail } from '../types';
 import { BookingStatusTag } from './BookingStatusTag';
 import { getMeetingLink, getChatRoute, getAssignmentsRoute } from '../utils/routes';
+import { formatVietnamSession } from '@/shared/lib/vietnamTime';
 
 interface BookingCardProps {
   booking: BookingDetail;
@@ -20,26 +21,7 @@ interface BookingCardProps {
 }
 
 export const formatSessionTime = (startTimeStr: string, endTimeStr: string): string => {
-  try {
-    const start = new Date(startTimeStr);
-    const end = new Date(endTimeStr);
-
-    const startHours = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
-    const endHours = end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
-
-    const dateOptions: Intl.DateTimeFormatOptions = {
-      weekday: 'long',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      timeZone: 'Asia/Ho_Chi_Minh',
-    };
-    const dateFormatted = start.toLocaleDateString('vi-VN', dateOptions);
-
-    return `${startHours} – ${endHours} · ${dateFormatted}`;
-  } catch {
-    return `${startTimeStr} – ${endTimeStr}`;
-  }
+  return formatVietnamSession(startTimeStr, endTimeStr);
 };
 
 export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetail, onChat }) => {
@@ -62,7 +44,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetail,
     <Card
       style={{
         borderRadius: 'var(--radius-lg, 12px)',
-        border: '1px solid var(--color-border, #E7E3DC)',
+        border: '1px solid var(--color-border)',
         width: '100%',
       }}
       styles={{ body: { padding: 'var(--space-4, 16px)' } }}
@@ -87,11 +69,11 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetail,
         </Space>
       </div>
 
-      <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-primary-600, #0F766E)', margin: '8px 0' }}>
+      <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-primary-600)', margin: '8px 0' }}>
         {timeFormatted}
       </div>
 
-      <div style={{ fontSize: 13, color: 'var(--color-text-secondary, #57534E)', marginBottom: 12 }}>
+      <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 12 }}>
         {booking.deliveryMode === 'ONLINE' ? (
           <Space>
             <VideoCameraOutlined />
@@ -113,7 +95,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetail,
           flexWrap: 'wrap',
           gap: 8,
           paddingTop: 12,
-          borderTop: '1px solid var(--color-border, #E7E3DC)',
+          borderTop: '1px solid var(--color-border)',
         }}
       >
         <Space size={8}>

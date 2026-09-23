@@ -11,6 +11,7 @@ import com.edtech.platform.booking.dto.response.BookingDetail;
 import com.edtech.platform.booking.service.BookingService;
 import com.edtech.platform.booking.service.BookingReadService;
 import com.edtech.platform.common.security.AuthenticatedUser;
+import com.edtech.platform.common.exception.GlobalExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +58,7 @@ class TeacherBookingControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new GlobalExceptionHandler())
                 .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
                     @Override
                     public boolean supportsParameter(MethodParameter parameter) {
@@ -131,5 +133,33 @@ class TeacherBookingControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.status").value("CANCELLED"));
+    }
+
+    @Test
+    void cancellationReasonAccepts1000Utf16UnitsIncludingSupplementaryCharacter() throws Exception {
+        UUID bookingId = UUID.randomUUID();
+        String reason = "ă".repeat(998) + "😀";
+        when(bookingService.cancel(eq(teacherUserId), eq(bookingId), any())).thenReturn(
+                new BookingDetail(bookingId, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                        Instant.now().plusSeconds(3600), Instant.now().plusSeconds(7200), DeliveryMode.ONLINE,
+                        BookingStatus.CANCELLED, false, false, reason, 1L));
+        when(bookingReadService.detail(teacherUserId, bookingId, true)).thenReturn(java.util.Map.of("status", "CANCELLED"));
+
+        mockMvc.perform(post("/api/teacher/bookings/" + bookingId + "/cancel")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"version\":0,\"reason\":\"" + reason + "\",\"initiatedBy\":\"TEACHER\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void cancellationReasonRejects1001Utf16Units() throws Exception {
+        UUID bookingId = UUID.randomUUID();
+        String reason = "ă".repeat(999) + "😀";
+        mockMvc.perform(post("/api/teacher/bookings/" + bookingId + "/cancel")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"version\":0,\"reason\":\"" + reason + "\",\"initiatedBy\":\"TEACHER\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.errors[0].field").value("reason"));
     }
 }

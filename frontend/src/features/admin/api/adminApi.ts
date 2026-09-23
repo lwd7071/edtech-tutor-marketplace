@@ -9,10 +9,14 @@ import {
   SubjectProposalRejectRequest,
   ApproveSubjectProposalRequest,
   ChangeUserStatusRequest,
+  AdminUserView,
+  AdminUserDirectoryParams,
 } from '../types';
 import type { BookingSettlementAdminView } from '../types/finance';
 
 export const adminApi = {
+  getUsers: async (params: AdminUserDirectoryParams): Promise<ApiResponse<AdminUserView[]>> =>
+    (await axiosClient.get('/api/admin/users', { params })).data,
   getBookingSettlements: async (status?: string, page = 0, size = 20): Promise<ApiResponse<BookingSettlementAdminView[]>> => (await axiosClient.get('/api/admin/booking-settlements', { params: { status, page, size } })).data,
   reopenBookingSettlement: async (id: string, data: { version: number; note: string }) => (await axiosClient.post(`/api/admin/booking-settlements/${id}/reopen`, data)).data,
   releaseBookingSettlement: async (id: string, data: { version: number; note: string }) => (await axiosClient.post(`/api/admin/booking-settlements/${id}/release`, data)).data,

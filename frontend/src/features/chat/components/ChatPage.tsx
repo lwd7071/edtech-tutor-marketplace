@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState, Suspense } from 'react';
+import React, { useCallback, useEffect, useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Alert, Button, Spin } from 'antd';
 import { ChatLayout } from './ChatLayout';
@@ -10,6 +10,16 @@ import { ConversationView, MessageView } from '../types';
 import { useChatStomp } from '../hooks/useChatStomp';
 import { useAuthStore } from '@/features/auth';
 import { mergeIncomingMessage } from '../model/messageReducer';
+import { attachmentApi } from '@/shared/api/attachmentApi';
+import type { AttachmentView } from '@/shared/api/attachmentApi';
+
+type OutgoingCommand = {
+  clientMessageId: string;
+  conversationId: string;
+  messageType: 'TEXT' | 'IMAGE' | 'FILE';
+  content: string;
+  attachmentId: string | null;
+};
 
 function ChatPageContent() {
   const router = useRouter();
@@ -26,6 +36,10 @@ function ChatPageContent() {
   const [hasMoreConversations, setHasMoreConversations] = useState(false);
   const [messagePage, setMessagePage] = useState(0);
   const [hasOlderMessages, setHasOlderMessages] = useState(false);
+  const pendingCommands = useRef(new Map<string, OutgoingCommand>());
+  const pendingTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  const activeConversationRef = useRef(activeConversationId);
+  useEffect(() => { activeConversationRef.current = activeConversationId; }, [activeConversationId]);
   
   const { user } = useAuthStore();
   const { lastMessage, sendMessage, reconnecting, isConnected } = useChatStomp();
@@ -46,17 +60,29 @@ function ChatPageContent() {
     }
   };
 
-  const fetchMessages = useCallback(async (convId: string, page = 0) => {
+  const fetchMessages = useCallback(async (convId: string, page = 0, preservePending = false) => {
     try {
       setLoadingMsg(true);
       setMessageError(false);
       const res = await chatApi.getMessages(convId, page, 20);
       const loaded = (res.data ?? []).map(m => ({
         ...m,
+        content: m.content ?? '',
         createdAt: m.createdAt || m.sentAt || new Date().toISOString(),
         isOwnMessage: m.senderId === user?.id,
       })).reverse();
-      setMessages(previous => page === 0 ? loaded : [...loaded, ...previous]);
+      if (activeConversationRef.current !== convId) return;
+      for (const item of loaded) {
+        if (!item.clientMessageId) continue;
+        pendingCommands.current.delete(item.clientMessageId);
+        const timer = pendingTimers.current.get(item.clientMessageId);
+        if (timer) clearTimeout(timer);
+        pendingTimers.current.delete(item.clientMessageId);
+      }
+      setMessages(previous => {
+        const current = page === 0 ? (preservePending ? previous : []) : previous;
+        return loaded.reduce<MessageView[]>((items, item) => mergeIncomingMessage(items, item, user?.id), current);
+      });
       setMessagePage(page);
       setHasOlderMessages((res.meta?.page ?? page) + 1 < (res.meta?.totalPages ?? 0));
     } catch (e) {
@@ -73,11 +99,18 @@ function ChatPageContent() {
 
   useEffect(() => {
     if (activeConversationId) {
-      fetchMessages(activeConversationId, 0);
+      setMessages([]);
+      void fetchMessages(activeConversationId, 0);
     } else {
       setMessages([]);
     }
   }, [activeConversationId, fetchMessages]);
+
+  useEffect(() => () => { pendingTimers.current.forEach(clearTimeout); }, []);
+
+  useEffect(() => {
+    if (activeConversationId && isConnected) void fetchMessages(activeConversationId, 0, true);
+  }, [activeConversationId, isConnected, fetchMessages]);
 
   useEffect(() => {
     if (activeConversationId && isConnected) {
@@ -92,13 +125,19 @@ function ChatPageContent() {
       if (lastMessage.conversationId === activeConversationId) {
         setMessages(prev => mergeIncomingMessage(prev, lastMessage, user?.id));
       }
+      if (lastMessage.clientMessageId) {
+        pendingCommands.current.delete(lastMessage.clientMessageId);
+        const timer = pendingTimers.current.get(lastMessage.clientMessageId);
+        if (timer) clearTimeout(timer);
+        pendingTimers.current.delete(lastMessage.clientMessageId);
+      }
       
       // Update last message in conversation list
       setConversations(prev => {
         if (!prev.some(c => c.id === lastMessage.conversationId)) { void fetchConversations(0); return prev; }
         return prev.map(c =>
         c.id === lastMessage.conversationId 
-          ? { ...c, lastMessagePreview: lastMessage.content, unreadCount: c.id === activeConversationId ? 0 : c.unreadCount + 1 }
+          ? { ...c, lastMessagePreview: lastMessage.content ?? (lastMessage.attachment ? `Tệp: ${lastMessage.attachment.originalFilename}` : ''), unreadCount: c.id === activeConversationId ? 0 : c.unreadCount + 1 }
           : c
         );
       });
@@ -110,11 +149,26 @@ function ChatPageContent() {
     router.push(`?id=${id}`);
   };
 
-  const handleSendMessage = (content: string) => {
+  const publishCommand = (command: OutgoingCommand) => {
+    const sent = sendMessage('/app/chat.send', command);
+    if (!sent) {
+      setMessages(previous => previous.map(item => item.clientMessageId === command.clientMessageId ? { ...item, status: 'FAILED' } : item));
+      return;
+    }
+    const oldTimer = pendingTimers.current.get(command.clientMessageId);
+    if (oldTimer) clearTimeout(oldTimer);
+    const timer = setTimeout(() => {
+      setMessages(previous => previous.map(item => item.clientMessageId === command.clientMessageId && item.status === 'SENDING' ? { ...item, status: 'FAILED' } : item));
+      void fetchMessages(command.conversationId, 0, true);
+    }, 15_000);
+    pendingTimers.current.set(command.clientMessageId, timer);
+  };
+
+  const queueMessage = (content: string, attachment?: AttachmentView, messageType: OutgoingCommand['messageType'] = 'TEXT') => {
     if (!activeConversationId || !user) return;
-    
-    // Optimistic update
     const clientMessageId = crypto.randomUUID();
+    const command: OutgoingCommand = { clientMessageId, conversationId: activeConversationId, messageType, content, attachmentId: attachment?.id ?? null };
+    pendingCommands.current.set(clientMessageId, command);
     const newMsg: MessageView = {
       id: clientMessageId,
       conversationId: activeConversationId,
@@ -124,23 +178,29 @@ function ChatPageContent() {
       content,
       createdAt: new Date().toISOString(),
       isOwnMessage: true,
-      status: 'SENDING'
+      clientMessageId,
+      messageType,
+      attachmentId: attachment?.id,
+      attachment: attachment ?? null,
+      status: 'SENDING',
     };
     setMessages(prev => [...prev, newMsg]);
+    publishCommand(command);
+  };
 
-    const destination = `/app/chat.send`; // Standard Spring STOMP prefix
-    const success = sendMessage(destination, {
-      clientMessageId,
-      conversationId: activeConversationId,
-      messageType: 'TEXT',
-      content
-    });
+  const handleSendAttachment = async (file: File, content: string) => {
+    if (!activeConversationId || !user) return false;
+    const response = await attachmentApi.uploadAttachment(file, 'MESSAGE');
+    if (!response.data) return false;
+    queueMessage(content, response.data, file.type.startsWith('image/') ? 'IMAGE' : 'FILE');
+    return true;
+  };
 
-    if (success) {
-      setMessages(prev => prev.map(m => m.id === clientMessageId ? { ...m, status: 'SENT' } : m));
-    } else {
-      setMessages(prev => prev.map(m => m.id === clientMessageId ? { ...m, status: 'FAILED' } : m));
-    }
+  const retryMessage = (clientMessageId: string) => {
+    const command = pendingCommands.current.get(clientMessageId);
+    if (!command || command.conversationId !== activeConversationId) return;
+    setMessages(previous => previous.map(item => item.clientMessageId === clientMessageId ? { ...item, status: 'SENDING' } : item));
+    publishCommand(command);
   };
 
   const activeConv = conversations.find(c => c.id === activeConversationId);
@@ -163,7 +223,9 @@ function ChatPageContent() {
           participantName={activeConv.participantName}
           messages={messages}
           loading={loadingMsg}
-          onSendMessage={handleSendMessage}
+          onSendMessage={content => queueMessage(content)}
+          onSendAttachment={handleSendAttachment}
+          onRetryMessage={retryMessage}
           onBack={() => router.push('?')}
           error={messageError}
           onRetry={() => fetchMessages(activeConversationId)}

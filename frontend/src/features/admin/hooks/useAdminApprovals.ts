@@ -6,11 +6,13 @@ import {
   SubjectProposalRejectRequest,
   ApproveSubjectProposalRequest,
   ChangeUserStatusRequest,
+  AdminUserDirectoryParams,
 } from '../types';
 import { isConcurrentModification } from '@/shared/backend';
 
 export const ADMIN_QUERY_KEYS = {
   all: ['admin'] as const,
+  users: (params: AdminUserDirectoryParams) => ['admin', 'users', params] as const,
   teacherApprovalsRoot: ['admin', 'teacher-approvals'] as const,
   subjectProposalsRoot: ['admin', 'subject-proposals'] as const,
   teacherApprovals: (status?: string, page?: number, size?: number) => [
@@ -27,6 +29,10 @@ export const ADMIN_QUERY_KEYS = {
     size,
   ],
 };
+
+export function useAdminUsers(params: AdminUserDirectoryParams) {
+  return useQuery({ queryKey: ADMIN_QUERY_KEYS.users(params), queryFn: () => adminApi.getUsers(params) });
+}
 
 /**
  * Hook lấy danh sách hồ sơ giáo viên chờ duyệt / đã duyệt

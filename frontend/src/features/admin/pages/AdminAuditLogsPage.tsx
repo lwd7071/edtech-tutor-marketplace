@@ -2,14 +2,18 @@
 
 import React, { useState } from 'react';
 import { Typography } from 'antd';
+import { useSearchParams } from 'next/navigation';
 import { useAdminAuditLogs } from '../hooks/useAdminFinance';
 import { AdminAuditLogTable } from '../components/AdminAuditLogTable';
 
 export const AdminAuditLogsPage: React.FC = () => {
+  const searchParams = useSearchParams();
+  const targetType = searchParams.get('targetType') ?? undefined;
+  const targetId = searchParams.get('targetId') ?? undefined;
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
 
-  const { data: logsRes, isLoading } = useAdminAuditLogs(undefined, undefined, undefined, page, pageSize);
+  const { data: logsRes, isLoading } = useAdminAuditLogs(undefined, undefined, targetType, targetId, page, pageSize);
 
   const logs = logsRes?.data || [];
   const total = logsRes?.meta?.totalElements || logs.length;
@@ -23,6 +27,7 @@ export const AdminAuditLogsPage: React.FC = () => {
         <Typography.Text type="secondary" style={{ fontSize: 14 }}>
           Theo dõi toàn bộ lịch sử thao tác nhạy cảm, thay đổi dữ liệu và trạng thái trong hệ thống
         </Typography.Text>
+        {targetId && <Typography.Paragraph type="secondary">Đang lọc theo người dùng {targetId}</Typography.Paragraph>}
       </div>
 
       <AdminAuditLogTable

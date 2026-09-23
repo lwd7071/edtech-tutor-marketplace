@@ -18,8 +18,8 @@ public class AuditLogQueryService {
 
     private final AuditLogRepository auditLogRepository;
 
-    public Page<AuditLogView> findAuditLogs(UUID actorId, AuditAction action, String targetType, Pageable pageable) {
-        return auditLogRepository.findAuditLogs(actorId, action, targetType, pageable)
+    public Page<AuditLogView> findAuditLogs(UUID actorId, AuditAction action, String targetType, UUID targetId, Pageable pageable) {
+        return auditLogRepository.findAuditLogs(actorId, action, targetType, targetId, pageable)
                 .map(AuditLogView::from);
     }
 }

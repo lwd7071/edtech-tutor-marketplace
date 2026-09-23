@@ -30,11 +30,12 @@ public class AdminAuditLogController {
             @RequestParam(required = false) UUID actorId,
             @RequestParam(required = false) AuditAction action,
             @RequestParam(required = false) String targetType,
+            @RequestParam(required = false) UUID targetId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
         size = Math.min(size, 100);
-        Page<AuditLogView> result = auditLogQueryService.findAuditLogs(actorId, action, targetType, PageRequest.of(page, size));
+        Page<AuditLogView> result = auditLogQueryService.findAuditLogs(actorId, action, targetType, targetId, PageRequest.of(page, size));
         return ApiResponse.page(result.getContent(), PageMeta.from(result));
     }
 }

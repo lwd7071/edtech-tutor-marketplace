@@ -23,17 +23,19 @@ public class AuditLogRepository {
         return auditLog;
     }
 
-    public Page<AuditLog> findAuditLogs(UUID actorId, AuditAction action, String targetType, Pageable pageable) {
+    public Page<AuditLog> findAuditLogs(UUID actorId, AuditAction action, String targetType, UUID targetId, Pageable pageable) {
         StringBuilder where = new StringBuilder(" WHERE 1=1");
         if (actorId != null) where.append(" AND a.actorId = :actorId");
         if (action != null) where.append(" AND a.action = :action");
         if (targetType != null && !targetType.isBlank()) where.append(" AND a.targetType = :targetType");
+        if (targetId != null) where.append(" AND a.targetId = :targetId");
 
         String ql = "SELECT a FROM AuditLog a" + where + " ORDER BY a.createdAt DESC";
         TypedQuery<AuditLog> query = entityManager.createQuery(ql, AuditLog.class);
         if (actorId != null) query.setParameter("actorId", actorId);
         if (action != null) query.setParameter("action", action);
         if (targetType != null && !targetType.isBlank()) query.setParameter("targetType", targetType);
+        if (targetId != null) query.setParameter("targetId", targetId);
 
         query.setFirstResult((int) pageable.getOffset());
         query.setMaxResults(pageable.getPageSize());
@@ -44,6 +46,7 @@ public class AuditLogRepository {
         if (actorId != null) countQuery.setParameter("actorId", actorId);
         if (action != null) countQuery.setParameter("action", action);
         if (targetType != null && !targetType.isBlank()) countQuery.setParameter("targetType", targetType);
+        if (targetId != null) countQuery.setParameter("targetId", targetId);
         Long total = countQuery.getSingleResult();
 
         return new PageImpl<>(list, pageable, total != null ? total : 0);

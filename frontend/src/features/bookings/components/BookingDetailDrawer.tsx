@@ -1,9 +1,10 @@
 import React from 'react';
-import { Drawer, Typography, Descriptions, Divider, Rate, Button, Tag } from 'antd';
+import { Alert, Drawer, Typography, Descriptions, Divider, Rate, Button, Tag } from 'antd';
 import { VideoCameraOutlined, EnvironmentOutlined, MessageOutlined, BookOutlined } from '@ant-design/icons';
 import { BookingDetail } from '../types';
 import { BookingStatusTag } from './BookingStatusTag';
 import { formatSessionTime } from './BookingCard';
+import { formatVietnamDateTime } from '@/shared/lib/vietnamTime';
 import { getMeetingLink, getChatRoute, getAssignmentsRoute } from '../utils/routes';
 
 interface BookingDetailDrawerProps {
@@ -83,10 +84,18 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
           <Descriptions.Item label="Địa chỉ">{booking.locationAddress}</Descriptions.Item>
         )}
       </Descriptions>
+      {booking.status === 'CANCELLED' && booking.cancelReason?.trim() && (
+        <Alert
+          style={{ marginTop: 16 }}
+          type="info"
+          title="Lý do hủy"
+          description={<div style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{booking.cancelReason}</div>}
+        />
+      )}
       {!booking.trial && booking.settlementStatus && (
         <div style={{ marginTop: 16 }}>
           <Typography.Text strong>Quyết toán: </Typography.Text><Tag color={booking.settlementStatus === 'RELEASED' ? 'green' : booking.settlementStatus === 'HELD' ? 'orange' : 'blue'}>{booking.settlementStatus}</Tag>
-          {booking.settlement?.confirmationDeadline && <Typography.Text type="secondary" style={{ display: 'block', marginTop: 6 }}>Hạn xác nhận: {new Date(booking.settlement.confirmationDeadline).toLocaleString('vi-VN')}</Typography.Text>}
+          {booking.settlement?.confirmationDeadline && <Typography.Text type="secondary" style={{ display: 'block', marginTop: 6 }}>Hạn xác nhận: {formatVietnamDateTime(booking.settlement.confirmationDeadline)}</Typography.Text>}
         </div>
       )}
 
@@ -94,7 +103,7 @@ export const BookingDetailDrawer: React.FC<BookingDetailDrawerProps> = ({
       {booking.status === 'COMPLETED' && booking.sessionReport && (
         <>
           <Divider titlePlacement="left">Báo cáo Buổi học (Session Report)</Divider>
-          <div style={{ backgroundColor: 'var(--color-surface-sunken, #F5F3EF)', padding: 16, borderRadius: 'var(--radius-md, 8px)' }}>
+          <div style={{ backgroundColor: 'var(--color-surface-sunken)', padding: 16, borderRadius: 'var(--radius-md, 8px)' }}>
             <div style={{ marginBottom: 12 }}>
               <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
                 Đánh giá của gia sư:

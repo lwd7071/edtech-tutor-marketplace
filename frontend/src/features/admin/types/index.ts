@@ -92,6 +92,25 @@ export interface ChangeUserStatusRequest {
   reason: string;
 }
 
+export interface AdminUserView {
+  id: string;
+  fullName: string;
+  email: string;
+  role: 'STUDENT' | 'TEACHER';
+  status: 'ACTIVE' | 'LOCKED';
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
+export interface AdminUserDirectoryParams {
+  keyword?: string;
+  role?: 'STUDENT' | 'TEACHER';
+  status?: 'ACTIVE' | 'LOCKED';
+  page: number;
+  size: number;
+  sort: string;
+}
+
 export interface PaginationParams {
   page?: number;
   size?: number;

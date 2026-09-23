@@ -33,32 +33,32 @@ export const SessionCounter: React.FC<SessionCounterProps> = ({
       key: 'remaining',
       label: 'Còn lại',
       value: remainingSessions,
-      color: 'var(--color-primary-600, #0F766E)',
-      bg: 'var(--color-primary-50, #F0FDFA)',
+      color: 'var(--color-primary-600)',
+      bg: 'var(--color-primary-50)',
       tooltip: 'Số buổi khả dụng để học',
     },
     {
       key: 'reserved',
       label: 'Đang giữ',
       value: reservedSessions,
-      color: 'var(--color-warning-600, #B45309)',
-      bg: 'var(--color-warning-bg, #FFFBEB)',
+      color: 'var(--color-warning-600)',
+      bg: 'var(--color-warning-bg)',
       tooltip: 'Số buổi đang lên lịch chờ học',
     },
     {
       key: 'completed',
       label: 'Đã học',
       value: completedSessions,
-      color: 'var(--color-success-600, #15803D)',
-      bg: 'var(--color-success-bg, #F0FDF4)',
+      color: 'var(--color-success-600)',
+      bg: 'var(--color-success-bg)',
       tooltip: 'Số buổi đã hoàn thành',
     },
     {
       key: 'refunded',
       label: 'Đã hoàn',
       value: refundedSessions,
-      color: 'var(--color-text-tertiary, #8A837B)',
-      bg: 'var(--color-surface-sunken, #F5F3EF)',
+      color: 'var(--color-text-tertiary)',
+      bg: 'var(--color-surface-sunken)',
       tooltip: 'Số buổi đã được hoàn tiền',
     },
   ];
@@ -83,7 +83,7 @@ export const SessionCounter: React.FC<SessionCounterProps> = ({
               padding: isSmall ? '4px 6px' : '8px 10px',
               backgroundColor: item.bg,
               borderRadius: 'var(--radius-sm, 6px)',
-              border: '1px solid var(--color-border, #E7E3DC)',
+              border: '1px solid var(--color-border)',
               textAlign: 'center',
             }}
           >
@@ -101,7 +101,7 @@ export const SessionCounter: React.FC<SessionCounterProps> = ({
             <span
               style={{
                 fontSize: labelFontSize,
-                color: 'var(--color-text-secondary, #57534E)',
+                color: 'var(--color-text-secondary)',
                 marginTop: 2,
                 whiteSpace: 'nowrap',
               }}

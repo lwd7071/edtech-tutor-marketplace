@@ -176,7 +176,7 @@ export const CreateRefundModal: React.FC<CreateRefundModalProps> = ({
         {estimatedPricePerSession > 0 && (
           <div
             style={{
-              background: 'var(--color-surface-sunken, #F5F3EF)',
+              background: 'var(--color-surface-sunken)',
               padding: 12,
               borderRadius: 'var(--radius-md, 8px)',
               marginTop: 12,
@@ -184,7 +184,7 @@ export const CreateRefundModal: React.FC<CreateRefundModalProps> = ({
           >
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <Typography.Text type="secondary">Ước tính số tiền hoàn trả:</Typography.Text>
-              <Typography.Text strong style={{ fontSize: 16, color: 'var(--color-primary-600, #0F766E)' }}>
+              <Typography.Text strong style={{ fontSize: 16, color: 'var(--color-primary-600)' }}>
                 ~{estimatedRefund.toLocaleString('vi-VN')} ₫
               </Typography.Text>
             </div>

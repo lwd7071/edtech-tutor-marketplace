@@ -11,6 +11,7 @@ import {
   RejectRequest,
   UpdatePlatformSettingsRequest,
 } from '../types';
+import { useCommandKey } from '@/shared/lib/useCommandKey';
 
 export const ADMIN_FINANCE_KEYS = {
   all: ['adminFinance'] as const,
@@ -22,18 +23,9 @@ export const ADMIN_FINANCE_KEYS = {
     [...ADMIN_FINANCE_KEYS.all, 'extensions', status, page, size] as const,
   dashboard: () => [...ADMIN_FINANCE_KEYS.all, 'dashboard'] as const,
   settings: () => [...ADMIN_FINANCE_KEYS.all, 'settings'] as const,
-  auditLogs: (actorId?: string, action?: AuditAction, targetType?: string, page?: number, size?: number) =>
-    [...ADMIN_FINANCE_KEYS.all, 'auditLogs', actorId, action, targetType, page, size] as const,
+  auditLogs: (actorId?: string, action?: AuditAction, targetType?: string, targetId?: string, page?: number, size?: number) =>
+    [...ADMIN_FINANCE_KEYS.all, 'auditLogs', actorId, action, targetType, targetId, page, size] as const,
   bookingSettlements: (status?: string, page?: number, size?: number) => [...ADMIN_FINANCE_KEYS.all, 'bookingSettlements', status, page, size] as const,
-};
-
-const commandKeys = new WeakMap<object, string>();
-const keyFor = (command: object) => {
-  const existing = commandKeys.get(command);
-  if (existing) return existing;
-  const key = globalThis.crypto.randomUUID();
-  commandKeys.set(command, key);
-  return key;
 };
 
 // ---- Admin Payout Queue Hooks ----
@@ -46,10 +38,12 @@ export function useAdminPayouts(status?: string, page = 0, size = 20) {
 
 export function useProcessPayout() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<{ id: string; data: ProcessPayoutRequest }>();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ProcessPayoutRequest }) =>
-      adminFinanceApi.processPayout(id, data, keyFor(data)),
-    onSuccess: () => {
+    mutationFn: (command: { id: string; data: ProcessPayoutRequest }) =>
+      adminFinanceApi.processPayout(command.id, command.data, commandKey.forPayload(command)),
+    onSuccess: (_, command) => {
+      commandKey.clear(command);
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.payouts() });
     },
   });
@@ -57,10 +51,12 @@ export function useProcessPayout() {
 
 export function useCompletePayout() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<{ id: string; data: CompleteTransferRequest }>();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: CompleteTransferRequest }) =>
-      adminFinanceApi.completePayout(id, data, keyFor(data)),
-    onSuccess: () => {
+    mutationFn: (command: { id: string; data: CompleteTransferRequest }) =>
+      adminFinanceApi.completePayout(command.id, command.data, commandKey.forPayload(command)),
+    onSuccess: (_, command) => {
+      commandKey.clear(command);
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.payouts() });
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.dashboard() });
     },
@@ -69,10 +65,12 @@ export function useCompletePayout() {
 
 export function useRejectPayout() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<{ id: string; data: RejectFinanceRequest }>();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: RejectFinanceRequest }) =>
-      adminFinanceApi.rejectPayout(id, data, keyFor(data)),
-    onSuccess: () => {
+    mutationFn: (command: { id: string; data: RejectFinanceRequest }) =>
+      adminFinanceApi.rejectPayout(command.id, command.data, commandKey.forPayload(command)),
+    onSuccess: (_, command) => {
+      commandKey.clear(command);
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.payouts() });
     },
   });
@@ -88,9 +86,11 @@ export function useAdminRefunds(status?: string, page = 0, size = 20) {
 
 export function useApproveRefund() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<{ id: string; data: ApproveRefundRequest }>();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ApproveRefundRequest }) => adminFinanceApi.approveRefund(id, data, keyFor(data)),
-    onSuccess: () => {
+    mutationFn: (command: { id: string; data: ApproveRefundRequest }) => adminFinanceApi.approveRefund(command.id, command.data, commandKey.forPayload(command)),
+    onSuccess: (_, command) => {
+      commandKey.clear(command);
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.refunds() });
     },
   });
@@ -98,10 +98,12 @@ export function useApproveRefund() {
 
 export function useCompleteRefund() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<{ id: string; data: CompleteTransferRequest }>();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: CompleteTransferRequest }) =>
-      adminFinanceApi.completeRefund(id, data, keyFor(data)),
-    onSuccess: () => {
+    mutationFn: (command: { id: string; data: CompleteTransferRequest }) =>
+      adminFinanceApi.completeRefund(command.id, command.data, commandKey.forPayload(command)),
+    onSuccess: (_, command) => {
+      commandKey.clear(command);
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.refunds() });
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.dashboard() });
     },
@@ -110,10 +112,12 @@ export function useCompleteRefund() {
 
 export function useRejectRefund() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<{ id: string; data: RejectFinanceRequest }>();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: RejectFinanceRequest }) =>
-      adminFinanceApi.rejectRefund(id, data, keyFor(data)),
-    onSuccess: () => {
+    mutationFn: (command: { id: string; data: RejectFinanceRequest }) =>
+      adminFinanceApi.rejectRefund(command.id, command.data, commandKey.forPayload(command)),
+    onSuccess: (_, command) => {
+      commandKey.clear(command);
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.refunds() });
     },
   });
@@ -129,10 +133,12 @@ export function useAdminExtensions(status?: string, page = 0, size = 20) {
 
 export function useApproveExtension() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<{ id: string; data: ApproveExtensionRequest }>();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ApproveExtensionRequest }) =>
-      adminFinanceApi.approveExtension(id, data, keyFor(data)),
-    onSuccess: () => {
+    mutationFn: (command: { id: string; data: ApproveExtensionRequest }) =>
+      adminFinanceApi.approveExtension(command.id, command.data, commandKey.forPayload(command)),
+    onSuccess: (_, command) => {
+      commandKey.clear(command);
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.extensions() });
     },
   });
@@ -140,10 +146,12 @@ export function useApproveExtension() {
 
 export function useRejectExtension() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<{ id: string; data: RejectRequest }>();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: RejectRequest }) =>
-      adminFinanceApi.rejectExtension(id, data, keyFor(data)),
-    onSuccess: () => {
+    mutationFn: (command: { id: string; data: RejectRequest }) =>
+      adminFinanceApi.rejectExtension(command.id, command.data, commandKey.forPayload(command)),
+    onSuccess: (_, command) => {
+      commandKey.clear(command);
       queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_KEYS.extensions() });
     },
   });
@@ -178,12 +186,13 @@ export function useAdminAuditLogs(
   actorId?: string,
   action?: AuditAction,
   targetType?: string,
+  targetId?: string,
   page = 0,
   size = 20
 ) {
   return useQuery({
-    queryKey: ADMIN_FINANCE_KEYS.auditLogs(actorId, action, targetType, page, size),
-    queryFn: () => adminFinanceApi.getAuditLogs(actorId, action, targetType, page, size),
+    queryKey: ADMIN_FINANCE_KEYS.auditLogs(actorId, action, targetType, targetId, page, size),
+    queryFn: () => adminFinanceApi.getAuditLogs(actorId, action, targetType, targetId, page, size),
   });
 }
 

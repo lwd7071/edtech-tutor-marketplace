@@ -4,6 +4,7 @@ import React from 'react';
 import { Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { LedgerEntryView, LedgerEntryType, BalanceBucket } from '../types';
+import { formatVietnamDateTime } from '@/shared/lib/vietnamTime';
 
 interface LedgerTableProps {
   entries?: LedgerEntryView[];
@@ -48,21 +49,7 @@ export const getBucketTag = (bucket: BalanceBucket) => {
   }
 };
 
-export const formatLedgerTime = (isoString: string): string => {
-  try {
-    const date = new Date(isoString);
-    return date.toLocaleString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Asia/Ho_Chi_Minh',
-    });
-  } catch {
-    return isoString;
-  }
-};
+export const formatLedgerTime = formatVietnamDateTime;
 
 export const LedgerTable: React.FC<LedgerTableProps> = ({
   entries = [],
@@ -79,7 +66,7 @@ export const LedgerTable: React.FC<LedgerTableProps> = ({
       key: 'createdAt',
       width: 170,
       render: (val: string) => (
-        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary, #57534E)' }}>
+        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
           {formatLedgerTime(val)}
         </Typography.Text>
       ),
@@ -110,7 +97,7 @@ export const LedgerTable: React.FC<LedgerTableProps> = ({
       render: (_, record: LedgerEntryView) => {
         const isCredit = record.direction === 'CREDIT';
         const prefix = isCredit ? '+' : '−';
-        const color = isCredit ? 'var(--color-success-600, #15803D)' : 'var(--color-error-600, #B91C1C)';
+        const color = isCredit ? 'var(--color-success-600)' : 'var(--color-error-600)';
 
         return (
           <span
@@ -155,7 +142,7 @@ export const LedgerTable: React.FC<LedgerTableProps> = ({
       }}
       scroll={{ x: 750 }}
       style={{
-        background: 'var(--color-surface, #FFFFFF)',
+        background: 'var(--color-surface)',
         borderRadius: 'var(--radius-lg, 12px)',
       }}
     />

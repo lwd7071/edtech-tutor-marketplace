@@ -1,5 +1,116 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-09-23 — Hoàn thiện ba lỗi logic booking, settlement và admin user (working tree)
+
+- Hiển thị lý do hủy booking an toàn, bảo toàn định dạng và xác nhận giới hạn 1.000 UTF-16 units ở UI/backend.
+- Đổi admin settlement sang typed read model với batch lookup; thêm drawer chi tiết trước action và chặn xử lý dispute khi thiếu reason.
+- Thêm user directory API/trang admin, moderation action và audit deep-link lọc theo user; sửa facade boundary để không phụ thuộc trực tiếp auth domain từ admin module.
+- Frontend typecheck/lint/build và Jest `116/116` suites (`298/298` tests) pass; Playwright Chromium `9/9` pass với một worker. Backend focused `21/21` pass gồm ArchitectureTest. `mvn clean verify` bị chặn bởi Docker không khả dụng cho Testcontainers (102 lỗi khởi tạo integration DB trong 501 tests); integration persistence chưa xác minh. Không có migration mới, không kết nối Supabase.
+
+## 2026-09-23 — Frontend hardening sau khôi phục (working tree)
+
+- Chuẩn hóa giờ Việt Nam cho booking/learning/finance, sửa điều kiện action booking và cảnh báo lịch rảnh; thêm chat attachment, retry/echo, accessible label và scroll ổn định.
+- Cập nhật settlement admin, idempotency retry cho các mutation tài chính, teacher overview/navigation, notification semantics và source token màu chung cho CSS/Ant.
+- Nối intent lưu nháp/nộp bài vào submission status backend; thêm filter trạng thái cho admin credential queue và chỉ cho phép action ở item `PENDING`.
+- Bổ sung regression tests cho timezone, settlement, chat, navigation, token, idempotency, submission draft và credential filter; typecheck/lint/build, Jest 289/289 và Playwright 8/8 ở chế độ một worker pass. Visual review Teacher overview desktop/mobile dùng API fixture; các journey backend thật/visual regression toàn hệ thống chưa xác minh. Chưa triển khai production. Migration diff trống, không kết nối Supabase.
+- Diagnose follow-up xác nhận ba khoảng trống chưa xử lý: admin không thấy lý do/ngữ cảnh trước quyết định settlement, booking đã hủy không hiện lý do, và khóa/mở khóa user thiếu danh sách người dùng để mở modal hiện có.
+
+## 2026-09-22 — Diagnose logic API/backend và UI/frontend
+
+- Đối chiếu endpoint với nút/route, ghi nhận sáu khoảng trống hoặc sai điều kiện hiển thị trong `docs/STATUS.md`; không sửa hành vi sản phẩm. Frontend typecheck và 25 focused backend tests pass; E2E/HTTP role chưa chạy. Migration diff trống, không kết nối Supabase.
+
+## 2026-09-22 — Audit frontend sau khi khôi phục
+
+- Đối chiếu các mục audit với source frontend/backend: xác nhận nhóm lỗi timezone, chat, accessibility, navigation và token duplication; đánh dấu các mục cần runtime audit và mục settlement cũ đã lỗi thời. Không sửa code/backend trong đợt audit.
+
+## 2026-09-22 — Cài lại frontend dependencies và xác minh dev server
+
+- Cài dependency đúng theo `frontend/package-lock.json` bằng `npm ci` sau khi khôi phục source từ GitHub; xác nhận Next.js dev server khởi động và route `/` trả HTTP 200.
+
+## 2026-09-22 — Khôi phục frontend từ GitHub
+
+- Khôi phục toàn bộ thư mục `frontend` nguyên trạng từ `origin/main`; không reset toàn bộ branch và không thay đổi backend.
+
+## 2026-09-22 — Đóng frontend rebuild theo yêu cầu
+
+- Xóa toàn bộ thư mục `frontend` hiện tại và các tài liệu riêng của đợt rebuild (`FRONTEND_REBUILD_PLAN.md`, component registry). Backend và tài liệu domain/architecture dùng chung được giữ nguyên.
+
+## 2026-09-22 — Cập nhật palette Warm Ivory + Rosewood
+
+- Cập nhật toàn bộ light/dark design tokens, Ant Design mapping và state tương tác sang Warm Ivory + Rosewood; giữ nguyên geometry/layout và loại bỏ tên palette/implementation khỏi product UI.
+- Không sửa backend/migration hoặc kết nối Supabase.
+
+## 2026-09-22 — Slice 2 hero visual direction bắt đầu
+
+- Thêm hero collage learner/tutor nguyên bản với nền marketing pink, typography display lớn, CTA rõ và proof strip; mobile chuyển thành bố cục ảnh trên/copy dưới sau screenshot correction loop.
+- Asset: `frontend/public/images/tutor-match-hero-pink.png`. Slice 2 vẫn đang triển khai, chưa mở Slice 3.
+- Nối landing vào public API subjects/teachers với loading, empty/error và partial-failure state; không tạo số liệu giả khi backend không khả dụng.
+
+## 2026-09-22 — Slice 1 Design System/AppShell hoàn tất visual gate
+
+- Dựng lại frontend từ reset: token source palette cũ, light/dark Ant Design theme, CSS geometry tokens, Global Top Navigation, Student Workspace Left Rail, AppShell, PageHeader và feedback states.
+- Thêm component registry entry và test nền tảng: token tests, AppShell navigation test; typecheck, lint, Jest `3/3`, Next build static routes pass.
+- Render thật và review screenshot ở CSS viewport `1440×900` và `390×844`; đã kiểm tra mobile drawer, dark theme, CTA contrast, rail collapse và feedback geometry. Sau correction loop, Slice 1 PASS; Slice 2 chưa bắt đầu.
+- Không sửa backend/migration hoặc kết nối Supabase.
+
+## 2026-09-22 — Bổ sung enforcement rules cho visual implementation
+
+- Cấm unspecified magic numbers ngoài token/contract và yêu cầu chọn scale gần nhất.
+- Bắt buộc screenshot correction loop: lệch design brief thì sửa code, render lại và review lại trước PASS.
+- Bắt buộc component registry: component visual mới phải kiểm tra `shared/design-system` và khai báo anatomy, variants, states, mobile behavior trước khi reuse nhiều page.
+- Chỉ cập nhật docs; frontend chưa được tạo lại, không sửa backend/migration hoặc kết nối Supabase.
+
+## 2026-09-22 — Khóa UI Component Geometry và Hybrid Navigation contract
+
+- Thêm contract normative cho kích thước, spacing, radius, state, responsive behavior và anatomy của component; contract đã có thì không được đổi vì lý do thẩm mỹ.
+- Khóa mô hình **Global Top Navigation + Workspace Left Rail**, gồm trách nhiệm navigation, kích thước rail/header, grouping, focus behavior và mobile drawer.
+- Quy định no-guess rule: component chưa đặc tả dùng Ant Design + token hiện có và phải ghi vào `UNSPECIFIED UI DECISIONS`.
+- Chỉ cập nhật docs; frontend chưa được tạo lại, không sửa backend/migration hoặc kết nối Supabase.
+
+## 2026-09-22 — Chuẩn hóa tên palette và khóa gate giữa các slice
+
+- Thay mô tả palette cũ trong Slice 1 bằng tên duy nhất theo design contract.
+- Thêm completion gate sau Slice 1–10: screenshot desktop/mobile phải được review và PASS hierarchy, spacing, proportion, visual balance trước khi tiếp tục hoặc nghiệm thu.
+- Chỉ cập nhật docs; frontend chưa được tạo lại, không sửa backend/migration hoặc kết nối Supabase.
+
+## 2026-09-22 — Khóa Visual Composition Contract cho rebuild
+
+- Bổ sung contract hình học và responsive vào `FRONTEND_REBUILD_PLAN.md`: page width/grid, section rhythm, typography, hero, card anatomy, teacher result/profile, controls/filter, image ratio, accent distribution, border/shadow, motion và alignment.
+- Thêm visual balance checklist và required screenshots ở bốn viewport trước khi nghiệm thu; yêu cầu Preply reference evidence cụ thể cho từng public/marketplace screen.
+- Frontend vẫn chưa được tạo lại; chỉ cập nhật docs, không sửa backend/migration hoặc kết nối Supabase.
+
+## 2026-09-22 — Bổ sung reference-driven design review cho frontend rebuild
+
+- Đọc lại Preply production pages và ghi nguyên tắc chuyển hóa cho Tutor Match: tutor-first evidence, subject discovery, CTA hierarchy, section composition đa dạng và responsive re-composition; không sao chép thương hiệu, copy hoặc layout.
+- Thêm gate bắt buộc `reference → Taste → hierarchy → composition → cards decision → desktop/mobile → states/a11y` trước khi viết code.
+- Mở rộng roadmap Slice 1-10 bằng mục tiêu hierarchy, dominant composition, primary CTA, nơi dùng/không dùng card và desktop/mobile transformation; giữ dials đã chốt và không khôi phục frontend cũ.
+- Chỉ cập nhật tài liệu; frontend vẫn chưa tồn tại, không sửa backend/migration hoặc kết nối Supabase.
+
+## 2026-09-22 — Chốt lại toàn bộ Design System color palette
+
+- Chốt palette trung tính có accent đơn cho hướng Premium education platform; semantic colors chỉ dành cho trạng thái.
+- Bổ sung contract đầy đủ cho light/dark background, surface, text, border, primary, semantic và interaction tokens; ghi rõ primary chỉ dùng cho CTA/active/selected/link/focus có chủ đích.
+- Kiểm tra contrast token bằng WCAG relative luminance: text, primary button, semantic states, focus ring, disabled state và border-strong đạt yêu cầu đã định. Source token thực tế sẽ được tạo trong `shared/design-system` ở Slice 1; hiện frontend vẫn chưa tồn tại.
+- Tham khảo Preply và các visual reference education premium để đánh giá direction, không sao chép palette hoặc layout. Không sửa backend/migration và không kết nối Supabase.
+
+## 2026-09-22 — Phân mức Taste và phạm vi skill theo slice
+
+- Cập nhật `FRONTEND_REBUILD_PLAN.md` với ba dial riêng cho Slice 1, 2, 3-4 và 5-8; Slice 9 giữ dial theo surface đã xây, Slice 10 không dùng dial/Taste.
+- Taste dẫn dắt visual landing/portfolio và audit consistency; product UI dày đặc theo contract/component patterns, `web-design-guidelines` chủ đạo cho accessibility. Motion trên landing phải có mục đích và reduced-motion fallback.
+- Chỉ sửa tài liệu. Frontend chưa tồn tại để chạy test UI; không sửa backend/migration hoặc kết nối Supabase.
+
+## 2026-09-22 — Chọn định hướng Premium education platform cho rebuild
+
+- Đổi lựa chọn trong `FRONTEND_REBUILD_PLAN.md` từ hướng A sang B, đồng bộ token đề xuất, landing, hồ sơ gia sư, workspace, visual references và tiêu chí nghiệm thu.
+- Đặt ranh giới cho cảm giác “premium”: không tự tạo bằng chứng, rating, ảnh gia sư hoặc lời hứa kết quả; bố cục vẫn phải trung thực khi dữ liệu thiếu. Chưa triển khai frontend hay chạy test UI.
+- Không sửa backend/migration và không kết nối hoặc mutate Supabase.
+
+## 2026-09-22 — Đặt lại frontend về điểm xuất phát
+
+- Ghi nhận toàn bộ file frontend đã bị xóa khỏi working tree theo quyết định xây lại từ đầu; chưa có ứng dụng frontend hoặc slice nào được nghiệm thu trong trạng thái hiện tại.
+- Gỡ các ghi chép hoàn thành hai slice đầu và contract theme cũ khỏi tài liệu hiện hành để tránh dùng chúng làm mẫu triển khai. Kế hoạch rebuild chỉ còn là phạm vi dự kiến; mọi thiết kế và kiểm thử phải được xác nhận lại trên code mới.
+- Không sửa backend/migration, không kết nối hoặc mutate Supabase. Kiểm thử frontend chưa chạy vì ứng dụng đã bị xóa.
+
 ## 2026-09-22 — Cập nhật bộ dữ liệu seed Supabase đồng bộ Schema V41
 
 - Làm mới `supabase_seed_data.sql` đồng bộ với schema V41: thêm khối `TRUNCATE TABLE ... CASCADE` dọn dẹp sạch dữ liệu cũ các bảng nghiệp vụ, bảo tồn lịch sử `flyway_schema_history` và danh mục `provinces`/`wards`.

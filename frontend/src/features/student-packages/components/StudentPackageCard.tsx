@@ -5,6 +5,7 @@ import { Card, Tag, Typography, Button, Space } from 'antd';
 import Link from 'next/link';
 import { StudentPackageSummary, StudentPackageStatus } from '../types';
 import { SessionCounter } from './SessionCounter';
+import { formatVietnamDate } from '@/shared/lib/vietnamTime';
 
 interface StudentPackageCardProps {
   packageData: StudentPackageSummary;
@@ -35,16 +36,7 @@ export const formatVnd = (amount: number): string => {
 
 export const formatDate = (dateStr?: string): string => {
   if (!dateStr) return '---';
-  try {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  } catch {
-    return dateStr;
-  }
+  return formatVietnamDate(dateStr);
 };
 
 export const StudentPackageCard: React.FC<StudentPackageCardProps> = ({
@@ -57,7 +49,7 @@ export const StudentPackageCard: React.FC<StudentPackageCardProps> = ({
       style={{
         width: '100%',
         borderRadius: 'var(--radius-lg, 12px)',
-        border: '1px solid var(--color-border, #E7E3DC)',
+        border: '1px solid var(--color-border)',
       }}
       styles={{ body: { padding: 'var(--space-4, 16px)' } }}
     >
@@ -92,18 +84,18 @@ export const StudentPackageCard: React.FC<StudentPackageCardProps> = ({
           alignItems: 'center',
           marginTop: 16,
           paddingTop: 12,
-          borderTop: '1px solid var(--color-border, #E7E3DC)',
+          borderTop: '1px solid var(--color-border)',
         }}
       >
         <div>
-          <span style={{ fontSize: 12, color: 'var(--color-text-secondary, #57534E)' }}>
+          <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
             Hạn dùng: {formatDate(packageData.expiresAt)}
           </span>
           <div
             style={{
               fontSize: 16,
               fontWeight: 700,
-              color: 'var(--color-primary-600, #0F766E)',
+              color: 'var(--color-primary-600)',
               fontVariantNumeric: 'tabular-nums',
             }}
           >

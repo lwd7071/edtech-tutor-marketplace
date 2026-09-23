@@ -14,7 +14,7 @@ export default function CTASection() {
       style={{ 
         padding: 'var(--space-20, 80px) 24px', 
         textAlign: 'center',
-        background: 'linear-gradient(135deg, var(--color-primary-500, #1677ff) 0%, var(--color-primary-800, #003eb3) 100%)',
+        background: 'linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-700) 100%)',
         borderRadius: 'var(--radius-xl, 24px)',
         margin: 'var(--space-16, 64px) 0',
         color: '#FFFFFF',

@@ -1,19 +1,20 @@
 import type { ThemeConfig } from 'antd';
+import { colors } from '@/shared/design-system/tokens';
 
 export const appTheme: ThemeConfig = {
   token: {
-    colorPrimary: '#0F766E', 
-    colorSuccess: '#15803D', 
-    colorWarning: '#B45309',
-    colorError: '#B91C1C', 
-    colorInfo: '#1D4ED8',
-    colorBgLayout: '#FBFAF8', 
-    colorBgContainer: '#FFFFFF', 
-    colorBorder: '#E7E3DC',
-    colorText: '#1C1917', 
-    colorTextSecondary: '#57534E', 
-    colorTextTertiary: '#8A837B',
-    colorTextPlaceholder: '#A8A29E',
+    colorPrimary: colors.primary600,
+    colorSuccess: colors.success600,
+    colorWarning: colors.warning600,
+    colorError: colors.error600,
+    colorInfo: colors.info600,
+    colorBgLayout: colors.background,
+    colorBgContainer: colors.surface,
+    colorBorder: colors.border,
+    colorText: colors.textPrimary,
+    colorTextSecondary: colors.textSecondary,
+    colorTextTertiary: colors.textTertiary,
+    colorTextPlaceholder: colors.textPlaceholder,
     borderRadius: 8, 
     borderRadiusLG: 12, 
     borderRadiusSM: 6,
@@ -30,36 +31,36 @@ export const appTheme: ThemeConfig = {
       primaryShadow: 'none',
     },
     Input: {
-      activeBorderColor: '#0F766E',
-      hoverBorderColor: '#0F766E',
-      activeShadow: '0 0 0 3px rgba(20,184,166,0.28)',
-      errorActiveShadow: '0 0 0 3px rgba(185,28,28,0.28)',
+      activeBorderColor: colors.primary600,
+      hoverBorderColor: colors.primary600,
+      activeShadow: `0 0 0 3px color-mix(in srgb, ${colors.primary500} 28%, transparent)`,
+      errorActiveShadow: `0 0 0 3px color-mix(in srgb, ${colors.error600} 28%, transparent)`,
       paddingBlock: 8,
       paddingInline: 16,
     },
     Select: {
-      activeBorderColor: '#0F766E',
-      hoverBorderColor: '#0F766E',
+      activeBorderColor: colors.primary600,
+      hoverBorderColor: colors.primary600,
     },
     DatePicker: {
-      activeBorderColor: '#0F766E',
-      hoverBorderColor: '#0F766E',
+      activeBorderColor: colors.primary600,
+      hoverBorderColor: colors.primary600,
     },
     Checkbox: {
-      colorPrimary: '#0F766E',
-      colorPrimaryHover: '#0D645D',
+      colorPrimary: colors.primary600,
+      colorPrimaryHover: colors.primaryHover,
     },
     Radio: {
-      colorPrimary: '#0F766E',
+      colorPrimary: colors.primary600,
     },
     Switch: {
-      colorPrimary: '#0F766E',
+      colorPrimary: colors.primary600,
     },
     Tabs: {
-      itemColor: '#57534E',
-      itemHoverColor: '#1C1917',
-      itemSelectedColor: '#0F766E',
-      inkBarColor: '#0F766E',
+      itemColor: colors.textSecondary,
+      itemHoverColor: colors.textPrimary,
+      itemSelectedColor: colors.primary600,
+      inkBarColor: colors.primary600,
     },
     Dropdown: {
       paddingBlock: 8,
@@ -73,30 +74,30 @@ export const appTheme: ThemeConfig = {
       borderRadiusLG: 8,
     },
     Pagination: {
-      itemActiveBg: '#F0FDFA',
-      colorPrimary: '#0F766E',
-      colorPrimaryHover: '#0D645D',
+      itemActiveBg: colors.primary50,
+      colorPrimary: colors.primary600,
+      colorPrimaryHover: colors.primaryHover,
     },
     Card: { 
       paddingLG: 24, 
       headerFontSize: 16 
     },
     Table: { 
-      headerBg: '#F5F3EF', 
-      headerColor: '#57534E', 
-      rowHoverBg: '#F7F6F3', 
+      headerBg: colors.surfaceSunken,
+      headerColor: colors.textSecondary,
+      rowHoverBg: colors.surfaceHover,
       cellPaddingBlock: 12 
     },
     Layout: { 
-      siderBg: '#FFFFFF', 
-      headerBg: '#FFFFFF', 
+      siderBg: colors.surface,
+      headerBg: colors.surface,
       headerHeight: 64 
     },
     Menu: { 
       itemHeight: 40, 
       itemBorderRadius: 8, 
-      itemSelectedBg: '#F0FDFA', 
-      itemSelectedColor: '#0F766E' 
+      itemSelectedBg: colors.primary50,
+      itemSelectedColor: colors.primary600,
     },
     Modal: { 
       borderRadiusLG: 16 

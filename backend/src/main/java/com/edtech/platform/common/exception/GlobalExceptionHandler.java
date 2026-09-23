@@ -49,6 +49,12 @@ public class GlobalExceptionHandler {
         return buildResponse(ex.getErrorCode(), ex.getMessage(), null);
     }
 
+    @ExceptionHandler(FieldValidationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleFieldValidationException(FieldValidationException ex) {
+        return buildResponse(ErrorCode.VALIDATION_ERROR, ErrorCode.VALIDATION_ERROR.getDefaultMessage(),
+                List.of(new ApiErrorDetail(ErrorCode.VALIDATION_ERROR.name(), ex.getField(), ex.getMessage())));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException ex) {
         List<ApiErrorDetail> errors = new java.util.ArrayList<>();

@@ -52,7 +52,7 @@ describe('AdminFinanceComponents', () => {
       {
         id: '12345678-0000-0000-0000-000000000000',
         actorId: 'admin-1',
-        action: 'APPROVE',
+        action: 'TEACHER_APPROVED',
         targetType: 'TeacherProfile',
         targetId: 'tp-1',
         createdAt: '2026-08-31T12:00:00Z',
@@ -61,7 +61,7 @@ describe('AdminFinanceComponents', () => {
 
     render(<AdminAuditLogTable logs={mockLogs} total={1} />);
 
-    expect(screen.getByText('APPROVE')).toBeInTheDocument();
+    expect(screen.getByText('TEACHER_APPROVED')).toBeInTheDocument();
     expect(screen.getByText('TeacherProfile')).toBeInTheDocument();
     expect(screen.getByText('Xem JSON')).toBeInTheDocument();
   });

@@ -83,7 +83,7 @@ export const TeacherWalletPage: React.FC = () => {
 
       <div
         style={{
-          background: 'var(--color-surface, #FFFFFF)',
+          background: 'var(--color-surface)',
           borderRadius: 'var(--radius-lg, 12px)',
           padding: 20,
         }}

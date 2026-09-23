@@ -38,19 +38,19 @@ export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
             loading={loading}
             style={{
               borderRadius: 'var(--radius-lg, 12px)',
-              border: '1px solid var(--color-primary-100, #CCFBF1)',
-              background: 'var(--color-surface, #FFFFFF)',
+              border: '1px solid var(--color-primary-100)',
+              background: 'var(--color-surface)',
               boxShadow: 'var(--shadow-sm)',
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography.Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
-                  <WalletOutlined style={{ marginRight: 6, color: 'var(--color-primary-600, #0F766E)' }} />
+                  <WalletOutlined style={{ marginRight: 6, color: 'var(--color-primary-600)' }} />
                   Số dư khả dụng
                 </Typography.Text>
                 <Tooltip title="Số tiền có thể rút về tài khoản ngân hàng ngay bây giờ.">
-                  <InfoCircleOutlined style={{ color: 'var(--color-text-tertiary, #8A837B)' }} />
+                  <InfoCircleOutlined style={{ color: 'var(--color-text-tertiary)' }} />
                 </Tooltip>
               </div>
 
@@ -60,7 +60,7 @@ export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
                     fontSize: 28,
                     fontWeight: 700,
                     fontVariantNumeric: 'tabular-nums',
-                    color: 'var(--color-primary-600, #0F766E)',
+                    color: 'var(--color-primary-600)',
                     whiteSpace: 'nowrap',
                   }}
                 >
@@ -70,7 +70,7 @@ export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
                   style={{
                     fontSize: 16,
                     fontWeight: 500,
-                    color: 'var(--color-text-secondary, #57534E)',
+                    color: 'var(--color-text-secondary)',
                     marginLeft: 4,
                   }}
                 >
@@ -105,18 +105,18 @@ export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
             loading={loading}
             style={{
               borderRadius: 'var(--radius-lg, 12px)',
-              border: '1px solid var(--color-border, #E7E3DC)',
-              background: 'var(--color-surface, #FFFFFF)',
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography.Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
-                  <ClockCircleOutlined style={{ marginRight: 6, color: 'var(--color-warning-600, #B45309)' }} />
+                  <ClockCircleOutlined style={{ marginRight: 6, color: 'var(--color-warning-600)' }} />
                   Chờ quyết toán
                 </Typography.Text>
                 <Tooltip title="Doanh thu từ các gói học đang dạy. Số tiền này sẽ tự động chuyển sang khả dụng sau khi từng buổi học được hoàn tất.">
-                  <InfoCircleOutlined style={{ color: 'var(--color-text-tertiary, #8A837B)' }} />
+                  <InfoCircleOutlined style={{ color: 'var(--color-text-tertiary)' }} />
                 </Tooltip>
               </div>
 
@@ -126,7 +126,7 @@ export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
                     fontSize: 24,
                     fontWeight: 600,
                     fontVariantNumeric: 'tabular-nums',
-                    color: 'var(--color-text-primary, #1C1917)',
+                    color: 'var(--color-text-primary)',
                     whiteSpace: 'nowrap',
                   }}
                 >
@@ -136,7 +136,7 @@ export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
                   style={{
                     fontSize: 15,
                     fontWeight: 500,
-                    color: 'var(--color-text-secondary, #57534E)',
+                    color: 'var(--color-text-secondary)',
                     marginLeft: 4,
                   }}
                 >
@@ -157,18 +157,18 @@ export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
             loading={loading}
             style={{
               borderRadius: 'var(--radius-lg, 12px)',
-              border: '1px solid var(--color-border, #E7E3DC)',
-              background: 'var(--color-surface, #FFFFFF)',
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography.Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
-                  <LockOutlined style={{ marginRight: 6, color: 'var(--color-text-tertiary, #8A837B)' }} />
+                  <LockOutlined style={{ marginRight: 6, color: 'var(--color-text-tertiary)' }} />
                   Đang xử lý rút
                 </Typography.Text>
                 <Tooltip title="Số tiền đang giữ trong các lệnh rút tiền đang chờ quản trị viên phê duyệt và chuyển khoản.">
-                  <InfoCircleOutlined style={{ color: 'var(--color-text-tertiary, #8A837B)' }} />
+                  <InfoCircleOutlined style={{ color: 'var(--color-text-tertiary)' }} />
                 </Tooltip>
               </div>
 
@@ -178,7 +178,7 @@ export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
                     fontSize: 24,
                     fontWeight: 600,
                     fontVariantNumeric: 'tabular-nums',
-                    color: 'var(--color-text-secondary, #57534E)',
+                    color: 'var(--color-text-secondary)',
                     whiteSpace: 'nowrap',
                   }}
                 >
@@ -188,7 +188,7 @@ export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
                   style={{
                     fontSize: 15,
                     fontWeight: 500,
-                    color: 'var(--color-text-secondary, #57534E)',
+                    color: 'var(--color-text-secondary)',
                     marginLeft: 4,
                   }}
                 >

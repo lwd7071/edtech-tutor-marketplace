@@ -35,7 +35,7 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
           <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
               <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <DollarOutlined style={{ marginRight: 6, color: 'var(--color-primary-600, #0F766E)' }} />
+                <DollarOutlined style={{ marginRight: 6, color: 'var(--color-primary-600)' }} />
                 Tổng GMV Nền tảng
               </Typography.Text>
               <div style={{ fontSize: 24, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
@@ -52,7 +52,7 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
           <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
               <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <PercentageOutlined style={{ marginRight: 6, color: 'var(--color-success-600, #15803D)' }} />
+                <PercentageOutlined style={{ marginRight: 6, color: 'var(--color-success-600)' }} />
                 Doanh thu Hoa hồng
               </Typography.Text>
               <div
@@ -60,7 +60,7 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
                   fontSize: 24,
                   fontWeight: 700,
                   fontVariantNumeric: 'tabular-nums',
-                  color: 'var(--color-success-600, #15803D)',
+                  color: 'var(--color-success-600)',
                 }}
               >
                 {(stats?.totalCommissionVnd ?? 0).toLocaleString('vi-VN')} ₫
@@ -76,7 +76,7 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
           <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
               <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <ClockCircleOutlined style={{ marginRight: 6, color: 'var(--color-warning-600, #B45309)' }} />
+                <ClockCircleOutlined style={{ marginRight: 6, color: 'var(--color-warning-600)' }} />
                 Yêu cầu Rút tiền chờ duyệt
               </Typography.Text>
               <div
@@ -84,7 +84,7 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
                   fontSize: 24,
                   fontWeight: 700,
                   fontVariantNumeric: 'tabular-nums',
-                  color: 'var(--color-warning-600, #B45309)',
+                  color: 'var(--color-warning-600)',
                 }}
               >
                 {stats?.pendingPayoutsCount ?? 0} lệnh
@@ -100,7 +100,7 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
           <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
               <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <AlertOutlined style={{ marginRight: 6, color: 'var(--color-error-600, #B91C1C)' }} />
+                <AlertOutlined style={{ marginRight: 6, color: 'var(--color-error-600)' }} />
                 Yêu cầu Hoàn tiền chờ xử lý
               </Typography.Text>
               <div
@@ -108,7 +108,7 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
                   fontSize: 24,
                   fontWeight: 700,
                   fontVariantNumeric: 'tabular-nums',
-                  color: (stats?.pendingRefundsCount ?? 0) > 0 ? 'var(--color-error-600, #B91C1C)' : undefined,
+                  color: (stats?.pendingRefundsCount ?? 0) > 0 ? 'var(--color-error-600)' : undefined,
                 }}
               >
                 {stats?.pendingRefundsCount ?? 0} yêu cầu
@@ -166,14 +166,14 @@ export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
           <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <CheckCircleOutlined style={{ marginRight: 6, color: 'var(--color-success-600, #15803D)' }} />
+                <CheckCircleOutlined style={{ marginRight: 6, color: 'var(--color-success-600)' }} />
                 Đã hoàn thành
               </Typography.Text>
               <div
                 style={{
                   fontSize: 22,
                   fontWeight: 600,
-                  color: 'var(--color-success-600, #15803D)',
+                  color: 'var(--color-success-600)',
                 }}
               >
                 {stats?.completedBookings ?? 0} buổi

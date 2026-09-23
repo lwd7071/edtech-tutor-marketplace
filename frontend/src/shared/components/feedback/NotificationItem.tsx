@@ -23,23 +23,25 @@ export default function NotificationItem({
   className = '',
 }: NotificationItemProps) {
   return (
-    <div 
+    <div
       className={`notification-item ${isRead ? 'read' : 'unread'} ${onClick ? 'clickable' : ''} ${className}`}
-      onClick={onClick}
-      role={onClick ? 'button' : 'listitem'}
-      tabIndex={onClick ? 0 : undefined}
+      role="listitem"
     >
       <div className="noti-icon-wrapper">
         {icon}
         {!isRead && <span className="unread-dot" />}
       </div>
-      <div className="noti-content">
+      {onClick ? <button type="button" className="noti-content noti-content-action" onClick={onClick}>
+        <h4 className="noti-title">{title}</h4>
+        <p className="noti-message">{message}</p>
+        <span className="noti-time"><DateTimeText value={timestamp} variant="relative" style={{ fontSize: '12px' }} /></span>
+      </button> : <div className="noti-content">
         <h4 className="noti-title">{title}</h4>
         <p className="noti-message">{message}</p>
         <div className="noti-time">
           <DateTimeText value={timestamp} variant="relative" style={{ fontSize: '12px' }} />
         </div>
-      </div>
+      </div>}
 
       <style>{`
         .notification-item {
@@ -81,7 +83,7 @@ export default function NotificationItem({
         }
         .notification-item.unread .noti-icon-wrapper {
           color: var(--color-primary-600);
-          background-color: #E0F2FE; /* slight accent */
+          background-color: var(--color-primary-100);
         }
         .unread-dot {
           position: absolute;
@@ -98,6 +100,7 @@ export default function NotificationItem({
           flex: 1;
           min-width: 0;
         }
+        .noti-content-action {border:0;background:transparent;text-align:left;cursor:pointer;font:inherit;padding:0;color:inherit}
         .noti-title {
           margin: 0 0 2px 0;
           font-size: var(--text-body-sm);

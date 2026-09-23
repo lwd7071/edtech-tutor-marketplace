@@ -8,6 +8,9 @@ import com.edtech.platform.admin.dto.request.RejectSubjectProposalRequest;
 import com.edtech.platform.admin.service.AdminApprovalService;
 import com.edtech.platform.admin.service.AuditContext;
 import com.edtech.platform.auth.facade.dto.IdentitySnapshot;
+import com.edtech.platform.admin.dto.response.AdminUserView;
+import com.edtech.platform.admin.service.AdminUserDirectoryService;
+import com.edtech.platform.common.exception.FieldValidationException;
 import com.edtech.platform.common.response.ApiResponse;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
@@ -34,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.validation.annotation.Validated;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Size;
 
 import java.util.Set;
 import java.util.UUID;
@@ -46,6 +50,7 @@ public class AdminApprovalController {
     private static final Set<String> TEACHER_SORT = Set.of("createdAt", "updatedAt", "profileStatus");
     private static final Set<String> SUBJECT_SORT = Set.of("createdAt", "updatedAt", "proposedName");
     private final AdminApprovalService service;
+    private final AdminUserDirectoryService userDirectory;
 
     @GetMapping("/teachers/approvals")
     public ApiResponse<java.util.List<TeacherApprovalSnapshot>> teachers(
@@ -106,13 +111,41 @@ public class AdminApprovalController {
                 service.changeUserStatus(id, actor.id(), body.status(), body.reason(), context(request)));
     }
 
+    @GetMapping("/users")
+    public ApiResponse<java.util.List<AdminUserView>> users(
+            @RequestParam(required = false) @Size(max = 100, message = "Từ khóa tối đa 100 UTF-16 units") String keyword,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") @Min(value = 0, message = "Trang phải lớn hơn hoặc bằng 0") int page,
+            @RequestParam(defaultValue = "20") @Min(value = 1, message = "Kích thước trang phải lớn hơn 0") @Max(value = 100, message = "Kích thước tối đa là 100") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+        if (keyword != null && keyword.length() > 100)
+            throw new FieldValidationException("keyword", "Từ khóa tối đa 100 UTF-16 units");
+        String parsedRole = role == null ? null : switch (role) {
+            case "STUDENT" -> "STUDENT";
+            case "TEACHER" -> "TEACHER";
+            default -> throw new FieldValidationException("role", "Vai trò chỉ nhận STUDENT hoặc TEACHER");
+        };
+        String parsedStatus = status == null ? null : switch (status) {
+            case "ACTIVE" -> "ACTIVE";
+            case "LOCKED" -> "LOCKED";
+            default -> throw new FieldValidationException("status", "Trạng thái chỉ nhận ACTIVE hoặc LOCKED");
+        };
+        Page<AdminUserView> result = userDirectory.findUsers(keyword, parsedRole, parsedStatus,
+                pageable(page, size, sort, Set.of("createdAt", "fullName", "email", "role", "status", "lastLoginAt")));
+        return ApiResponse.page("Lấy danh sách người dùng thành công", result.getContent(), PageMeta.from(result));
+    }
+
     private Pageable pageable(int page, int size, String rawSort, Set<String> allowed) {
-        String[] parts = rawSort.split(",", 2);
-        if (!allowed.contains(parts[0])) throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-        String property = parts[0];
-        Sort.Direction direction = parts.length == 2 && "desc".equalsIgnoreCase(parts[1])
-                ? Sort.Direction.DESC : Sort.Direction.ASC;
-        return PageRequest.of(page, size, Sort.by(direction, property));
+        String[] parts = rawSort.split(",", -1);
+        if (parts.length != 2 || !allowed.contains(parts[0]))
+            throw new FieldValidationException("sort", "Trường sắp xếp không hợp lệ");
+        Sort.Direction direction;
+        try { direction = Sort.Direction.fromString(parts[1]); }
+        catch (IllegalArgumentException exception) {
+            throw new FieldValidationException("sort", "Chiều sắp xếp chỉ nhận asc hoặc desc");
+        }
+        return PageRequest.of(page, size, Sort.by(direction, parts[0], "id"));
     }
 
     private AuditContext context(HttpServletRequest request) {

@@ -56,23 +56,23 @@ export default function StudentProfilePage() {
             size={100} 
             src={user.avatarUrl} 
             icon={<UserOutlined />} 
-            style={{ border: '2px solid var(--color-primary-100, #CCFBF1)' }}
+            style={{ border: '2px solid var(--color-primary-100)' }}
           />
           <div style={{ flex: 1 }}>
             <Typography.Title level={4} style={{ marginTop: 0, marginBottom: 4 }}>{user.fullName}</Typography.Title>
-            <div style={{ color: 'var(--color-text-secondary, #4B5563)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <div style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <MailOutlined /> {user.email}
             </div>
             <Space size="large">
               <div>
-                <div style={{ color: 'var(--color-text-tertiary, #9CA3AF)', fontSize: 12, textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>Vai trò</div>
-                <div style={{ fontWeight: 500, color: 'var(--color-primary-600, #0D9488)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ color: 'var(--color-text-tertiary)', fontSize: 12, textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>Vai trò</div>
+                <div style={{ fontWeight: 500, color: 'var(--color-primary-600)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <SafetyCertificateOutlined /> Học viên
                 </div>
               </div>
               <div>
-                <div style={{ color: 'var(--color-text-tertiary, #9CA3AF)', fontSize: 12, textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>Trạng thái</div>
-                <div style={{ fontWeight: 500, color: 'var(--color-success-600, #16A34A)', marginTop: 4 }}>Đang hoạt động</div>
+                <div style={{ color: 'var(--color-text-tertiary)', fontSize: 12, textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>Trạng thái</div>
+                <div style={{ fontWeight: 500, color: 'var(--color-success-600)', marginTop: 4 }}>Đang hoạt động</div>
               </div>
             </Space>
           </div>
@@ -80,7 +80,7 @@ export default function StudentProfilePage() {
       </Card>
 
       <Card style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', borderRadius: 12 }} title="Thông tin liên hệ phụ huynh">
-        <div style={{ marginBottom: 24, color: 'var(--color-text-secondary, #4B5563)' }}>
+        <div style={{ marginBottom: 24, color: 'var(--color-text-secondary)' }}>
           Thông tin này không bắt buộc. Khi bật nhận email, hệ thống gửi các cập nhật học tập quan trọng tới địa chỉ phụ huynh.
         </div>
         {loadError && <Alert type="error" showIcon title="Chưa tải được thông tin phụ huynh" action={<Button onClick={() => void loadContact()}>Thử lại</Button>} style={{marginBottom:16}} />}

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Modal, Form, Radio, Input, Button, message, Typography, Space } from 'antd';
 import { DeliveryMode, CreateBookingRequest } from '../types';
 import { useCreateBooking } from '../hooks/useBookings';
+import { vietnamLocalInputToIso } from '@/shared/lib/vietnamTime';
 
 interface CreateBookingModalProps {
   open: boolean;
@@ -24,8 +25,8 @@ export const CreateBookingModal: React.FC<CreateBookingModalProps> = ({
     try {
       await createMutation.mutateAsync({
         ...values,
-        startTime: new Date(values.startTime).toISOString(),
-        endTime: new Date(values.endTime).toISOString(),
+        startTime: vietnamLocalInputToIso(values.startTime),
+        endTime: vietnamLocalInputToIso(values.endTime),
         studentPackageId,
         deliveryMode,
       });
@@ -62,7 +63,7 @@ export const CreateBookingModal: React.FC<CreateBookingModalProps> = ({
       >
         <Form.Item
           name="startTime"
-          label="Thời gian bắt đầu (giờ địa phương)"
+          label="Thời gian bắt đầu (giờ Việt Nam)"
           rules={[{ required: true, message: 'Vui lòng nhập thời gian bắt đầu' }]}
         >
           <Input type="datetime-local" />
@@ -70,7 +71,7 @@ export const CreateBookingModal: React.FC<CreateBookingModalProps> = ({
 
         <Form.Item
           name="endTime"
-          label="Thời gian kết thúc (giờ địa phương)"
+          label="Thời gian kết thúc (giờ Việt Nam)"
           rules={[{ required: true, message: 'Vui lòng nhập thời gian kết thúc' }]}
         >
           <Input type="datetime-local" />

@@ -1,4 +1,4 @@
-import { isWorkspaceLinkActive, roleHome, safeReturnTo } from './navigation';
+import { isWorkspaceLinkActive, roleHome, safeReturnTo, teacherWorkspaceGroups, workspaceLinks } from './navigation';
 
 describe('workspace navigation', () => {
   it('keeps role homes and safe internal redirects stable', () => {
@@ -18,5 +18,12 @@ describe('workspace navigation', () => {
     expect(isWorkspaceLinkActive('/student/packages/package-1', '/student')).toBe(false);
     expect(isWorkspaceLinkActive('/teacher/bookings', '/teacher/bookings')).toBe(true);
     expect(isWorkspaceLinkActive('/teacher/bookings-old', '/teacher/bookings')).toBe(false);
+  });
+
+  it('groups every teacher route exactly once for desktop and mobile navigation', () => {
+    const grouped = teacherWorkspaceGroups.flatMap(group => group.items.map(item => item.href));
+    expect(grouped).toEqual(workspaceLinks.TEACHER.map(item => item.href));
+    expect(new Set(grouped).size).toBe(grouped.length);
+    expect(teacherWorkspaceGroups.map(group => group.label)).toEqual(['Tổng quan', 'Hồ sơ', 'Giảng dạy', 'Học tập', 'Tài chính', 'Giao tiếp']);
   });
 });

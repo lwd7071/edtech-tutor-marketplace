@@ -55,13 +55,14 @@ class AdminAuditLogControllerTest {
                 "127.0.0.1", "Mozilla/5.0", Instant.now()
         );
 
-        when(auditLogQueryService.findAuditLogs(eq(actorId), eq(AuditAction.TEACHER_APPROVED), eq("TEACHER_PROFILE"), any()))
+        when(auditLogQueryService.findAuditLogs(eq(actorId), eq(AuditAction.TEACHER_APPROVED), eq("TEACHER_PROFILE"), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(view), PageRequest.of(0, 20), 1));
 
         mockMvc.perform(get("/api/admin/audit-logs")
                         .param("actorId", actorId.toString())
                         .param("action", "TEACHER_APPROVED")
                         .param("targetType", "TEACHER_PROFILE")
+                        .param("targetId", targetId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))

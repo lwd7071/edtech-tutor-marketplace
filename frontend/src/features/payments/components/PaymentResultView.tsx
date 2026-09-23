@@ -29,21 +29,21 @@ export const PaymentResultView: React.FC<PaymentResultViewProps> = ({ invoice })
           >
             <div
               style={{
-                backgroundColor: 'var(--color-surface-sunken, #F5F3EF)',
+                backgroundColor: 'var(--color-surface-sunken)',
                 padding: 16,
                 borderRadius: 'var(--radius-md, 8px)',
                 textAlign: 'left',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ color: 'var(--color-text-secondary, #57534E)' }}>Số tiền đã thanh toán:</span>
+                <span style={{ color: 'var(--color-text-secondary)' }}>Số tiền đã thanh toán:</span>
                 <span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
                   {formatVnd(invoice.amountVnd)}
                 </span>
               </div>
               {invoice.packageName && (
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--color-text-secondary, #57534E)' }}>Tên gói học:</span>
+                  <span style={{ color: 'var(--color-text-secondary)' }}>Tên gói học:</span>
                   <span style={{ fontWeight: 600 }}>{invoice.packageName}</span>
                 </div>
               )}

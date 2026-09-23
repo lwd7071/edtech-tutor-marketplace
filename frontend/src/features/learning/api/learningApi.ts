@@ -12,6 +12,6 @@ export const learningApi={
  async getSubmissionDetail(id:string): Promise<ApiResponseWithData<SubmissionDetail>> {return requireApiData((await axiosClient.get<ApiResponse<SubmissionDetail>>('/api/teacher/submissions/'+id)).data);},
  async getStudentAssignments(page=0,size=20,progress?:'TODO'|'SUBMITTED'|'GRADED'): Promise<ApiResponseWithData<TeacherAssignmentListItem[]>> {return requireApiData((await axiosClient.get<ApiResponse<TeacherAssignmentListItem[]>>('/api/student/assignments',{params:{page,size,progress}})).data);},
  async getStudentAssignmentDetail(id:string): Promise<ApiResponseWithData<StudentAssignmentDetail>> {return requireApiData((await axiosClient.get<ApiResponse<StudentAssignmentDetail>>('/api/student/assignments/'+id)).data);},
- async submitAssignment(id:string,data:CreateSubmissionRequest): Promise<ApiResponseWithData<SubmissionDetail>> {return requireApiData((await axiosClient.post<ApiResponse<SubmissionDetail>>('/api/student/assignments/'+id+'/submissions',{...data,status:'SUBMITTED'})).data);}
+ async submitAssignment(id:string,data:CreateSubmissionRequest): Promise<ApiResponseWithData<SubmissionDetail>> {return requireApiData((await axiosClient.post<ApiResponse<SubmissionDetail>>('/api/student/assignments/'+id+'/submissions',data)).data);}
 };
 

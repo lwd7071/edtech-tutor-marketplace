@@ -10,17 +10,9 @@ import {
 import { financeKeys } from '../data/financeKeys';
 import { isConcurrentModification } from '@/shared/backend';
 import { studentDashboardKeys } from '@/features/student-dashboard/data/studentDashboardKeys';
+import { useCommandKey } from '@/shared/lib/useCommandKey';
 
 export const FINANCE_KEYS = financeKeys;
-
-const commandKeys = new WeakMap<object, string>();
-const keyFor = (command: object) => {
-  const existing = commandKeys.get(command);
-  if (existing) return existing;
-  const key = globalThis.crypto.randomUUID();
-  commandKeys.set(command, key);
-  return key;
-};
 
 // ---- Teacher Wallet Hooks ----
 export function useTeacherWallet() {
@@ -47,9 +39,11 @@ export function useTeacherBankAccounts() {
 
 export function useCreateBankAccount() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<UpsertBankAccountRequest>();
   return useMutation({
-    mutationFn: (data: UpsertBankAccountRequest) => financeApi.createBankAccount(data, keyFor(data)),
-    onSuccess: () => {
+    mutationFn: (data: UpsertBankAccountRequest) => financeApi.createBankAccount(data, commandKey.forPayload(data)),
+    onSuccess: (_, data) => {
+      commandKey.clear(data);
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.bankAccounts() });
     },
   });
@@ -97,9 +91,11 @@ export function useTeacherPayouts(status?: PayoutStatus, page = 0, size = 20) {
 
 export function useCreatePayout() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<CreatePayoutRequest>();
   return useMutation({
-    mutationFn: (data: CreatePayoutRequest) => financeApi.createPayoutRequest(data, keyFor(data)),
-    onSuccess: () => {
+    mutationFn: (data: CreatePayoutRequest) => financeApi.createPayoutRequest(data, commandKey.forPayload(data)),
+    onSuccess: (_, data) => {
+      commandKey.clear(data);
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.payouts() });
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.wallet() });
     },
@@ -116,9 +112,11 @@ export function useStudentRefunds(page = 0, size = 20) {
 
 export function useCreateRefund() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<CreateRefundRequest>();
   return useMutation({
-    mutationFn: (data: CreateRefundRequest) => financeApi.createRefundRequest(data, keyFor(data)),
-    onSuccess: () => {
+    mutationFn: (data: CreateRefundRequest) => financeApi.createRefundRequest(data, commandKey.forPayload(data)),
+    onSuccess: (_, data) => {
+      commandKey.clear(data);
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.refunds(0, 20) });
       queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() });
     },
@@ -135,9 +133,11 @@ export function useStudentExtensions(page = 0, size = 20) {
 
 export function useCreateExtension() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<CreateExtensionRequest>();
   return useMutation({
-    mutationFn: (data: CreateExtensionRequest) => financeApi.createExtensionRequest(data, keyFor(data)),
-    onSuccess: () => {
+    mutationFn: (data: CreateExtensionRequest) => financeApi.createExtensionRequest(data, commandKey.forPayload(data)),
+    onSuccess: (_, data) => {
+      commandKey.clear(data);
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.extensions(0, 20) });
       queryClient.invalidateQueries({ queryKey: studentDashboardKeys.summary() });
     },

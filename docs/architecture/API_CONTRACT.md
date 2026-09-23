@@ -411,6 +411,8 @@ PUT availability thay toàn bộ danh sách trong một transaction; overlap tr�
 }
 ```
 
+`reason` bắt buộc, không blank và tối đa 1.000 UTF-16 code units theo `String.length()` của Java; không chuẩn hóa Unicode. Ký tự BMP dựng sẵn tính 1 unit, chuỗi dấu kết hợp có thể tính nhiều unit và emoji ngoài BMP thường tính 2. `BookingDetail.cancelReason` nullable; client chỉ hiển thị lý do khi trạng thái là `CANCELLED`.
+
 Gia sư xác nhận booking trả phí và nộp `SessionReport` trong cùng một request/transaction. Booking trả phí `COMPLETED` do hết hạn có thể chưa có report. Với trial, endpoint complete giữ hành vi hoàn thành và report hiện tại.
 
 StudentPackage phải `ACTIVE` tại thời điểm tạo Booking mới. Nếu package chuyển `LOCKED_EXPIRED` sau khi Booking đã được tạo, Booking `SCHEDULED` đó vẫn được giữ nguyên và diễn ra bình thường; hệ thống không tự động hủy hoặc hoàn lượt chỉ vì package hết hạn.
@@ -684,8 +686,9 @@ Tất cả endpoint yêu cầu role `ADMIN`. Mọi action thay đổi trạng th
 | POST | `/api/admin/payout-requests/{id}/complete` | multipart: `metadata` (`bankReference`, `transferredAt`, `version`) + required `proof` file | `PayoutRequestView` |
 | POST | `/api/admin/payout-requests/{id}/reject` | `RejectFinanceRequest` | `PayoutRequestView` |
 | PATCH | `/api/admin/users/{id}/status` | `ChangeUserStatusRequest` | `IdentitySnapshot` |
+| GET | `/api/admin/users` | `keyword?`, `role?`, `status?`, pagination, `sort` | `AdminUserView[]` |
 | GET | `/api/admin/dashboard` | `from?`, `to?` | `AdminDashboardView` |
-| GET | `/api/admin/audit-logs` | filters, pagination | `AuditLogView[]` |
+| GET | `/api/admin/audit-logs` | `actorId?`, `action?`, `targetType?`, `targetId?`, pagination | `AuditLogView[]` |
 | GET | `/api/admin/settings` | — | `PlatformSettingsView` |
 | PUT | `/api/admin/settings` | `UpdatePlatformSettingsRequest` | `PlatformSettingsView` |
 
@@ -702,6 +705,10 @@ Tất cả endpoint yêu cầu role `ADMIN`. Mọi action thay đổi trạng th
   "version": 4
 }
 ```
+
+`GET /api/admin/users` mặc định chỉ trả Student/Teacher có trạng thái `ACTIVE` hoặc `LOCKED`; không trả Admin, pending verification, disabled hoặc soft-deleted. `role` chỉ nhận `STUDENT|TEACHER`, `status` chỉ nhận `ACTIVE|LOCKED`. `keyword` được trim, tìm không phân biệt hoa/thường trong tên/email và tối đa 100 UTF-16 units. Sort allowlist: `createdAt`, `fullName`, `email`, `role`, `status`, `lastLoginAt`; chiều `asc|desc`; backend thêm `id` cùng chiều làm tie-breaker. `AdminUserView` chỉ có `id`, `fullName`, `email`, `role`, `status`, `createdAt`, `lastLoginAt`.
+
+Audit filter `targetId` có thể kết hợp với `targetType=USER` để đọc lịch sử khóa/mở khóa của một tài khoản. Lý do moderation được lưu trong `afterData.moderationNote`; không có `lockReason` hoặc `lockedAt` trên user record.
 
 Với `LINK_EXISTING`, `existingSubjectId` bắt buộc và không gửi `code/name`. Với `CREATE_NEW`, `code` bắt buộc, `existingSubjectId` phải `null`; slug được Backend sinh từ tên. Request approve/reject đã xử lý hoặc thua race trả `409`, không trả `400/500`.
 
@@ -860,6 +867,7 @@ Response xác nhận tối giản theo yêu cầu provider; không bắt buộc 
   "meetingLink": "https://meet.example/abc",
   "locationAddress": null,
   "status": "SCHEDULED",
+  "cancelReason": null,
   "trial": false,
   "outsideAvailabilityWarning": false,
   "sessionReport": null,
@@ -895,6 +903,30 @@ Teacher dùng `POST/PUT/GET/DELETE /api/teacher/credentials` với multipart `la
 ## 11. Admin booking settlement actions
 
 Admin đọc hàng đợi qua `GET /api/admin/booking-settlements?status=&page=&size=` (response phân trang), rồi dùng `POST /api/admin/booking-settlements/{id}/reopen`, `POST /api/admin/booking-settlements/{id}/release`, `POST /api/admin/booking-settlements/{id}/retain` với `{ "version": n, "note": "..." }`. Version này là `settlement.version`. `retain` từ `DISPUTE_PENDING` là từ chối mở lại có lý do; sau khi mở lại, `release`/`retain` thủ công chỉ hợp lệ tại hoặc sau hạn thứ hai. Mọi action kiểm tra optimistic version và ghi audit.
+
+List và detail của Admin dùng cùng `BookingSettlementAdminView`: `bookingId`, `studentId`, `studentName`, `teacherId`, `teacherName`, `bookingStatus`, `startTime`, `endTime`, settlement `status`, hai timestamp xác nhận, `confirmationDeadline`, `reopenDeadline`, `netAmountVnd`, `disputeReason`, `disputedAt`, `version`. `netAmountVnd` là JSON integer/int64 hoặc null. `confirmationDeadline` là hạn đầu; `reopenDeadline` chỉ có sau khi mở lại và nullable. Tên thiếu hoặc blank dùng “Học viên”/“Gia sư”.
+
+```json
+{
+  "bookingId": "c4436e6a-d11a-4f54-931f-61798de4b66e",
+  "studentId": "7f9a5cce-29de-4eb9-b07e-259d0b216eef",
+  "studentName": "Nguyễn Minh An",
+  "teacherId": "752169a4-cc2f-455f-a567-f55399eeb8f8",
+  "teacherName": "Trần Thu Hà",
+  "bookingStatus": "COMPLETED",
+  "startTime": "2026-09-22T12:00:00Z",
+  "endTime": "2026-09-22T13:00:00Z",
+  "status": "DISPUTE_PENDING",
+  "teacherConfirmedAt": "2026-09-22T13:05:00Z",
+  "studentConfirmedAt": null,
+  "confirmationDeadline": "2026-09-23T13:00:00Z",
+  "reopenDeadline": null,
+  "netAmountVnd": 180000,
+  "disputeReason": "Học viên chưa xác nhận",
+  "disputedAt": "2026-09-24T08:00:00Z",
+  "version": 2
+}
+```
 
 ## 12. Enum chính
 

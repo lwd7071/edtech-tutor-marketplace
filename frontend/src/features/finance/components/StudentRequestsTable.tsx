@@ -65,7 +65,7 @@ export const StudentRequestsTable: React.FC<StudentRequestsTableProps> = ({
       key: 'createdAt',
       width: 160,
       render: (val: string) => (
-        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary, #57534E)' }}>
+        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
           {formatLedgerTime(val)}
         </Typography.Text>
       ),
@@ -97,7 +97,7 @@ export const StudentRequestsTable: React.FC<StudentRequestsTableProps> = ({
             fontWeight: 600,
             fontSize: 14,
             fontVariantNumeric: 'tabular-nums',
-            color: 'var(--color-primary-600, #0F766E)',
+            color: 'var(--color-primary-600)',
           }}
         >
           {amt ? `${amt.toLocaleString('vi-VN')} ₫` : '—'}
@@ -164,7 +164,7 @@ export const StudentRequestsTable: React.FC<StudentRequestsTableProps> = ({
       key: 'createdAt',
       width: 160,
       render: (val: string) => (
-        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary, #57534E)' }}>
+        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
           {formatLedgerTime(val)}
         </Typography.Text>
       ),
@@ -189,7 +189,7 @@ export const StudentRequestsTable: React.FC<StudentRequestsTableProps> = ({
         <Typography.Text
           style={{
             fontSize: 13,
-            color: val ? 'var(--color-success-600, #15803D)' : undefined,
+            color: val ? 'var(--color-success-600)' : undefined,
             fontWeight: val ? 600 : undefined,
           }}
         >
@@ -226,7 +226,7 @@ export const StudentRequestsTable: React.FC<StudentRequestsTableProps> = ({
   return (
     <div
       style={{
-        background: 'var(--color-surface, #FFFFFF)',
+        background: 'var(--color-surface)',
         borderRadius: 'var(--radius-lg, 12px)',
         padding: 20,
       }}

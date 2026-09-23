@@ -11,6 +11,7 @@ import './tutor-match.css';
 import { AppThemeProvider } from "@/shared/components/AppThemeProvider";
 import { SessionHydrator } from "@/features/auth";
 import { AppProviders } from '@/shared/components/AppProviders';
+import { colorCss } from '@/shared/design-system/tokens';
 
 export const metadata: Metadata = {
   title: "Edtech Tutor Marketplace",
@@ -24,6 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" suppressHydrationWarning>
+      <head><style dangerouslySetInnerHTML={{ __html: colorCss }} /></head>
       <body className="antialiased" suppressHydrationWarning>
         <AppThemeProvider>
           <AppProviders>

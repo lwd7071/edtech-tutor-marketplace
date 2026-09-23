@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import com.edtech.platform.booking.dto.response.SessionReportView;
+import com.edtech.platform.booking.dto.response.BookingSettlementAdminView;
 
 @Service
 @RequiredArgsConstructor
@@ -62,36 +63,53 @@ public class BookingReadService {
         return t.id();
     }
 
-    public Page<Map<String,Object>> adminSettlements(SettlementStatus status, Pageable pageable) {
-        return settlements.findByStatus(status, pageable).map(s -> bookings.findById(s.getBookingId())
-                .map(b -> adminView(b, s)).orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND)));
+    @Transactional(readOnly = true)
+    public Page<BookingSettlementAdminView> adminSettlements(SettlementStatus status, Pageable pageable) {
+        Page<BookingSettlement> page = settlements.findByStatus(status, pageable);
+        if (page.isEmpty()) return Page.empty(pageable);
+
+        Map<UUID, Booking> bookingById = bookings.findAllById(page.getContent().stream()
+                        .map(BookingSettlement::getBookingId).toList()).stream()
+                .collect(Collectors.toMap(Booking::getId, Function.identity()));
+        List<Booking> pageBookings = page.getContent().stream()
+                .map(settlement -> Optional.ofNullable(bookingById.get(settlement.getBookingId()))
+                        .orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND)))
+                .toList();
+
+        List<UUID> teacherIds = pageBookings.stream().map(Booking::getTeacherId).distinct().toList();
+        List<UUID> studentIds = pageBookings.stream().map(Booking::getStudentId).distinct().toList();
+        Map<UUID, com.edtech.platform.teacher.facade.dto.TeacherSnapshot> teacherById = teacherIds.isEmpty()
+                ? Map.of() : teachers.getTeachers(teacherIds);
+        Map<UUID, com.edtech.platform.auth.facade.dto.IdentitySnapshot> studentById = studentIds.isEmpty()
+                ? Map.of() : identities.getIdentities(studentIds);
+
+        return page.map(settlement -> adminView(bookingById.get(settlement.getBookingId()), settlement,
+                teacherById.get(bookingById.get(settlement.getBookingId()).getTeacherId()),
+                studentById.get(bookingById.get(settlement.getBookingId()).getStudentId())));
     }
 
     @Transactional(readOnly = true)
-    public Map<String,Object> adminDetail(UUID bookingId) {
+    public BookingSettlementAdminView adminDetail(UUID bookingId) {
         Booking booking = bookings.findById(bookingId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND));
-        return adminView(booking, settlements.findByBookingIdForRead(bookingId).orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND)));
+        BookingSettlement settlement = settlements.findByBookingIdForRead(bookingId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.BOOKING_NOT_FOUND));
+        var teacher = teachers.getTeachers(List.of(booking.getTeacherId())).get(booking.getTeacherId());
+        var student = identities.getIdentities(List.of(booking.getStudentId())).get(booking.getStudentId());
+        return adminView(booking, settlement, teacher, student);
     }
 
-    private Map<String,Object> adminView(Booking b, BookingSettlement s) {
-        var result = new LinkedHashMap<String,Object>();
-        result.put("bookingId", b.getId());
-        result.put("studentId", b.getStudentId());
-        result.put("teacherId", b.getTeacherId());
-        result.put("status", s.getStatus());
-        result.put("teacherConfirmedAt", s.getTeacherConfirmedAt());
-        result.put("studentConfirmedAt", s.getStudentConfirmedAt());
-        result.put("confirmationDeadline", s.getInitialDeadline());
-        result.put("reopenDeadline", s.getReopenDeadline());
-        result.put("netAmountVnd", s.getNetAmountVnd());
-        result.put("disputeReason", s.getDisputeReason());
-        result.put("disputedAt", s.getDisputedAt());
-        result.put("version", s.getVersion());
-        result.put("bookingStatus", b.getStatus());
-        result.put("startTime", b.getStartTime());
-        result.put("endTime", b.getEndTime());
-        return result;
+    private BookingSettlementAdminView adminView(Booking b, BookingSettlement s,
+                                                  com.edtech.platform.teacher.facade.dto.TeacherSnapshot teacher,
+                                                  com.edtech.platform.auth.facade.dto.IdentitySnapshot student) {
+        String teacherName = teacher == null || teacher.fullName() == null || teacher.fullName().isBlank()
+                ? "Gia sư" : teacher.fullName();
+        String studentName = student == null || student.fullName() == null || student.fullName().isBlank()
+                ? "Học viên" : student.fullName();
+        return new BookingSettlementAdminView(b.getId(), b.getStudentId(), studentName, b.getTeacherId(), teacherName,
+                b.getStatus(), b.getStartTime(), b.getEndTime(), s.getStatus(), s.getTeacherConfirmedAt(),
+                s.getStudentConfirmedAt(), s.getInitialDeadline(), s.getReopenDeadline(), s.getNetAmountVnd(),
+                s.getDisputeReason(), s.getDisputedAt(), s.getVersion());
     }
 
     private Map<String,Object> view(Booking b, boolean teacherRole) {

@@ -4,6 +4,7 @@ import React from 'react';
 import { Card, Button, Empty, Popconfirm, Typography, Tag } from 'antd';
 import { DeleteOutlined, FileOutlined } from '@ant-design/icons';
 import { TeacherDocument } from '@/shared/api/teacher';
+import { formatVietnamDate } from '@/shared/lib/vietnamTime';
 
 const { Text } = Typography;
 
@@ -34,7 +35,7 @@ export default function DocumentList({ documents, onDelete }: DocumentListProps)
             <FileOutlined style={{ fontSize: 24, color: 'var(--color-primary-500)' }} />
             <div style={{ flex: 1 }}>
               <Text strong>{item.name}</Text>
-              <div><Text type="secondary" style={{ marginRight: 8 }}>{new Date(item.uploadedAt).toLocaleDateString('vi-VN')}</Text>{getStatusTag(item.status)}</div>
+              <div><Text type="secondary" style={{ marginRight: 8 }}>{formatVietnamDate(item.uploadedAt)}</Text>{getStatusTag(item.status)}</div>
             </div>
             <Popconfirm
                 key="delete"

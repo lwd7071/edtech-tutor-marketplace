@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { paymentApi } from '../api/paymentApi';
 import { CreateInvoiceRequest } from '../types';
+import { useCommandKey } from '@/shared/lib/useCommandKey';
 
 export const PAYMENT_KEYS = {
   all: ['payments'] as const,
@@ -13,10 +14,12 @@ export const PAYMENT_KEYS = {
  */
 export function useCreateInvoice() {
   const queryClient = useQueryClient();
+  const commandKey = useCommandKey<CreateInvoiceRequest>();
 
   return useMutation({
-    mutationFn: (data: CreateInvoiceRequest) => paymentApi.createInvoice(data),
-    onSuccess: (response) => {
+    mutationFn: (data: CreateInvoiceRequest) => paymentApi.createInvoice(data, commandKey.forPayload(data)),
+    onSuccess: (response, data) => {
+      commandKey.clear(data);
       if (response?.data?.id) {
         queryClient.invalidateQueries({
           queryKey: PAYMENT_KEYS.invoice(response.data.id),

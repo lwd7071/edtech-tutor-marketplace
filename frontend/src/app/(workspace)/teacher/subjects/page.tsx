@@ -70,7 +70,7 @@ export default function SubjectsPage() {
         {subjects.length === 0 ? <Empty description="Chưa có môn học nào." /> : (
           <div role="list">{subjects.map((item) => (
             <div key={item.id} role="listitem" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 0', borderBottom: '1px solid var(--color-border)' }}>
-              <BookOutlined style={{ fontSize: 24, color: 'var(--color-success-500)' }} />
+              <BookOutlined style={{ fontSize: 24, color: 'var(--color-success-600)' }} />
               <div style={{ flex: 1 }}><Text strong>{item.name}</Text><div><Tag>{item.category}</Tag></div></div>
               <Popconfirm
                   key="delete"

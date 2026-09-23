@@ -4,12 +4,13 @@ import 'dayjs/locale/vi';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import { VIETNAM_TIME_ZONE } from '@/shared/lib/vietnamTime';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
-dayjs.tz.setDefault('Asia/Ho_Chi_Minh');
+dayjs.tz.setDefault(VIETNAM_TIME_ZONE);
 
 export type DateTimeVariant = 'date' | 'time' | 'full' | 'range' | 'relative';
 
@@ -30,7 +31,7 @@ export const DateTimeText: React.FC<DateTimeTextProps> = ({
   style,
   ...props
 }) => {
-  const dt = dayjs(value).tz('Asia/Ho_Chi_Minh');
+  const dt = dayjs(value).tz(VIETNAM_TIME_ZONE);
 
   let text = '';
 
@@ -46,7 +47,7 @@ export const DateTimeText: React.FC<DateTimeTextProps> = ({
       break;
     case 'range':
       if (endDate) {
-        const endDt = dayjs(endDate).tz('Asia/Ho_Chi_Minh');
+        const endDt = dayjs(endDate).tz(VIETNAM_TIME_ZONE);
         // e.g. 19:00 – 20:30 · Thứ 5, 20/08/2026
         const dow = mapDayOfWeek(dt.day());
         text = `${dt.format('HH:mm')} \u2013 ${endDt.format('HH:mm')} \u00b7 ${dow}, ${dt.format('DD/MM/YYYY')}`;

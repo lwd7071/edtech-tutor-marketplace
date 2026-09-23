@@ -53,7 +53,7 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({
       loading={loading}
       title={
         <Space>
-          <SettingOutlined style={{ color: 'var(--color-primary-600, #0F766E)' }} />
+          <SettingOutlined style={{ color: 'var(--color-primary-600)' }} />
           <span>Cấu hình Tham số Nền tảng (Platform Settings)</span>
         </Space>
       }
@@ -67,7 +67,7 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({
       style={{
         maxWidth: 720,
         borderRadius: 'var(--radius-lg, 12px)',
-        background: 'var(--color-surface, #FFFFFF)',
+        background: 'var(--color-surface)',
       }}
     >
       <Alert

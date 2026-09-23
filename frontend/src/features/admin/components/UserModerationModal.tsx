@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Modal, Input, Typography, message } from 'antd';
 import { useChangeUserStatus } from '../hooks/useAdminApprovals';
+import { parseApiError } from '@/shared/backend';
 
 interface ModerationUser {
   id: string;
@@ -49,8 +50,8 @@ export const UserModerationModal: React.FC<UserModerationModalProps> = ({
       message.success(isLocking ? 'Đã khóa tài khoản người dùng' : 'Đã mở khóa tài khoản người dùng');
       setReason('');
       onClose();
-    } catch {
-      message.error('Thao tác thay đổi trạng thái thất bại');
+    } catch (error) {
+      message.error(parseApiError(error).message);
     }
   };
 

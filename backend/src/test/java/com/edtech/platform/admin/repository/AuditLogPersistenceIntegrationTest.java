@@ -3,6 +3,7 @@ package com.edtech.platform.admin.repository;
 import com.edtech.platform.admin.domain.AuditAction;
 import com.edtech.platform.admin.service.AuditContext;
 import com.edtech.platform.admin.service.AuditLogService;
+import com.edtech.platform.admin.service.AuditLogQueryService;
 import com.edtech.platform.common.AbstractIntegrationTest;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
@@ -13,11 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AuditLogPersistenceIntegrationTest extends AbstractIntegrationTest {
     @Autowired AuditLogService auditLogs;
+    @Autowired AuditLogQueryService auditQueries;
     @Autowired EntityManager entityManager;
     @Autowired JdbcTemplate jdbc;
 
@@ -68,5 +71,27 @@ class AuditLogPersistenceIntegrationTest extends AbstractIntegrationTest {
                 .containsEntry("after_has_ward", true)
                 .containsEntry("before_ward_type", "null")
                 .containsEntry("after_ward_type", "null");
+    }
+
+    @Test
+    @Transactional
+    void auditHistoryCanBeFilteredByExactTargetIdAndType() {
+        UUID userId = UUID.randomUUID();
+        UUID otherId = UUID.randomUUID();
+        auditLogs.append(null, AuditAction.USER_LOCKED, "USER", userId, Map.of(), Map.of("moderationNote", "lock"),
+                new AuditContext("127.0.0.1", "integration-test"));
+        auditLogs.append(null, AuditAction.USER_UNLOCKED, "USER", userId, Map.of(), Map.of("moderationNote", "unlock"),
+                new AuditContext("127.0.0.1", "integration-test"));
+        auditLogs.append(null, AuditAction.USER_LOCKED, "USER", otherId, Map.of(), Map.of(),
+                new AuditContext("127.0.0.1", "integration-test"));
+        auditLogs.append(null, AuditAction.USER_LOCKED, "TEACHER_PROFILE", userId, Map.of(), Map.of(),
+                new AuditContext("127.0.0.1", "integration-test"));
+        entityManager.flush();
+
+        var result = auditQueries.findAuditLogs(null, null, "USER", userId, PageRequest.of(0, 20));
+        assertThat(result.getContent()).hasSize(2).allSatisfy(log -> {
+            assertThat(log.targetId()).isEqualTo(userId);
+            assertThat(log.targetType()).isEqualTo("USER");
+        });
     }
 }

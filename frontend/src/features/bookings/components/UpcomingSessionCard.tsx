@@ -11,6 +11,7 @@ import {
 import { BookingDetail } from '../types';
 import { getUpcomingBookingFromList } from '../hooks/useUpcomingBooking';
 import { getMeetingLink, getChatRoute, getBookingDetailRoute } from '../utils/routes';
+import { formatVietnamSession } from '@/shared/lib/vietnamTime';
 
 const { Text, Title } = Typography;
 
@@ -23,26 +24,7 @@ export interface UpcomingSessionCardProps {
 }
 
 const formatSessionTime = (startTimeStr: string, endTimeStr: string) => {
-  try {
-    const start = new Date(startTimeStr);
-    const end = new Date(endTimeStr);
-
-    const startHours = start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
-    const endHours = end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
-
-    const dateOptions: Intl.DateTimeFormatOptions = {
-      weekday: 'long',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      timeZone: 'Asia/Ho_Chi_Minh',
-    };
-    const dateFormatted = start.toLocaleDateString('vi-VN', dateOptions);
-
-    return `${startHours} – ${endHours} · ${dateFormatted}`;
-  } catch {
-    return `${startTimeStr} – ${endTimeStr}`;
-  }
+  return formatVietnamSession(startTimeStr, endTimeStr);
 };
 
 export const UpcomingSessionCard: React.FC<UpcomingSessionCardProps> = ({
@@ -58,7 +40,7 @@ export const UpcomingSessionCard: React.FC<UpcomingSessionCardProps> = ({
         className={className}
         style={{
           borderRadius: 'var(--radius-lg, 12px)',
-          border: '1px solid var(--color-border, #E7E3DC)',
+          border: '1px solid var(--color-border)',
           marginBottom: 16,
         }}
       >
@@ -100,11 +82,11 @@ export const UpcomingSessionCard: React.FC<UpcomingSessionCardProps> = ({
       style={{
         borderRadius: 'var(--radius-lg, 12px)',
         border: isHappeningNow
-          ? '2px solid var(--color-primary-600, #0D9488)'
-          : '1px solid var(--color-border, #E7E3DC)',
+          ? '2px solid var(--color-primary-600)'
+          : '1px solid var(--color-border)',
         background: isHappeningNow
           ? 'linear-gradient(135deg, rgba(20,184,166,0.06) 0%, rgba(255,255,255,1) 100%)'
-          : 'var(--color-surface, #FFFFFF)',
+          : 'var(--color-surface)',
         boxShadow: 'var(--shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05))',
         marginBottom: 20,
       }}
@@ -136,20 +118,20 @@ export const UpcomingSessionCard: React.FC<UpcomingSessionCardProps> = ({
             </Space>
 
             {/* Môn học */}
-            <Title level={4} style={{ margin: '4px 0 0 0', color: 'var(--color-text-primary, #1C1917)' }}>
+            <Title level={4} style={{ margin: '4px 0 0 0', color: 'var(--color-text-primary)' }}>
               {subjectTitle}
             </Title>
 
             {/* Giáo viên */}
             <Space size={8} align="center">
-              <Avatar size={28} icon={<UserOutlined />} style={{ backgroundColor: 'var(--color-primary-600, #0D9488)' }} />
-              <Text strong style={{ color: 'var(--color-text-secondary, #44403C)' }}>
+              <Avatar size={28} icon={<UserOutlined />} style={{ backgroundColor: 'var(--color-primary-600)' }} />
+              <Text strong style={{ color: 'var(--color-text-secondary)' }}>
                 {teacherName}
               </Text>
             </Space>
 
             {/* Thời gian */}
-            <Space size={6} style={{ color: 'var(--color-text-tertiary, #78716C)', fontSize: 13, marginTop: 4 }}>
+            <Space size={6} style={{ color: 'var(--color-text-tertiary)', fontSize: 13, marginTop: 4 }}>
               <ClockCircleOutlined />
               <span>{formattedTime}</span>
             </Space>
@@ -170,7 +152,7 @@ export const UpcomingSessionCard: React.FC<UpcomingSessionCardProps> = ({
                 height: 40,
                 borderRadius: 'var(--radius-md, 8px)',
                 fontWeight: 600,
-                backgroundColor: canJoinMeeting ? 'var(--color-primary-600, #0D9488)' : undefined,
+                backgroundColor: canJoinMeeting ? 'var(--color-primary-600)' : undefined,
               }}
             >
               Vào phòng học
@@ -196,7 +178,7 @@ export const UpcomingSessionCard: React.FC<UpcomingSessionCardProps> = ({
               style={{
                 height: 36,
                 padding: '4px 8px',
-                color: 'var(--color-primary-700, #0F766E)',
+                color: 'var(--color-primary-700)',
                 fontWeight: 500,
               }}
             >

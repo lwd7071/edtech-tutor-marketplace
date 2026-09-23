@@ -47,6 +47,7 @@ export interface CreateAssignmentRequest {
 export interface CreateSubmissionRequest {
   contentBlocks: ContentBlock[];
   version: number;
+  status: 'DRAFT' | 'SUBMITTED';
 }
 
 export interface GradeSubmissionRequest {

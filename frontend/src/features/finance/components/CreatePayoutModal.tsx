@@ -69,7 +69,7 @@ export const CreatePayoutModal: React.FC<CreatePayoutModalProps> = ({
           title="Thông tin số dư khả dụng"
           description={
             <div style={{ marginTop: 4 }}>
-              Số dư khả dụng hiện tại: <strong style={{ color: 'var(--color-primary-600, #0F766E)' }}>{availableBalanceVnd.toLocaleString('vi-VN')} ₫</strong>.
+              Số dư khả dụng hiện tại: <strong style={{ color: 'var(--color-primary-600)' }}>{availableBalanceVnd.toLocaleString('vi-VN')} ₫</strong>.
               Tiền sẽ ở trạng thái &ldquo;Đang rút&rdquo; cho đến khi quản trị viên duyệt chuyển khoản.
             </div>
           }
@@ -139,7 +139,7 @@ export const CreatePayoutModal: React.FC<CreatePayoutModalProps> = ({
         {/* Tóm tắt giao dịch */}
         <div
           style={{
-            background: 'var(--color-surface-sunken, #F5F3EF)',
+            background: 'var(--color-surface-sunken)',
             padding: 12,
             borderRadius: 'var(--radius-md, 8px)',
             marginTop: 8,
@@ -147,13 +147,13 @@ export const CreatePayoutModal: React.FC<CreatePayoutModalProps> = ({
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
             <Typography.Text type="secondary">Phí rút tiền:</Typography.Text>
-            <Typography.Text strong style={{ color: 'var(--color-success-600, #15803D)' }}>
+            <Typography.Text strong style={{ color: 'var(--color-success-600)' }}>
               0 ₫ (Miễn phí)
             </Typography.Text>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <Typography.Text type="secondary">Thực nhận về tài khoản:</Typography.Text>
-            <Typography.Text strong style={{ fontSize: 16, color: 'var(--color-primary-600, #0F766E)' }}>
+            <Typography.Text strong style={{ fontSize: 16, color: 'var(--color-primary-600)' }}>
               {watchedAmount.toLocaleString('vi-VN')} ₫
             </Typography.Text>
           </div>

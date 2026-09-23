@@ -60,7 +60,7 @@ export const PayoutListTable: React.FC<PayoutListTableProps> = ({
       key: 'createdAt',
       width: 160,
       render: (val: string) => (
-        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary, #57534E)' }}>
+        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
           {formatLedgerTime(val)}
         </Typography.Text>
       ),
@@ -76,7 +76,7 @@ export const PayoutListTable: React.FC<PayoutListTableProps> = ({
           style={{
             fontWeight: 700,
             fontSize: 15,
-            color: 'var(--color-text-primary, #1C1917)',
+            color: 'var(--color-text-primary)',
             fontVariantNumeric: 'tabular-nums',
             whiteSpace: 'nowrap',
           }}
@@ -153,7 +153,7 @@ export const PayoutListTable: React.FC<PayoutListTableProps> = ({
       }}
       scroll={{ x: 800 }}
       style={{
-        background: 'var(--color-surface, #FFFFFF)',
+        background: 'var(--color-surface)',
         borderRadius: 'var(--radius-lg, 12px)',
       }}
     />

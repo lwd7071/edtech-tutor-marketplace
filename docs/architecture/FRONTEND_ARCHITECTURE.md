@@ -56,6 +56,20 @@ Next Data Cache hỗ trợ on-demand revalidation qua Route Handler nội bộ `
 
 Chat tải lịch sử qua REST. STOMP chỉ quản kết nối, subscription và publish. Payload realtime được kiểm tra bằng Zod trước khi vào state; reducer thay optimistic message theo `clientMessageId`, chống trùng theo id và sắp xếp theo thời gian.
 
+Tin nhắn `TEXT` gửi thẳng qua STOMP; `IMAGE`/`FILE` upload qua attachment API với purpose `MESSAGE` trước khi publish `attachmentId`. Tin optimistic giữ `SENDING` cho tới khi nhận echo từ server hoặc REST xác nhận; timeout/chưa kết nối chuyển `FAILED` và cho retry cùng `clientMessageId`/`attachmentId`. Tải trang lịch sử cũ phải giữ vị trí đọc, không ép scroll xuống cuối; chuyển động tôn trọng reduced motion.
+
+Timestamp từ API là ISO UTC. Mọi hiển thị và bộ lọc ngày nghiệp vụ ở frontend dùng `shared/lib/vietnamTime.ts` với `Asia/Ho_Chi_Minh`; input `datetime-local` được chuyển từ giờ Việt Nam sang ISO trước khi gửi server. Không dùng timezone thiết bị cho booking/deadline.
+
+Mỗi mutation có idempotency key giữ ổn định qua retry cùng payload và chỉ xóa sau phản hồi thành công. Thay đổi payload hoặc resource id phải sinh key khác. Palette nguồn ở `shared/design-system/tokens.ts`; CSS variables và Ant theme đều map từ nguồn này, component dùng semantic token thay vì khai báo lại màu.
+
+Assignment student gửi rõ `status` theo ý định: `DRAFT` cho “Lưu bản nháp”, `SUBMITTED` cho “Nộp bài”. UI không được ép mọi request thành `SUBMITTED`; bản nháp phải được phân biệt với bài đã gửi và không mô tả là đang chờ chấm. Admin credential queue truyền filter `PENDING`, `APPROVED` hoặc `REJECTED` cho API; action approve/reject chỉ xuất hiện ở `PENDING`.
+
+Booking detail chỉ hiển thị `cancelReason` khi trạng thái `CANCELLED`; nội dung tối đa 1.000 UTF-16 units được giữ đầy đủ, xuống dòng được bảo toàn và render như text.
+
+Admin settlement list dùng `BookingSettlementAdminView` làm nguồn type chung cho list/detail. Màn hình yêu cầu mở drawer xem student/teacher, UUID copy được, trạng thái buổi và quyết toán, xác nhận, deadline, amount và dispute trước action. Nếu `DISPUTE_PENDING` không có reason, UI báo thiếu dữ liệu và ẩn các action. Conflict đóng action flow rồi tải lại danh sách.
+
+Admin user directory `/admin/users` dùng API phân trang. Search chạy khi Enter/nút tìm; clear chạy ngay. Role/status filter chạy ngay. Search/filter/sort reset page về đầu và giữ page size; page size 20/50/100 chọn tại pagination. Query key chứa submitted keyword, filters, sort, page và size. Mỗi dòng có link tới `/admin/audit-logs?targetType=USER&targetId=<UUID>`; audit page chuyển các filter này xuống API để xem moderation history.
+
 ## Kiểm thử
 
 ```powershell

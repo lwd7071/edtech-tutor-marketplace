@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   useTeacherWallet,
@@ -112,6 +112,17 @@ describe('useFinance hooks', () => {
     expect(financeApi.createPayoutRequest).toHaveBeenCalledWith(
       { bankAccountId: 'b-1', amountVnd: 500000, walletVersion: 1 }, expect.any(String)
     );
+  });
+
+  it('reuses the payout key when the same form is retried after timeout', async () => {
+    (financeApi.createPayoutRequest as jest.Mock)
+      .mockRejectedValueOnce(new Error('timeout'))
+      .mockResolvedValueOnce({ data: { id: 'payout-1' } });
+    const { result } = renderHook(() => useCreatePayout(), { wrapper: createWrapper() });
+    const request = { bankAccountId: 'b-1', amountVnd: 500000, walletVersion: 1 };
+    await act(async () => { await expect(result.current.mutateAsync({ ...request })).rejects.toThrow('timeout'); });
+    await act(async () => { await result.current.mutateAsync({ ...request }); });
+    expect((financeApi.createPayoutRequest as jest.Mock).mock.calls[0][1]).toBe((financeApi.createPayoutRequest as jest.Mock).mock.calls[1][1]);
   });
 
   it('useStudentRefunds and useStudentExtensions fetch lists', async () => {

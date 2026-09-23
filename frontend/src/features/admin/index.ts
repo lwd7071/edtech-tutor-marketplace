@@ -23,3 +23,4 @@ export * from './pages/AdminBookingSettlementsPage';
 export * from './pages/AdminExtensionsPage';
 export * from './pages/AdminSettingsPage';
 export * from './pages/AdminAuditLogsPage';
+export * from './pages/AdminUsersPage';

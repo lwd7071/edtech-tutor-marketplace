@@ -5,12 +5,12 @@ interface TeacherCardProps {
   rating?: number; reviewCount?: number; lowestPrice?: number; yearsOfExperience?: number;
   supportsOnline?: boolean; supportsOffline?: boolean; variant?: 'full' | 'compact';
   locationLabel?: string;
-  onClick?: () => void; className?: string; hoverable?: boolean;
+  className?: string; hoverable?: boolean;
 }
 
-export default function TeacherCard({ name, avatarUrl, isVerified = false, subjects = [], rating = 0, reviewCount = 0, lowestPrice, yearsOfExperience, supportsOnline, supportsOffline, locationLabel, onClick, className = '' }: TeacherCardProps) {
+export default function TeacherCard({ name, avatarUrl, isVerified = false, subjects = [], rating = 0, reviewCount = 0, lowestPrice, yearsOfExperience, supportsOnline, supportsOffline, locationLabel, className = '' }: TeacherCardProps) {
   return (
-    <article className={`tm-tutor-card ${className}`} onClick={onClick}>
+    <article className={`tm-tutor-card ${className}`}>
       <div className="tm-tutor-header">
         <Avatar src={avatarUrl} alt={name} size="lg" isVerified={isVerified} />
         <div>

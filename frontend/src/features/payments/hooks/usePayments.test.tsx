@@ -58,8 +58,19 @@ describe('usePayments hooks (TDD)', () => {
     expect(paymentApi.createInvoice).toHaveBeenCalledWith({
       pricingPackageId: 'pkg-1',
       returnUrl: 'https://app.example/payment-result/inv-123',
-    });
+    }, expect.any(String));
     expect(mutateResult).toEqual(mockInvoice);
+  });
+
+  it('reuses the invoice key after an uncertain failure with the same payload', async () => {
+    (paymentApi.createInvoice as jest.Mock)
+      .mockRejectedValueOnce(new Error('network timeout'))
+      .mockResolvedValueOnce({ data: { id: 'inv-1' } });
+    const { result } = renderHook(() => useCreateInvoice(), { wrapper: createWrapper() });
+    const request = { pricingPackageId: 'pkg-1', returnUrl: 'https://app.example/return' };
+    await act(async () => { await expect(result.current.mutateAsync({ ...request })).rejects.toThrow('network timeout'); });
+    await act(async () => { await result.current.mutateAsync({ ...request }); });
+    expect((paymentApi.createInvoice as jest.Mock).mock.calls[0][1]).toBe((paymentApi.createInvoice as jest.Mock).mock.calls[1][1]);
   });
 
   it('useInvoiceDetail should fetch invoice status and detail', async () => {

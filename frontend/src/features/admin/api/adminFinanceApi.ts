@@ -143,11 +143,12 @@ export const adminFinanceApi = {
     actorId?: string,
     action?: AuditAction,
     targetType?: string,
+    targetId?: string,
     page = 0,
     size = 20
   ): Promise<ApiResponse<AuditLogView[]>> => {
     const response = await axiosClient.get<ApiResponse<AuditLogView[]>>('/api/admin/audit-logs', {
-      params: { actorId, action, targetType, page, size },
+      params: { actorId, action, targetType, targetId, page, size },
     });
     return response.data;
   },

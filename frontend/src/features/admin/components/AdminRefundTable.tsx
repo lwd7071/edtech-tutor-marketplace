@@ -118,7 +118,7 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
       key: 'createdAt',
       width: 150,
       render: (val: string) => (
-        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary, #57534E)' }}>
+        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
           {formatLedgerTime(val)}
         </Typography.Text>
       ),
@@ -133,7 +133,7 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
             <strong>{record.requestedSessions}</strong> buổi
             {record.approvedSessions ? ` (duyệt ${record.approvedSessions})` : ''}
           </div>
-          <Typography.Text strong style={{ color: 'var(--color-primary-600, #0F766E)', fontSize: 14 }}>
+          <Typography.Text strong style={{ color: 'var(--color-primary-600)', fontSize: 14 }}>
             {record.refundAmountVnd ? `${record.refundAmountVnd.toLocaleString('vi-VN')} ₫` : 'Chờ tính toán'}
           </Typography.Text>
         </div>
@@ -194,7 +194,7 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
               <Button
                 type="primary"
                 size="small"
-                style={{ background: 'var(--color-success-600, #15803D)' }}
+                style={{ background: 'var(--color-success-600)' }}
                 icon={<CheckOutlined />}
                 onClick={() => handleOpenComplete(record)}
               >
@@ -210,7 +210,7 @@ export const AdminRefundTable: React.FC<AdminRefundTableProps> = ({
   ];
 
   return (
-    <div style={{ background: 'var(--color-surface, #FFFFFF)', borderRadius: 'var(--radius-lg, 12px)', padding: 20 }}>
+    <div style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-lg, 12px)', padding: 20 }}>
       <Tabs
         defaultActiveKey="ALL"
         onChange={(key) => onFilterStatus?.(key === 'ALL' ? undefined : key)}

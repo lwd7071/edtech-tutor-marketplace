@@ -8,6 +8,7 @@ export function mergeIncomingMessage(
 ): MessageView[] {
   const message: MessageView = {
     ...incoming,
+    content: incoming.content ?? '',
     createdAt: incoming.createdAt ?? incoming.sentAt ?? new Date().toISOString(),
     isOwnMessage: incoming.senderId === currentUserId,
     status: 'SENT',

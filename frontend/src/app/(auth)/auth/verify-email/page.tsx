@@ -84,7 +84,7 @@ function VerifyEmailContent() {
   if (verifySuccess) {
     return (
       <div style={{ textAlign: 'center' }}>
-        <CheckCircleOutlined style={{ fontSize: 64, color: 'var(--color-success-500)', marginBottom: 'var(--space-4)' }} />
+        <CheckCircleOutlined style={{ fontSize: 64, color: 'var(--color-success-600)', marginBottom: 'var(--space-4)' }} />
         <Title level={3} style={{ marginBottom: 'var(--space-2)' }}>Xác minh thành công</Title>
         <Text style={{ color: 'var(--color-text-secondary)', display: 'block', marginBottom: 'var(--space-6)' }}>
           Email của bạn đã được xác minh. Bây giờ bạn có thể sử dụng đầy đủ các tính năng của nền tảng.
