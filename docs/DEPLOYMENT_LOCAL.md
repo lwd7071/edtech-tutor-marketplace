@@ -10,7 +10,7 @@
 | PostgreSQL | PostgreSQL 16 | `127.0.0.1:5433` |
 | Redis | Redis 7 | Internal port 6379 |
 
-Nginx sends `/api/*` and `/health` to Spring Boot, `/ws` to the STOMP endpoint with WebSocket upgrade headers, and other paths to Next.js. PostgreSQL data is bind-mounted at `data/postgres`; backups are written under `backups/`. The Compose network is `edtech-network`.
+Nginx sends `/api/*` and `/health` to Spring Boot, `/ws` to the STOMP endpoint with WebSocket upgrade headers, and other paths to Next.js. PostgreSQL data is stored in the Docker named volume `edtech-postgres-data` on this machine; backups are written under `backups/`. The former `data/postgres` directory is preserved as a local rollback copy. The Compose network is `edtech-network`.
 
 The database is `edtech_db`. The application connects as `edtech_user`; PostgreSQL administration uses a separate `postgres` password. Local generated credentials are stored in the ignored `.env`. PostgreSQL is not reachable from outside this machine.
 
@@ -24,7 +24,7 @@ docker compose logs -f nginx frontend backend postgres redis
 docker compose stop
 ```
 
-`docker compose down` removes the containers and network but leaves `data/postgres` intact. Do not use `down -v` for this bind-mounted database. Flyway applies pending migrations automatically at backend startup; it is currently at V41 in the local database.
+`docker compose down` removes the containers and network but leaves `edtech-postgres-data` intact. Do not use `down -v`, which deletes the database volume. Flyway applies pending migrations automatically at backend startup; it is currently at V41 in the local database.
 
 ## Smoke URLs
 
