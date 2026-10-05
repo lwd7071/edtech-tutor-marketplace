@@ -1,5 +1,14 @@
 # Trạng thái dự án
 
+## Local Docker deployment qua Nginx (working tree, 2026-10-05)
+
+- Khôi phục metadata Git từ snapshot đã đối chiếu hash với `origin/main`; giữ nguyên nhánh `main`. Working tree chỉ có thay đổi deployment local, không có thay đổi trong `backend/src/main/resources/db/migration`.
+- Compose có frontend Next.js, backend Spring Boot, PostgreSQL 16, Redis nội bộ và Nginx trên `127.0.0.1:8081`; mỗi stack dùng `edtech-network` riêng. PostgreSQL bind mount trỏ đúng `D:\RedApple\Edtech\data\postgres`, host port 5433; app dùng role `edtech_user`, admin `postgres` tách riêng. Direct host ports của backend/frontend đã đóng.
+- `docker compose config --quiet` và `docker compose build` pass. Frontend Next.js production build tạo 64 route; Maven `package -DskipTests` báo `BUILD SUCCESS` (không phải kết quả test backend).
+- Runtime smoke: mọi service trong `docker compose ps` healthy; `GET /` qua Nginx trả 200, `GET /health` trả UP, `GET /api/public/subjects` trả 200; WebSocket handshake `ws://localhost:8081/ws` mở thành công. Flyway validate 41 migrations, schema V41 up-to-date.
+- Persistence: PostgreSQL restart xong vẫn còn Flyway V41 và 39 bảng. `scripts/backup-postgres.ps1` tạo dump custom-format; `pg_restore --list` đọc được 370 catalog entries. Backup nằm trong `backups/`, không commit.
+- Dùng local profile: mail logging, payments disabled; chưa xác minh Google OAuth/provider thật. Không kết nối hoặc mutate Supabase; không có migration mới.
+
 > Cập nhật: 2026-09-23. Đây là ảnh chụp hiện tại, không phải nhật ký append-only.
 > Phạm vi snapshot: backend vẫn có trong working tree; frontend đã được khôi phục từ `origin/main` của GitHub và đang có thay đổi hardening chưa commit. Dependencies local đã cài lại từ lockfile; dev server đã smoke-test trước đợt sửa này.
 

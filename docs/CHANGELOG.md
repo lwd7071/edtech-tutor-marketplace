@@ -1,5 +1,11 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-05 — Local Docker deployment sau Nginx
+
+- Thêm Next.js frontend vào Compose, tách DB admin khỏi role ứng dụng, bind mount PostgreSQL vào `data/postgres` trên D:, và giữ Redis trong network riêng. Nginx phục vụ UI/API trên localhost:8081, chuyển tiếp `/ws` cho STOMP; không publish trực tiếp frontend/backend.
+- Thêm local `.env.example`, Dockerfile frontend và pg_dump backup script; không thêm migration. Kiểm tra Compose/build pass, các container healthy, UI/health/public subjects trả 200, WebSocket handshake mở; PostgreSQL giữ Flyway V41/39 bảng sau restart và dump có thể đọc bằng `pg_restore --list` (370 entries).
+- Maven image build dùng `-DskipTests`; chưa chạy lại bộ backend tests trong đợt triển khai. OAuth/payment/email thật chưa xác minh; không kết nối Supabase.
+
 ## 2026-09-23 — Hoàn thiện ba lỗi logic booking, settlement và admin user (working tree)
 
 - Hiển thị lý do hủy booking an toàn, bảo toàn định dạng và xác nhận giới hạn 1.000 UTF-16 units ở UI/backend.
