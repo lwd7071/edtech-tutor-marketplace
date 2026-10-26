@@ -1,5 +1,9 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-26 — Dùng container healthcheck cho smoke CI
+- Backend container đã healthy trong Compose; probe host `curl localhost:8080` fail vì service không publish cổng ra host. Smoke giờ chờ trạng thái `healthy`, vốn dùng `/actuator/health` bên trong container.
+- CI sau cập nhật đang chờ; migration diff trống, không kết nối Supabase.
+
 ## 2026-10-26 — Sửa probe smoke test Compose
 - Maven/Testcontainers GitHub CI PASS trên `main` và `dev`; bước smoke sau đó fail do workflow inspect tên container cũ. Probe hiện lấy ID từ service `backend` bằng `docker compose ps`, phù hợp với tên container Compose tạo tự động.
 - CI sau cập nhật chưa chạy; migration diff trống, không kết nối Supabase.
