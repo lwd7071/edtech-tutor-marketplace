@@ -6,7 +6,8 @@ describe('shared color source', () => {
     expect(colorCss).toContain(`--color-primary-600:${colors.primary600}`);
     expect(colorCss).toContain(`--color-background:${colors.background}`);
     expect(colorCss).toContain(`--color-error-600:${colors.error600}`);
-    expect(appTheme.token?.colorPrimary).toBe(colors.primary600);
+    expect(colors.primary500).toBe('#FFD43B');
+    expect(appTheme.token?.colorPrimary).toBe(colors.primary500);
     expect(appTheme.token?.colorBgLayout).toBe(colors.background);
     expect(appTheme.token?.colorError).toBe(colors.error600);
   });

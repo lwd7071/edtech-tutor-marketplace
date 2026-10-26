@@ -232,6 +232,7 @@ Page<T>     data: T[], meta: PageMeta
 | Method | Endpoint | Query/Request | Response `data` |
 |---|---|---|---|
 | GET | `/api/public/subjects` | `keyword`, `educationLevel`, `page`, `size`, `sort` | `SubjectSummary[]` |
+| GET | `/api/public/subjects/{id}` | — | `SubjectSummary` môn đang hoạt động; không tồn tại hoặc ngừng hoạt động trả `404 SUBJECT_NOT_FOUND` |
 | GET | `/api/public/locations/provinces` | — | `{ code, name }[]` |
 | GET | `/api/public/locations/provinces/{provinceCode}/wards` | — | `{ code, provinceCode, name }[]` |
 | GET | `/api/public/teachers` | `TeacherSearchParams` | `TeacherCard[]` |
@@ -276,6 +277,8 @@ Khi filter giờ rảnh, phải truyền đủ `dayOfWeek`, `startTime`, `endTim
 ```
 
 Public DTO không chứa email, phone, account number, document URL riêng tư hoặc thông tin định danh.
+
+Trang chọn môn có thể gọi endpoint theo ID để khôi phục lựa chọn từ liên kết chia sẻ ngay cả khi môn nằm ngoài trang danh sách hiện tại. Endpoint chỉ trả môn đang hoạt động và không thay đổi schema.
 
 ## 4. Teacher API
 

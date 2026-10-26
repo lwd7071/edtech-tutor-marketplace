@@ -7,6 +7,7 @@
 - `shared/backend` sở hữu response envelope, error parser, API URL và transport dùng chung.
 - `parseApiError` đọc `X-Request-Id` từ response và chỉ nối mã tra cứu vào thông báo lỗi `5xx`; luồng nghiệp vụ luôn dựa vào `errors[].code`.
 - `shared/components/layout` sở hữu public shell và workspace shell.
+- `app/concept.css` áp dụng concept “Bàn học mở” sau stylesheet nền; semantic brand/action/ink lấy từ `shared/design-system/tokens.ts`. Public/Auth dùng cùng brand, workspace giữ toàn bộ route trong điều hướng chính + mục “Thêm” và thanh điều hướng nhanh trên mobile.
 
 Luồng phụ thuộc chuẩn:
 
@@ -44,7 +45,7 @@ Backend tiếp tục là nơi quyết định quyền truy cập dữ liệu.
 
 Query key nằm trong `features/<domain>/data` và chứa mọi tham số làm thay đổi response. Mutation invalidates bằng prefix công khai của domain liên quan.
 
-Public Server Components dùng `shared/api/public.server.ts` với native `fetch` và Next Data Cache. Subjects, teacher profile/list và packages dùng TTL 300 giây; availability, reviews và ranking dùng TTL 60 giây. Mỗi server-side fetch có timeout 10 giây để backend cold start hoặc outage không làm Vercel prerender treo quá giới hạn build; route public dùng `Promise.allSettled` để render fallback rỗng khi request lỗi. Landing page chỉ cache output 30 giây và, khi một public fetch thất bại, client tự `router.refresh()` sau 5 giây rồi mỗi 15 giây cho tới khi server render phục hồi; vì vậy fallback lỗi không bị giữ suốt TTL dữ liệu 300 giây. Browser Axios adapter không được import vào server adapter. Dữ liệu cá nhân của workspace dùng React Query; Student dashboard gọi một read-model endpoint và cache client tối đa 30 giây.
+Public Server Components dùng `shared/api/public.server.ts` với native `fetch` và Next Data Cache. Subjects, teacher profile/list và packages dùng TTL 300 giây; availability, reviews và ranking dùng TTL 60 giây. Subject detail by ID dùng chung tag `public-subjects` và tag riêng `public-subject:{id}`. Mỗi server-side fetch có timeout 10 giây để backend cold start hoặc outage không làm Vercel prerender treo quá giới hạn build; route public dùng `Promise.allSettled` để render fallback rỗng khi request lỗi. Landing page chỉ cache output 30 giây và, khi một public fetch thất bại, client tự `router.refresh()` sau 5 giây rồi mỗi 15 giây cho tới khi server render phục hồi; vì vậy fallback lỗi không bị giữ suốt TTL dữ liệu 300 giây. Browser Axios adapter không được import vào server adapter. Dữ liệu cá nhân của workspace dùng React Query; Student dashboard gọi một read-model endpoint và cache client tối đa 30 giây.
 
 Next Data Cache hỗ trợ on-demand revalidation qua Route Handler nội bộ `POST /api/internal/revalidate-public`, nhận callback từ backend sau khi transaction commit:
 - Xác thực bằng shared secret qua header `x-internal-secret` (lưu tại biến môi trường `APP_INTERNAL_REVALIDATE_SECRET`, không phơi bày qua `NEXT_PUBLIC_*`).

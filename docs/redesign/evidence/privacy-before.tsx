@@ -1,0 +1,3 @@
+export default function PrivacyPage() {
+  return <main className="tm-container tm-stack"><header className="tm-page-heading"><p className="tm-eyebrow">Tutor Match</p><h1>Chính sách riêng tư</h1></header><section className="tm-panel tm-prose"><p>Tutor Match lưu thông tin tài khoản, hồ sơ, giao dịch và hoạt động học tập cần thiết để cung cấp dịch vụ.</p><p>Thông tin liên hệ phụ huynh là tùy chọn và chỉ được dùng để gửi email khi học viên bật tính năng thông báo. Bạn có thể cập nhật hoặc xóa thông tin này trong hồ sơ.</p><p>Dữ liệu xác thực và thanh toán được giới hạn theo vai trò; thông tin nhạy cảm không được hiển thị trong hồ sơ công khai.</p></section></main>;
+}

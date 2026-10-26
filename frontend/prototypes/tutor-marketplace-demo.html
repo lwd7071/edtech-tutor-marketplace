@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4ca28">
+  <title>Tutor Match — Bản demo tìm gia sư</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #171714;
+      --muted: #68675f;
+      --yellow: #f4ca28;
+      --yellow-light: #fff2b9;
+      --paper: #fffefa;
+      --canvas: #f7f6f0;
+      --line: #e5e2d8;
+      --pink: #f178a9;
+      --radius: 14px;
+      --shadow: 0 16px 40px rgba(35, 31, 14, .11);
+      font-family: Inter, "Be Vietnam Pro", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--canvas);
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: var(--canvas); }
+    button, input, select { font: inherit; }
+    button, a, select { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; }
+    .demo-ribbon {
+      position: fixed; z-index: 20; top: 14px; right: 18px; display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid rgba(23,23,20,.16); border-radius: 999px; padding: 9px 13px; background: var(--ink); color: white;
+      font-size: 11px; font-weight: 800; letter-spacing: .08em; box-shadow: 0 4px 14px rgba(0,0,0,.16);
+    }
+    .demo-ribbon::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); }
+    .site-header { height: 68px; display: flex; align-items: center; background: var(--paper); border-bottom: 1px solid var(--line); }
+    .header-inner { width: min(1360px, calc(100% - 64px)); margin: auto; display: flex; align-items: center; gap: 42px; }
+    .brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; font-size: 21px; font-weight: 900; letter-spacing: -.07em; white-space: nowrap; }
+    .brand-mark { width: 29px; height: 29px; display: grid; place-items: center; border-radius: 9px 9px 9px 2px; background: var(--yellow); font-size: 15px; letter-spacing: -.05em; }
+    .brand span:last-child { color: #77746b; font-weight: 600; }
+    .desktop-nav { display: flex; align-items: center; gap: 27px; color: #38372f; font-size: 13px; font-weight: 650; }
+    .desktop-nav a { text-decoration: none; }
+    .desktop-nav a:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .header-spacer { flex: 1; }
+    .header-link { border: 0; background: transparent; cursor: pointer; font-size: 13px; font-weight: 700; }
+    .header-login { min-height: 40px; padding: 0 17px; border: 1px solid var(--ink); border-radius: 8px; background: transparent; }
+    .hero { position: relative; overflow: hidden; background: var(--yellow); }
+    .hero::after { content: ""; position: absolute; width: 470px; height: 470px; right: -105px; top: -235px; border: 1px solid rgba(23,23,20,.12); border-radius: 50%; box-shadow: 0 0 0 48px rgba(255,255,255,.08), 0 0 0 96px rgba(255,255,255,.08); pointer-events: none; }
+    .hero-inner { width: min(1240px, calc(100% - 64px)); min-height: 420px; margin: auto; display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: 54px; padding: 54px 0 62px; position: relative; z-index: 1; }
+    .hero-copy { max-width: 610px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 19px; font-size: 12px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+    .eyebrow::before { content: ""; width: 29px; height: 2px; background: var(--ink); }
+    h1 { margin: 0; max-width: 680px; font-size: clamp(42px, 5vw, 67px); line-height: .99; letter-spacing: -.065em; font-weight: 900; }
+    .hero-copy > p:not(.eyebrow) { max-width: 520px; margin: 20px 0 0; color: #37331f; font-size: 16px; line-height: 1.65; }
+    .scribble { display: inline-flex; align-items: center; gap: 9px; margin-bottom: 21px; font-weight: 850; font-size: 15px; }
+    .scribble b { border: 2px solid var(--ink); border-radius: 7px; padding: 5px 10px; }
+    .scribble span { font-size: 20px; }
+    .hero-art { height: 300px; position: relative; display: grid; place-items: center; }
+    .hero-art-card { position: absolute; overflow: hidden; border: 5px solid var(--paper); border-radius: 18px; box-shadow: var(--shadow); background: #ece6d7; }
+    .hero-art-card.main { width: 264px; height: 290px; left: 50%; top: 1px; transform: translateX(-44%); }
+    .hero-art-card.small { width: 132px; height: 150px; right: 2%; top: 22px; transform: rotate(4deg); z-index: 2; }
+    .hero-art-card svg { width: 100%; height: 100%; display: block; }
+    .floating-note { position: absolute; z-index: 3; padding: 13px 16px; border-radius: 11px; background: white; box-shadow: 0 8px 24px rgba(28,25,14,.15); font-size: 12px; }
+    .floating-note strong { display: block; font-size: 13px; margin-bottom: 4px; }
+    .floating-note.progress { left: 2%; bottom: 8px; width: 180px; }
+    .floating-note.speaking { right: 0; bottom: 1px; width: 170px; }
+    .meter { height: 8px; margin-top: 8px; border-radius: 10px; background: #eee; overflow: hidden; }
+    .meter span { display: block; width: 72%; height: 100%; background: var(--pink); border-radius: inherit; }
+    .search-wrap { width: min(1240px, calc(100% - 64px)); margin: -25px auto 0; position: relative; z-index: 4; }
+    .search-box { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 10px; padding: 14px; border: 1px solid rgba(23,23,20,.1); border-radius: 14px; background: var(--paper); box-shadow: 0 14px 34px rgba(38,32,9,.14); }
+    .field { min-width: 0; display: flex; flex-direction: column; gap: 5px; padding: 6px 12px; border-right: 1px solid var(--line); }
+    .field label { color: var(--muted); font-size: 10px; font-weight: 700; }
+    .field select { width: 100%; min-height: 28px; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 13px; font-weight: 750; }
+    .primary-button { min-height: 48px; padding: 0 22px; border: 1px solid var(--ink); border-radius: 9px; background: var(--ink); color: white; font-size: 13px; font-weight: 800; cursor: pointer; transition: transform .16s ease, background .16s ease; }
+    .primary-button:hover { transform: translateY(-2px); background: #343329; }
+    .main { width: min(1240px, calc(100% - 64px)); margin: auto; padding: 74px 0 90px; }
+    .trust-row { display: flex; align-items: center; justify-content: center; gap: clamp(28px, 6vw, 90px); padding: 0 0 56px; text-align: center; }
+    .trust-item strong { display: block; font-size: 22px; font-weight: 900; letter-spacing: -.05em; }
+    .trust-item span { color: var(--muted); font-size: 12px; }
+    .trust-stars { letter-spacing: .13em; }
+    .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 24px; }
+    .section-heading .eyebrow { margin-bottom: 10px; }
+    h2 { margin: 0; font-size: clamp(27px, 3vw, 37px); line-height: 1.1; letter-spacing: -.055em; }
+    .section-heading p { margin: 9px 0 0; color: var(--muted); font-size: 14px; }
+    .demo-label { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #dec44d; border-radius: 999px; padding: 7px 10px; background: #fff8d9; color: #5b4a03; font-size: 10px; font-weight: 850; letter-spacing: .06em; white-space: nowrap; }
+    .filters { display: grid; grid-template-columns: 1.15fr 1fr 1fr 1fr auto; gap: 9px; margin-bottom: 18px; }
+    .filter { min-height: 43px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: white; color: #3f3e38; font-size: 12px; }
+    .filter:focus-visible, .field select:focus-visible { outline: 3px solid rgba(23,23,20,.45); outline-offset: 2px; border-radius: 5px; }
+    .clear-button { border: 0; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; }
+    .results-layout { display: grid; grid-template-columns: minmax(0, 1.42fr) minmax(320px, .82fr); gap: 18px; align-items: start; }
+    .results-list { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+    .tutor-card { display: grid; grid-template-columns: 112px minmax(0, 1fr) 150px; gap: 16px; min-height: 158px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease; cursor: pointer; }
+    .tutor-card:hover, .tutor-card.is-active, .tutor-card:focus-visible { border-color: var(--ink); box-shadow: 0 7px 22px rgba(26,24,14,.09); transform: translateY(-1px); outline: none; }
+    .portrait { width: 112px; height: 128px; align-self: start; overflow: hidden; border-radius: 7px; background: #e9e1d2; }
+    .portrait svg { display: block; width: 100%; height: 100%; }
+    .tutor-info { min-width: 0; }
+    .name-row { display: flex; align-items: center; gap: 8px; }
+    .name-row h3 { overflow: hidden; margin: 0; font-size: 17px; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -.035em; }
+    .verified { display: inline-grid; place-items: center; width: 17px; height: 17px; flex: 0 0 17px; border-radius: 50%; background: #e9f1dc; color: #456522; font-size: 10px; font-weight: 900; }
+    .role-line { margin: 5px 0 9px; color: var(--muted); font-size: 10px; font-weight: 650; }
+    .subject-line { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 7px; }
+    .subject-chip { padding: 4px 7px; border-radius: 4px; background: #f1efdf; color: #575125; font-size: 10px; font-weight: 700; }
+    .tutor-bio { display: -webkit-box; overflow: hidden; margin: 0; color: #3c3b35; font-size: 11px; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    .stats { display: flex; gap: 15px; margin-top: 9px; }
+    .stats span { color: var(--muted); font-size: 9px; }
+    .stats strong { display: block; color: var(--ink); font-size: 12px; }
+    .tutor-action { display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; gap: 9px; min-width: 0; }
+    .price { text-align: right; }
+    .price strong { display: block; font-size: 22px; font-weight: 900; letter-spacing: -.06em; }
+    .price span { color: var(--muted); font-size: 10px; }
+    .action-button { min-height: 37px; padding: 0 9px; border: 1px solid var(--line); border-radius: 7px; background: white; color: var(--ink); font-size: 10px; font-weight: 800; cursor: pointer; }
+    .action-button.book { border-color: var(--ink); background: var(--yellow); }
+    .action-button:hover { border-color: var(--ink); }
+    .preview { position: sticky; top: 18px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); box-shadow: 0 8px 25px rgba(26,24,14,.1); }
+    .preview-media { position: relative; height: 205px; overflow: hidden; background: #e5d9c9; }
+    .preview-media svg { width: 100%; height: 100%; display: block; }
+    .preview-media::after { content: ""; position: absolute; inset: 48% 0 0; background: linear-gradient(transparent, rgba(0,0,0,.45)); }
+    .video-badge { position: absolute; z-index: 2; top: 12px; left: 12px; border-radius: 5px; padding: 6px 8px; background: rgba(255,255,255,.94); font-size: 9px; font-weight: 850; letter-spacing: .07em; }
+    .play-button { position: absolute; z-index: 3; right: 14px; bottom: 15px; width: 43px; height: 43px; border: 0; border-radius: 50%; background: var(--yellow); color: var(--ink); font-size: 16px; cursor: pointer; }
+    .preview-copy { padding: 20px; }
+    .preview-top { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+    .preview-top h3 { margin: 0; font-size: 23px; letter-spacing: -.05em; }
+    .preview-top p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+    .preview-rating { padding: 7px 9px; border-radius: 7px; background: #fff6d4; font-size: 11px; font-weight: 850; white-space: nowrap; }
+    .preview-description { margin: 16px 0; color: #46453e; font-size: 12px; line-height: 1.65; }
+    .preview-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 17px; }
+    .preview-facts div { padding: 10px; border-radius: 7px; background: var(--canvas); }
+    .preview-facts dt { color: var(--muted); font-size: 9px; }
+    .preview-facts dd { margin: 3px 0 0; font-size: 11px; font-weight: 800; }
+    .preview-actions { display: grid; gap: 8px; }
+    .preview-actions button { min-height: 41px; border-radius: 7px; }
+    .preview-actions .action-button.book { background: var(--yellow); }
+    .preview-actions .action-button.message { background: white; }
+    .preview-note { padding: 11px 20px; border-top: 1px solid var(--line); background: #fff9e5; color: #66591e; font-size: 9px; line-height: 1.5; }
+    .mobile-preview { display: none; }
+    .empty-state { display: none; padding: 38px 20px; border: 1px dashed #c9c5b8; border-radius: 10px; background: white; color: var(--muted); text-align: center; }
+    .toast { position: fixed; z-index: 30; left: 50%; bottom: 22px; transform: translate(-50%, 20px); padding: 12px 17px; border-radius: 9px; background: var(--ink); color: white; font-size: 12px; font-weight: 700; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .footer { display: flex; justify-content: space-between; gap: 20px; padding: 24px max(32px, calc((100% - 1240px) / 2)); border-top: 1px solid var(--line); background: var(--paper); color: var(--muted); font-size: 11px; }
+    @media (max-width: 1000px) {
+      .hero-inner { gap: 22px; grid-template-columns: 1.1fr .9fr; }
+      .hero-art-card.main { width: 220px; height: 260px; }
+      .hero-art-card.small { width: 108px; height: 130px; }
+      .results-layout { grid-template-columns: minmax(0, 1fr) 330px; gap: 12px; }
+      .tutor-card { grid-template-columns: 86px minmax(0,1fr) 116px; gap: 11px; padding: 11px; }
+      .portrait { width: 86px; height: 112px; }
+      .stats { gap: 8px; }
+      .action-button { font-size: 9px; }
+    }
+    @media (max-width: 760px) {
+      .demo-ribbon { top: 9px; right: 9px; padding: 7px 9px; font-size: 9px; }
+      .site-header { height: 60px; }
+      .header-inner, .hero-inner, .search-wrap, .main { width: min(100% - 32px, 560px); }
+      .header-inner { gap: 12px; }
+      .brand { font-size: 18px; }
+      .desktop-nav, .header-spacer, .header-link:not(.header-login) { display: none; }
+      .header-login { margin-left: auto; min-height: 36px; padding: 0 12px; font-size: 11px; }
+      .hero-inner { min-height: 0; display: block; padding: 38px 0 54px; }
+      .hero-copy { max-width: 100%; }
+      h1 { max-width: 450px; font-size: clamp(42px, 12vw, 58px); }
+      .hero-copy > p:not(.eyebrow) { font-size: 14px; }
+      .hero-art { height: 220px; margin-top: 18px; }
+      .hero-art-card.main { width: 175px; height: 210px; left: 47%; }
+      .hero-art-card.small { width: 90px; height: 105px; right: 8%; top: 4px; }
+      .floating-note { padding: 10px 12px; font-size: 10px; }
+      .floating-note.progress { left: 0; bottom: 0; width: 155px; }
+      .floating-note.speaking { right: 0; bottom: 2px; width: 135px; }
+      .search-wrap { margin-top: -22px; }
+      .search-box { grid-template-columns: 1fr 1fr; gap: 7px; padding: 10px; }
+      .field { padding: 7px 9px; border: 1px solid var(--line); border-radius: 7px; }
+      .field:first-child { grid-column: 1/-1; }
+      .field select { font-size: 12px; }
+      .primary-button { grid-column: 1/-1; width: 100%; }
+      .main { padding: 50px 0 60px; }
+      .trust-row { gap: 15px; justify-content: space-between; padding-bottom: 44px; }
+      .trust-item strong { font-size: 16px; }
+      .trust-item span { font-size: 9px; }
+      .trust-item:last-child { display: none; }
+      .section-heading { align-items: start; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+      .section-heading > .demo-label { align-self: start; }
+      .section-heading p { font-size: 12px; }
+      .filters { grid-template-columns: 1fr 1fr; gap: 7px; }
+      .filter:first-child { grid-column: 1/-1; }
+      .clear-button { min-height: 38px; text-align: left; }
+      .results-layout { display: block; }
+      .desktop-preview { display: none; }
+      .results-list { gap: 10px; }
+      .tutor-card { grid-template-columns: 76px minmax(0,1fr); gap: 11px; padding: 10px; min-height: 0; }
+      .portrait { grid-row: 1; width: 76px; height: 95px; }
+      .tutor-info { grid-column: 2; grid-row: 1; }
+      .tutor-action { grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
+      .price { text-align: left; }
+      .price strong { display: inline; margin-right: 5px; font-size: 19px; }
+      .price span { font-size: 9px; }
+      .tutor-action > .action-button { min-height: 37px; }
+      .tutor-bio { -webkit-line-clamp: 2; }
+      .stats { margin-top: 7px; }
+      .mobile-preview { display: none; grid-column: 1/-1; }
+      .tutor-card.is-active .mobile-preview { display: block; }
+      .mobile-preview .preview { position: static; box-shadow: none; border-color: #d8d2be; }
+      .mobile-preview .preview-media { height: 190px; }
+      .mobile-preview .preview-copy { padding: 15px; }
+      .mobile-preview .preview-top h3 { font-size: 20px; }
+      .mobile-preview .preview-note { padding-inline: 15px; }
+      .footer { padding: 20px 16px; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-ribbon" role="status">BẢN DEMO · DỮ LIỆU MINH HỌA</div>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#top" aria-label="Tutor Match, về đầu trang"><span class="brand-mark">tm</span><span>Tutor</span><span>Match</span></a>
+      <nav class="desktop-nav" aria-label="Điều hướng chính">
+        <a href="#gia-su">Tìm gia sư</a><a href="#mon-hoc">Môn học</a><a href="#cach-hoat-dong">Cách hoạt động</a><a href="#gia-su">Trở thành gia sư</a>
+      </nav>
+      <span class="header-spacer"></span>
+      <button class="header-link" type="button" data-demo-action>Tiếng Việt · VND⌄</button>
+      <button class="header-link header-login" type="button" data-demo-action>Đăng nhập&nbsp; ↗</button>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <div class="scribble"><b>Tiến bộ cần hai người</b><span aria-hidden="true">↗</span></div>
+        <p class="eyebrow">Học 1–1 cùng gia sư phù hợp</p>
+        <h1>Tìm đúng người.<br>Tiến bộ mỗi ngày.</h1>
+        <p>Khám phá gia sư theo môn học, lịch trình và mục tiêu của bạn. Bắt đầu bằng một buổi học thử để xem cách học nào phù hợp.</p>
+      </div>
+      <div class="hero-art" aria-label="Minh họa buổi học trực tuyến">
+        <div class="hero-art-card main" data-portrait="mai"></div>
+        <div class="hero-art-card small" data-portrait="khoa"></div>
+        <div class="floating-note progress"><strong>📖 Tiến bộ học tập</strong>Buổi học đầu tiên đã sẵn sàng<div class="meter"><span></span></div></div>
+        <div class="floating-note speaking"><strong>Thời gian luyện nói</strong>Học viên&nbsp; ━━━━━━━&nbsp; 72%<br>Gia sư&nbsp;&nbsp;&nbsp; ━━━&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 28%</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="search-wrap">
+    <form class="search-box" id="hero-search">
+      <div class="field"><label for="hero-subject">Bạn muốn học môn gì?</label><select id="hero-subject"><option value="">Tất cả môn học</option><option>Tiếng Anh</option><option>Toán</option><option>Tiếng Nhật</option><option>Vật lý</option></select></div>
+      <div class="field"><label for="hero-mode">Hình thức học</label><select id="hero-mode"><option value="">Tất cả hình thức</option><option value="online">Online</option><option value="offline">Trực tiếp</option></select></div>
+      <div class="field"><label for="hero-price">Ngân sách mỗi gói</label><select id="hero-price"><option value="">Mọi mức giá</option><option value="1000000">Đến 1.000.000đ</option><option value="1500000">Đến 1.500.000đ</option></select></div>
+      <button class="primary-button" type="submit">Tìm gia sư&nbsp; →</button>
+    </form>
+  </div>
+
+  <main class="main">
+    <section class="trust-row" aria-label="Thông tin minh họa">
+      <div class="trust-item"><strong>1–1</strong><span>Lộ trình riêng cho bạn</span></div>
+      <div class="trust-item"><strong>120+</strong><span>Môn học có thể khám phá*</span></div>
+      <div class="trust-item"><strong>4.9 <span class="trust-stars">★★★★★</span></strong><span>Đánh giá mẫu*</span></div>
+      <div class="trust-item"><strong>🇻🇳</strong><span>Gia sư tại Việt Nam</span></div>
+    </section>
+
+    <section id="gia-su">
+      <div class="section-heading">
+        <div><p class="eyebrow">Chọn người đồng hành</p><h2>Gia sư phù hợp với mục tiêu của bạn</h2><p>Lọc nhanh, xem hồ sơ sơ bộ rồi chọn cách bắt đầu.</p></div>
+        <span class="demo-label">● NỘI DUNG MẪU · KHÔNG PHẢI DỮ LIỆU THẬT</span>
+      </div>
+      <div class="filters" aria-label="Bộ lọc gia sư">
+        <input class="filter" id="keyword" type="search" placeholder="Tên gia sư hoặc từ khóa" aria-label="Tìm theo tên gia sư hoặc từ khóa">
+        <select class="filter" id="subject-filter" aria-label="Lọc theo môn học"><option value="">Tất cả môn học</option><option>Tiếng Anh</option><option>Toán</option><option>Tiếng Nhật</option><option>Vật lý</option></select>
+        <select class="filter" id="mode-filter" aria-label="Lọc theo hình thức"><option value="">Mọi hình thức</option><option value="online">Online</option><option value="offline">Trực tiếp</option></select>
+        <select class="filter" id="price-filter" aria-label="Lọc theo giá"><option value="">Mọi mức giá</option><option value="1000000">Đến 1.000.000đ</option><option value="1500000">Đến 1.500.000đ</option></select>
+        <button class="clear-button" id="clear-filters" type="button">Xóa bộ lọc</button>
+      </div>
+      <div class="results-layout">
+        <div class="results-list" id="results-list" aria-label="Danh sách gia sư">
+          <article class="tutor-card is-active" tabindex="0" aria-label="Xem nhanh hồ sơ mẫu Mai An" aria-current="true" data-id="mai" data-name="Mai An" data-subjects="Tiếng Anh, Toán" data-mode="online,offline" data-price="950000" data-search="mai an tiếng anh toán giao tiếp ielts">
+            <div class="portrait" data-portrait="mai" aria-hidden="true"></div>
+            <div class="tutor-info"><div class="name-row"><h3>Mai An</h3><span class="verified" title="Hồ sơ mẫu đã xác minh">✓</span></div><p class="role-line">Gia sư tiếng Anh · 8 năm kinh nghiệm</p><div class="subject-line"><span class="subject-chip">Tiếng Anh</span><span class="subject-chip">IELTS</span></div><p class="tutor-bio">Giúp bạn tự tin giao tiếp và xây dựng lộ trình luyện IELTS từ mục tiêu thực tế.</p><div class="stats"><span><strong>4.9 ★</strong>18 đánh giá</span><span><strong>32</strong>học viên mẫu</span><span><strong>540</strong>buổi mẫu</span></div></div>
+            <div class="tutor-action"><div class="price"><strong>950.000đ</strong><span>gói học mẫu</span></div><button class="action-button book" type="button" data-demo-action>Học thử</button><button class="action-button" type="button" data-demo-action>Nhắn tin</button></div>
+            <div class="mobile-preview"></div>
+          </article>
+          <article class="tutor-card" tabindex="0" aria-label="Xem nhanh hồ sơ mẫu Minh Khoa" data-id="khoa" data-name="Minh Khoa" data-subjects="Toán, Vật lý" data-mode="online" data-price="780000" data-search="minh khoa toán vật lý tư duy">
+            <div class="portrait" data-portrait="khoa" aria-hidden="true"></div>
+            <div class="tutor-info"><div class="name-row"><h3>Minh Khoa</h3><span class="verified" title="Hồ sơ mẫu đã xác minh">✓</span></div><p class="role-line">Toán & Vật lý · 6 năm kinh nghiệm</p><div class="subject-line"><span class="subject-chip">Toán</span><span class="subject-chip">Vật lý</span></div><p class="tutor-bio">Giải thích từng bước, giúp bạn nắm bản chất và tự tin xử lý bài tập.</p><div class="stats"><span><strong>4.8 ★</strong>14 đánh giá</span><span><strong>26</strong>học viên mẫu</span><span><strong>410</strong>buổi mẫu</span></div></div>
+            <div class="tutor-action"><div class="price"><strong>780.000đ</strong><span>gói học mẫu</span></div><button class="action-button book" type="button" data-demo-action>Học thử</button><button class="action-button" type="button" data-demo-action>Nhắn tin</button></div>
+            <div class="mobile-preview"></div>
+          </article>
+          <article class="tutor-card" tabindex="0" aria-label="Xem nhanh hồ sơ mẫu Bảo Trân" data-id="tran" data-name="Bảo Trân" data-subjects="Tiếng Nhật" data-mode="online,offline" data-price="1200000" data-search="bảo trân tiếng nhật jlpt giao tiếp">
+            <div class="portrait" data-portrait="tran" aria-hidden="true"></div>
+            <div class="tutor-info"><div class="name-row"><h3>Bảo Trân</h3><span class="verified" title="Hồ sơ mẫu đã xác minh">✓</span></div><p class="role-line">Tiếng Nhật · 5 năm kinh nghiệm</p><div class="subject-line"><span class="subject-chip">Tiếng Nhật</span><span class="subject-chip">JLPT N3–N5</span></div><p class="tutor-bio">Học tiếng Nhật qua hội thoại đời thường, ngữ pháp dễ nhớ và mục tiêu rõ ràng.</p><div class="stats"><span><strong>5.0 ★</strong>21 đánh giá</span><span><strong>19</strong>học viên mẫu</span><span><strong>365</strong>buổi mẫu</span></div></div>
+            <div class="tutor-action"><div class="price"><strong>1.200.000đ</strong><span>gói học mẫu</span></div><button class="action-button book" type="button" data-demo-action>Học thử</button><button class="action-button" type="button" data-demo-action>Nhắn tin</button></div>
+            <div class="mobile-preview"></div>
+          </article>
+          <article class="tutor-card" tabindex="0" aria-label="Xem nhanh hồ sơ mẫu Nhật Nam" data-id="nam" data-name="Nhật Nam" data-subjects="Tiếng Anh, Toán" data-mode="online" data-price="850000" data-search="nhật nam tiếng anh toán học thuật">
+            <div class="portrait" data-portrait="nam" aria-hidden="true"></div>
+            <div class="tutor-info"><div class="name-row"><h3>Nhật Nam</h3><span class="verified" title="Hồ sơ mẫu đã xác minh">✓</span></div><p class="role-line">Tiếng Anh học thuật · 4 năm kinh nghiệm</p><div class="subject-line"><span class="subject-chip">Tiếng Anh</span><span class="subject-chip">Giao tiếp</span></div><p class="tutor-bio">Thực hành nói theo chủ đề, mở rộng vốn từ và chỉnh phát âm trong từng buổi.</p><div class="stats"><span><strong>4.9 ★</strong>11 đánh giá</span><span><strong>17</strong>học viên mẫu</span><span><strong>290</strong>buổi mẫu</span></div></div>
+            <div class="tutor-action"><div class="price"><strong>850.000đ</strong><span>gói học mẫu</span></div><button class="action-button book" type="button" data-demo-action>Học thử</button><button class="action-button" type="button" data-demo-action>Nhắn tin</button></div>
+            <div class="mobile-preview"></div>
+          </article>
+          <div class="empty-state" id="empty-state">Chưa tìm thấy gia sư mẫu. Thử thay đổi bộ lọc nhé.</div>
+        </div>
+        <aside class="desktop-preview" aria-label="Thông tin xem nhanh gia sư" aria-live="polite"></aside>
+      </div>
+    </section>
+  </main>
+  <footer class="footer" id="cach-hoat-dong"><span>Tutor Match · Demo trải nghiệm giao diện</span><span>Toàn bộ hồ sơ, giá và đánh giá trên trang này là dữ liệu minh họa.</span></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const portraits = {
+      mai: `<svg viewBox="0 0 200 240" role="img" aria-label="Minh họa gia sư Mai An"><rect width="200" height="240" fill="#e9d9c9"/><circle cx="165" cy="43" r="33" fill="#f7ead9"/><path d="M17 240c5-48 29-71 82-71s79 23 84 71" fill="#253c48"/><path d="M54 98c-10-45 9-76 46-78 45-3 62 26 48 81l-17 44H65z" fill="#50352e"/><path d="M70 84c0-31 14-48 33-48s35 16 35 48v30c0 27-17 47-35 47S70 141 70 114z" fill="#d99873"/><path d="M66 91c-9-40 6-77 39-77 31 0 48 19 47 54-9-13-21-21-36-24-14 18-30 24-50 23z" fill="#50352e"/><path d="M70 82c-12 15-11 50-3 64-19-8-24-32-18-58 4-28 15-52 40-62-9 19-11 39-19 56zM137 70c18 21 20 50 8 76 22-20 25-53 15-80-8-25-23-41-43-48 10 14 14 32 20 52z" fill="#50352e"/><circle cx="87" cy="105" r="3" fill="#30221e"/><circle cx="121" cy="105" r="3" fill="#30221e"/><path d="M91 130c9 8 20 8 29 0" fill="none" stroke="#8d4b42" stroke-width="3" stroke-linecap="round"/><path d="M82 93h17M112 93h17" stroke="#4a332b" stroke-width="3" stroke-linecap="round"/><path d="M83 165l17 20 17-20" fill="#f2bb41"/></svg>`,
+      khoa: `<svg viewBox="0 0 200 240" role="img" aria-label="Minh họa gia sư Minh Khoa"><rect width="200" height="240" fill="#cfdbd2"/><circle cx="39" cy="48" r="29" fill="#e8eee6"/><path d="M12 240c7-53 31-72 88-72s81 21 88 72" fill="#294440"/><path d="M59 87c-3-41 16-66 43-66 35 0 51 24 45 68l-10 44H70z" fill="#312a27"/><ellipse cx="102" cy="105" rx="38" ry="51" fill="#b87552"/><path d="M64 82c4-41 28-59 52-55 22 3 35 19 36 46-14-4-30-12-44-27-10 16-24 25-44 27z" fill="#312a27"/><path d="M64 83c-7 25-5 48 4 62-16-11-23-34-17-56 5-22 20-41 42-53-12 15-22 29-29 47z" fill="#312a27"/><circle cx="88" cy="106" r="3" fill="#271f1c"/><circle cx="118" cy="106" r="3" fill="#271f1c"/><path d="M89 129c9 6 17 6 26 0" fill="none" stroke="#6d3c32" stroke-width="3" stroke-linecap="round"/><path d="M82 94h14M110 94h14" stroke="#342522" stroke-width="3" stroke-linecap="round"/><path d="M79 166l23 22 23-22" fill="#f2ca32"/><path d="M87 185l15 55 15-55" fill="#f5f1e7"/></svg>`,
+      tran: `<svg viewBox="0 0 200 240" role="img" aria-label="Minh họa gia sư Bảo Trân"><rect width="200" height="240" fill="#eadfcf"/><circle cx="158" cy="40" r="30" fill="#f6eee2"/><path d="M13 240c8-52 33-72 88-72s78 21 87 72" fill="#a35c43"/><path d="M54 102c-5-55 15-83 50-83 39 0 55 29 47 84l-13 44H65z" fill="#6a4838"/><ellipse cx="102" cy="106" rx="37" ry="50" fill="#e2ad87"/><path d="M66 83c-1-39 17-60 42-60 30 0 45 20 45 55-13-9-22-21-30-35-13 20-30 31-57 40z" fill="#6a4838"/><path d="M68 72c-14 26-14 64-1 87-21-17-26-50-16-78 8-25 23-41 46-48-13 13-22 25-29 39zM139 75c14 24 17 53 5 79 20-17 25-47 17-72-7-23-21-40-43-49 10 15 15 27 21 42z" fill="#6a4838"/><circle cx="88" cy="107" r="3" fill="#322720"/><circle cx="117" cy="107" r="3" fill="#322720"/><path d="M89 130c8 7 17 7 25 0" fill="none" stroke="#a7564d" stroke-width="3" stroke-linecap="round"/><rect x="74" y="99" width="26" height="17" rx="7" fill="none" stroke="#3e3028" stroke-width="3"/><rect x="105" y="99" width="26" height="17" rx="7" fill="none" stroke="#3e3028" stroke-width="3"/><path d="M100 106h5" stroke="#3e3028" stroke-width="3"/><path d="M83 167l19 20 18-20" fill="#f4ca28"/></svg>`,
+      nam: `<svg viewBox="0 0 200 240" role="img" aria-label="Minh họa gia sư Nhật Nam"><rect width="200" height="240" fill="#d5dfdc"/><circle cx="160" cy="45" r="33" fill="#eef0e9"/><path d="M11 240c5-53 31-72 90-72s81 21 88 72" fill="#365a4e"/><path d="M58 93c-6-48 13-76 45-76 39 0 56 30 46 82l-14 49H67z" fill="#302b29"/><ellipse cx="102" cy="106" rx="37" ry="49" fill="#d59a72"/><path d="M64 81c3-42 25-61 52-58 27 3 42 24 39 54-17-4-30-15-43-31-13 18-28 29-48 35z" fill="#302b29"/><path d="M67 83c-13 22-12 51-3 70-18-13-24-42-15-67 7-22 22-39 43-51-12 15-20 29-25 48z" fill="#302b29"/><circle cx="89" cy="107" r="3" fill="#30211c"/><circle cx="118" cy="107" r="3" fill="#30211c"/><path d="M89 130c8 6 17 6 25 0" fill="none" stroke="#9b5549" stroke-width="3" stroke-linecap="round"/><path d="M78 94h19M108 94h19" stroke="#302522" stroke-width="3" stroke-linecap="round"/><path d="M80 167l22 22 20-22" fill="#edc342"/></svg>`
+    };
+    document.querySelectorAll('[data-portrait]').forEach(el => { el.innerHTML = portraits[el.dataset.portrait]; });
+
+    const cards = [...document.querySelectorAll('.tutor-card')];
+    const previewHost = document.querySelector('.desktop-preview');
+    const toast = document.getElementById('toast');
+    let toastTimer;
+    function previewMarkup(card) {
+      const id = card.dataset.id;
+      const name = card.dataset.name;
+      const copy = {
+        mai: ['Gia sư tiếng Anh · Hà Nội', 'Mình cùng xây lộ trình luyện nói và IELTS theo mục tiêu của bạn. Mỗi buổi học tập trung vào việc thực hành, nhận góp ý cụ thể và thấy rõ bước tiến tiếp theo.', '8 năm kinh nghiệm', 'Online · Trực tiếp', '950.000đ'],
+        khoa: ['Gia sư Toán & Vật lý · TP. Hồ Chí Minh', 'Bắt đầu từ phần bạn đang vướng, rồi đi từng bước để hiểu cách giải. Buổi học mẫu kết hợp ví dụ trực quan và bài luyện ngắn.', '6 năm kinh nghiệm', 'Online', '780.000đ'],
+        tran: ['Gia sư tiếng Nhật · Đà Nẵng', 'Học tiếng Nhật thực tế với hội thoại theo chủ đề, ghi nhớ từ vựng theo ngữ cảnh và ôn JLPT theo nhịp riêng.', '5 năm kinh nghiệm', 'Online · Trực tiếp', '1.200.000đ'],
+        nam: ['Gia sư tiếng Anh · Cần Thơ', 'Luyện giao tiếp theo tình huống gần gũi, mở rộng vốn từ và nhận góp ý phát âm ngay trong lúc thực hành.', '4 năm kinh nghiệm', 'Online', '850.000đ']
+      }[id];
+      return `<div class="preview"><div class="preview-media">${portraits[id]}<span class="video-badge">GIỚI THIỆU MẪU</span><button class="play-button" type="button" aria-label="Phát video minh họa" data-demo-action>▶</button></div><div class="preview-copy"><div class="preview-top"><div><h3>${name} <span class="verified" aria-label="Hồ sơ mẫu đã xác minh">✓</span></h3><p>${copy[0]}</p></div><span class="preview-rating">★ ${id === 'tran' ? '5.0' : id === 'khoa' ? '4.8' : '4.9'}</span></div><p class="preview-description">${copy[1]}</p><dl class="preview-facts"><div><dt>Kinh nghiệm</dt><dd>${copy[2]}</dd></div><div><dt>Hình thức</dt><dd>${copy[3]}</dd></div><div><dt>Môn dạy</dt><dd>${card.dataset.subjects}</dd></div><div><dt>Giá gói mẫu</dt><dd>${copy[4]}</dd></div></dl><div class="preview-actions"><button class="action-button book" type="button" data-demo-action>Yêu cầu học thử&nbsp; →</button><button class="action-button message" type="button" data-demo-action>Nhắn tin với gia sư</button><button class="action-button" type="button" data-demo-action>Xem hồ sơ đầy đủ</button></div></div><div class="preview-note">Hồ sơ, video, giá và số liệu này chỉ để minh họa giao diện. Các nút chưa kết nối dịch vụ thật.</div></div>`;
+    }
+    function activate(card) {
+      if (!card || card.hidden) return;
+      cards.forEach(item => {
+        const active = item === card;
+        item.classList.toggle('is-active', active);
+        if (active) item.setAttribute('aria-current', 'true');
+        else item.removeAttribute('aria-current');
+        const mobile = item.querySelector('.mobile-preview');
+        mobile.innerHTML = active ? previewMarkup(item) : '';
+      });
+      previewHost.innerHTML = previewMarkup(card);
+    }
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', () => activate(card));
+      card.addEventListener('focus', () => activate(card));
+      card.addEventListener('keydown', event => {
+        if (event.target !== card || (event.key !== 'Enter' && event.key !== ' ')) return;
+        event.preventDefault();
+        activate(card);
+      });
+      card.addEventListener('click', event => {
+        if (event.target.closest('[data-demo-action]')) return;
+        activate(card);
+      });
+    });
+    document.addEventListener('click', event => {
+      const action = event.target.closest('[data-demo-action]');
+      if (!action) return;
+      event.preventDefault();
+      toast.textContent = 'Đây là bản demo — thao tác chưa kết nối dịch vụ thật.';
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+    });
+    document.getElementById('hero-search').addEventListener('submit', event => {
+      event.preventDefault();
+      document.getElementById('subject-filter').value = document.getElementById('hero-subject').value;
+      document.getElementById('mode-filter').value = document.getElementById('hero-mode').value;
+      document.getElementById('price-filter').value = document.getElementById('hero-price').value;
+      applyFilters();
+      document.getElementById('gia-su').scrollIntoView({ behavior: 'smooth' });
+    });
+    function applyFilters() {
+      const keyword = document.getElementById('keyword').value.trim().toLocaleLowerCase('vi');
+      const subject = document.getElementById('subject-filter').value;
+      const mode = document.getElementById('mode-filter').value;
+      const maxPrice = Number(document.getElementById('price-filter').value || 0);
+      cards.forEach(card => {
+        const match = (!keyword || card.dataset.search.toLocaleLowerCase('vi').includes(keyword))
+          && (!subject || card.dataset.subjects.includes(subject))
+          && (!mode || card.dataset.mode.split(',').includes(mode))
+          && (!maxPrice || Number(card.dataset.price) <= maxPrice);
+        card.hidden = !match;
+      });
+      const visible = cards.filter(card => !card.hidden);
+      document.getElementById('empty-state').style.display = visible.length ? 'none' : 'block';
+      if (visible.length) activate(visible[0]);
+      else previewHost.innerHTML = '<div class="preview-copy"><span class="demo-label">DỮ LIỆU MINH HỌA</span><h3>Chưa có kết quả phù hợp</h3><p>Thử thay đổi bộ lọc để xem thêm hồ sơ mẫu.</p></div>';
+    }
+    ['keyword', 'subject-filter', 'mode-filter', 'price-filter'].forEach(id => {
+      document.getElementById(id).addEventListener(id === 'keyword' ? 'input' : 'change', applyFilters);
+    });
+    document.getElementById('clear-filters').addEventListener('click', () => {
+      ['keyword', 'subject-filter', 'mode-filter', 'price-filter', 'hero-subject', 'hero-mode', 'hero-price'].forEach(id => { document.getElementById(id).value = ''; });
+      applyFilters();
+    });
+    activate(cards[0]);
+  </script>
+</body>
+</html>

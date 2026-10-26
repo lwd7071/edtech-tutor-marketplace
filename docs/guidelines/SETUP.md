@@ -103,6 +103,39 @@ Với service đã tạo thủ công trước đây, vào **Settings** và đố
 
 Giữ toàn bộ secret hiện có trong **Environment** của Render; không chép giá trị secret vào `render.yaml`. Sau khi push, deploy thành công chỉ khi `/actuator/health` trả `2xx` và Metrics không vượt giới hạn RAM. Nếu service vẫn vượt 512 MiB trong tải thật, chuyển sang plan có RAM lớn hơn thay vì tăng `-Xmx` trên Free.
 
+### 4.5. Chạy production bằng Docker qua Cloudflare Tunnel
+
+Compose riêng `docker-compose.tunnel.yml` chạy frontend, backend, Redis và connector `cloudflared`. Backend dùng profile `cloud`, lấy thông tin kết nối và secret từ `.env.cloud` ở thư mục gốc; không đưa file này vào image. Dữ liệu Redis được giữ trong volume `tunnel_redis_data`.
+
+1. Cài Docker Desktop và bật Linux containers.
+2. Nếu chưa có file token cục bộ, tạo từ mẫu:
+
+   ```powershell
+   Copy-Item .env.tunnel.example .env.tunnel
+   ```
+
+   Mở `.env.tunnel` và dán token tunnel `edtech` vào `CF_TUNNEL_TOKEN`. Không gửi hoặc commit token này.
+3. Trong Cloudflare Dashboard, sửa route `tutormatch.id.vn` trỏ tới `http://frontend:3000` và thêm `api.tutormatch.id.vn` trỏ tới `http://backend:8080`. Hai hostname cần nằm trong cùng tunnel `edtech`; không giữ route trùng hostname ở phía trên.
+   Kiểm tra mục **DNS → Records** của zone `tutormatch.id.vn`: cả hostname gốc (`@`) và `api` phải phân giải được. Nếu Cloudflare quản lý DNS toàn phần mà bản ghi chưa được tạo khi thêm route, thêm hai CNAME được proxy tới cùng `<Tunnel-ID>.cfargotunnel.com` của tunnel `edtech`. Lấy Tunnel ID trong Dashboard, không dùng token làm DNS target. Kiểm tra phân giải DNS trước khi thử HTTPS; thay đổi route nội bộ không sửa được hostname chưa phân giải.
+4. Thêm callback OAuth Google `https://api.tutormatch.id.vn/login/oauth2/code/google` vào **Authorized redirect URIs** của OAuth client Web application và bấm Save. Client ID của OAuth client này phải trùng với `GOOGLE_CLIENT_ID` đang dùng trong `.env.cloud`; nếu đổi Client ID/Secret cục bộ, tạo lại container backend để nhận biến môi trường mới. Đăng nhập Google phải được kiểm tra runtime riêng sau khi thay đổi có hiệu lực.
+   Luồng OAuth đi trực tiếp qua Spring backend và Google, rồi backend chuyển về `https://tutormatch.id.vn/oauth2/callback`. Supabase chỉ cung cấp PostgreSQL cho dữ liệu tài khoản trong cấu hình này; không cần thêm redirect URL vào Supabase Auth.
+5. Kiểm tra và chạy stack:
+
+   ```powershell
+   docker compose --env-file .env.cloud --env-file .env.tunnel -f docker-compose.tunnel.yml config -q
+   docker compose --env-file .env.cloud --env-file .env.tunnel -f docker-compose.tunnel.yml up -d --build
+   docker compose --env-file .env.cloud --env-file .env.tunnel -f docker-compose.tunnel.yml ps
+   ```
+
+   Không dùng `docker compose config` không có `-q`, vì đầu ra có thể chứa giá trị môi trường.
+6. Dừng stack mà vẫn giữ dữ liệu Redis:
+
+   ```powershell
+   docker compose --env-file .env.cloud --env-file .env.tunnel -f docker-compose.tunnel.yml down
+   ```
+
+Frontend chỉ bind vào `127.0.0.1:3000`; backend bind vào `127.0.0.1:18080` trên host để tránh xung đột với Tomcat đang dùng cổng 8080. Bên trong Docker, backend vẫn nghe cổng 8080 và connector truy cập `http://backend:8080` qua mạng Docker. `/health` công khai để health check; Actuator health không trả chi tiết và Prometheus yêu cầu tài khoản Admin. Khi đổi hostname, đồng bộ lại biến callback/CORS trong Compose và cấu hình OAuth bên Google.
+
 ---
 
 ## 5. Hướng dẫn thiết lập Frontend (React + Vite) để Code

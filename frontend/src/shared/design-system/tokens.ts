@@ -1,12 +1,13 @@
-/** The restored Tutor Match palette. CSS and Ant Design both derive from this map. */
+/** Tutor Match visual system. CSS and Ant Design derive from this single map. */
 export const colors = {
-  primary50: '#F0FDFA', primary100: '#CCFBF1', primary500: '#14B8A6',
-  primary600: '#0F766E', primary700: '#115E59', primary800: '#0B4D48', primary900: '#042F2E',
-  primaryHover: '#0D645D',
-  accent50: '#FFFBEB', accent500: '#B45309',
-  background: '#FBFAF8', surface: '#FFFFFF', surfaceSunken: '#F5F3EF',
-  surfaceHover: '#F7F6F3', border: '#E7E3DC', borderStrong: '#D3CEC4',
-  textPrimary: '#1C1917', textSecondary: '#57534E', textTertiary: '#8A837B',
+  brandYellow: '#FFD43B', actionPrimary: '#FFD43B', actionHover: '#F2C11D', ink: '#171714',
+  primary50: '#FFFBEB', primary100: '#FFF0A8', primary500: '#FFD43B',
+  primary600: '#171714', primary700: '#11110F', primary800: '#0B0B09', primary900: '#171714',
+  primaryHover: '#33322C',
+  accent50: '#FFFBEB', accent500: '#FFD43B',
+  background: '#F7F6F0', surface: '#FFFEFA', surfaceSunken: '#F1EFE7',
+  surfaceHover: '#F8F5E8', border: '#E5E2D8', borderStrong: '#CFCBBE',
+  textPrimary: '#171714', textSecondary: '#55544C', textTertiary: '#77766D',
   textPlaceholder: '#A8A29E', textInverse: '#FFFFFF', textDisabled: '#B9B3AB',
   disabledBg: '#F1EFEA', success600: '#15803D', successBg: '#F0FDF4',
   warning600: '#B45309', warningBg: '#FFFBEB', error600: '#B91C1C',
@@ -14,6 +15,7 @@ export const colors = {
 } as const;
 
 const cssNames: Record<keyof typeof colors, string> = {
+  brandYellow: '--color-brand-yellow', actionPrimary: '--color-action-primary', actionHover: '--color-action-hover', ink: '--color-ink',
   primary50: '--color-primary-50', primary100: '--color-primary-100', primary500: '--color-primary-500',
   primary600: '--color-primary-600', primary700: '--color-primary-700', primary800: '--color-primary-800', primary900: '--color-primary-900',
   primaryHover: '--color-primary-hover', accent50: '--color-accent-50', accent500: '--color-accent-500',

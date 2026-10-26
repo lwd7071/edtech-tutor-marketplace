@@ -23,7 +23,7 @@
 
 ### Public
 
-Navbar gồm logo, tìm gia sư, môn học, cách hoạt động, trở thành gia sư và tài khoản. Homepage gồm hero tìm kiếm, môn nổi bật, gia sư nổi bật, cách hoạt động và CTA. Footer chứa liên kết sản phẩm và hỗ trợ.
+Navbar gồm logo, tìm gia sư, môn học, cách hoạt động, trở thành gia sư và tài khoản. Homepage gồm hero với một CTA tìm gia sư dẫn đến `/subjects`, môn nổi bật, gia sư nổi bật, cách hoạt động và CTA. Footer chứa liên kết sản phẩm và hỗ trợ.
 
 ### Student
 
@@ -45,10 +45,10 @@ Menu: Dashboard, Duyệt gia sư, Đề xuất môn, Hoàn tiền, Gia hạn, R�
 
 | Route | Nội dung |
 |---|---|
-| `/` | Hero, môn nổi bật, gia sư nổi bật, cách hoạt động và CTA |
+| `/` | Hero tìm kiếm, giới thiệu nền tảng, môn và gia sư nổi bật, cách bắt đầu, CTA dành cho gia sư; các mục nội dung reveal nhẹ khi cuộn và hiển thị tĩnh khi người dùng bật giảm chuyển động |
 | `/teachers` | Lọc môn/hình thức/giá/rating/lịch rảnh, sắp xếp, thẻ và phân trang |
 | `/teachers/[id]` | Hồ sơ, môn, gói học, lịch rảnh, đánh giá và CTA học thử |
-| `/subjects` | Danh mục môn; chọn môn dẫn sang danh sách gia sư đã lọc |
+| `/subjects` | Danh mục môn; tab cấp học và tìm kiếm; chọn môn dẫn sang danh sách gia sư đã lọc. `subjectId` được tải độc lập để giữ lựa chọn ngoài trang hiện tại |
 | `/ranking` | Bảng xếp hạng từ dữ liệu Backend |
 | `/how-it-works` | Quy trình dành cho học viên và gia sư |
 | `/become-a-tutor` | Lợi ích, điều kiện và CTA đăng ký gia sư |
@@ -138,6 +138,14 @@ Chat phải khử trùng optimistic message với echo WebSocket. Notification c
 - Desktop: marketplace có sidebar filter; dashboard có sidebar điều hướng.
 - Form có label và lỗi gần trường. Thao tác quan trọng dùng modal xác nhận hoặc yêu cầu lý do.
 - Heading theo thứ tự, keyboard focus rõ, trạng thái không chỉ truyền đạt bằng màu.
+
+## Hệ thiết kế Tutor Match
+
+- Màu thương hiệu: vàng sáng `#FFD43B` và mực `#171714`; nền ấm sáng, thẻ trắng ngà. CTA chính dùng vàng với chữ mực; public hero được nhấn vàng; workspace giữ nền trung tính và dùng vàng cho điều hướng/trạng thái chọn.
+- Be Vietnam Pro dùng cho tiêu đề và Inter cho nội dung. CSS variables và Ant Design lấy màu từ `shared/design-system/tokens.ts`; trạng thái thành công/cảnh báo/lỗi giữ màu ngữ nghĩa riêng.
+- CTA tìm gia sư ở trang chủ và navbar mở `/subjects`. Chọn thẻ môn giữ `subjectId`; nút tiếp tục mở `/teachers?subjectId=<uuid>`. Trang `/teachers` vẫn cho phép xem mọi gia sư.
+- Kết quả gia sư là danh sách dọc. Desktop cập nhật bảng xem nhanh khi hover hoặc focus; mobile mở bản xem nhanh bên dưới khi chạm. Preview chỉ dùng `TeacherCard`; lịch, video và thao tác học thử nằm trong hồ sơ chi tiết.
+- Không hiển thị số liệu thành tích giả. Giá, rating, môn, kinh nghiệm và địa điểm lấy từ response backend; trạng thái lỗi không được trình bày thành dữ liệu rỗng/0 hợp lệ.
 
 ## Tiêu chí hoàn thành
 

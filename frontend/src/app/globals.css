@@ -149,8 +149,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /* A11y: Focus visible ring */
 :focus-visible {
-  outline: 2px solid var(--color-primary-500);
-  outline-offset: 2px;
+  outline: 3px solid var(--color-primary-600);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 /* Reduces motion accessibility */

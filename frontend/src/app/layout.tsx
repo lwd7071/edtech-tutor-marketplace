@@ -8,13 +8,14 @@ import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
 import "./globals.css";
 import './tutor-match.css';
+import './concept.css';
 import { AppThemeProvider } from "@/shared/components/AppThemeProvider";
 import { SessionHydrator } from "@/features/auth";
 import { AppProviders } from '@/shared/components/AppProviders';
 import { colorCss } from '@/shared/design-system/tokens';
 
 export const metadata: Metadata = {
-  title: "Edtech Tutor Marketplace",
+  title: "Tutor Match — Học đúng người, tiến đúng mục tiêu",
   description: "Nền tảng kết nối gia sư 1-1",
 };
 

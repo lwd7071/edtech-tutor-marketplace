@@ -3,7 +3,7 @@ import { colors } from '@/shared/design-system/tokens';
 
 export const appTheme: ThemeConfig = {
   token: {
-    colorPrimary: colors.primary600,
+    colorPrimary: colors.primary500,
     colorSuccess: colors.success600,
     colorWarning: colors.warning600,
     colorError: colors.error600,
@@ -33,7 +33,7 @@ export const appTheme: ThemeConfig = {
     Input: {
       activeBorderColor: colors.primary600,
       hoverBorderColor: colors.primary600,
-      activeShadow: `0 0 0 3px color-mix(in srgb, ${colors.primary500} 28%, transparent)`,
+      activeShadow: `0 0 0 3px color-mix(in srgb, ${colors.primary600} 18%, transparent)`,
       errorActiveShadow: `0 0 0 3px color-mix(in srgb, ${colors.error600} 28%, transparent)`,
       paddingBlock: 8,
       paddingInline: 16,
