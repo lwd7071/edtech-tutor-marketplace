@@ -1,19 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Table, Tag, Typography, Button, Space, Modal, Form, Input, Tabs, Popconfirm, Upload } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { CheckOutlined, CloseOutlined, SyncOutlined, EyeOutlined } from '@ant-design/icons';
-import { PayoutRequestView, PayoutStatus } from '@/features/finance';
-import { formatLedgerTime } from '@/features/finance';
+import { Alert, Button, DatePicker, Empty, Form, Input, Modal, Pagination, Popconfirm, Select, Skeleton, Tabs, Tag, Upload, message } from 'antd';
+import type { UploadFile } from 'antd';
+import type { Dayjs } from 'dayjs';
+import { PayoutRequestView, PayoutStatus, formatLedgerTime } from '@/features/finance';
 import { CompleteTransferRequest, ProcessPayoutRequest, RejectFinanceRequest } from '../types';
+import styles from './AdminPayoutTable.module.css';
 
 interface AdminPayoutTableProps {
   payouts?: PayoutRequestView[];
   loading?: boolean;
+  error?: boolean;
   total?: number;
   page?: number;
   pageSize?: number;
+  onRetry?: () => void;
   onPageChange?: (page: number, size: number) => void;
   onFilterStatus?: (status?: string) => void;
   onProcessPayout: (id: string, data: ProcessPayoutRequest) => Promise<void> | void;
@@ -21,281 +23,142 @@ interface AdminPayoutTableProps {
   onRejectPayout: (id: string, data: RejectFinanceRequest) => Promise<void> | void;
 }
 
-export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
-  payouts = [],
-  loading = false,
-  total = 0,
-  page = 0,
-  pageSize = 20,
-  onPageChange,
-  onFilterStatus,
-  onProcessPayout,
-  onCompletePayout,
-  onRejectPayout,
-}) => {
-  const [completeModalOpen, setCompleteModalOpen] = useState(false);
-  const [rejectModalOpen, setRejectModalOpen] = useState(false);
-  const [selectedPayout, setSelectedPayout] = useState<PayoutRequestView | null>(null);
-  const [actionLoading, setActionLoading] = useState(false);
+type CompleteFields = { bankReference: string; transferredAt: Dayjs; proof?: UploadFile[] };
+const statuses = [
+  { key: 'ALL', value: 'ALL', label: 'Tất cả' },
+  { key: 'PENDING', value: 'PENDING', label: 'Chờ duyệt' },
+  { key: 'PROCESSING', value: 'PROCESSING', label: 'Đang xử lý' },
+  { key: 'SUCCEEDED', value: 'SUCCEEDED', label: 'Đã chuyển' },
+  { key: 'REJECTED', value: 'REJECTED', label: 'Bị từ chối' },
+];
+const statusLabel = (status: PayoutStatus) => ({ PENDING: 'Chờ duyệt', PROCESSING: 'Đang xử lý', SUCCEEDED: 'Đã chuyển', REJECTED: 'Bị từ chối' })[status];
+const statusColor = (status: PayoutStatus) => ({ PENDING: 'gold', PROCESSING: 'processing', SUCCEEDED: 'success', REJECTED: 'default' })[status];
+const shortId = (id: string) => id.slice(0, 8);
+const money = (amount: number) => `${amount.toLocaleString('vi-VN')} ₫`;
 
-  const [completeForm] = Form.useForm<any>();
+function PayoutContext({ payout }: { payout: PayoutRequestView }) {
+  return <dl className={styles.context}>
+    <div><dt>Mã yêu cầu</dt><dd>#{payout.id}</dd></div>
+    <div><dt>Gia sư</dt><dd>{payout.teacherId}</dd></div>
+    <div><dt>Ví</dt><dd>{payout.walletId}</dd></div>
+    <div><dt>Tài khoản ngân hàng</dt><dd>{payout.bankAccountId}</dd></div>
+    <div><dt>Số tiền yêu cầu</dt><dd>{money(payout.amountVnd)}</dd></div>
+    <div><dt>Trạng thái</dt><dd>{statusLabel(payout.status)}</dd></div>
+    <div><dt>Ngày tạo</dt><dd>{formatLedgerTime(payout.createdAt)}</dd></div>
+    {payout.teacherNote && <div className={styles.contextWide}><dt>Ghi chú gia sư</dt><dd>{payout.teacherNote}</dd></div>}
+    {payout.adminNote && <div className={styles.contextWide}><dt>Ghi chú admin</dt><dd>{payout.adminNote}</dd></div>}
+    {payout.bankReference && <div><dt>Mã giao dịch</dt><dd>{payout.bankReference}</dd></div>}
+    {payout.transferredAt && <div><dt>Thời điểm chuyển</dt><dd>{formatLedgerTime(payout.transferredAt)}</dd></div>}
+    {payout.processedAt && <div><dt>Thời điểm xử lý</dt><dd>{formatLedgerTime(payout.processedAt)}</dd></div>}
+    {payout.proofUrl && <div><dt>Chứng từ</dt><dd><a href={payout.proofUrl} target="_blank" rel="noopener noreferrer">Xem chứng từ</a></dd></div>}
+    <div><dt>Phiên bản</dt><dd>{payout.version}</dd></div>
+  </dl>;
+}
+
+function PayoutLoading() {
+  return <div className={styles.loading} aria-label="Đang tải yêu cầu rút tiền">{[0, 1, 2].map(row => <div className={styles.loadingRow} key={row}><Skeleton active title={{ width: '28%' }} paragraph={{ rows: 2 }} /></div>)}</div>;
+}
+
+export const AdminPayoutTable: React.FC<AdminPayoutTableProps> = ({
+  payouts = [], loading = false, error = false, total = 0, page = 0, pageSize = 20,
+  onRetry, onPageChange, onFilterStatus, onProcessPayout, onCompletePayout, onRejectPayout,
+}) => {
+  const [status, setStatus] = useState('ALL');
+  const [selected, setSelected] = useState<PayoutRequestView | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [completeOpen, setCompleteOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [completeForm] = Form.useForm<CompleteFields>();
   const [rejectForm] = Form.useForm<Omit<RejectFinanceRequest, 'version'>>();
 
-  const handleOpenComplete = (payout: PayoutRequestView) => {
-    setSelectedPayout(payout);
-    completeForm.resetFields();
-    setCompleteModalOpen(true);
+  const changeStatus = (next: string) => { setStatus(next); onFilterStatus?.(next === 'ALL' ? undefined : next); };
+  const openComplete = (payout: PayoutRequestView) => { setSelected(payout); setActionError(null); completeForm.resetFields(); setCompleteOpen(true); };
+  const openReject = (payout: PayoutRequestView) => { setSelected(payout); setActionError(null); rejectForm.resetFields(); setRejectOpen(true); };
+  const processPayout = async (payout: PayoutRequestView) => {
+    try {
+      setActionLoading(true);
+      await onProcessPayout(payout.id, { version: payout.version });
+    } catch {
+      message.error('Không thể chuyển lệnh sang trạng thái xử lý. Hãy thử lại.');
+    } finally { setActionLoading(false); }
   };
-
-  const handleOpenReject = (payout: PayoutRequestView) => {
-    setSelectedPayout(payout);
-    rejectForm.resetFields();
-    setRejectModalOpen(true);
-  };
-
-  const handleCompleteSubmit = async () => {
-    if (!selectedPayout) return;
+  const completePayout = async () => {
+    if (!selected) return;
     try {
       const values = await completeForm.validateFields();
-      setActionLoading(true);
       const proof = values.proof?.[0]?.originFileObj as File | undefined;
-      await onCompletePayout(selectedPayout.id, { ...values, proof, version: selectedPayout.version });
-      setCompleteModalOpen(false);
-    } finally {
-      setActionLoading(false);
-    }
+      if (!proof) return;
+      setActionLoading(true); setActionError(null);
+      await onCompletePayout(selected.id, { bankReference: values.bankReference, transferredAt: values.transferredAt.toISOString(), proof, version: selected.version });
+      setCompleteOpen(false);
+    } catch (error) {
+      if (error && typeof error === 'object' && 'errorFields' in error) return;
+      setActionError('Không xác nhận được lệnh chuyển tiền. Hãy kiểm tra dữ liệu và thử lại.');
+      message.error('Không xác nhận được lệnh chuyển tiền. Hãy thử lại.');
+    } finally { setActionLoading(false); }
   };
-
-  const handleRejectSubmit = async () => {
-    if (!selectedPayout) return;
+  const rejectPayout = async () => {
+    if (!selected) return;
     try {
       const values = await rejectForm.validateFields();
-      setActionLoading(true);
-      await onRejectPayout(selectedPayout.id, { ...values, version: selectedPayout.version });
-      setRejectModalOpen(false);
-    } finally {
-      setActionLoading(false);
-    }
+      setActionLoading(true); setActionError(null);
+      await onRejectPayout(selected.id, { ...values, version: selected.version });
+      setRejectOpen(false);
+    } catch (error) {
+      if (error && typeof error === 'object' && 'errorFields' in error) return;
+      setActionError('Không từ chối được yêu cầu rút tiền. Hãy thử lại.');
+      message.error('Không từ chối được yêu cầu rút tiền. Hãy thử lại.');
+    } finally { setActionLoading(false); }
   };
 
-  const columns: ColumnsType<PayoutRequestView> = [
-    {
-      title: 'Mã yêu cầu',
-      dataIndex: 'id',
-      key: 'id',
-      width: 120,
-      render: (id: string) => (
-        <Typography.Text copyable={{ text: id }} style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}>
-          #{id.slice(0, 8)}
-        </Typography.Text>
-      ),
-    },
-    {
-      title: 'Thời gian tạo',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      width: 150,
-      render: (val: string) => (
-        <Typography.Text style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
-          {formatLedgerTime(val)}
-        </Typography.Text>
-      ),
-    },
-    {
-      title: 'Số tiền rút',
-      dataIndex: 'amountVnd',
-      key: 'amountVnd',
-      width: 150,
-      align: 'right',
-      render: (amt: number) => (
-        <span
-          style={{
-            fontWeight: 700,
-            fontSize: 15,
-            fontVariantNumeric: 'tabular-nums',
-            color: 'var(--color-primary-600)',
-          }}
-        >
-          {amt.toLocaleString('vi-VN')} ₫
-        </span>
-      ),
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      width: 130,
-      render: (status: PayoutStatus) => {
-        switch (status) {
-          case 'PENDING':
-            return <Tag color="warning">Chờ duyệt</Tag>;
-          case 'PROCESSING':
-            return <Tag color="processing">Đang xử lý</Tag>;
-          case 'SUCCEEDED':
-            return <Tag color="success">Đã chuyển</Tag>;
-          case 'REJECTED':
-            return <Tag color="default">Bị từ chối</Tag>;
-          default:
-            return <Tag>{status}</Tag>;
-        }
-      },
-    },
-    {
-      title: 'Mã GD / Biên lai',
-      key: 'ref',
-      width: 160,
-      render: (_, record) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {record.bankReference && (
-            <Typography.Text style={{ fontSize: 12, fontFamily: 'var(--font-mono)' }}>
-              {record.bankReference}
-            </Typography.Text>
-          )}
-          {record.proofUrl && (
-            <a href={record.proofUrl} target="_blank" rel="noopener noreferrer">
-              <Button type="link" size="small" icon={<EyeOutlined />} style={{ padding: 0 }}>
-                Xem chứng từ
-              </Button>
-            </a>
-          )}
-          {!record.bankReference && !record.proofUrl && <Typography.Text type="secondary">—</Typography.Text>}
-        </div>
-      ),
-    },
-    {
-      title: 'Thao tác',
-      key: 'action',
-      width: 220,
-      fixed: 'right',
-      render: (_, record) => {
-        if (record.status === 'PENDING') {
-          return (
-            <Space size={8}>
-              <Popconfirm
-                title="Bắt đầu xử lý lệnh rút này?"
-                description="Lệnh rút sẽ chuyển sang PROCESSING để kế toán chuyển khoản ngân hàng."
-                okText="Xử lý"
-                cancelText="Hủy"
-                onConfirm={() => onProcessPayout(record.id, { version: record.version })}
-              >
-                <Button type="primary" size="small" icon={<SyncOutlined />}>
-                  Xử lý
-                </Button>
-              </Popconfirm>
-              <Button danger size="small" icon={<CloseOutlined />} onClick={() => handleOpenReject(record)}>
-                Từ chối
-              </Button>
-            </Space>
-          );
-        }
+  return <section className={styles.queue} aria-label="Hàng đợi yêu cầu rút tiền">
+    <div className={styles.filters}><Tabs activeKey={status} onChange={changeStatus} items={statuses} /><Select className={styles.mobileFilter} aria-label="Lọc trạng thái rút tiền" value={status} onChange={changeStatus} options={statuses} /></div>
+    {error ? <Alert className={styles.error} type="error" showIcon message="Không tải được yêu cầu rút tiền." action={<Button onClick={onRetry}>Thử lại</Button>} />
+      : loading ? <PayoutLoading />
+        : payouts.length === 0 ? <div className={styles.empty}><Empty description="Chưa có yêu cầu rút tiền trong danh sách này." /></div>
+          : <>
+            <div className={styles.listHeader} aria-hidden="true"><span>Yêu cầu</span><span>Số tiền</span><span>Gia sư và ghi chú</span><span>Trạng thái</span><span>Thao tác</span></div>
+            <ul className={styles.rows}>{payouts.map(payout => <li key={payout.id}>
+              <article className={styles.row}>
+                <div className={styles.request}><h2>#{shortId(payout.id)}</h2><p>{formatLedgerTime(payout.createdAt)}</p><span>{payout.teacherId}</span></div>
+                <div className={styles.amount}><strong>{money(payout.amountVnd)}</strong><span>Tài khoản {payout.bankAccountId}</span></div>
+                <div className={styles.teacher}><strong>{payout.teacherNote || 'Không có ghi chú gia sư'}</strong><span>Ví {payout.walletId}</span></div>
+                <div className={styles.status}><Tag className={styles.statusTag} color={statusColor(payout.status)}>{statusLabel(payout.status)}</Tag><span>{payout.processedAt ? formatLedgerTime(payout.processedAt) : 'Chưa xử lý'}</span></div>
+                <div className={styles.actions}>
+                  <Button onClick={() => { setSelected(payout); setDetailOpen(true); }}>Chi tiết</Button>
+                  {payout.status === 'PENDING' && <>
+                    <Popconfirm title="Bắt đầu xử lý lệnh rút này?" description="Lệnh chuyển sang trạng thái đang xử lý." okText="Xử lý" cancelText="Hủy" onConfirm={() => void processPayout(payout)}><Button className={styles.rowAction} type="primary" loading={actionLoading}>Xử lý</Button></Popconfirm>
+                    <Button className={styles.rowAction} danger onClick={() => openReject(payout)}>Từ chối</Button>
+                  </>}
+                  {payout.status === 'PROCESSING' && <>
+                    <Button className={styles.rowAction} type="primary" onClick={() => openComplete(payout)}>Xác nhận chuyển</Button>
+                    <Button className={styles.rowAction} danger onClick={() => openReject(payout)}>Từ chối</Button>
+                  </>}
+                </div>
+              </article>
+            </li>)}</ul>
+            <Pagination className={styles.pagination} current={page + 1} pageSize={pageSize} total={total} showSizeChanger pageSizeOptions={[10, 20, 50]} showTotal={count => `${count} yêu cầu`} onChange={(nextPage, nextSize) => onPageChange?.(nextPage - 1, nextSize)} />
+          </>}
 
-        if (record.status === 'PROCESSING') {
-          return (
-            <Space size={8}>
-              <Button
-                type="primary"
-                size="small"
-                style={{ background: 'var(--color-success-600)' }}
-                icon={<CheckOutlined />}
-                onClick={() => handleOpenComplete(record)}
-              >
-                Xác nhận chuyển
-              </Button>
-              <Button danger size="small" icon={<CloseOutlined />} onClick={() => handleOpenReject(record)}>
-                Từ chối
-              </Button>
-            </Space>
-          );
-        }
-
-        return <Typography.Text type="secondary">—</Typography.Text>;
-      },
-    },
-  ];
-
-  return (
-    <div style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-lg, 12px)', padding: 20 }}>
-      <Tabs
-        defaultActiveKey="ALL"
-        onChange={(key) => onFilterStatus?.(key === 'ALL' ? undefined : key)}
-        items={[
-          { key: 'ALL', label: 'Tất cả' },
-          { key: 'PENDING', label: 'Chờ duyệt' },
-          { key: 'PROCESSING', label: 'Đang xử lý' },
-          { key: 'SUCCEEDED', label: 'Đã chuyển' },
-          { key: 'REJECTED', label: 'Bị từ chối' },
-        ]}
-      />
-
-      <Table<PayoutRequestView>
-        rowKey="id"
-        columns={columns}
-        dataSource={payouts}
-        loading={loading}
-        pagination={{
-          current: page + 1,
-          pageSize,
-          total,
-          showSizeChanger: true,
-          onChange: (p, s) => onPageChange?.(p - 1, s),
-        }}
-        scroll={{ x: 950 }}
-      />
-
-      {/* Modal Xác nhận chuyển tiền */}
-      <Modal
-        open={completeModalOpen}
-        title={`Xác nhận chuyển tiền cho lệnh #${selectedPayout?.id.slice(0, 8)}`}
-        okText="Xác nhận thành công"
-        cancelText="Hủy"
-        confirmLoading={actionLoading}
-        onCancel={() => setCompleteModalOpen(false)}
-        onOk={handleCompleteSubmit}
-      >
-        <Form form={completeForm} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item
-            label="Mã giao dịch ngân hàng (FT / Ref Code)"
-            name="bankReference"
-            rules={[{ required: true, message: 'Vui lòng nhập mã tham chiếu giao dịch ngân hàng' }]}
-          >
-            <Input placeholder="Ví dụ: FT260904123456" />
-          </Form.Item>
-
-          <Form.Item label="Chứng từ ủy nhiệm chi (JPG/PNG/PDF, tối đa 10 MB)" name="proof"
-                     valuePropName="fileList" getValueFromEvent={(event) => event?.fileList}
-                     rules={[{ required: true, message: 'Vui lòng tải lên chứng từ' }]}>
-            <Upload beforeUpload={() => false} maxCount={1} accept=".jpg,.jpeg,.png,.pdf">
-              <Button>Chọn file</Button>
-            </Upload>
-          </Form.Item>
-
-          <Form.Item label="Ghi chú admin (không bắt buộc)" name="adminNote">
-            <Input.TextArea rows={2} placeholder="Đã chuyển khoản thành công..." />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* Modal Từ chối rút tiền */}
-      <Modal
-        open={rejectModalOpen}
-        title={`Từ chối lệnh rút tiền #${selectedPayout?.id.slice(0, 8)}`}
-        okText="Xác nhận từ chối"
-        okButtonProps={{ danger: true }}
-        cancelText="Hủy"
-        confirmLoading={actionLoading}
-        onCancel={() => setRejectModalOpen(false)}
-        onOk={handleRejectSubmit}
-      >
-        <Form form={rejectForm} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item
-            label="Lý do từ chối (bắt buộc)"
-            name="reason"
-            rules={[{ required: true, message: 'Vui lòng nhập lý do từ chối' }]}
-          >
-            <Input.TextArea rows={3} placeholder="Ví dụ: Thông tin tài khoản ngân hàng không khớp..." />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
-  );
+    <Modal className={styles.modal} title={`Chi tiết yêu cầu rút tiền #${selected ? shortId(selected.id) : ''}`} open={detailOpen} onCancel={() => setDetailOpen(false)} footer={<Button onClick={() => setDetailOpen(false)}>Đóng</Button>} destroyOnHidden>
+      {selected && <PayoutContext payout={selected} />}
+      {selected?.status === 'PROCESSING' && <div className={styles.detailActions}><Button type="primary" onClick={() => { setDetailOpen(false); openComplete(selected); }}>Xác nhận chuyển</Button><Button danger onClick={() => { setDetailOpen(false); openReject(selected); }}>Từ chối</Button></div>}
+    </Modal>
+    <Modal className={styles.modal} title={`Xác nhận chuyển tiền #${selected ? shortId(selected.id) : ''}`} open={completeOpen} okText="Xác nhận thành công" cancelText="Hủy" confirmLoading={actionLoading} onCancel={() => setCompleteOpen(false)} onOk={completePayout} destroyOnHidden>
+      {selected && <PayoutContext payout={selected} />}
+      {actionError && <Alert className={styles.actionError} type="error" showIcon message={actionError} />}
+      <Form form={completeForm} layout="vertical" className={styles.form}>
+        <Form.Item label="Mã giao dịch ngân hàng" name="bankReference" rules={[{ required: true, message: 'Vui lòng nhập mã tham chiếu giao dịch ngân hàng' }]}><Input placeholder="Mã tham chiếu trên biên nhận" /></Form.Item>
+        <Form.Item label="Thời điểm chuyển khoản" name="transferredAt" rules={[{ required: true, message: 'Vui lòng chọn thời điểm chuyển khoản' }]}><DatePicker className={styles.datePicker} showTime format="DD/MM/YYYY HH:mm" /></Form.Item>
+        <Form.Item label="Chứng từ ủy nhiệm chi (JPG/PNG/PDF, tối đa 10 MB)" name="proof" valuePropName="fileList" getValueFromEvent={event => event?.fileList} rules={[{ required: true, message: 'Vui lòng tải lên chứng từ' }]}><Upload beforeUpload={() => false} maxCount={1} accept=".jpg,.jpeg,.png,.pdf"><Button>Chọn file</Button></Upload></Form.Item>
+      </Form>
+    </Modal>
+    <Modal className={styles.modal} title={`Từ chối lệnh rút #${selected ? shortId(selected.id) : ''}`} open={rejectOpen} okText="Xác nhận từ chối" okButtonProps={{ danger: true }} cancelText="Hủy" confirmLoading={actionLoading} onCancel={() => setRejectOpen(false)} onOk={rejectPayout} destroyOnHidden>
+      {selected && <PayoutContext payout={selected} />}
+      {actionError && <Alert className={styles.actionError} type="error" showIcon message={actionError} />}
+      <Form form={rejectForm} layout="vertical" className={styles.form}><Form.Item label="Lý do từ chối (bắt buộc)" name="reason" rules={[{ required: true, message: 'Vui lòng nhập lý do từ chối' }]}><Input.TextArea rows={3} /></Form.Item></Form>
+    </Modal>
+  </section>;
 };

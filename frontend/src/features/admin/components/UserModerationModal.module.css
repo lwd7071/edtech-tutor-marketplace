@@ -1,0 +1,17 @@
+.modal { max-width: calc(100vw - 24px); }
+.modal :global(.ant-modal-content) { padding: 28px; }
+.modal :global(.ant-modal-title) { color: var(--color-text-primary); font: 600 21px/1.35 var(--font-heading); }
+.context { margin: 20px 0 22px; padding-bottom: 18px; border-bottom: 1px solid var(--color-border); }
+.identity h2 { margin: 0; color: var(--color-text-primary); font-size: 17px; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }
+.identity a { display: inline-block; margin-top: 4px; color: var(--color-text-secondary); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.explanation { max-width: 58ch; margin: 14px 0 0; color: var(--color-text-secondary); font-size: 14px; line-height: 1.6; }
+.reason { display: grid; gap: 8px; }
+.reason label { color: var(--color-text-primary); font-size: 13px; font-weight: 600; }
+.reason :global(.ant-input) { min-height: 108px; resize: vertical; }
+.modal :global(.ant-btn:focus-visible), .reason :global(.ant-input:focus-visible) { outline: 3px solid var(--color-text-primary); outline-offset: 2px; }
+
+@media (max-width: 600px) {
+  .modal :global(.ant-modal-content) { padding: 22px 16px; }
+  .modal :global(.ant-modal-footer) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .modal :global(.ant-modal-footer .ant-btn) { min-height: 44px; margin: 0; }
+}

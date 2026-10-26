@@ -63,7 +63,7 @@ describe('AdminFinanceTables', () => {
       />
     );
 
-    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByText('3 buổi yêu cầu')).toBeInTheDocument();
     expect(screen.getAllByText(/buổi/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole('button', { name: /duyệt/i })).toBeInTheDocument();
   });

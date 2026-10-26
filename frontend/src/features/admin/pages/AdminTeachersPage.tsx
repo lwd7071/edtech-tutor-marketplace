@@ -1,23 +1,15 @@
 'use client';
 
 import React from 'react';
-import { Typography, Space } from 'antd';
 import { TeacherApprovalTable } from '../components/TeacherApprovalTable';
+import styles from './AdminTeachersPage.module.css';
 
 export function AdminTeachersPage() {
-  return (
-    <div style={{ padding: 'var(--space-6)', maxWidth: 1200, margin: '0 auto' }}>
-      <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
-        <div>
-          <Typography.Title level={2} style={{ marginBottom: 4 }}>
-            Xét duyệt hồ sơ gia sư
-          </Typography.Title>
-          <Typography.Paragraph type="secondary">
-            Xem hồ sơ, kiểm tra văn bằng và phê duyệt hoặc từ chối gia sư đăng ký giảng dạy.
-          </Typography.Paragraph>
-        </div>
-        <TeacherApprovalTable />
-      </Space>
-    </div>
-  );
+  return <main className={styles.page}>
+    <header className={styles.heading}>
+      <h1>Xét duyệt hồ sơ gia sư</h1>
+      <p>Xem thông tin và giấy tờ trước khi phê duyệt hoặc từ chối hồ sơ.</p>
+    </header>
+    <TeacherApprovalTable />
+  </main>;
 }

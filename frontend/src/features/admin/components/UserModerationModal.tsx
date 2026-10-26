@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Modal, Input, Typography, message } from 'antd';
+import { Input, message, Modal } from 'antd';
 import { useChangeUserStatus } from '../hooks/useAdminApprovals';
 import { parseApiError } from '@/shared/backend';
+import styles from './UserModerationModal.module.css';
 
 interface ModerationUser {
   id: string;
@@ -18,11 +19,7 @@ interface UserModerationModalProps {
   onClose: () => void;
 }
 
-export const UserModerationModal: React.FC<UserModerationModalProps> = ({
-  open,
-  user,
-  onClose,
-}) => {
+export const UserModerationModal: React.FC<UserModerationModalProps> = ({ open, user, onClose }) => {
   const [reason, setReason] = useState<string>('');
   const changeStatusMutation = useChangeUserStatus();
 
@@ -42,10 +39,7 @@ export const UserModerationModal: React.FC<UserModerationModalProps> = ({
     try {
       await changeStatusMutation.mutateAsync({
         userId: user.id,
-        data: {
-          status: targetStatus,
-          reason: reason.trim(),
-        },
+        data: { status: targetStatus, reason: reason.trim() },
       });
       message.success(isLocking ? 'Đã khóa tài khoản người dùng' : 'Đã mở khóa tài khoản người dùng');
       setReason('');
@@ -55,35 +49,39 @@ export const UserModerationModal: React.FC<UserModerationModalProps> = ({
     }
   };
 
-  return (
-    <Modal
-      title={title}
-      open={open}
-      onCancel={() => {
-        setReason('');
-        onClose();
-      }}
-      onOk={handleConfirm}
-      confirmLoading={changeStatusMutation.isPending}
-      okText={okText}
-      cancelText="Hủy"
-      okButtonProps={{ danger: isLocking }}
-      destroyOnHidden
-    >
-      <Typography.Paragraph>
-        Bạn đang thực hiện thao tác đối với người dùng <strong>{user.fullName}</strong> ({user.email}).
-      </Typography.Paragraph>
-      <Typography.Paragraph type="secondary">
+  return <Modal
+    className={styles.modal}
+    title={title}
+    open={open}
+    onCancel={() => { setReason(''); onClose(); }}
+    onOk={handleConfirm}
+    confirmLoading={changeStatusMutation.isPending}
+    okText={okText}
+    cancelText="Hủy"
+    okButtonProps={{ danger: isLocking }}
+    destroyOnHidden
+  >
+    <section className={styles.context} aria-label="Tài khoản được điều chỉnh">
+      <div className={styles.identity}>
+        <h2>{user.fullName}</h2>
+        <a href={`mailto:${user.email}`}>{user.email}</a>
+      </div>
+      <p className={styles.explanation}>
         {isLocking
           ? 'Người dùng bị khóa sẽ không thể đăng nhập hoặc thực hiện bất kỳ giao dịch nào trên hệ thống.'
           : 'Tài khoản người dùng sẽ được kích hoạt lại trạng thái hoạt động bình thường.'}
-      </Typography.Paragraph>
+      </p>
+    </section>
+    <div className={styles.reason}>
+      <label htmlFor="user-status-reason">Lý do điều chỉnh trạng thái</label>
       <Input.TextArea
+        id="user-status-reason"
+        aria-label="Lý do điều chỉnh trạng thái tài khoản"
         rows={4}
         placeholder="Nhập lý do thực hiện thao tác..."
         value={reason}
-        onChange={(e) => setReason(e.target.value)}
+        onChange={event => setReason(event.target.value)}
       />
-    </Modal>
-  );
+    </div>
+  </Modal>;
 };

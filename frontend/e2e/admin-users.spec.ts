@@ -34,6 +34,8 @@ test('admin searches, filters, sorts, opens audit history, and locks a user', as
   await page.getByPlaceholder('Nhập email của bạn').fill(admin.email);
   await page.getByPlaceholder('Nhập mật khẩu').fill('Password123!');
   await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page.locator('.tm-brand').first()).toHaveText('tutormatch');
   await page.goto('/admin/users');
   await expect(page.getByRole('heading', { name: 'Quản lý người dùng' })).toBeVisible();
 

@@ -1,142 +1,91 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Tabs, Tag, Button, Space, Typography, Card } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
-import ResponsiveTable from '@/shared/components/ui/ResponsiveTable';
+import { Button, Empty, Pagination, Skeleton, Tabs, Tag } from 'antd';
 import { TeacherApprovalSnapshot } from '../types';
 import { useTeacherApprovals } from '../hooks/useAdminApprovals';
 import { TeacherDetailDrawer } from './TeacherDetailDrawer';
+import styles from './TeacherApprovalTable.module.css';
+
+const statusLabels: Record<string, string> = {
+  PENDING_APPROVAL: 'Chờ duyệt', APPROVED: 'Đã duyệt', REJECTED: 'Đã từ chối',
+};
+
+function deliveryModes(teacher: TeacherApprovalSnapshot) {
+  return [teacher.supportsOnline && 'Online', teacher.supportsOffline && 'Trực tiếp'].filter(Boolean).join(', ') || 'Chưa cập nhật';
+}
+
+function statusTag(status: string) {
+  if (status === 'APPROVED') return <Tag color="success">Đã duyệt</Tag>;
+  if (status === 'REJECTED') return <Tag color="error">Đã từ chối</Tag>;
+  return <Tag color="warning">Chờ duyệt</Tag>;
+}
 
 export function TeacherApprovalTable() {
-  const [selectedStatus, setSelectedStatus] = useState<string>('PENDING_APPROVAL');
-  const [page, setPage] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [selectedStatus, setSelectedStatus] = useState('PENDING_APPROVAL');
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [selectedTeacher, setSelectedTeacher] = useState<TeacherApprovalSnapshot | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const query = useTeacherApprovals(selectedStatus, page, pageSize);
+  const teachers = query.data?.data ?? [];
+  const total = query.data?.meta?.totalElements ?? teachers.length;
 
-  const { data, isLoading } = useTeacherApprovals(selectedStatus, page, pageSize);
-
-  const teachers = data?.data || [];
-  const total = data?.meta?.totalElements || teachers.length;
-
-  const handleOpenDetail = (record: TeacherApprovalSnapshot) => {
-    setSelectedTeacher(record);
-    setDrawerOpen(true);
+  const closeDetails = () => {
+    setDrawerOpen(false);
+    setSelectedTeacher(null);
   };
 
-  const columns = [
-    {
-      title: 'Họ và tên',
-      dataIndex: 'fullName',
-      key: 'fullName',
-      render: (text: string, record: TeacherApprovalSnapshot) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography.Text strong>{text || 'Chưa cập nhật'}</Typography.Text>
-          <Typography.Text type="secondary" style={{ fontSize: 'var(--text-body-sm)' }}>
-            {record.email}
-          </Typography.Text>
-        </div>
-      ),
-    },
-    {
-      title: 'Hình thức dạy',
-      key: 'deliveryModes',
-      render: (_: unknown, record: TeacherApprovalSnapshot) => [record.supportsOnline && 'Online', record.supportsOffline && 'Trực tiếp'].filter(Boolean).join(', ') || 'Chưa cập nhật',
-    },
-    {
-      title: 'Kinh nghiệm',
-      dataIndex: 'yearsOfExperience',
-      key: 'yearsOfExperience',
-      render: (years: number) => (years ? `${years} năm` : 'Chưa cập nhật'),
-    },
-    {
-      title: 'Giấy tờ định danh',
-      dataIndex: 'documents',
-      key: 'documents',
-      render: (docs: any[]) => `${docs?.length || 0} tài liệu`,
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => {
-        if (status === 'APPROVED') return <Tag color="success">Đã duyệt</Tag>;
-        if (status === 'REJECTED') return <Tag color="error">Đã từ chối</Tag>;
-        return <Tag color="warning">Chờ duyệt</Tag>;
-      },
-    },
-    {
-      title: 'Thao tác',
-      key: 'action',
-      render: (_: any, record: TeacherApprovalSnapshot) => (
-        <Button
-          type="primary"
-          ghost
-          icon={<EyeOutlined />}
-          onClick={() => handleOpenDetail(record)}
-        >
-          Xem hồ sơ
-        </Button>
-      ),
-    },
-  ];
-
-  return (
-    <Card title="Quản lý phê duyệt hồ sơ gia sư" style={{ width: '100%' }}>
+  return <section className={styles.queue} aria-label="Danh sách hồ sơ gia sư">
+    <div className={styles.queueHeader}>
+      <h2>Hồ sơ đăng ký</h2>
       <Tabs
         activeKey={selectedStatus}
-        onChange={(key) => {
-          setSelectedStatus(key);
-          setPage(0);
-        }}
-        items={[
-          { key: 'PENDING_APPROVAL', label: 'Chờ duyệt' },
-          { key: 'APPROVED', label: 'Đã duyệt' },
-          { key: 'REJECTED', label: 'Đã từ chối' },
-        ]}
+        onChange={key => { setSelectedStatus(key); setPage(0); }}
+        items={Object.entries(statusLabels).map(([key, label]) => ({ key, label }))}
       />
+    </div>
 
-      <ResponsiveTable
-        dataSource={teachers}
-        columns={columns}
-        rowKey="teacherProfileId"
-        loading={isLoading}
-        pagination={{
-          current: page + 1,
-          pageSize,
-          total,
-          onChange: (p, s) => {
-            setPage(p - 1);
-            setPageSize(s);
-          },
-        }}
-        mobileCardRender={(record: TeacherApprovalSnapshot) => (
-          <Space orientation="vertical" style={{ width: '100%' }}>
-            <Typography.Text strong>{record.fullName}</Typography.Text>
-            <Typography.Text type="secondary">{record.email}</Typography.Text>
-            <div>Hình thức: {[record.supportsOnline && 'Online', record.supportsOffline && 'Trực tiếp'].filter(Boolean).join(', ') || 'Chưa cập nhật'}</div>
-            <div>Kinh nghiệm: {record.yearsOfExperience ? `${record.yearsOfExperience} năm` : 'Chưa cập nhật'}</div>
-            <Button
-              type="primary"
-              ghost
-              style={{ marginTop: 'var(--space-2)' }}
-              onClick={() => handleOpenDetail(record)}
-            >
-              Xem hồ sơ
-            </Button>
-          </Space>
-        )}
+    {query.isError ? <div className={styles.error} role="alert">
+      <div><strong>Chưa tải được danh sách hồ sơ.</strong><p>Thử tải lại để tiếp tục xét duyệt.</p></div>
+      <Button onClick={() => void query.refetch()}>Tải lại</Button>
+    </div> : query.isLoading ? <div className={styles.loading} aria-label="Đang tải hồ sơ gia sư">
+      <Skeleton active title={{ width: 220 }} paragraph={{ rows: 3 }} />
+      <Skeleton active title={{ width: 220 }} paragraph={{ rows: 3 }} />
+    </div> : teachers.length === 0 ? <div className={styles.empty}>
+      <Empty description={`Không có hồ sơ ${statusLabels[selectedStatus]?.toLowerCase() ?? 'nào'} ở trang này.`} />
+    </div> : <>
+      <ul className={styles.list}>
+        {teachers.map(teacher => <li key={teacher.teacherProfileId}>
+          <article className={styles.teacherRow}>
+            <div className={styles.identity}>
+              <h3>{teacher.fullName || 'Chưa cập nhật'}</h3>
+              <a href={`mailto:${teacher.email}`}>{teacher.email || 'Chưa cập nhật email'}</a>
+            </div>
+            <dl className={styles.summary}>
+              <div><dt>Hình thức dạy</dt><dd>{deliveryModes(teacher)}</dd></div>
+              <div><dt>Kinh nghiệm</dt><dd>{teacher.yearsOfExperience ? `${teacher.yearsOfExperience} năm` : 'Chưa cập nhật'}</dd></div>
+              <div><dt>Giấy tờ</dt><dd>{teacher.documents?.length ?? 0} tài liệu</dd></div>
+            </dl>
+            <div className={styles.rowEnd}>
+              {statusTag(teacher.status)}
+              <Button type="link" onClick={() => { setSelectedTeacher(teacher); setDrawerOpen(true); }}>Xem hồ sơ</Button>
+            </div>
+          </article>
+        </li>)}
+      </ul>
+      <Pagination
+        className={styles.pagination}
+        current={page + 1}
+        pageSize={pageSize}
+        total={total}
+        showSizeChanger
+        pageSizeOptions={[10, 20, 50]}
+        showTotal={count => `${count} hồ sơ`}
+        onChange={(current, size) => { setPage(current - 1); setPageSize(size); }}
       />
+    </>}
 
-      <TeacherDetailDrawer
-        open={drawerOpen}
-        teacher={selectedTeacher}
-        onClose={() => {
-          setDrawerOpen(false);
-          setSelectedTeacher(null);
-        }}
-      />
-    </Card>
-  );
+    <TeacherDetailDrawer open={drawerOpen} teacher={selectedTeacher} onClose={closeDetails} />
+  </section>;
 }

@@ -1,0 +1,10 @@
+.page { min-width: 0; max-width: 1200px; margin: 0 auto; padding: var(--space-6) 0; }
+.heading { margin: 0 0 28px; }
+.heading h1 { margin: 0; color: var(--color-text-primary); font: 600 36px/1.2 var(--font-heading); letter-spacing: -.025em; }
+.heading p { max-width: 68ch; margin: 10px 0 0; color: var(--color-text-secondary); font-size: 15px; line-height: 1.6; }
+@media (max-width: 768px) {
+  .page { padding: 24px 0 36px; }
+  .heading { margin-bottom: 20px; }
+  .heading h1 { font-size: 28px; }
+  .heading p { font-size: 14px; }
+}

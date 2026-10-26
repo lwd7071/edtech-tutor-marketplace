@@ -24,7 +24,7 @@ describe('AdminBookingSettlementsPage', () => {
 
   it('shows decision context in details before allowing an action', () => {
     render(<AdminBookingSettlementsPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'Xem chi tiết' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Chi tiết' }));
     expect(screen.getAllByText('Nguyễn Minh An')).toHaveLength(2);
     expect(screen.getAllByText('Trần Thu Hà')).toHaveLength(2);
     expect(screen.getByText('Học viên chưa xác nhận')).toBeInTheDocument();
@@ -36,7 +36,7 @@ describe('AdminBookingSettlementsPage', () => {
   it('blocks decision actions when a dispute has no recorded reason', () => {
     mockUseAdminBookingSettlements.mockReturnValue({ data: { data: [row({ disputeReason: null })], meta: { totalElements: 1 } }, isLoading: false, isError: false, refetch: jest.fn() });
     render(<AdminBookingSettlementsPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'Xem chi tiết' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Chi tiết' }));
     expect(screen.getByText('Không có lý do khiếu nại được ghi nhận.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Mở lại' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Giữ nền tảng' })).not.toBeInTheDocument();

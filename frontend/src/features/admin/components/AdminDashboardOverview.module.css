@@ -1,0 +1,140 @@
+.overview {
+  display: grid;
+  gap: 36px;
+  margin-bottom: 32px;
+  max-width: 1040px;
+}
+
+.section h2 {
+  margin: 0 0 14px;
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.financeList,
+.activityList {
+  margin: 0;
+}
+
+.financeRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, auto);
+  align-items: center;
+  gap: 20px;
+  min-height: 78px;
+  padding: 14px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.financeRow:last-child { border-bottom: 1px solid var(--color-border); }
+
+.financeCopy dt,
+.activityRow dt {
+  color: var(--color-text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.financeCopy dt a {
+  color: inherit;
+  text-decoration-color: var(--color-border-strong);
+  text-underline-offset: 3px;
+}
+
+.financeCopy dt a:hover { text-decoration-color: currentColor; }
+
+.financeCopy dd {
+  margin: 3px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.financeValue {
+  color: var(--color-text-primary);
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.activityList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--color-border);
+}
+
+.activityRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 58px;
+  align-items: center;
+  padding: 12px 16px 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.activityRow dd {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.queueList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.queueList li {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  min-height: 52px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.queueGroup {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.queueList a {
+  width: fit-content;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.queueList a:hover { color: var(--color-info-600); }
+
+.empty {
+  max-width: 720px;
+  padding: 20px 0;
+  color: var(--color-text-secondary);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.skeleton { display: grid; gap: 32px; max-width: 1040px; }
+
+@media (max-width: 767px) {
+  .overview { gap: 28px; }
+  .section h2 { font-size: 18px; }
+  .financeRow { grid-template-columns: minmax(0, 1fr); gap: 5px; padding: 14px 0; }
+  .financeValue { font-size: 18px; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+  .activityList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .activityRow { align-items: flex-start; flex-direction: column; justify-content: center; gap: 4px; padding-right: 8px; }
+  .activityRow dt { font-size: 13px; }
+  .activityRow dd { text-align: left; }
+  .queueList li { grid-template-columns: 96px minmax(0, 1fr); gap: 10px; }
+}

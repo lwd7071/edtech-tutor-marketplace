@@ -1,40 +1,36 @@
 'use client';
 
 import React from 'react';
-import { Typography, message } from 'antd';
+import { Alert, Button, Skeleton, message } from 'antd';
+import { parseApiError } from '@/shared/backend';
 import { usePlatformSettings, useUpdatePlatformSettings } from '../hooks/useAdminFinance';
 import { AdminSettingsForm } from '../components/AdminSettingsForm';
+import styles from './AdminSettingsPage.module.css';
 
 export const AdminSettingsPage: React.FC = () => {
-  const { data: settingsRes, isLoading } = usePlatformSettings();
+  const query = usePlatformSettings();
   const updateMutation = useUpdatePlatformSettings();
+  const settings = query.data?.data;
 
-  const settings = settingsRes?.data;
-
-  return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'var(--space-6) 0' }}>
-      <div style={{ marginBottom: 24 }}>
-        <Typography.Title level={2} style={{ marginBottom: 4 }}>
-          Cài đặt Sàn & Tham số Hệ thống
-        </Typography.Title>
-        <Typography.Text type="secondary" style={{ fontSize: 14 }}>
-          Quản lý tỉ lệ hoa hồng, thuật toán xếp hạng uy tín và chu kỳ tự động của hệ thống
-        </Typography.Text>
-      </div>
-
-      <AdminSettingsForm
-        settings={settings}
-        loading={isLoading}
-        submitting={updateMutation.isPending}
-        onUpdate={async (data) => {
-          try {
-            await updateMutation.mutateAsync(data);
-            message.success('Cập nhật cài đặt sàn thành công');
-          } catch (err: any) {
-            message.error(err?.response?.data?.message || 'Cập nhật thất bại');
-          }
-        }}
-      />
-    </div>
-  );
+  return <main className={styles.page}>
+    <header className={styles.heading}>
+      <h1>Cài đặt nền tảng</h1>
+      <p>Quản lý các tham số hiện có của hoa hồng, xếp hạng và lịch học.</p>
+    </header>
+    {query.isError ? <Alert className={styles.error} type="error" showIcon message="Không tải được cài đặt nền tảng." description="Kiểm tra kết nối rồi thử tải lại." action={<Button onClick={() => void query.refetch()}>Thử lại</Button>} />
+      : query.isLoading ? <div className={styles.loading} aria-label="Đang tải cài đặt nền tảng"><Skeleton active title paragraph={{ rows: 6 }} /></div>
+        : <AdminSettingsForm
+          settings={settings}
+          loading={false}
+          submitting={updateMutation.isPending}
+          onUpdate={async data => {
+            try {
+              await updateMutation.mutateAsync(data);
+              message.success('Cập nhật cài đặt sàn thành công');
+            } catch (error) {
+              message.error(parseApiError(error).message || 'Cập nhật thất bại');
+            }
+          }}
+        />}
+  </main>;
 };

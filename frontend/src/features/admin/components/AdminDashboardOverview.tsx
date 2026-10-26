@@ -1,187 +1,87 @@
 'use client';
 
 import React from 'react';
-import { Row, Col, Card, Typography, Space } from 'antd';
-import {
-  DollarOutlined,
-  PercentageOutlined,
-  TeamOutlined,
-  UserOutlined,
-  CalendarOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  CloseCircleOutlined,
-  AlertOutlined,
-} from '@ant-design/icons';
+import Link from 'next/link';
+import { Skeleton } from 'antd';
 import { AdminDashboardView } from '../types';
+import styles from './AdminDashboardOverview.module.css';
 
 interface AdminDashboardOverviewProps {
   stats?: AdminDashboardView | null;
   loading?: boolean;
 }
 
-export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({
-  stats,
-  loading = false,
-}) => {
-  return (
-    <div style={{ marginBottom: 24 }}>
-      {/* Hàng 1: Thống kê Tài chính Sàn */}
-      <Typography.Title level={4} style={{ marginBottom: 16 }}>
-        Tổng quan Tài chính & Hàng đợi
-      </Typography.Title>
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} md={6}>
-          <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
-              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <DollarOutlined style={{ marginRight: 6, color: 'var(--color-primary-600)' }} />
-                Tổng GMV Nền tảng
-              </Typography.Text>
-              <div style={{ fontSize: 24, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-                {(stats?.totalGmvVnd ?? 0).toLocaleString('vi-VN')} ₫
-              </div>
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                Tổng giá trị các gói học đã thanh toán
-              </Typography.Text>
-            </div>
-          </Card>
-        </Col>
+const formatVnd = (amount: number) => `${amount.toLocaleString('vi-VN')} ₫`;
 
-        <Col xs={24} sm={12} md={6}>
-          <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
-              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <PercentageOutlined style={{ marginRight: 6, color: 'var(--color-success-600)' }} />
-                Doanh thu Hoa hồng
-              </Typography.Text>
-              <div
-                style={{
-                  fontSize: 24,
-                  fontWeight: 700,
-                  fontVariantNumeric: 'tabular-nums',
-                  color: 'var(--color-success-600)',
-                }}
-              >
-                {(stats?.totalCommissionVnd ?? 0).toLocaleString('vi-VN')} ₫
-              </div>
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                Hoa hồng từ các buổi học hoàn thành
-              </Typography.Text>
-            </div>
-          </Card>
-        </Col>
+const shortcuts = [
+  { href: '/admin/teachers', label: 'Duyệt hồ sơ gia sư', group: 'Hồ sơ' },
+  { href: '/admin/credentials', label: 'Duyệt minh chứng', group: 'Hồ sơ' },
+  { href: '/admin/subjects', label: 'Đề xuất môn học', group: 'Danh mục' },
+  { href: '/admin/users', label: 'Quản lý người dùng', group: 'Danh mục' },
+  { href: '/admin/refunds', label: 'Yêu cầu hoàn tiền', group: 'Tài chính' },
+  { href: '/admin/extensions', label: 'Yêu cầu gia hạn', group: 'Tài chính' },
+  { href: '/admin/payouts', label: 'Yêu cầu rút tiền', group: 'Tài chính' },
+  { href: '/admin/booking-settlements', label: 'Quyết toán buổi học', group: 'Tài chính' },
+];
 
-        <Col xs={24} sm={12} md={6}>
-          <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
-              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <ClockCircleOutlined style={{ marginRight: 6, color: 'var(--color-warning-600)' }} />
-                Yêu cầu Rút tiền chờ duyệt
-              </Typography.Text>
-              <div
-                style={{
-                  fontSize: 24,
-                  fontWeight: 700,
-                  fontVariantNumeric: 'tabular-nums',
-                  color: 'var(--color-warning-600)',
-                }}
-              >
-                {stats?.pendingPayoutsCount ?? 0} lệnh
-              </div>
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                Tổng tiền: {(stats?.pendingPayoutsAmountVnd ?? 0).toLocaleString('vi-VN')} ₫
-              </Typography.Text>
-            </div>
-          </Card>
-        </Col>
+function DashboardSkeleton() {
+  return <div className={styles.skeleton} aria-label="Đang tải số liệu quản trị">
+    <Skeleton active title={{ width: 240 }} paragraph={{ rows: 3 }} />
+    <Skeleton active title={{ width: 200 }} paragraph={{ rows: 2 }} />
+  </div>;
+}
 
-        <Col xs={24} sm={12} md={6}>
-          <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
-              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <AlertOutlined style={{ marginRight: 6, color: 'var(--color-error-600)' }} />
-                Yêu cầu Hoàn tiền chờ xử lý
-              </Typography.Text>
-              <div
-                style={{
-                  fontSize: 24,
-                  fontWeight: 700,
-                  fontVariantNumeric: 'tabular-nums',
-                  color: (stats?.pendingRefundsCount ?? 0) > 0 ? 'var(--color-error-600)' : undefined,
-                }}
-              >
-                {stats?.pendingRefundsCount ?? 0} yêu cầu
-              </div>
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                Yêu cầu từ học viên cần thẩm định
-              </Typography.Text>
-            </div>
-          </Card>
-        </Col>
-      </Row>
+export const AdminDashboardOverview: React.FC<AdminDashboardOverviewProps> = ({ stats, loading = false }) => {
+  if (loading) return <DashboardSkeleton />;
+  if (!stats) return <p className={styles.empty} role="status">Chưa có số liệu tổng quan để hiển thị.</p>;
 
-      {/* Hàng 2: Thống kê Người dùng & Vận hành Buổi học */}
-      <Typography.Title level={4} style={{ marginBottom: 16 }}>
-        Vận hành Người dùng & Lịch học
-      </Typography.Title>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} md={6}>
-          <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <TeamOutlined style={{ marginRight: 6 }} />
-                Gia sư trên sàn
-              </Typography.Text>
-              <div style={{ fontSize: 22, fontWeight: 600 }}>{stats?.totalTeachers ?? 0}</div>
-            </div>
-          </Card>
-        </Col>
+  const financial = [
+    { label: 'Tổng GMV', value: formatVnd(stats.totalGmvVnd), note: 'Giá trị các gói học đã thanh toán' },
+    { label: 'Hoa hồng', value: formatVnd(stats.totalCommissionVnd), note: 'Từ các buổi học hoàn thành' },
+    { label: 'Lệnh rút tiền chờ duyệt', value: `${stats.pendingPayoutsCount} lệnh`, note: formatVnd(stats.pendingPayoutsAmountVnd), href: '/admin/payouts' },
+    { label: 'Yêu cầu hoàn tiền chờ xử lý', value: `${stats.pendingRefundsCount} yêu cầu`, note: 'Học viên đang chờ thẩm định', href: '/admin/refunds' },
+  ];
 
-        <Col xs={24} sm={12} md={6}>
-          <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <UserOutlined style={{ marginRight: 6 }} />
-                Học viên trên sàn
-              </Typography.Text>
-              <div style={{ fontSize: 22, fontWeight: 600 }}>{stats?.totalStudents ?? 0}</div>
-            </div>
-          </Card>
-        </Col>
+  const activity = [
+    { label: 'Gia sư trên sàn', value: stats.totalTeachers.toLocaleString('vi-VN') },
+    { label: 'Học viên trên sàn', value: stats.totalStudents.toLocaleString('vi-VN') },
+    { label: 'Tổng số buổi học', value: stats.totalBookings.toLocaleString('vi-VN') },
+    { label: 'Đã hoàn thành', value: `${stats.completedBookings.toLocaleString('vi-VN')} buổi` },
+    { label: 'Đã lên lịch', value: `${stats.scheduledBookings.toLocaleString('vi-VN')} buổi` },
+    { label: 'Đã hủy', value: `${stats.cancelledBookings.toLocaleString('vi-VN')} buổi` },
+  ];
 
-        <Col xs={24} sm={12} md={6}>
-          <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <CalendarOutlined style={{ marginRight: 6 }} />
-                Tổng số Buổi học
-              </Typography.Text>
-              <div style={{ fontSize: 22, fontWeight: 600 }}>{stats?.totalBookings ?? 0}</div>
-            </div>
-          </Card>
-        </Col>
+  return <div className={styles.overview}>
+    <section aria-labelledby="admin-finance-heading" className={styles.section}>
+      <h2 id="admin-finance-heading">Tài chính và yêu cầu</h2>
+      <dl className={styles.financeList}>
+        {financial.map(item => <div className={styles.financeRow} key={item.label}>
+          <div className={styles.financeCopy}>
+            <dt>{item.href ? <Link href={item.href}>{item.label}</Link> : item.label}</dt>
+            <dd>{item.note}</dd>
+          </div>
+          <div className={styles.financeValue}>{item.value}</div>
+        </div>)}
+      </dl>
+    </section>
 
-        <Col xs={24} sm={12} md={6}>
-          <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                <CheckCircleOutlined style={{ marginRight: 6, color: 'var(--color-success-600)' }} />
-                Đã hoàn thành
-              </Typography.Text>
-              <div
-                style={{
-                  fontSize: 22,
-                  fontWeight: 600,
-                  color: 'var(--color-success-600)',
-                }}
-              >
-                {stats?.completedBookings ?? 0} buổi
-              </div>
-            </div>
-          </Card>
-        </Col>
-      </Row>
-    </div>
-  );
+    <section aria-labelledby="admin-activity-heading" className={styles.section}>
+      <h2 id="admin-activity-heading">Người dùng và buổi học</h2>
+      <dl className={styles.activityList}>
+        {activity.map(item => <div className={styles.activityRow} key={item.label}>
+          <dt>{item.label}</dt><dd>{item.value}</dd>
+        </div>)}
+      </dl>
+    </section>
+
+    <section aria-labelledby="admin-queues-heading" className={styles.section}>
+      <h2 id="admin-queues-heading">Đi đến công việc quản trị</h2>
+      <ul className={styles.queueList}>
+        {shortcuts.map(item => <li key={item.href}>
+          <span className={styles.queueGroup}>{item.group}</span>
+          <Link href={item.href}>{item.label}</Link>
+        </li>)}
+      </ul>
+    </section>
+  </div>;
 };

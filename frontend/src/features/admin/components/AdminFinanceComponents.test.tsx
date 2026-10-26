@@ -23,12 +23,28 @@ describe('AdminFinanceComponents', () => {
 
     render(<AdminDashboardOverview stats={mockStats} />);
 
-    expect(screen.getByText('Tổng GMV Nền tảng')).toBeInTheDocument();
+    expect(screen.getByText('Tổng GMV')).toBeInTheDocument();
     expect(screen.getByText('250.000.000 ₫')).toBeInTheDocument();
-    expect(screen.getByText('Doanh thu Hoa hồng')).toBeInTheDocument();
+    expect(screen.getByText('Hoa hồng')).toBeInTheDocument();
     expect(screen.getByText('12.500.000 ₫')).toBeInTheDocument();
     expect(screen.getByText('3 lệnh')).toBeInTheDocument();
     expect(screen.getByText('2 yêu cầu')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Lệnh rút tiền chờ duyệt' })).toHaveAttribute('href', '/admin/payouts');
+    expect(screen.getByRole('link', { name: 'Duyệt hồ sơ gia sư' })).toHaveAttribute('href', '/admin/teachers');
+    expect(screen.getByText('60 buổi')).toBeInTheDocument();
+  });
+
+  it('does not invent zero values when a successful response has no stats', () => {
+    render(<AdminDashboardOverview stats={null} />);
+
+    expect(screen.getByText('Chưa có số liệu tổng quan để hiển thị.')).toBeInTheDocument();
+    expect(screen.queryByText('0 ₫')).not.toBeInTheDocument();
+  });
+
+  it('keeps the dashboard structure visible while stats load', () => {
+    render(<AdminDashboardOverview loading />);
+
+    expect(screen.getByLabelText('Đang tải số liệu quản trị')).toBeInTheDocument();
   });
 
   it('renders AdminSettingsForm with initial values', () => {
@@ -43,7 +59,7 @@ describe('AdminFinanceComponents', () => {
 
     render(<AdminSettingsForm settings={mockSettings} onUpdate={jest.fn()} />);
 
-    expect(screen.getByText(/Cấu hình Tham số Nền tảng/i)).toBeInTheDocument();
+    expect(screen.getByText('Tham số nền tảng')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /lưu cấu hình/i })).toBeInTheDocument();
   });
 
@@ -63,6 +79,6 @@ describe('AdminFinanceComponents', () => {
 
     expect(screen.getByText('TEACHER_APPROVED')).toBeInTheDocument();
     expect(screen.getByText('TeacherProfile')).toBeInTheDocument();
-    expect(screen.getByText('Xem JSON')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Chi tiết' })).toBeInTheDocument();
   });
 });

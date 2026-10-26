@@ -60,7 +60,7 @@ describe('SubjectProposalTable & ApproveSubjectModal (TDD)', () => {
     const handleClose = jest.fn();
     render(<ApproveSubjectModal open={true} proposal={mockProposal} onClose={handleClose} />);
 
-    expect(screen.getByText('Chuẩn hóa & Phê duyệt Môn học')).toBeInTheDocument();
+    expect(screen.getByText('Chuẩn hóa đề xuất')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Toán học nâng cao 12')).toBeInTheDocument();
     expect(screen.getByText('THPT')).toBeInTheDocument();
   });

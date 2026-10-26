@@ -1,0 +1,9 @@
+.page { width: min(100%, 1120px); margin: 0 auto; padding: 28px 0 40px; }
+.heading { max-width: 720px; margin: 0 0 28px; }
+.heading h1 { margin: 0 0 7px; color: var(--color-text-primary); font: 650 30px/1.25 var(--font-heading); }
+.heading p { color: var(--color-text-secondary); font-size: 15px; }
+@media (max-width: 767px) {
+  .page { padding: 20px 0 24px; }
+  .heading { margin-bottom: 22px; }
+  .heading h1 { font-size: 25px; }
+}

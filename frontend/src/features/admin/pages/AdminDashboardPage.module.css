@@ -1,0 +1,32 @@
+.page {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  padding: 28px 0 40px;
+}
+
+.heading {
+  margin: 0 0 30px;
+  max-width: 720px;
+}
+
+.heading h1 {
+  margin: 0 0 7px;
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.heading p {
+  color: var(--color-text-secondary);
+  font-size: 15px;
+}
+
+.error { max-width: 760px; }
+
+@media (max-width: 767px) {
+  .page { padding: 20px 0 24px; }
+  .heading { margin-bottom: 24px; }
+  .heading h1 { font-size: 25px; }
+}

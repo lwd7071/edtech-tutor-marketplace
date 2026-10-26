@@ -16,7 +16,6 @@ afterEach(() => jest.clearAllMocks());
 test('loads pending credentials then allows reviewing approved credentials', async () => {
   render(<AdminCredentialsPage />);
   await waitFor(() => expect(adminApi.getCredentialApprovals).toHaveBeenCalledWith('PENDING'));
-  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Trạng thái minh chứng' }));
-  fireEvent.click(await screen.findByText('Đã duyệt'));
+  fireEvent.click(screen.getByRole('tab', { name: 'Đã duyệt' }));
   await waitFor(() => expect(adminApi.getCredentialApprovals).toHaveBeenCalledWith('APPROVED'));
 });

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Alert, Button, Descriptions, Drawer, Input, Modal, Select, Table, Tag, Tooltip, Typography, message } from 'antd';
+import { Alert, Button, Drawer, Empty, Input, Modal, Pagination, Select, Skeleton, Tag, Tooltip, Typography, message } from 'antd';
+import styles from './AdminBookingSettlementsPage.module.css';
 import { useAdminBookingSettlements, useBookingSettlementAction } from '../hooks/useAdminFinance';
 import type { BookingSettlementAdminView } from '../types/finance';
 import { availableSettlementActions, type SettlementAction } from '../model/settlementActions';
@@ -12,11 +13,48 @@ const labels: Record<string, string> = {
   HELD: 'Đang giữ tiền', DISPUTE_PENDING: 'Chờ khiếu nại', REOPENED: 'Đã mở lại',
   AWAITING_ADMIN_DECISION: 'Chờ quyết định', RELEASED: 'Đã giải ngân', RETAINED: 'Đã giữ lại',
 };
-const actionLabels: Record<SettlementAction, string> = {
-  reopen: 'Mở lại', release: 'Chuyển gia sư', retain: 'Giữ nền tảng',
-};
+const actionLabels: Record<SettlementAction, string> = { reopen: 'Mở lại', release: 'Chuyển gia sư', retain: 'Giữ nền tảng' };
+const statusValues = Object.entries(labels).map(([value, label]) => ({ value, label }));
 const shortId = (id: string) => `${id.slice(0, 8)}…${id.slice(-4)}`;
 const confirmation = (value?: string | null) => value ? `Đã xác nhận · ${formatVietnamDateTime(value)}` : 'Chưa xác nhận';
+const amount = (value?: number | null) => value == null ? '—' : `${value.toLocaleString('vi-VN')} ₫`;
+
+function SettlementLoading() {
+  return <div className={styles.loading} aria-label="Đang tải quyết toán">{[0, 1, 2].map(item => <div key={item} className={styles.loadingRow}><Skeleton active title={{ width: '24%' }} paragraph={{ rows: 2 }} /></div>)}</div>;
+}
+
+function SettlementDetail({ settlement }: { settlement: BookingSettlementAdminView }) {
+  return <div className={styles.detail}>
+    <section aria-labelledby="settlement-people">
+      <h3 id="settlement-people">Người tham gia</h3>
+      <dl className={styles.detailGrid}>
+        <div><dt>Học viên</dt><dd>{settlement.studentName}</dd><dd className={styles.id}><Tooltip title={settlement.studentId}><Typography.Text copyable={{ text: settlement.studentId }}>{shortId(settlement.studentId)}</Typography.Text></Tooltip></dd></div>
+        <div><dt>Gia sư</dt><dd>{settlement.teacherName}</dd><dd className={styles.id}><Tooltip title={settlement.teacherId}><Typography.Text copyable={{ text: settlement.teacherId }}>{shortId(settlement.teacherId)}</Typography.Text></Tooltip></dd></div>
+        <div className={styles.detailWide}><dt>Mã booking</dt><dd><Tooltip title={settlement.bookingId}><Typography.Text copyable={{ text: settlement.bookingId }}>{shortId(settlement.bookingId)}</Typography.Text></Tooltip></dd></div>
+      </dl>
+    </section>
+    <section aria-labelledby="settlement-status">
+      <h3 id="settlement-status">Trạng thái và thời gian</h3>
+      <dl className={styles.detailGrid}>
+        <div><dt>Buổi học</dt><dd>{settlement.bookingStatus}</dd></div>
+        <div><dt>Quyết toán</dt><dd><Tag>{labels[settlement.status] ?? settlement.status}</Tag></dd></div>
+        <div className={styles.detailWide}><dt>Thời gian học</dt><dd>{formatVietnamDateTime(settlement.startTime)} – {formatVietnamDateTime(settlement.endTime)}</dd></div>
+        <div><dt>Gia sư xác nhận</dt><dd>{confirmation(settlement.teacherConfirmedAt)}</dd></div>
+        <div><dt>Học viên xác nhận</dt><dd>{confirmation(settlement.studentConfirmedAt)}</dd></div>
+        <div><dt>Hạn xác nhận ban đầu</dt><dd>{formatVietnamDateTime(settlement.confirmationDeadline)}</dd></div>
+        {settlement.reopenDeadline && <div><dt>Hạn mở lại</dt><dd>{formatVietnamDateTime(settlement.reopenDeadline)}</dd></div>}
+        <div><dt>Tiền gia sư</dt><dd className={styles.money}>{amount(settlement.netAmountVnd)}</dd></div>
+      </dl>
+    </section>
+    <section aria-labelledby="settlement-dispute">
+      <h3 id="settlement-dispute">Thông tin khiếu nại</h3>
+      <dl className={styles.detailGrid}>
+        <div className={styles.detailWide}><dt>Lý do</dt><dd>{settlement.disputeReason?.trim() || 'Không có lý do được ghi nhận.'}</dd></div>
+        <div><dt>Thời điểm gửi</dt><dd>{settlement.disputedAt ? formatVietnamDateTime(settlement.disputedAt) : '—'}</dd></div>
+      </dl>
+    </section>
+  </div>;
+}
 
 export function AdminBookingSettlementsPage() {
   const [status, setStatus] = useState<string>();
@@ -27,9 +65,11 @@ export function AdminBookingSettlementsPage() {
   const query = useAdminBookingSettlements(status, page, 20);
   const mutation = useBookingSettlementAction(action ?? 'retain');
   const missingReason = selected?.status === 'DISPUTE_PENDING' && !selected.disputeReason?.trim();
+  const settlements = query.data?.data ?? [];
+  const total = query.data?.meta?.totalElements ?? settlements.length;
 
   const resetSelection = () => { setSelected(null); setAction(null); setNote(''); };
-  const closeDrawer = () => { if (!mutation.isPending) resetSelection(); };
+  const closeDrawer = () => { if (!mutation.isPending && !action) resetSelection(); };
   const run = async () => {
     if (!selected || !action || !note.trim() || mutation.isPending || missingReason) return;
     try {
@@ -47,56 +87,49 @@ export function AdminBookingSettlementsPage() {
   };
   const choose = (nextAction: SettlementAction) => {
     if (mutation.isPending || missingReason) return;
-    setAction(nextAction); setNote('');
+    setAction(nextAction);
+    setNote('');
   };
 
-  return <div className="tm-stack">
-    <div className="tm-toolbar">
-      <h1>Quyết toán buổi học</h1>
-      <Select allowClear aria-label="Lọc trạng thái quyết toán" placeholder="Lọc trạng thái" value={status}
-        onChange={value => { setStatus(value); setPage(0); }}
-        options={Object.entries(labels).map(([value, label]) => ({ value, label }))} />
-    </div>
-    {query.isError && <Alert type="error" title="Chưa tải được quyết toán" action={<Button onClick={() => query.refetch()}>Thử lại</Button>} />}
-    {!query.isError && <Table rowKey="bookingId" loading={query.isLoading} dataSource={query.data?.data ?? []}
-      pagination={{ current: page + 1, pageSize: 20, total: query.data?.meta?.totalElements, onChange: next => setPage(next - 1) }}
-      columns={[
-        { title: 'Booking', dataIndex: 'bookingId', render: (id: string) => <Tooltip title={id}>{shortId(id)}</Tooltip> },
-        { title: 'Học viên / Gia sư', render: (_: unknown, row: BookingSettlementAdminView) => <div><div>{row.studentName}</div><Typography.Text type="secondary">{row.teacherName}</Typography.Text></div> },
-        { title: 'Trạng thái', dataIndex: 'status', render: (value: string) => <Tag>{labels[value] ?? value}</Tag> },
-        { title: 'Tiền gia sư', dataIndex: 'netAmountVnd', render: (value: number | null) => value == null ? '—' : `${value.toLocaleString('vi-VN')} ₫` },
-        { title: 'Chi tiết', render: (_: unknown, row: BookingSettlementAdminView) => <Button onClick={() => setSelected(row)}>Xem chi tiết</Button> },
-      ]} />}
+  return <div className={styles.page}>
+    <header className={styles.heading}><div><h1>Quyết toán buổi học</h1><p>Đối chiếu xác nhận và thông tin buổi học trước khi phân bổ khoản đang giữ.</p></div>
+      <Select allowClear className={styles.filter} aria-label="Lọc trạng thái quyết toán" placeholder="Lọc trạng thái" value={status} onChange={value => { setStatus(value); setPage(0); }} options={statusValues} />
+    </header>
+    {query.isError ? <Alert className={styles.error} type="error" showIcon message="Chưa tải được quyết toán" description="Kiểm tra kết nối rồi thử lại." action={<Button onClick={() => void query.refetch()}>Thử lại</Button>} />
+      : query.isLoading ? <SettlementLoading />
+        : settlements.length === 0 ? <div className={styles.empty}><Empty description="Chưa có quyết toán buổi học." /></div>
+          : <>
+            <div className={styles.listHeader} aria-hidden="true"><span>Booking</span><span>Học viên / Gia sư</span><span>Buổi học</span><span>Quyết toán</span><span>Tiền gia sư</span><span>Chi tiết</span></div>
+            <ul className={styles.rows}>{settlements.map(settlement => <li key={settlement.bookingId}>
+              <article className={styles.row}>
+                <div className={styles.booking}><span>Booking</span><strong>{shortId(settlement.bookingId)}</strong><small>{formatVietnamDateTime(settlement.startTime)}</small></div>
+                <div className={styles.people}><span>{settlement.studentName}</span><small>{settlement.teacherName}</small></div>
+                <div className={styles.session}><span>{settlement.bookingStatus}</span><small>{confirmation(settlement.studentConfirmedAt)} · học viên</small></div>
+                <div className={styles.status}><Tag>{labels[settlement.status] ?? settlement.status}</Tag><small>{confirmation(settlement.teacherConfirmedAt)} · gia sư</small></div>
+                <div className={styles.amount}><strong>{amount(settlement.netAmountVnd)}</strong></div>
+                <div className={styles.actions}><Button onClick={() => setSelected(settlement)}>Chi tiết</Button></div>
+              </article>
+            </li>)}</ul>
+            <Pagination className={styles.pagination} current={page + 1} pageSize={20} total={total} showTotal={count => `${count} quyết toán`} onChange={next => setPage(next - 1)} />
+          </>}
 
-    <Drawer title="Chi tiết quyết toán" open={!!selected} onClose={closeDrawer} width={560} destroyOnHidden>
-      {selected && <div className="tm-stack">
-        <Descriptions bordered size="small" column={1}>
-          <Descriptions.Item label="Học viên"><div>{selected.studentName}</div><Tooltip title={selected.studentId}><Typography.Text copyable={{ text: selected.studentId }}>{shortId(selected.studentId)}</Typography.Text></Tooltip></Descriptions.Item>
-          <Descriptions.Item label="Gia sư"><div>{selected.teacherName}</div><Tooltip title={selected.teacherId}><Typography.Text copyable={{ text: selected.teacherId }}>{shortId(selected.teacherId)}</Typography.Text></Tooltip></Descriptions.Item>
-          <Descriptions.Item label="Booking"><Tooltip title={selected.bookingId}><Typography.Text copyable={{ text: selected.bookingId }}>{shortId(selected.bookingId)}</Typography.Text></Tooltip></Descriptions.Item>
-          <Descriptions.Item label="Trạng thái buổi học">{selected.bookingStatus}</Descriptions.Item>
-          <Descriptions.Item label="Trạng thái quyết toán"><Tag>{labels[selected.status] ?? selected.status}</Tag></Descriptions.Item>
-          <Descriptions.Item label="Thời gian học">{formatVietnamDateTime(selected.startTime)} – {formatVietnamDateTime(selected.endTime)}</Descriptions.Item>
-          <Descriptions.Item label="Xác nhận gia sư">{confirmation(selected.teacherConfirmedAt)}</Descriptions.Item>
-          <Descriptions.Item label="Xác nhận học viên">{confirmation(selected.studentConfirmedAt)}</Descriptions.Item>
-          <Descriptions.Item label="Hạn xác nhận ban đầu">{formatVietnamDateTime(selected.confirmationDeadline)}</Descriptions.Item>
-          {selected.reopenDeadline && <Descriptions.Item label="Hạn mở lại">{formatVietnamDateTime(selected.reopenDeadline)}</Descriptions.Item>}
-          <Descriptions.Item label="Tiền gia sư">{selected.netAmountVnd == null ? '—' : `${selected.netAmountVnd.toLocaleString('vi-VN')} ₫`}</Descriptions.Item>
-          <Descriptions.Item label="Lý do khiếu nại">{selected.disputeReason?.trim() || '—'}</Descriptions.Item>
-          <Descriptions.Item label="Thời điểm khiếu nại">{selected.disputedAt ? formatVietnamDateTime(selected.disputedAt) : '—'}</Descriptions.Item>
-        </Descriptions>
-        {missingReason && <Alert type="error" showIcon title="Không có lý do khiếu nại được ghi nhận." />}
-        {!missingReason && availableSettlementActions(selected).length > 0 && <div className="tm-inline">
+    <Drawer className={styles.drawer} title="Chi tiết quyết toán" open={!!selected} onClose={closeDrawer} destroyOnHidden>
+      {selected && <>
+        <SettlementDetail settlement={selected} />
+        {missingReason && <Alert className={styles.missingReason} type="error" showIcon message="Không có lý do khiếu nại được ghi nhận." />}
+        {!missingReason && availableSettlementActions(selected).length > 0 && <div className={styles.drawerActions}>
           {availableSettlementActions(selected).map(item => <Button key={item} type={item === 'release' ? 'primary' : 'default'} danger={item === 'retain'} disabled={mutation.isPending} onClick={() => choose(item)}>{actionLabels[item]}</Button>)}
         </div>}
-      </div>}
+      </>}
     </Drawer>
-    <Modal open={!!action} title={action ? `${actionLabels[action]} · Ghi chú quyết toán` : 'Ghi chú quyết toán'}
+    <Modal className={styles.noteModal} open={!!action} title={action ? `${actionLabels[action]} · Ghi chú quyết toán` : 'Ghi chú quyết toán'}
       onCancel={() => { if (!mutation.isPending) { setAction(null); setNote(''); } }} onOk={() => void run()}
       okText={action ? actionLabels[action] : 'Xác nhận'}
       okButtonProps={{ loading: mutation.isPending, disabled: !note.trim() || !!missingReason }} cancelButtonProps={{ disabled: mutation.isPending }}
-      closable={!mutation.isPending} maskClosable={!mutation.isPending}>
-      <Input.TextArea aria-label="Lý do xử lý quyết toán" rows={4} value={note} onChange={event => setNote(event.target.value)} placeholder="Nêu lý do xử lý" />
+      closable={!mutation.isPending} mask={{ closable: !mutation.isPending }}>
+      {selected && <div className={styles.actionContext}><strong>Booking {shortId(selected.bookingId)}</strong><span>{labels[selected.status] ?? selected.status}</span></div>}
+      <label className={styles.noteLabel} htmlFor="settlement-action-note">Lý do xử lý</label>
+      <Input.TextArea id="settlement-action-note" aria-label="Lý do xử lý quyết toán" rows={4} value={note} onChange={event => setNote(event.target.value)} placeholder="Nêu lý do xử lý" />
     </Modal>
   </div>;
 }

@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Button, message, Select } from 'antd';
+import { Button, Form, Input, message, Modal, Select } from 'antd';
 import { SubjectProposalSnapshot, ApproveSubjectProposalRequest } from '../types';
 import { useApproveSubjectProposal } from '../hooks/useAdminApprovals';
 import { isConcurrentModification, parseApiError } from '@/shared/backend';
+import styles from './ApproveSubjectModal.module.css';
 
 interface ApproveSubjectModalProps {
   open: boolean;
@@ -12,14 +13,9 @@ interface ApproveSubjectModalProps {
   onClose: () => void;
 }
 
-export const ApproveSubjectModal: React.FC<ApproveSubjectModalProps> = ({
-  open,
-  proposal,
-  onClose,
-}) => {
+export const ApproveSubjectModal: React.FC<ApproveSubjectModalProps> = ({ open, proposal, onClose }) => {
   const [form] = Form.useForm<ApproveSubjectProposalRequest>();
   const approveMutation = useApproveSubjectProposal();
-
   const currentName = proposal?.proposedName || proposal?.proposedSubjectName || '';
   const currentCategory = proposal?.educationLevel || proposal?.proposedCategory || '';
 
@@ -53,69 +49,86 @@ export const ApproveSubjectModal: React.FC<ApproveSubjectModalProps> = ({
     }
   };
 
-  return (
-    <Modal
-      title="Chuẩn hóa & Phê duyệt Môn học"
-      open={open}
-      onCancel={onClose}
-      footer={null}
-      destroyOnHidden
+  return <Modal
+    className={styles.modal}
+    title="Chuẩn hóa đề xuất"
+    open={open}
+    onCancel={onClose}
+    footer={null}
+    destroyOnHidden
+    width={620}
+  >
+    <div className={styles.context}>
+      <p className={styles.contextLabel}>Đề xuất từ gia sư</p>
+      <h2>{currentName || 'Đề xuất môn học'}</h2>
+      <p>{proposal?.teacherName || proposal?.teacherId} · {currentCategory || 'Chưa có cấp học'}</p>
+      {proposal?.description && <div className={styles.proposalDescription}>{proposal.description}</div>}
+    </div>
+
+    <Form
+      className={styles.form}
+      form={form}
+      layout="vertical"
+      onFinish={handleSubmit}
+      initialValues={{
+        resolution: 'CREATE_NEW',
+        name: currentName,
+        educationLevel: currentCategory,
+        description: proposal?.description || '',
+      }}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        initialValues={{
-          resolution: 'CREATE_NEW',
-          name: currentName,
-          educationLevel: currentCategory,
-          description: proposal?.description || '',
-        }}
+      <Form.Item name="resolution" hidden><Input /></Form.Item>
+      <section className={styles.coreFields} aria-label="Thông tin môn học">
+        <h3>Thông tin môn học</h3>
+      <Form.Item
+        className={styles.field}
+        name="code"
+        label="Mã môn học"
+        rules={[{ required: true, message: 'Vui lòng nhập mã môn học' }, { pattern: /^[A-Z0-9_-]+$/, message: 'Dùng chữ in hoa, số, dấu gạch ngang hoặc gạch dưới' }]}
       >
-        <Form.Item name="resolution" hidden><Input /></Form.Item>
-        <Form.Item
-          name="code"
-          label="Mã môn học"
-          rules={[{ required: true, message: 'Vui lòng nhập mã môn học' }, { pattern: /^[A-Z0-9_-]+$/, message: 'Dùng chữ in hoa, số, dấu gạch ngang hoặc gạch dưới' }]}
-        >
-          <Input placeholder="Ví dụ: MATH_12" style={{ textTransform: 'uppercase' }} />
-        </Form.Item>
-        <Form.Item
-          name="name"
-          label="Tên môn học chuẩn hóa"
-          rules={[{ required: true, message: 'Vui lòng nhập tên môn học chuẩn hóa' }]}
-        >
-          <Input placeholder="Ví dụ: Toán học 12" />
-        </Form.Item>
-
-        <Form.Item
-          name="educationLevel"
-          label="Cấp học"
-          rules={[{ required: true, message: 'Vui lòng chọn cấp học' }]}
-        >
-          <Select options={[
-            { value: 'ELEMENTARY', label: 'Tiểu học' },
-            { value: 'MIDDLE_SCHOOL', label: 'THCS' },
-            { value: 'HIGH_SCHOOL', label: 'THPT' },
-            { value: 'UNIVERSITY', label: 'Đại học' },
-            { value: 'OTHER', label: 'Khác' },
-          ]} />
-        </Form.Item>
-
-        <Form.Item name="description" label="Mô tả môn học">
-          <Input.TextArea rows={3} placeholder="Mô tả chương trình học, mục tiêu..." />
-        </Form.Item>
-        <Form.Item name="note" label="Ghi chú cho gia sư">
-          <Input.TextArea rows={2} placeholder="Thông tin cần lưu ý sau khi duyệt" />
-        </Form.Item>
-
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
-          <Button onClick={onClose}>Hủy</Button>
-          <Button type="primary" htmlType="submit" loading={approveMutation.isPending}>
-            Phê duyệt & Tạo môn học
-          </Button>
-        </div>
-      </Form>
-    </Modal>
-  );
+        <Input className={styles.control} placeholder="Ví dụ: MATH_12" style={{ textTransform: 'uppercase' }} />
+      </Form.Item>
+      <Form.Item
+        className={styles.field}
+        name="name"
+        label="Tên môn học chuẩn hóa"
+        rules={[{ required: true, message: 'Vui lòng nhập tên môn học chuẩn hóa' }]}
+      >
+        <Input className={styles.control} placeholder="Ví dụ: Toán học 12" />
+      </Form.Item>
+      </section>
+      <section className={styles.levelFields} aria-label="Phạm vi môn học">
+        <h3>Phạm vi áp dụng</h3>
+      <Form.Item
+        className={styles.field}
+        name="educationLevel"
+        label="Cấp học"
+        rules={[{ required: true, message: 'Vui lòng chọn cấp học' }]}
+      >
+        <Select options={[
+          { value: 'ELEMENTARY', label: 'Tiểu học' },
+          { value: 'MIDDLE_SCHOOL', label: 'THCS' },
+          { value: 'HIGH_SCHOOL', label: 'THPT' },
+          { value: 'UNIVERSITY', label: 'Đại học' },
+          { value: 'OTHER', label: 'Khác' },
+        ]} className={styles.control} />
+      </Form.Item>
+      </section>
+      <section className={styles.detailFields} aria-label="Mô tả và ghi chú">
+        <h3>Mô tả và ghi chú</h3>
+      <Form.Item className={styles.field} name="description" label="Mô tả môn học">
+        <Input.TextArea className={styles.control} rows={3} placeholder="Mô tả chương trình học, mục tiêu..." />
+      </Form.Item>
+      <Form.Item className={styles.field} name="note" label="Ghi chú cho gia sư">
+        <Input.TextArea className={styles.control} rows={2} placeholder="Thông tin cần lưu ý sau khi duyệt" />
+      </Form.Item>
+      </section>
+      <div className={styles.actions}>
+        <Button onClick={onClose}>Hủy</Button>
+        <Button type="primary" htmlType="submit" loading={approveMutation.isPending}>
+          Phê duyệt & tạo môn học
+        </Button>
+      </div>
+    </Form>
+  </Modal>;
 };
