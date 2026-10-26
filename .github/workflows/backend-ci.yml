@@ -50,7 +50,12 @@ jobs:
         run: |
           docker compose up -d --build backend
           for attempt in $(seq 1 30); do
-            status=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' edtech_backend)
+            container_id=$(docker compose ps -q backend)
+            if [ -z "$container_id" ]; then
+              docker compose logs backend
+              exit 1
+            fi
+            status=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$container_id")
             if [ "$status" = "healthy" ]; then
               curl --fail --silent http://127.0.0.1:8080/actuator/health >/dev/null
               exit 0

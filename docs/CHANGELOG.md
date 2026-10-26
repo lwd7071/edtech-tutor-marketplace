@@ -1,5 +1,9 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-26 — Sửa probe smoke test Compose
+- Maven/Testcontainers GitHub CI PASS trên `main` và `dev`; bước smoke sau đó fail do workflow inspect tên container cũ. Probe hiện lấy ID từ service `backend` bằng `docker compose ps`, phù hợp với tên container Compose tạo tự động.
+- CI sau cập nhật chưa chạy; migration diff trống, không kết nối Supabase.
+
 ## 2026-10-26 — Cô lập kiểm thử Flyway lịch sử
 - Các test V17–V23 dùng database Testcontainers riêng theo class và dừng ở đúng migration đích; tránh V32 chạy nhầm trên schema lịch sử và tránh extension làm bẩn `public` của integration tests. Không sửa migration đã áp dụng.
 - Maven test-compile PASS. Full Testcontainers suite và GitHub CI sau thay đổi đang chờ; không ghi nhận là pass. Migration diff trống; không kết nối Supabase.
