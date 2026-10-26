@@ -1,5 +1,9 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-26 — Cô lập kiểm thử Flyway lịch sử
+- Các test V17–V23 dùng database Testcontainers riêng theo class và dừng ở đúng migration đích; tránh V32 chạy nhầm trên schema lịch sử và tránh extension làm bẩn `public` của integration tests. Không sửa migration đã áp dụng.
+- Maven test-compile PASS. Full Testcontainers suite và GitHub CI sau thay đổi đang chờ; không ghi nhận là pass. Migration diff trống; không kết nối Supabase.
+
 ## 2026-10-26 — Sửa cấu hình CI đang làm main đỏ
 - Backend CI cấp giá trị giả chỉ trong job để Compose xác thực được cấu hình. Frontend CI build bằng public API fixture, khởi fixture cho Playwright, dùng timezone Việt Nam và sửa retry/selector/keyboard assertions theo UI và fixture hiện tại.
 - Typecheck PASS; Jest 122 suites/329 tests PASS; ESLint các file E2E/config thay đổi PASS; production build PASS. E2E full 196/197 (một lỗi ghi PNG thoáng qua trên Windows), test đó PASS khi chạy riêng 5/5. Maven local compile PASS nhưng Testcontainers bị chặn do máy không có Docker environment; chờ GitHub CI. Full lint bị ảnh hưởng bởi các thư mục `.next-*` cũ không thuộc repo sạch. Migration diff trống; không kết nối Supabase.

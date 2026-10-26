@@ -1,8 +1,11 @@
 package com.edtech.platform.migration;
 
 import com.edtech.platform.common.AbstractPostgresContainerTest;
+import com.edtech.platform.common.IsolatedPostgresDatabase;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -17,6 +20,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FlywayV18LegacyDataTest extends AbstractPostgresContainerTest {
+    private static IsolatedPostgresDatabase migrationDatabase;
+
+    @BeforeAll
+    static void createMigrationDatabase() {
+        migrationDatabase = IsolatedPostgresDatabase.create(POSTGRES_CONTAINER);
+    }
+
+    @AfterAll
+    static void dropMigrationDatabase() {
+        migrationDatabase.close();
+    }
+
     @Test
     void knownTeacherLegacyValueIsMappedAndSingletonIsSeeded() {
         TestSchema schema = migrateToV17();
@@ -27,7 +42,7 @@ class FlywayV18LegacyDataTest extends AbstractPostgresContainerTest {
         schema.jdbc.update("INSERT INTO teacher_profiles (id,user_id,profile_status) VALUES (?,?,?)",
                 teacherId, userId, "PENDING");
 
-        Flyway full = flyway(schema, null);
+        Flyway full = flyway(schema, "18");
         full.migrate();
 
         assertThat(schema.jdbc.queryForObject(
@@ -48,7 +63,7 @@ class FlywayV18LegacyDataTest extends AbstractPostgresContainerTest {
         schema.jdbc.update("UPDATE " + table + " SET " + column
                 + " = 'UNKNOWN' WHERE ctid = (SELECT ctid FROM " + table + " LIMIT 1)");
 
-        assertThatThrownBy(() -> flyway(schema, null).migrate())
+        assertThatThrownBy(() -> flyway(schema, "18").migrate())
                 .isInstanceOf(FlywayException.class)
                 .hasMessageContaining("table=" + table)
                 .hasMessageContaining("constraint=" + constraint)
@@ -61,7 +76,7 @@ class FlywayV18LegacyDataTest extends AbstractPostgresContainerTest {
         insertValidLegacyFixture(schema.jdbc);
         schema.jdbc.update("UPDATE student_packages SET commission_rate = 7.00");
 
-        assertThatThrownBy(() -> flyway(schema, null).migrate())
+        assertThatThrownBy(() -> flyway(schema, "18").migrate())
                 .isInstanceOf(FlywayException.class)
                 .hasMessageContaining("table=student_packages")
                 .hasMessageContaining("constraint=commission_snapshot_source")
@@ -147,10 +162,7 @@ class FlywayV18LegacyDataTest extends AbstractPostgresContainerTest {
 
     private TestSchema migrateToV17() {
         String name = "legacy_" + UUID.randomUUID().toString().replace("-", "");
-        String separator = POSTGRES_CONTAINER.getJdbcUrl().contains("?") ? "&" : "?";
-        String url = POSTGRES_CONTAINER.getJdbcUrl() + separator + "currentSchema=" + name;
-        DriverManagerDataSource dataSource = new DriverManagerDataSource(
-                url, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword());
+        DriverManagerDataSource dataSource = migrationDatabase.dataSource(name);
         TestSchema schema = new TestSchema(name, dataSource, new JdbcTemplate(dataSource), null);
         Flyway baseline = flyway(schema, "17");
         baseline.migrate();

@@ -1,7 +1,10 @@
 package com.edtech.platform.migration;
 
 import com.edtech.platform.common.AbstractPostgresContainerTest;
+import com.edtech.platform.common.IsolatedPostgresDatabase;
 import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -13,19 +16,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FlywayV22BookingDomainTest extends AbstractPostgresContainerTest {
+    private static IsolatedPostgresDatabase migrationDatabase;
+
+    @BeforeAll
+    static void createMigrationDatabase() {
+        migrationDatabase = IsolatedPostgresDatabase.create(POSTGRES_CONTAINER);
+    }
+
+    @AfterAll
+    static void dropMigrationDatabase() {
+        migrationDatabase.close();
+    }
+
 
     @Test
     void migrationV22_shouldApplyConstraintsAndIndexesSuccessfully() {
         String schema = "v22_" + UUID.randomUUID().toString().replace("-", "");
-        String separator = POSTGRES_CONTAINER.getJdbcUrl().contains("?") ? "&" : "?";
-        DriverManagerDataSource dataSource = new DriverManagerDataSource(
-                POSTGRES_CONTAINER.getJdbcUrl() + separator + "currentSchema=" + schema,
-                POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword());
+        DriverManagerDataSource dataSource = migrationDatabase.dataSource(schema);
         JdbcTemplate jdbc = new JdbcTemplate(dataSource);
 
         // Migrate all migrations up to V22
-        Flyway flyway = Flyway.configure().dataSource(dataSource).schemas(schema).defaultSchema(schema)
-                .locations("classpath:db/migration").load();
+        Flyway flyway = configure(dataSource, schema, "22");
         flyway.migrate();
 
         jdbc.execute("SET search_path TO " + schema + ", public");

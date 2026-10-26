@@ -1,7 +1,10 @@
 package com.edtech.platform.migration;
 
 import com.edtech.platform.common.AbstractPostgresContainerTest;
+import com.edtech.platform.common.IsolatedPostgresDatabase;
 import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -12,14 +15,23 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FlywayV21PaymentDomainTest extends AbstractPostgresContainerTest {
+    private static IsolatedPostgresDatabase migrationDatabase;
+
+    @BeforeAll
+    static void createMigrationDatabase() {
+        migrationDatabase = IsolatedPostgresDatabase.create(POSTGRES_CONTAINER);
+    }
+
+    @AfterAll
+    static void dropMigrationDatabase() {
+        migrationDatabase.close();
+    }
+
 
     @Test
     void legacyInvoiceGetsExactDeterministicFingerprint() {
         String schema = "v20_" + UUID.randomUUID().toString().replace("-", "");
-        String separator = POSTGRES_CONTAINER.getJdbcUrl().contains("?") ? "&" : "?";
-        DriverManagerDataSource dataSource = new DriverManagerDataSource(
-                POSTGRES_CONTAINER.getJdbcUrl() + separator + "currentSchema=" + schema,
-                POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword());
+        DriverManagerDataSource dataSource = migrationDatabase.dataSource(schema);
         JdbcTemplate jdbc = new JdbcTemplate(dataSource);
         Flyway baseline = configure(dataSource, schema, "20");
         baseline.migrate();
@@ -45,7 +57,7 @@ class FlywayV21PaymentDomainTest extends AbstractPostgresContainerTest {
                 invoiceId, "INV-LEGACY", studentId, teacherId, pricingId, 100_000L, "PENDING",
                 java.sql.Timestamp.from(createdAt));
 
-        configure(dataSource, schema, null).migrate();
+        configure(dataSource, schema, "21").migrate();
 
         String expected = jdbc.queryForObject("""
                 SELECT encode(public.digest((id::text || '|' || amount_vnd::text || '|' ||
