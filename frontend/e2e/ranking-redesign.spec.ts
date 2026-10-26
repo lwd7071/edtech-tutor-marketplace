@@ -8,6 +8,16 @@ const rankedLinks = 'a[href^="/teachers/"][href*="3333"]';
 test('ranking keeps real ranking values, subject filter, profile links, and responsive behavior', async ({ page }) => {
   const evidenceDirectory = resolve(process.cwd(), '../docs/redesign/evidence');
   mkdirSync(evidenceDirectory, { recursive: true });
+  await page.route('**/api/public/teachers/ranking**', async route => {
+    const requestedUrl = new URL(route.request().url());
+    const fixturePort = process.env.PLAYWRIGHT_FIXTURE_PORT || '3181';
+    const fixtureResponse = await fetch(`http://127.0.0.1:${fixturePort}${requestedUrl.pathname}${requestedUrl.search}`);
+    await route.fulfill({
+      status: fixtureResponse.status,
+      contentType: fixtureResponse.headers.get('content-type') || 'application/json',
+      body: await fixtureResponse.text(),
+    });
+  });
 
   for (const width of [375, 768, 1280]) {
     await page.setViewportSize({ width, height: 900 });

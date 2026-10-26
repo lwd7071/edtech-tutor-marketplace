@@ -37,7 +37,23 @@ jobs:
       - name: Unit tests
         run: npm run test:ci
       - name: Production build
-        run: npm run build
+        run: |
+          node e2e/subjects-api-fixture.mjs &
+          fixture_pid=$!
+          trap 'kill "$fixture_pid"' EXIT
+          fixture_ready=0
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3181/api/public/subjects >/dev/null; then
+              fixture_ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$fixture_ready" -ne 1 ]; then
+            echo 'Public API fixture did not start.'
+            exit 1
+          fi
+          BACKEND_API_URL=http://127.0.0.1:3181 npm run build
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
       - name: E2E tests

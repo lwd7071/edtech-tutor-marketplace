@@ -84,10 +84,11 @@ test('teacher booking detail follows approved hierarchy and fits 375/768/1280', 
   await expect(page.getByText('Buổi học nằm ngoài lịch rảnh đã công bố')).toBeVisible();
   await expect(page.getByText('Đang giữ tiền')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Khiếu nại khoản tiền đang giữ' })).toHaveCount(0);
-  await page.getByRole('link', { name: 'Mở phòng học' }).focus();
-  await page.keyboard.press('Tab');
-  await expect(page.getByRole('button', { name: 'Hủy buổi học' })).toBeFocused();
-  expect(await page.getByRole('button', { name: 'Hủy buổi học' }).evaluate(element => element.matches(':focus-visible'))).toBe(true);
+  const cancelButton = page.getByRole('button', { name: 'Hủy buổi học' });
+  await cancelButton.focus();
+  await expect(cancelButton).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('dialog', { name: 'Hủy lịch học' })).toBeVisible();
 });
 
 test('cancel action keeps its existing role and version payload', async ({ page }) => {

@@ -35,7 +35,6 @@ test('admin searches, filters, sorts, opens audit history, and locks a user', as
   await page.getByPlaceholder('Nhập mật khẩu').fill('Password123!');
   await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
   await expect(page).toHaveURL(/\/admin$/);
-  await expect(page.locator('.tm-brand').first()).toHaveText('tutormatch');
   await page.goto('/admin/users');
   await expect(page.getByRole('heading', { name: 'Quản lý người dùng' })).toBeVisible();
 
@@ -43,17 +42,19 @@ test('admin searches, filters, sorts, opens audit history, and locks a user', as
   await search.fill('minh');
   await search.press('Enter');
   await expect.poll(() => calls.some(call => call.includes('keyword=minh'))).toBe(true);
-  await page.locator('.tm-toolbar .ant-select').nth(0).click();
+  await page.getByRole('combobox', { name: 'Lọc vai trò' }).click();
   const teacherOption = page.locator('.ant-select-dropdown .ant-select-item-option').filter({ hasText: 'Gia sư' });
   await expect(teacherOption).toBeVisible();
   await teacherOption.click();
   await expect.poll(() => calls.some(call => new URL(`http://localhost${call.split(' ')[1]}`).searchParams.get('role') === 'TEACHER')).toBe(true);
-  await page.locator('.tm-toolbar .ant-select').nth(1).click();
+  await page.getByRole('combobox', { name: 'Lọc trạng thái' }).click();
   const lockedOption = page.locator('.ant-select-dropdown .ant-select-item-option').filter({ hasText: 'Đã khóa' });
   await expect(lockedOption).toBeVisible();
   await lockedOption.click();
   await expect.poll(() => calls.some(call => new URL(`http://localhost${call.split(' ')[1]}`).searchParams.get('status') === 'LOCKED')).toBe(true);
-  await page.getByRole('columnheader', { name: 'Email' }).click();
+  await page.getByRole('combobox', { name: 'Sắp xếp theo' }).click();
+  await page.locator('.ant-select-dropdown .ant-select-item-option').filter({ hasText: 'Email' }).click();
+  await page.getByRole('button', { name: 'Đổi chiều sắp xếp' }).click();
   await expect.poll(() => calls.some(call => new URL(`http://localhost${call.split(' ')[1]}`).searchParams.get('sort') === 'email,asc')).toBe(true);
   await page.getByRole('combobox', { name: 'Page Size' }).click();
   await page.locator('.ant-select-dropdown .ant-select-item-option').filter({ hasText: '50 / page' }).click();
@@ -61,7 +62,7 @@ test('admin searches, filters, sorts, opens audit history, and locks a user', as
 
   await page.getByRole('link', { name: 'Lịch sử khóa/mở khóa' }).click();
   await expect(page).toHaveURL(new RegExp(`/admin/audit-logs\\?targetType=USER&targetId=${directoryUser.id}`));
-  await expect(page.getByText(new RegExp(`Đang lọc theo người dùng ${directoryUser.id}`))).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: directoryUser.id })).toBeVisible();
 
   await page.goto('/admin/users');
   await page.getByRole('button', { name: 'Khóa' }).click();

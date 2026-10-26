@@ -8,7 +8,7 @@ const attachment = { id: 'attachment-solution', secureUrl: 'https://files.exampl
 const baseAssignment: Record<string, any> = {
   id: 'assignment-detail-visual', teacherId: 'teacher-1', studentId: student.id, subjectId: 'subject-1', title: 'Đạo hàm và ứng dụng', assignmentType: 'FREEFORM',
   contentBlocks: [{ id: 'block-1', type: 'TEXT', content: 'Tính đạo hàm của hàm số sau.\nTrình bày đầy đủ các bước giải.' }],
-  dueAt: '2026-10-22T10:00:00Z', status: 'PUBLISHED', version: 3,
+  dueAt: '2026-11-22T10:00:00Z', status: 'PUBLISHED', version: 3,
   assignmentAttachments: [attachment], submissionAttachments: [], submission: null,
 };
 const envelope = (data: unknown) => ({ success: true, message: 'ok', data, errors: null, meta: null });

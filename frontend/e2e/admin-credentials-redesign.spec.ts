@@ -15,7 +15,7 @@ async function seedAdmin(page: import('@playwright/test').Page) {
 async function mockCredentials(page: import('@playwright/test').Page, options: { empty?: boolean; failListOnce?: boolean; failProofOnce?: boolean; delayList?: number } = {}) {
   const state = { listStatuses: [] as string[], proofCalls: 0, mutations: [] as Array<{ method: string; pathname: string; version: string | null; reason: string | null }> };
   let record = { ...credential, rejectedReason: null as string | null };
-  let remainingListFailures = options.failListOnce ? 2 : 0;
+  let remainingListFailures = options.failListOnce ? 1 : 0;
   let proofFailed = false;
 
   await page.route('**/api/admin/credentials**', async route => {

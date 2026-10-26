@@ -39,7 +39,7 @@ test('student assignments redesign preserves progress filters, search and pagina
     await page.addStyleTag({ content: 'nextjs-portal{display:none!important}' });
     if (variant === 'after') {
       await expect(page.getByRole('link', { name: 'Phương trình bậc hai' })).toHaveAttribute('href', '/student/assignments/assignment-1');
-      await expect(page.getByText('Quá hạn')).toBeVisible();
+      await expect(page.getByText('Quá hạn').first()).toBeVisible();
       await expect(page.getByText('Chưa nộp').first()).toBeVisible();
       await expect(page.getByText('Đã đóng')).toBeVisible();
       const dimensions = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, content: document.documentElement.scrollWidth }));

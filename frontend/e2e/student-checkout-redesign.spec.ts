@@ -91,5 +91,5 @@ test('student checkout waits for server invoice status and keeps the existing pa
   await paidInvoiceRequest;
   expect(invoiceCalls).toBeGreaterThan(callCountBeforePaid);
   await expect(page).toHaveURL(/\/student\/payment-result\/inv-visual$/, { timeout: 8000 });
-  await expect(page.getByText('Thanh toán thành công!')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Thanh toán thành công!' })).toBeVisible();
 });

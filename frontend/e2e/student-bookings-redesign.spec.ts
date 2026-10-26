@@ -142,5 +142,6 @@ test('student bookings redesign preserves filters, pagination, links and teacher
   await page.goto('/teacher/bookings');
   await expect(page.getByRole('heading', { name: 'Lịch dạy' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Chọn học viên để tạo buổi' })).toHaveAttribute('href', '/teacher/students');
-  await expect(page.locator('.tm-package-grid .tm-panel')).toHaveCount(2);
+  await expect(page.getByRole('heading', { name: 'Các buổi dạy' })).toBeVisible();
+  await expect(page.getByRole('article').filter({ hasText: 'Nguyễn Minh An' })).toHaveCount(2);
 });
