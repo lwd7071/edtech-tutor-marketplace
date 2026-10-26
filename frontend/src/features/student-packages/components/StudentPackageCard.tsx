@@ -1,10 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Card, Tag, Typography, Button, Space } from 'antd';
 import Link from 'next/link';
+import { Tag } from 'antd';
 import { StudentPackageSummary, StudentPackageStatus } from '../types';
-import { SessionCounter } from './SessionCounter';
 import { formatVietnamDate } from '@/shared/lib/vietnamTime';
 
 interface StudentPackageCardProps {
@@ -30,83 +29,56 @@ export const getPackageStatusConfig = (status: StudentPackageStatus) => {
   }
 };
 
-export const formatVnd = (amount: number): string => {
-  return `${amount.toLocaleString('vi-VN')} ₫`;
-};
+export const formatVnd = (amount: number): string => `${amount.toLocaleString('vi-VN')} ₫`;
 
 export const formatDate = (dateStr?: string): string => {
   if (!dateStr) return '---';
   return formatVietnamDate(dateStr);
 };
 
-export const StudentPackageCard: React.FC<StudentPackageCardProps> = ({
-  packageData,
-}) => {
+export const StudentPackageCard: React.FC<StudentPackageCardProps> = ({ packageData }) => {
   const statusConfig = getPackageStatusConfig(packageData.status);
+  const sessionCounts = [
+    { label: 'Còn lại', value: packageData.remainingSessions },
+    { label: 'Đang giữ', value: packageData.reservedSessions },
+    { label: 'Đã học', value: packageData.completedSessions },
+    { label: 'Đã hoàn', value: packageData.refundedSessions },
+  ];
 
   return (
-    <Card
-      style={{
-        width: '100%',
-        borderRadius: 'var(--radius-lg, 12px)',
-        border: '1px solid var(--color-border)',
-      }}
-      styles={{ body: { padding: 'var(--space-4, 16px)' } }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-        <div>
-          <Typography.Title level={4} style={{ margin: 0 }}>
-            {packageData.packageName}
-          </Typography.Title>
-          <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-            Môn: <strong>{packageData.subject.name}</strong> · Gia sư: <strong>{packageData.teacher.fullName}</strong>
-          </Typography.Text>
+    <article className="tm-student-package-item">
+      <header className="tm-student-package-item-heading">
+        <div className="tm-student-package-identity">
+          <h2>{packageData.packageName}</h2>
+          <p><span>{packageData.subject.name}</span><span className="tm-student-package-separator" aria-hidden="true">·</span><span>Gia sư {packageData.teacher.fullName}</span></p>
         </div>
-        <Tag color={statusConfig.color} style={{ margin: 0, fontWeight: 500 }}>
-          {statusConfig.label}
-        </Tag>
-      </div>
+        <Tag color={statusConfig.color}>{statusConfig.label}</Tag>
+      </header>
 
-      <div style={{ margin: '14px 0' }}>
-        <SessionCounter
-          remainingSessions={packageData.remainingSessions}
-          reservedSessions={packageData.reservedSessions}
-          completedSessions={packageData.completedSessions}
-          refundedSessions={packageData.refundedSessions}
-          size="small"
-        />
-      </div>
-
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: 16,
-          paddingTop: 12,
-          borderTop: '1px solid var(--color-border)',
-        }}
-      >
-        <div>
-          <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
-            Hạn dùng: {formatDate(packageData.expiresAt)}
-          </span>
-          <div
-            style={{
-              fontSize: 16,
-              fontWeight: 700,
-              color: 'var(--color-primary-600)',
-              fontVariantNumeric: 'tabular-nums',
-            }}
-          >
-            {formatVnd(packageData.purchasePriceVnd)}
+      <dl className="tm-student-package-sessions" aria-label="Phân bổ số buổi học">
+        {sessionCounts.map(({ label, value }) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
           </div>
-        </div>
+        ))}
+      </dl>
 
-        <Link href={`/student/packages/${packageData.id}`}>
-          <Button type="primary">Xem chi tiết</Button>
+      <footer className="tm-student-package-item-footer">
+        <dl className="tm-student-package-terms">
+          <div>
+            <dt>Hạn dùng</dt>
+            <dd>{formatDate(packageData.expiresAt)}</dd>
+          </div>
+          <div>
+            <dt>Đã thanh toán</dt>
+            <dd>{formatVnd(packageData.purchasePriceVnd)}</dd>
+          </div>
+        </dl>
+        <Link className="tm-student-package-detail-link" href={`/student/packages/${packageData.id}`}>
+          Xem chi tiết
         </Link>
-      </div>
-    </Card>
+      </footer>
+    </article>
   );
 };

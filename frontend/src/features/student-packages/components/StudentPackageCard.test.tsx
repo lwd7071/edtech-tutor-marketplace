@@ -25,7 +25,7 @@ describe('StudentPackageCard (TDD)', () => {
     render(<StudentPackageCard packageData={mockPkg} />);
 
     expect(screen.getByText('Toán 11 — 10 buổi')).toBeInTheDocument();
-    expect(screen.getByText('Trần Thu Hà')).toBeInTheDocument();
+    expect(screen.getByText('Gia sư Trần Thu Hà')).toBeInTheDocument();
     expect(screen.getByText('Toán 11')).toBeInTheDocument();
     expect(screen.getByText('Đang hoạt động')).toBeInTheDocument();
     expect(screen.getByText('1.000.000 ₫')).toBeInTheDocument();

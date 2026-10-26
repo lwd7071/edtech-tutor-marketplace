@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Card, Typography, Form, Input, Button, message, Avatar, Space, Divider, Switch, Skeleton } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
+import { Alert, Avatar, Button, Form, Input, message, Skeleton, Switch } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/features/auth';
 import { authApi, type ParentContactRequest } from '@/shared/api/auth';
 
@@ -42,101 +42,63 @@ export default function StudentProfilePage() {
     }
   };
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
-    <div style={{ maxWidth: 896, margin: '0 auto', padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <Typography.Title level={3} style={{ margin: 0 }}>Hồ sơ cá nhân</Typography.Title>
-      
-      <Card style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', borderRadius: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24 }}>
-          <Avatar 
-            size={100} 
-            src={user.avatarUrl} 
-            icon={<UserOutlined />} 
-            style={{ border: '2px solid var(--color-primary-100)' }}
-          />
-          <div style={{ flex: 1 }}>
-            <Typography.Title level={4} style={{ marginTop: 0, marginBottom: 4 }}>{user.fullName}</Typography.Title>
-            <div style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <MailOutlined /> {user.email}
-            </div>
-            <Space size="large">
-              <div>
-                <div style={{ color: 'var(--color-text-tertiary)', fontSize: 12, textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>Vai trò</div>
-                <div style={{ fontWeight: 500, color: 'var(--color-primary-600)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <SafetyCertificateOutlined /> Học viên
-                </div>
-              </div>
-              <div>
-                <div style={{ color: 'var(--color-text-tertiary)', fontSize: 12, textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>Trạng thái</div>
-                <div style={{ fontWeight: 500, color: 'var(--color-success-600)', marginTop: 4 }}>Đang hoạt động</div>
-              </div>
-            </Space>
+    <main className="tm-stack tm-student-profile" aria-labelledby="student-profile-title">
+      <header className="tm-page-heading tm-student-profile__heading">
+        <h1 id="student-profile-title">Hồ sơ cá nhân</h1>
+        <p>Thông tin tài khoản và liên hệ phụ huynh của bạn.</p>
+      </header>
+
+      <section className="tm-student-profile__account" aria-labelledby="student-account-title">
+        <div className="tm-student-profile__identity">
+          <Avatar className="tm-student-profile__avatar" size={76} src={user.avatarUrl} icon={<UserOutlined />} alt={user.fullName} />
+          <div className="tm-student-profile__identity-copy">
+            <h2 id="student-account-title">{user.fullName}</h2>
+            <p>{user.email}</p>
           </div>
         </div>
-      </Card>
+        <dl className="tm-student-profile__account-facts">
+          <div><dt>Vai trò</dt><dd>Học viên</dd></div>
+          <div><dt>Trạng thái</dt><dd>Đang hoạt động</dd></div>
+        </dl>
+      </section>
 
-      <Card style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', borderRadius: 12 }} title="Thông tin liên hệ phụ huynh">
-        <div style={{ marginBottom: 24, color: 'var(--color-text-secondary)' }}>
-          Thông tin này không bắt buộc. Khi bật nhận email, hệ thống gửi các cập nhật học tập quan trọng tới địa chỉ phụ huynh.
-        </div>
-        {loadError && <Alert type="error" showIcon title="Chưa tải được thông tin phụ huynh" action={<Button onClick={() => void loadContact()}>Thử lại</Button>} style={{marginBottom:16}} />}
-        {loading ? <Skeleton active /> :
-        
-        <Form 
-          form={form} 
-          layout="vertical" 
-          onFinish={handleFinish}
-          initialValues={{ notifyParent: false }}
-          style={{ maxWidth: 576 }}
-        >
-          <Form.Item
-            label="Họ và tên phụ huynh"
-            name="parentFullName"
-            rules={[{ min: 3, message: 'Tên quá ngắn' }]}
-          >
-            <Input prefix={<UserOutlined className="text-text-tertiary" />} placeholder="Nhập họ và tên" size="large" />
-          </Form.Item>
+      <section className="tm-student-profile__contact" aria-labelledby="student-parent-contact-title">
+        <header className="tm-student-profile__contact-heading">
+          <h2 id="student-parent-contact-title">Thông tin liên hệ phụ huynh</h2>
+          <p>Thông tin này không bắt buộc. Khi bật nhận email, hệ thống gửi các cập nhật học tập quan trọng tới địa chỉ phụ huynh.</p>
+        </header>
 
-          <Form.Item
-            label="Số điện thoại phụ huynh"
-            name="parentPhone"
-            rules={[
-              { pattern: /^[0-9]{10,11}$/, message: 'Số điện thoại không hợp lệ' }
-            ]}
-          >
-            <Input prefix={<PhoneOutlined className="text-text-tertiary" />} placeholder="Nhập số điện thoại" size="large" />
-          </Form.Item>
+        {loadError && <Alert className="tm-student-profile__error" type="error" showIcon title="Chưa tải được thông tin phụ huynh" action={<Button onClick={() => void loadContact()}>Thử lại</Button>} />}
+        {loading ? <div className="tm-student-profile__loading" role="status" aria-label="Đang tải thông tin phụ huynh"><Skeleton active paragraph={{ rows: 4 }} /></div> : (
+          <Form className="tm-student-profile__form" form={form} layout="vertical" onFinish={handleFinish} initialValues={{ notifyParent: false }}>
+            <div className="tm-student-profile__fields">
+              <Form.Item label="Họ và tên phụ huynh" name="parentFullName" rules={[{ min: 3, message: 'Tên quá ngắn' }]}>
+                <Input placeholder="Nhập họ và tên" autoComplete="name" />
+              </Form.Item>
+              <Form.Item label="Số điện thoại phụ huynh" name="parentPhone" rules={[{ pattern: /^[0-9]{10,11}$/, message: 'Số điện thoại không hợp lệ' }]}>
+                <Input placeholder="Nhập số điện thoại" inputMode="numeric" autoComplete="tel" />
+              </Form.Item>
+              <Form.Item className="tm-student-profile__email" label="Email phụ huynh" name="parentEmail" rules={[{ type: 'email', message: 'Email không hợp lệ' }]}>
+                <Input placeholder="Nhập địa chỉ email" autoComplete="email" />
+              </Form.Item>
+            </div>
 
-          <Form.Item
-            label="Email phụ huynh"
-            name="parentEmail"
-            rules={[
-              { type: 'email', message: 'Email không hợp lệ' }
-            ]}
-          >
-            <Input prefix={<MailOutlined className="text-text-tertiary" />} placeholder="Nhập địa chỉ email" size="large" />
-          </Form.Item>
-          
-          <Form.Item 
-            name="notifyParent" 
-            valuePropName="checked"
-          >
-            <Switch disabled={!parentEmail?.trim()} /> <span style={{ marginLeft: 8 }}>Gửi thông báo qua email phụ huynh</span>
-          </Form.Item>
+            <div className="tm-student-profile__notify-control">
+              <Form.Item className="tm-student-profile__notify" name="notifyParent" valuePropName="checked" noStyle>
+                <Switch id="student-notify-parent" disabled={!parentEmail?.trim()} aria-labelledby="student-notify-parent-label" />
+              </Form.Item>
+              <label id="student-notify-parent-label" htmlFor="student-notify-parent">Gửi thông báo qua email phụ huynh</label>
+            </div>
 
-          <Divider />
-
-          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-            <Button type="primary" htmlType="submit" size="large" loading={submitting}>
-              Lưu thông tin
-            </Button>
-          </Form.Item>
-        </Form>}
-      </Card>
-    </div>
+            <div className="tm-student-profile__actions">
+              <Button type="primary" htmlType="submit" loading={submitting}>Lưu thông tin</Button>
+            </div>
+          </Form>
+        )}
+      </section>
+    </main>
   );
 }

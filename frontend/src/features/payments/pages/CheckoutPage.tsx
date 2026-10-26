@@ -2,8 +2,8 @@
 
 import React, { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Spin, Empty, Button } from 'antd';
-import Link from 'next/link';
+import { Button, Skeleton } from 'antd';
+import { ActionLink, PageActions } from '@/shared/components/navigation/NavigationLinks';
 import { useInvoiceDetail } from '../hooks/usePayments';
 import { CheckoutQRView } from '../components/CheckoutQRView';
 
@@ -11,12 +11,10 @@ export const CheckoutPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const invoiceId = params?.invoiceId as string;
-
-  const { data, isLoading, isError } = useInvoiceDetail(invoiceId, {
+  const { data, isLoading, isError, refetch } = useInvoiceDetail(invoiceId, {
     polling: true,
     pollingInterval: 3000,
   });
-
   const invoice = data?.data;
 
   useEffect(() => {
@@ -27,26 +25,27 @@ export const CheckoutPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div style={{ textAlign: 'center', padding: '100px 0' }}>
-        <Spin size="large" description="Đang tải thông tin đơn hàng..." />
-      </div>
+      <section className="tm-checkout-state" role="status" aria-live="polite" aria-busy="true">
+        <p>Đang tải thông tin đơn hàng</p>
+        <Skeleton active title={{ width: '54%' }} paragraph={{ rows: 3 }} />
+      </section>
     );
   }
 
   if (isError || !invoice) {
     return (
-      <div style={{ textAlign: 'center', padding: '80px 0' }}>
-        <Empty description="Không tìm thấy thông tin đơn hàng thanh toán" />
-        <Link href="/" style={{ marginTop: 16, display: 'inline-block' }}>
-          <Button type="primary">Về trang chủ</Button>
-        </Link>
-      </div>
+      <section className="tm-checkout-state" aria-labelledby="tm-checkout-error-title">
+        <div>
+          <h1 id="tm-checkout-error-title">Không tìm thấy thông tin đơn hàng thanh toán</h1>
+          <p>Kiểm tra lại đơn hàng hoặc tải lại thông tin thanh toán.</p>
+        </div>
+        <PageActions>
+          {isError && <Button onClick={() => void refetch()}>Thử lại</Button>}
+          <ActionLink href="/">Về trang chủ</ActionLink>
+        </PageActions>
+      </section>
     );
   }
 
-  return (
-    <div style={{ padding: 'var(--space-6, 24px) var(--space-4, 16px)' }}>
-      <CheckoutQRView invoice={invoice} />
-    </div>
-  );
+  return <div className="tm-checkout-page"><CheckoutQRView invoice={invoice} /></div>;
 };

@@ -2,40 +2,40 @@
 
 import React from 'react';
 import { useParams } from 'next/navigation';
-import { Spin, Empty, Button } from 'antd';
-import Link from 'next/link';
+import { Button, Skeleton } from 'antd';
+import { ActionLink, PageActions } from '@/shared/components/navigation/NavigationLinks';
 import { useInvoiceDetail } from '../hooks/usePayments';
 import { PaymentResultView } from '../components/PaymentResultView';
 
 export const PaymentResultPage: React.FC = () => {
   const params = useParams();
   const invoiceId = params?.invoiceId as string;
-
-  const { data, isLoading, isError } = useInvoiceDetail(invoiceId);
+  const { data, isLoading, isError, refetch } = useInvoiceDetail(invoiceId);
   const invoice = data?.data;
 
   if (isLoading) {
     return (
-      <div style={{ textAlign: 'center', padding: '100px 0' }}>
-        <Spin size="large" description="Đang kiểm tra trạng thái thanh toán..." />
-      </div>
+      <section className="tm-payment-result-state" role="status" aria-live="polite" aria-busy="true">
+        <p>Đang kiểm tra trạng thái thanh toán</p>
+        <Skeleton active title={{ width: '48%' }} paragraph={{ rows: 3 }} />
+      </section>
     );
   }
 
   if (isError || !invoice) {
     return (
-      <div style={{ textAlign: 'center', padding: '80px 0' }}>
-        <Empty description="Không tìm thấy thông tin thanh toán" />
-        <Link href="/" style={{ marginTop: 16, display: 'inline-block' }}>
-          <Button type="primary">Về trang chủ</Button>
-        </Link>
-      </div>
+      <section className="tm-payment-result-state" aria-labelledby="tm-payment-result-error-title">
+        <div>
+          <h1 id="tm-payment-result-error-title">Không tìm thấy thông tin thanh toán</h1>
+          <p>Kiểm tra lại hóa đơn hoặc tải lại trạng thái giao dịch.</p>
+        </div>
+        <PageActions>
+          {isError && <Button onClick={() => void refetch()}>Thử lại</Button>}
+          <ActionLink href="/">Về trang chủ</ActionLink>
+        </PageActions>
+      </section>
     );
   }
 
-  return (
-    <div style={{ padding: 'var(--space-6, 24px) var(--space-4, 16px)' }}>
-      <PaymentResultView invoice={invoice} />
-    </div>
-  );
+  return <PaymentResultView invoice={invoice} />;
 };

@@ -6,7 +6,7 @@ import { NotificationList } from '@/features/notifications/components/Notificati
 export default function NotificationsPage() {
   return (
     <div style={{ maxWidth: 880, margin: '0 auto' }}>
-      <NotificationList />
+      <NotificationList audience="STUDENT" />
     </div>
   );
 }
