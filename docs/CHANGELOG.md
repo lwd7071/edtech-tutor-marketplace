@@ -1,5 +1,9 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-26 — Sửa cấu hình CI đang làm main đỏ
+- Backend CI cấp giá trị giả chỉ trong job để Compose xác thực được cấu hình. Frontend CI build bằng public API fixture, khởi fixture cho Playwright, dùng timezone Việt Nam và sửa retry/selector/keyboard assertions theo UI và fixture hiện tại.
+- Typecheck PASS; Jest 122 suites/329 tests PASS; ESLint các file E2E/config thay đổi PASS; production build PASS. E2E full 196/197 (một lỗi ghi PNG thoáng qua trên Windows), test đó PASS khi chạy riêng 5/5. Maven local compile PASS nhưng Testcontainers bị chặn do máy không có Docker environment; chờ GitHub CI. Full lint bị ảnh hưởng bởi các thư mục `.next-*` cũ không thuộc repo sạch. Migration diff trống; không kết nối Supabase.
+
 ## 2026-10-24 — Cập nhật chi phí dự phóng hồ sơ Tutor Match
 - Hạ giả định chi phí vận hành cố định còn 2 triệu đồng/tháng và đồng bộ bảng quý, điểm hòa vốn (~34 gói/tháng), kết quả năm đầu (+22,8 triệu đồng), thiếu hụt tiền mặt cao nhất (2,4 triệu đồng) cùng vốn lưu động tham khảo (8,4 triệu đồng). Tất cả vẫn là giả định, chưa tính lương nhà sáng lập.
 - DOCX vẫn 7 trang A4, Times New Roman 14 pt; OfficeCLI validate PASS và ảnh preview các trang đã rà. Migration diff trống; không kết nối Supabase.

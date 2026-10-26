@@ -1,5 +1,10 @@
 # Trạng thái dự án
 
+## Khôi phục CI cho main (2026-10-26)
+- Backend CI khai báo mật khẩu giả dùng riêng trong job để `docker compose config`, Testcontainers và smoke test không phụ thuộc file `.env`; chưa kết nối Supabase. Frontend CI bật fixture public API trong lúc build để trang ranking được prerender dữ liệu ổn định; Playwright khởi fixture, cấu hình timezone Việt Nam và sửa các test assertions đã lệch UI/fixture.
+- Frontend typecheck PASS; Jest 122/122 suites và 329/329 tests PASS; ESLint trên các file E2E/config thay đổi PASS; production build PASS khi gọi fixture qua loopback. E2E toàn bộ 197: 196 PASS, một test chỉ lỗi ghi PNG bằng chứng trên Windows (`UNKNOWN`); chạy riêng file đó sau đó PASS 5/5. Chưa có kết quả GitHub Actions cho commit sửa. Full `npm run lint` chưa xác minh xong vì local ESLint đi sâu vào các thư mục `.next-*` cũ, không thuộc repo sạch trên runner CI.
+- Backend `mvn clean verify` compile PASS nhưng integration tests chưa xác minh được local: Testcontainers báo không tìm thấy Docker environment hợp lệ (102 lỗi khởi tạo từ cùng nguyên nhân). Đây là blocked local check, chờ GitHub CI chạy trên runner có Docker. `git diff -- backend/src/main/resources/db/migration` trống; không kết nối Supabase.
+
 ## Hoàn thiện trình bày hồ sơ pitching Tutor Match (2026-10-24)
 - Hoàn thiện bản DOCX giới thiệu sản phẩm tại `deliverables/Tutor_Match_Thuyet_Minh_Du_An_UTE_SV_STARTUP_2026_Ban_Trinh_Bay.docx`; bản gốc đang được Word khóa nên không ghi đè để tránh ảnh hưởng nội dung chưa lưu. Bản hoàn thiện có 7 trang A4, Times New Roman 14 pt, nhận diện vàng/đen, minh họa có sẵn, BMC và bảng tài chính được dàn lại; không còn nhãn “Trang 1/2/3” hoặc trường số trang.
 - Cập nhật giả định chi phí vận hành cố định từ 6 xuống 2 triệu đồng/tháng và tính lại các quý: kết quả năm đầu +22,8 triệu đồng, hòa vốn khoảng 34 gói hoàn tất/tháng, thiếu hụt tiền mặt cao nhất 2,4 triệu đồng, vốn lưu động tham khảo 8,4 triệu đồng. Đây là dự phóng giả định, chưa tính lương nhà sáng lập và chưa có báo giá chi phí thực tế. Thông tin nhóm/MSSV do người dùng thêm được giữ lại.
