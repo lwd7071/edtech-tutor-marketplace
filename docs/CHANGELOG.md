@@ -1,5 +1,9 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-26 — Khôi phục CI và dọn nhánh GitHub
+- Sửa cấu hình backend CI, cô lập và giới hạn test Flyway lịch sử, sửa Compose smoke probe; Frontend CI fixture/E2E cũng được ổn định. GitHub CI Frontend main/dev và Backend main/dev đều PASS; backend main run `40274450357`, frontend main run `40274727494`, dev runs `40274887729`/`40274887807`.
+- Merge riêng PR #2 checkout v7, #3 upload-artifact v7, #4 setup-java v6, #6 setup-node v6. Xóa các branch Dependabot đã merge; GitHub còn `main`/`dev`, cùng SHA `1f5f47f0`, không PR mở. Migration diff trống; không kết nối Supabase.
+
 ## 2026-10-26 — Dùng container healthcheck cho smoke CI
 - Backend container đã healthy trong Compose; probe host `curl localhost:8080` fail vì service không publish cổng ra host. Smoke giờ chờ trạng thái `healthy`, vốn dùng `/actuator/health` bên trong container.
 - CI sau cập nhật đang chờ; migration diff trống, không kết nối Supabase.
