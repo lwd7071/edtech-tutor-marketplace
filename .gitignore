@@ -39,6 +39,7 @@ build/
 .env
 .env.cloud
 .env.local
+.env.tunnel
 .env.*.local
 
 # Spring config committed to the repository must contain placeholders only.
