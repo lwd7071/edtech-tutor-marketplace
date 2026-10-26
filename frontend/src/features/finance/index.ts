@@ -11,4 +11,6 @@ export * from './components/CreateRefundModal';
 export * from './components/CreateExtensionModal';
 export * from './components/StudentRequestsTable';
 export * from './pages/TeacherWalletPage';
+export * from './pages/TeacherBankAccountsPage';
+export * from './pages/TeacherPayoutsPage';
 export * from './pages/StudentRequestsPage';

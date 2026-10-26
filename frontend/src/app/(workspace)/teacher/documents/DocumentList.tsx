@@ -1,12 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Card, Button, Empty, Popconfirm, Typography, Tag } from 'antd';
+import { Button, Popconfirm } from 'antd';
 import { DeleteOutlined, FileOutlined } from '@ant-design/icons';
 import { TeacherDocument } from '@/shared/api/teacher';
 import { formatVietnamDate } from '@/shared/lib/vietnamTime';
-
-const { Text } = Typography;
 
 interface DocumentListProps {
   documents: TeacherDocument[];
@@ -17,37 +15,33 @@ export default function DocumentList({ documents, onDelete }: DocumentListProps)
   const getStatusTag = (status: string) => {
     switch (status) {
       case 'VERIFIED':
-        return <Tag color="success">Đã xác thực</Tag>;
+        return <span className="tm-teacher-documents__status tm-teacher-documents__status--verified">Đã xác thực</span>;
       case 'PENDING':
-        return <Tag color="warning">Đang chờ</Tag>;
+        return <span className="tm-teacher-documents__status tm-teacher-documents__status--pending">Đang chờ</span>;
       case 'REJECTED':
-        return <Tag color="error">Từ chối</Tag>;
+        return <span className="tm-teacher-documents__status tm-teacher-documents__status--rejected">Từ chối</span>;
       default:
-        return <Tag>{status}</Tag>;
+        return <span className="tm-teacher-documents__status">{status}</span>;
     }
   };
 
   return (
-    <Card title="Danh sách tài liệu đã tải lên">
-      {documents.length === 0 ? <Empty description="Chưa có tài liệu nào." /> : (
-        <div role="list">{documents.map((item) => (
-          <div key={item.id} role="listitem" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 0', borderBottom: '1px solid var(--color-border)' }}>
-            <FileOutlined style={{ fontSize: 24, color: 'var(--color-primary-500)' }} />
-            <div style={{ flex: 1 }}>
-              <Text strong>{item.name}</Text>
-              <div><Text type="secondary" style={{ marginRight: 8 }}>{formatVietnamDate(item.uploadedAt)}</Text>{getStatusTag(item.status)}</div>
-            </div>
-            <Popconfirm
-                key="delete"
-                title="Xóa tài liệu"
-                description="Bạn có chắc chắn muốn xóa tài liệu này không?"
-                onConfirm={() => onDelete(item.id)}
-                okText="Đồng ý"
-                cancelText="Hủy"
-            ><Button danger type="text" icon={<DeleteOutlined />}>Xóa</Button></Popconfirm>
+    documents.length === 0 ? <p className="tm-teacher-documents__empty">Chưa có tài liệu nào. Thêm giấy tờ ở phần tải lên bên dưới.</p> :
+      <ul className="tm-teacher-documents__items" aria-label="Tài liệu xác minh đã tải lên">
+        {documents.map((item) => <li key={item.id} className="tm-teacher-documents__item">
+          <FileOutlined className="tm-teacher-documents__file-icon" aria-hidden="true" />
+          <div className="tm-teacher-documents__file-info">
+            <strong className="tm-teacher-documents__file-name">{item.name}</strong>
+            <div className="tm-teacher-documents__file-meta"><time dateTime={item.uploadedAt}>{formatVietnamDate(item.uploadedAt)}</time>{getStatusTag(item.status)}</div>
           </div>
-        ))}</div>
-      )}
-    </Card>
+          <Popconfirm
+            title="Xóa tài liệu"
+            description="Bạn có chắc chắn muốn xóa tài liệu này không?"
+            onConfirm={() => onDelete(item.id)}
+            okText="Đồng ý"
+            cancelText="Hủy"
+          ><Button className="tm-teacher-documents__delete" danger type="text" icon={<DeleteOutlined />} aria-label={`Xóa ${item.name}`}>Xóa</Button></Popconfirm>
+        </li>)}
+      </ul>
   );
 }

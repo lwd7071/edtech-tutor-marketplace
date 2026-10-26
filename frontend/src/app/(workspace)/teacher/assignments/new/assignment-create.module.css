@@ -1,0 +1,302 @@
+.page {
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 4px 0 40px;
+  color: var(--color-text-primary, #171714);
+}
+
+.backLink {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  color: var(--color-text-secondary, #55544c);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.backLink:focus-visible,
+.emptyLink:focus-visible,
+.submit:focus-visible,
+.retry:focus-visible {
+  outline: 3px solid var(--color-ink, #171714);
+  outline-offset: 3px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 18px 0 26px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--color-border, #e5e2d8);
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--color-text-secondary, #55544c);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  margin: 0;
+  font-family: var(--font-heading, 'Be Vietnam Pro', sans-serif);
+  font-size: clamp(1.8rem, 3vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.15;
+}
+
+.intro,
+.sectionIntro p,
+.actions p,
+.empty > div > p {
+  margin: 9px 0 0;
+  color: var(--color-text-secondary, #55544c);
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.formSection,
+.empty {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.68fr) minmax(0, 1.5fr);
+  gap: 36px;
+  padding: 26px 0 28px;
+  border-bottom: 1px solid var(--color-border, #e5e2d8);
+}
+
+.formSection:first-child,
+.empty {
+  border-top: 2px solid var(--color-ink, #171714);
+}
+
+.sectionIntro {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.stepNumber {
+  flex: 0 0 auto;
+  color: var(--color-action-strong, #8a6700);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.8;
+}
+
+.sectionIntro h2,
+.empty h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.sectionIntro p {
+  margin-top: 6px;
+  font-size: 0.85rem;
+}
+
+.sectionFields {
+  min-width: 0;
+}
+
+.sectionFields :global(.ant-form-item) {
+  margin-bottom: 18px;
+}
+
+.sectionFields :global(.ant-form-item:last-child) {
+  margin-bottom: 0;
+}
+
+.sectionFields :global(.ant-form-item-label > label) {
+  color: var(--color-text-primary, #171714);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.sectionFields :global(.ant-input),
+.sectionFields :global(.ant-select-selector) {
+  min-height: 46px;
+  border-radius: 3px !important;
+}
+
+.sectionFields :global(.ant-select-selection-item),
+.sectionFields :global(.ant-select-selection-placeholder) {
+  line-height: 44px !important;
+  overflow-wrap: anywhere;
+}
+
+.sectionFields :global(textarea.ant-input) {
+  min-height: 150px;
+  padding-block: 12px;
+  line-height: 1.65;
+}
+
+.sectionFields :global(input[type='datetime-local'].ant-input) {
+  max-width: 100%;
+}
+
+.recipientField :global(.ant-form-item-label),
+.titleField :global(.ant-form-item-label),
+.instructionsField :global(.ant-form-item-label),
+.deadlineField :global(.ant-form-item-label),
+.statusField :global(.ant-form-item-label) {
+  padding-bottom: 8px;
+}
+
+.recipientSelect :global(.ant-select-selector),
+.statusSelect :global(.ant-select-selector) {
+  min-height: 46px !important;
+}
+
+.titleInput {
+  font-weight: 550;
+}
+
+.instructionsInput {
+  line-height: 1.65;
+}
+
+.deadlineInput {
+  font-variant-numeric: tabular-nums;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-left: 30%;
+  padding: 22px 0 8px;
+}
+
+.actions p {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.submit {
+  min-height: 46px;
+  padding-inline: 20px;
+  border: 1px solid var(--color-ink, #171714);
+  border-radius: 3px;
+  background: var(--color-action-primary, #ffd43b);
+  color: var(--color-ink, #171714);
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.submit:hover,
+.submit:active {
+  border-color: var(--color-ink, #171714) !important;
+  background: var(--color-action-hover, #f2c11d) !important;
+  color: var(--color-ink, #171714) !important;
+}
+
+.loading {
+  display: grid;
+  gap: 0;
+  border-top: 2px solid var(--color-ink, #171714);
+}
+
+.loadingSection {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.68fr) minmax(0, 1.5fr);
+  gap: 36px;
+  padding: 26px 0;
+  border-bottom: 1px solid var(--color-border, #e5e2d8);
+}
+
+.loadingSection > span {
+  width: 140px;
+  height: 20px;
+  border-radius: 2px;
+  background: var(--color-surface-sunken, #f0eee6);
+}
+
+.loadingSection > :global(.ant-skeleton) {
+  max-width: 620px;
+}
+
+.state {
+  max-width: 720px;
+  padding-top: 24px;
+}
+
+.error :global(.ant-alert) {
+  border-radius: 3px;
+}
+
+.retry {
+  min-height: 42px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.empty {
+  padding-top: 28px;
+}
+
+.emptyLink {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  margin-top: 18px;
+  color: var(--color-text-primary, #171714);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 1000px) {
+  .page {
+    padding-bottom: 104px;
+  }
+}
+
+@media (max-width: 700px) {
+  .header {
+    margin: 14px 0 16px;
+    padding-bottom: 18px;
+  }
+
+  .formSection,
+  .empty,
+  .loadingSection {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding: 22px 0;
+  }
+
+  .sectionIntro {
+    gap: 10px;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+    margin-left: 0;
+    padding: 20px 0 8px;
+  }
+
+  .submit {
+    width: 100%;
+  }
+}
+
+@media (max-width: 390px) {
+  .sectionIntro h2 {
+    font-size: 1rem;
+  }
+
+  .sectionFields :global(input[type='datetime-local'].ant-input) {
+    font-size: 0.84rem;
+  }
+}

@@ -1,12 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Typography, Spin, message, Alert } from 'antd';
+import { Button, message } from 'antd';
 import { TeacherDocument, teacherApi } from '@/shared/api/teacher';
 import DocumentUploadBox from './DocumentUploadBox';
 import DocumentList from './DocumentList';
-
-const { Title } = Typography;
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<TeacherDocument[]>([]);
@@ -17,6 +15,7 @@ export default function DocumentsPage() {
     try {
       const data = await teacherApi.getDocuments();
       setDocuments(data);
+      setError(null);
     } catch (err) {
       setError('Không thể tải tài liệu.');
     } finally {
@@ -43,24 +42,33 @@ export default function DocumentsPage() {
     }
   };
 
-  if (loading) {
-    return <div style={{ textAlign: 'center', padding: '40px' }}><Spin size="large" description="Đang tải tài liệu..." /></div>;
-  }
-
   return (
-    <div style={{ maxWidth: 880, margin: '0 auto' }}>
-      <Title level={2}>Xác minh danh tính</Title>
-      <Typography.Paragraph type="secondary">
-        Cập nhật giấy tờ tùy thân để admin xác minh hồ sơ. File này là riêng tư và không hiển thị trên hồ sơ công khai.
-      </Typography.Paragraph>
-      
-      {error && <Alert type="error" title={error} style={{ marginBottom: 24 }} />}
-      
-      <DocumentUploadBox onSuccess={handleUploadSuccess} />
-      
-      <div style={{ marginTop: 24 }}>
-        <DocumentList documents={documents} onDelete={handleDelete} />
-      </div>
-    </div>
+    <main className="tm-teacher-documents">
+      <header className="tm-teacher-documents__heading">
+        <h1>Xác minh danh tính</h1>
+        <p>Giấy tờ dùng để admin xác minh hồ sơ gia sư. Tệp này riêng tư và không hiển thị trên hồ sơ công khai.</p>
+      </header>
+
+      {error && <section className="tm-teacher-documents__error" role="alert" aria-labelledby="teacher-documents-error-title">
+        <div><h2 id="teacher-documents-error-title">{error}</h2><p>Danh sách chưa được cập nhật. Tệp đã tải lên vẫn được giữ nguyên.</p></div>
+        <Button onClick={async () => { setError(null); setLoading(true); await fetchDocuments(); }}>Thử tải lại</Button>
+      </section>}
+
+      <section className="tm-teacher-documents__list-section" aria-labelledby="teacher-documents-list-title">
+        <div className="tm-teacher-documents__section-heading">
+          <h2 id="teacher-documents-list-title">Tài liệu đã tải lên</h2>
+          {!loading && !error && <span>{documents.length} tài liệu</span>}
+        </div>
+        {loading ? <p className="tm-teacher-documents__loading" role="status">Đang tải tài liệu...</p> : error ? null : <DocumentList documents={documents} onDelete={handleDelete} />}
+      </section>
+
+      <section className="tm-teacher-documents__upload-section" aria-labelledby="teacher-documents-upload-title">
+        <div className="tm-teacher-documents__section-heading">
+          <h2 id="teacher-documents-upload-title">Thêm tài liệu xác minh</h2>
+          <p>Chỉ nhận PDF, PNG, JPG hoặc JPEG; tối đa 10 MB mỗi tệp. Chỉ admin được xem tệp này.</p>
+        </div>
+        <DocumentUploadBox onSuccess={handleUploadSuccess} />
+      </section>
+    </main>
   );
 }

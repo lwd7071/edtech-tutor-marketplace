@@ -1,0 +1,415 @@
+.page {
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  padding: 4px 0 40px;
+  color: var(--color-text-primary, #171714);
+}
+
+.backLink {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  color: var(--color-text-secondary, #55544c);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.backLink:focus-visible,
+.submissionLink:focus-visible,
+.saveButton:focus-visible,
+.primaryAction:focus-visible,
+.closeButton:focus-visible,
+.retry:focus-visible {
+  outline: 3px solid var(--color-ink, #171714);
+  outline-offset: 3px;
+}
+
+.header {
+  margin: 16px 0 22px;
+  padding: 10px 0 22px;
+  border-bottom: 1px solid var(--color-border, #e5e2d8);
+}
+
+.eyebrow {
+  margin: 0 0 7px;
+  color: var(--color-text-secondary, #55544c);
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.titleLine {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.titleLine h1 {
+  margin: 0;
+  font-family: var(--font-heading, 'Be Vietnam Pro', sans-serif);
+  font-size: clamp(1.75rem, 3vw, 2.3rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.status {
+  flex: 0 0 auto;
+  margin: 0;
+  border-radius: 2px;
+  font-weight: 650;
+}
+
+.context {
+  margin: 10px 0 0;
+  color: var(--color-text-secondary, #55544c);
+  line-height: 1.5;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  margin: 0;
+  padding: 0 0 24px;
+  border-bottom: 2px solid var(--color-ink, #171714);
+}
+
+.facts > div {
+  min-width: 0;
+}
+
+.facts dt,
+.submissionState > span,
+.score > span {
+  margin-bottom: 6px;
+  color: var(--color-text-secondary, #55544c);
+  font-size: 0.78rem;
+}
+
+.facts dd {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 650;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.section {
+  padding: 26px 0 30px;
+  border-bottom: 1px solid var(--color-border, #e5e2d8);
+}
+
+.sectionHeading,
+.submissionHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.sectionHeading h2,
+.submissionHeading h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.sectionHeading > p {
+  max-width: 360px;
+  margin: 0;
+  color: var(--color-text-secondary, #55544c);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  text-align: right;
+}
+
+.editForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 0.65fr);
+  gap: 0 20px;
+}
+
+.editForm :global(.ant-form-item-label > label) {
+  color: var(--color-text-primary, #171714);
+  font-weight: 650;
+}
+
+.editForm :global(.ant-input) {
+  min-height: 46px;
+  border-radius: 3px;
+}
+
+.editForm :global(textarea.ant-input) {
+  min-height: 150px;
+  padding-block: 12px;
+  line-height: 1.65;
+}
+
+.titleField,
+.instructionsField,
+.actions {
+  grid-column: 1 / -1;
+}
+
+.deadlineField :global(input[type='datetime-local']) {
+  max-width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.saveButton,
+.primaryAction,
+.closeButton,
+.retry {
+  min-height: 44px;
+  border-radius: 3px;
+  font-weight: 650;
+}
+
+.primaryAction {
+  border: 1px solid var(--color-ink, #171714);
+  background: var(--color-action-primary, #ffd43b);
+  color: var(--color-ink, #171714);
+  box-shadow: none;
+}
+
+.primaryAction:hover,
+.primaryAction:active {
+  border-color: var(--color-ink, #171714) !important;
+  background: var(--color-action-hover, #f2c11d) !important;
+  color: var(--color-ink, #171714) !important;
+}
+
+.prompt {
+  max-width: 780px;
+  color: var(--color-text-primary, #171714);
+  font-size: 1rem;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.prompt p {
+  margin: 0 0 14px;
+}
+
+.prompt p:last-child {
+  margin-bottom: 0;
+}
+
+.muted,
+.empty {
+  color: var(--color-text-secondary, #55544c);
+  line-height: 1.6;
+}
+
+.publishedAction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border, #e5e2d8);
+}
+
+.publishedAction p {
+  margin: 0;
+  color: var(--color-text-secondary, #55544c);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.closeButton {
+  flex: 0 0 auto;
+}
+
+.submissions {
+  padding-top: 26px;
+}
+
+.submissionHeading {
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.submissionHeading > span {
+  color: var(--color-text-secondary, #55544c);
+  font-size: 0.88rem;
+}
+
+.submissionList {
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--color-ink, #171714);
+  list-style: none;
+}
+
+.submissionList li {
+  padding: 0;
+  border-bottom: 1px solid var(--color-border, #e5e2d8);
+}
+
+.submissionRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(120px, 0.65fr) minmax(100px, 0.5fr) auto;
+  align-items: center;
+  gap: 20px;
+  min-height: 96px;
+  padding: 16px 0;
+}
+
+.submissionMain,
+.submissionState,
+.score {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.submissionMain h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.submissionMain p {
+  margin: 0;
+  color: var(--color-text-secondary, #55544c);
+  font-size: 0.83rem;
+}
+
+.submissionState > span,
+.score > span {
+  margin: 0;
+}
+
+.score strong {
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.submissionLink {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  color: var(--color-text-primary, #171714);
+  font-size: 0.87rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.empty {
+  margin: 0;
+  padding: 20px 0;
+  border-top: 2px solid var(--color-ink, #171714);
+  border-bottom: 1px solid var(--color-border, #e5e2d8);
+}
+
+.loadingHeading {
+  width: min(100%, 480px);
+  height: 44px;
+  margin: 26px 0;
+  border-radius: 2px;
+  background: var(--color-surface-sunken, #f0eee6);
+}
+
+.page > :global(.ant-skeleton) {
+  max-width: 850px;
+  margin-bottom: 28px;
+}
+
+.error {
+  max-width: 760px;
+  margin-top: 24px;
+}
+
+@media (max-width: 1000px) {
+  .page {
+    padding-bottom: 104px;
+  }
+
+  .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .submissionRow {
+    grid-template-columns: minmax(0, 1fr) minmax(120px, 0.65fr);
+    gap: 16px 20px;
+  }
+
+  .submissionLink {
+    grid-column: 1 / -1;
+    justify-self: start;
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .header {
+    margin-top: 14px;
+  }
+
+  .titleLine {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .facts {
+    gap: 16px 12px;
+  }
+
+  .sectionHeading,
+  .publishedAction {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sectionHeading > p {
+    text-align: left;
+  }
+
+  .editForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .saveButton,
+  .primaryAction,
+  .closeButton {
+    width: 100%;
+  }
+
+  .submissionRow {
+    grid-template-columns: minmax(0, 1fr) minmax(105px, auto);
+    gap: 14px 12px;
+  }
+
+  .submissionMain {
+    grid-column: 1 / -1;
+  }
+}

@@ -1,12 +1,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Typography, Spin, message, Alert, Card, Form, Input, Button, Table, Tag, Select } from 'antd';
+import { Alert, Button, Empty, Form, Input, message, Select, Spin, Table, Tag } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { TeacherSubjectProposal, teacherApi } from '@/shared/api/teacher';
+import styles from './subject-proposals.module.css';
 
-const { Title } = Typography;
 const EDUCATION_LABELS: Record<TeacherSubjectProposal['educationLevel'], string> = {
   ELEMENTARY: 'Tiểu học', MIDDLE_SCHOOL: 'THCS', HIGH_SCHOOL: 'THPT', UNIVERSITY: 'Đại học', OTHER: 'Khác',
+};
+
+const STATUS: Record<TeacherSubjectProposal['status'], { label: string; className: string }> = {
+  PENDING: { label: 'Đang chờ', className: styles.pending },
+  APPROVED: { label: 'Chấp thuận', className: styles.approved },
+  REJECTED: { label: 'Từ chối', className: styles.rejected },
 };
 
 export default function SubjectProposalsPage() {
@@ -47,100 +54,73 @@ export default function SubjectProposalsPage() {
     }
   };
 
-  const columns = [
-    {
-      title: 'Tên môn học',
-      dataIndex: 'proposedName',
-      key: 'proposedName',
-    },
-    {
-      title: 'Cấp học',
-      dataIndex: 'educationLevel',
-      key: 'educationLevel',
-      render: (level: TeacherSubjectProposal['educationLevel']) => EDUCATION_LABELS[level] || level,
-    },
-    {
-      title: 'Mô tả',
-      dataIndex: 'description',
-      key: 'description',
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => {
-        let color = 'default';
-        let text = status;
-        if (status === 'PENDING') { color = 'warning'; text = 'Đang chờ'; }
-        if (status === 'APPROVED') { color = 'success'; text = 'Chấp thuận'; }
-        if (status === 'REJECTED') { color = 'error'; text = 'Từ chối'; }
-        return <Tag color={color}>{text}</Tag>;
-      }
-    },
-    {
-      title: 'Phản hồi',
-      dataIndex: 'reviewNote',
-      key: 'reviewNote',
-      render: (note?: string) => note || '—',
-    },
+  const columns: ColumnsType<TeacherSubjectProposal> = [
+    { title: 'Tên môn học', dataIndex: 'proposedName', key: 'proposedName', render: (name: string) => <><span className={styles.mobileLabel}>Tên môn học</span><strong className={styles.proposedName}>{name}</strong></> },
+    { title: 'Cấp học', dataIndex: 'educationLevel', key: 'educationLevel', render: (level: TeacherSubjectProposal['educationLevel']) => <><span className={styles.mobileLabel}>Cấp học</span>{EDUCATION_LABELS[level] || level}</> },
+    { title: 'Mô tả', dataIndex: 'description', key: 'description', render: (description?: string) => <><span className={styles.mobileLabel}>Mô tả</span>{description || '—'}</> },
+    { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (status: TeacherSubjectProposal['status']) => <><span className={styles.mobileLabel}>Trạng thái</span><Tag className={`${styles.status} ${STATUS[status]?.className ?? ''}`}>{STATUS[status]?.label ?? status}</Tag></> },
+    { title: 'Phản hồi', dataIndex: 'reviewNote', key: 'reviewNote', render: (note?: string | null) => <><span className={styles.mobileLabel}>Phản hồi</span>{note || 'Chưa có phản hồi'}</> },
   ];
 
-  if (loading) {
-    return <div style={{ textAlign: 'center', padding: '40px' }}><Spin size="large" description="Đang tải danh sách đề xuất..." /></div>;
-  }
-
   return (
-    <div style={{ maxWidth: 880, margin: '0 auto' }}>
-      <Title level={2}>Đề xuất Môn học mới</Title>
-      
-      {error && <Alert type="error" title={error} action={<Button onClick={fetchProposals}>Thử lại</Button>} style={{ marginBottom: 24 }} />}
-      
-      <Card title="Gửi đề xuất mới" style={{ marginBottom: 24 }}>
-        <Form form={form} layout="vertical" onFinish={onFinish}>
-          <Form.Item
-            label="Tên môn học"
-            name="proposedName"
-            rules={[{ required: true, message: 'Vui lòng nhập tên môn học' }]}
-          >
-            <Input placeholder="Tên môn học" />
-          </Form.Item>
-          <Form.Item
-            label="Cấp học"
-            name="educationLevel"
-            rules={[{ required: true, message: 'Vui lòng chọn cấp học' }]}
-          >
-            <Select options={[
-              { value: 'ELEMENTARY', label: 'Tiểu học' },
-              { value: 'MIDDLE_SCHOOL', label: 'THCS' },
-              { value: 'HIGH_SCHOOL', label: 'THPT' },
-              { value: 'UNIVERSITY', label: 'Đại học' },
-              { value: 'OTHER', label: 'Khác' },
-            ]} />
-          </Form.Item>
-          
-          <Form.Item
-            label="Mô tả"
-            name="description"
-          >
-            <Input.TextArea rows={3} placeholder="Mô tả" />
-          </Form.Item>
+    <main className={styles.page}>
+      <header className={styles.header}>
+        <h1>Đề xuất môn học</h1>
+        <p>Gửi môn học chưa có trong danh mục và theo dõi kết quả xét duyệt tại đây.</p>
+      </header>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" loading={submitting}>
-              Gửi đề xuất
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
-      
-      <Card title="Lịch sử đề xuất">
-        <Table
-          dataSource={proposals}
-          columns={columns}
-          rowKey="id"
-          pagination={{ pageSize: 5 }}
-        />
-      </Card>
-    </div>
+      {error && <Alert className={styles.error} type="error" showIcon message={error} action={<Button onClick={fetchProposals}>Thử lại</Button>} />}
+
+      <div className={styles.workspace}>
+        <section className={styles.formSection} aria-labelledby="proposal-form-title">
+          <div className={styles.sectionHeading}>
+            <h2 id="proposal-form-title">Gửi đề xuất mới</h2>
+            <p>Thông tin sẽ được chuyển tới quản trị viên để xem xét.</p>
+          </div>
+          <Form form={form} layout="vertical" onFinish={onFinish} className={styles.form}>
+            <Form.Item label="Tên môn học" name="proposedName" rules={[{ required: true, message: 'Vui lòng nhập tên môn học' }]}>
+              <Input className={styles.field} placeholder="Tên môn học" />
+            </Form.Item>
+            <Form.Item label="Cấp học" name="educationLevel" rules={[{ required: true, message: 'Vui lòng chọn cấp học' }]}>
+              <Select className={styles.field} placeholder="Chọn cấp học" options={[
+                { value: 'ELEMENTARY', label: 'Tiểu học' },
+                { value: 'MIDDLE_SCHOOL', label: 'THCS' },
+                { value: 'HIGH_SCHOOL', label: 'THPT' },
+                { value: 'UNIVERSITY', label: 'Đại học' },
+                { value: 'OTHER', label: 'Khác' },
+              ]} />
+            </Form.Item>
+            <Form.Item label="Mô tả" name="description">
+              <Input.TextArea className={styles.field} rows={4} placeholder="Mô tả" />
+            </Form.Item>
+            <Button className={styles.submit} type="primary" htmlType="submit" loading={submitting}>Gửi đề xuất</Button>
+          </Form>
+        </section>
+
+        <section className={styles.history} aria-labelledby="proposal-history-title">
+          <div className={styles.sectionHeading}>
+            <h2 id="proposal-history-title">Lịch sử đề xuất</h2>
+            <p>{loading ? 'Đang tải các đề xuất đã gửi' : `${proposals.length} đề xuất`}</p>
+          </div>
+          {loading ? (
+            <div className={styles.loading} role="status"><Spin /><span>Đang tải danh sách đề xuất...</span></div>
+          ) : error ? (
+            <div className={styles.retryHint}>Danh sách chưa tải được. Hãy thử lại để xem các đề xuất đã gửi.</div>
+          ) : (
+            <div className={styles.tableRegion}>
+              <Table<TeacherSubjectProposal>
+                className={styles.table}
+                dataSource={proposals}
+                columns={columns}
+                rowKey="id"
+                pagination={{ pageSize: 5 }}
+                locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Bạn chưa gửi đề xuất môn học nào." /> }}
+                scroll={{ x: 560 }}
+              />
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
   );
 }

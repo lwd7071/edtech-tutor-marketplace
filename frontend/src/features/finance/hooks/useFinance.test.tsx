@@ -5,6 +5,7 @@ import {
   useTeacherWallet,
   useTeacherLedger,
   useTeacherBankAccounts,
+  useTeacherPayouts,
   useCreatePayout,
   useStudentRefunds,
   useStudentExtensions,
@@ -112,6 +113,22 @@ describe('useFinance hooks', () => {
     expect(financeApi.createPayoutRequest).toHaveBeenCalledWith(
       { bankAccountId: 'b-1', amountVnd: 500000, walletVersion: 1 }, expect.any(String)
     );
+  });
+
+  it('useCreatePayout refetches the active paginated payout list', async () => {
+    const payoutResponse = { success: true, data: [] };
+    (financeApi.getPayoutRequests as jest.Mock).mockResolvedValue(payoutResponse);
+    (financeApi.createPayoutRequest as jest.Mock).mockResolvedValue({ success: true, data: { id: 'payout-1' } });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => ({ payouts: useTeacherPayouts(undefined, 0, 20), create: useCreatePayout() }), { wrapper: Wrapper });
+
+    await waitFor(() => expect(result.current.payouts.isSuccess).toBe(true));
+    expect(financeApi.getPayoutRequests).toHaveBeenCalledTimes(1);
+    await act(async () => { await result.current.create.mutateAsync({ bankAccountId: 'b-1', amountVnd: 500000, walletVersion: 1 }); });
+    await waitFor(() => expect(financeApi.getPayoutRequests).toHaveBeenCalledTimes(2));
   });
 
   it('reuses the payout key when the same form is retried after timeout', async () => {

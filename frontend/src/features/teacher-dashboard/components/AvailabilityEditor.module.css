@@ -1,0 +1,51 @@
+.page { display: grid; gap: 24px; width: 100%; min-width: 0; padding-bottom: 24px; color: var(--color-text-primary); }
+.header { padding-bottom: 18px; border-bottom: 1px solid var(--color-border-strong); }
+.header h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.2; }
+.header p { margin: 0; color: var(--color-text-secondary); line-height: 1.6; }
+.timezone { margin-top: 8px !important; font-size: 13px; }
+.notice, .loadError { max-width: 860px; }
+.schedule { min-width: 0; }
+.scheduleHeading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 16px; }
+.scheduleHeading h2 { margin: 0 0 5px; font-size: 20px; line-height: 1.4; }
+.scheduleHeading p { margin: 0; color: var(--color-text-secondary); font-size: 13px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; color: var(--color-text-secondary); font-size: 13px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { width: 14px; height: 14px; border: 1px solid var(--color-border-strong); }
+.legendSelected { background: var(--color-brand-yellow); }
+.legendUnselected { background: var(--color-surface); }
+.empty { margin: 0 0 14px; color: var(--color-text-secondary); font-size: 14px; }
+.tableScroll { width: 100%; overflow-x: auto; border-top: 1px solid var(--color-border-strong); border-bottom: 1px solid var(--color-border-strong); }
+.weekTable { width: 100%; min-width: 720px; table-layout: fixed; border-collapse: collapse; }
+.weekTable th { height: 46px; padding: 8px; background: var(--color-surface-sunken); font-size: 13px; font-weight: 650; text-align: center; }
+.weekTable th:first-child { width: 74px; }
+.weekTable tbody th { border-top: 1px solid var(--color-border); font-variant-numeric: tabular-nums; }
+.weekTable td { padding: 3px; border-top: 1px solid var(--color-border); border-left: 1px solid var(--color-border); }
+.timeSlot { width: 100%; min-width: 0; min-height: 38px; padding: 5px 3px; border: 1px solid var(--color-border); border-radius: 3px; background: var(--color-surface); color: var(--color-text-secondary); cursor: pointer; font: inherit; font-size: 11px; font-variant-numeric: tabular-nums; transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease; }
+.timeSlot:hover:not(:disabled) { border-color: var(--color-ink); color: var(--color-text-primary); }
+.timeSlot.selected { border-color: var(--color-ink); background: var(--color-brand-yellow); color: var(--color-ink); font-weight: 650; }
+.timeSlot:disabled { cursor: not-allowed; opacity: .6; }
+.timeSlot:focus-visible, .saveButton:focus-visible { outline: 3px solid var(--color-primary-600); outline-offset: 2px; }
+.dayList { display: none; }
+.footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-top: 16px; border-top: 1px solid var(--color-border-strong); color: var(--color-text-secondary); font-size: 13px; }
+.saveButton { min-width: 190px; min-height: 46px; border: 1px solid var(--color-ink); border-radius: 4px; background: var(--color-brand-yellow); color: var(--color-ink); font-weight: 700; }
+.saveButton:hover:not(:disabled) { background: var(--color-primary-hover) !important; color: var(--color-ink) !important; }
+.loading { display: grid; gap: 14px; color: var(--color-text-secondary); }
+.visuallyHidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+@media (max-width: 900px) {
+  .weekTable { min-width: 720px; }
+  .scheduleHeading { align-items: start; flex-direction: column; gap: 12px; }
+}
+
+@media (max-width: 767px) {
+  .page { gap: 20px; padding-bottom: 120px; }
+  .header h1 { font-size: 27px; }
+  .tableScroll { display: none; }
+  .dayList { display: block; }
+  .daySection { padding: 16px 0 18px; border-top: 1px solid var(--color-border-strong); }
+  .daySection h3 { margin: 0 0 12px; font-size: 16px; }
+  .mobileSlots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .mobileSlots .timeSlot { min-height: 42px; font-size: 13px; }
+  .footer { align-items: stretch; flex-direction: column; gap: 12px; }
+  .saveButton { width: 100%; }
+}

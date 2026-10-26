@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { FilePdfOutlined, UploadOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
 import { teacherApi, type TeacherCredential } from '@/shared/api/teacher';
 import styles from './credentials.module.css';
 
@@ -78,30 +79,38 @@ export default function TeacherCredentialsPage() {
   };
 
   return <main className={styles.page}>
-    <header className={styles.header}><p className={styles.eyebrow}>Hồ sơ gia sư</p><h1>Minh chứng năng lực</h1><p>Gửi bằng cấp, chứng chỉ hoặc thành tích chuyên môn. Chỉ tên mục được duyệt mới hiển thị trên hồ sơ công khai; file minh chứng chỉ bạn và admin được xem.</p></header>
-    {notice && <p className={styles.notice} role="status">{notice}</p>}
-    {error && <p className={styles.error} role="alert">{error}</p>}
-    <form onSubmit={submit} className={styles.form}>
-      <div className={styles.formHeading}><h2>{editing ? 'Cập nhật minh chứng' : 'Thêm minh chứng'}</h2><span>{items.length}/{MAX_ITEMS} mục</span></div>
-      {editing?.status === 'APPROVED' && <p className={styles.warning}>Khi cập nhật, mục này sẽ tạm ẩn khỏi hồ sơ công khai cho đến khi được duyệt lại.</p>}
-      <div className={styles.field}><label htmlFor="credential-label">Tên chứng chỉ hoặc bằng cấp</label><input id="credential-label" value={label} onChange={event => setLabel(event.target.value)} placeholder="VD: Chứng chỉ TOEIC 850" maxLength={120} autoComplete="off" /></div>
-      <div className={styles.field}><label htmlFor="credential-proof">Ảnh/PDF minh chứng {editing && <span>(để trống nếu giữ file hiện tại)</span>}</label>
-        <div className={`${styles.dropzone} ${dragging ? styles.dragging : ''}`} onDragOver={event => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={event => { event.preventDefault(); setDragging(false); selectFile(event.dataTransfer.files[0]); }}>
-          <input ref={inputRef} id="credential-proof" type="file" accept=".jpg,.jpeg,.png,.pdf" className={styles.fileInput} onChange={event => selectFile(event.target.files?.[0])} />
-          {proof ? <div className={styles.selected}>{preview ? <img src={preview} alt="Xem trước file đã chọn" /> : <FilePdfOutlined aria-hidden="true" />}<div><strong>{proof.name}</strong><small>{(proof.size / 1024 / 1024).toFixed(2)} MB</small></div><button type="button" onClick={clearFile}>Bỏ file</button></div> : <label htmlFor="credential-proof" className={styles.dropLabel}><UploadOutlined aria-hidden="true" /><strong>Kéo thả file hoặc bấm để chọn</strong><small>PNG, JPG, PDF · tối đa 5MB</small></label>}
-        </div>
-      </div>
-      <button className={styles.submit} disabled={busy || !label.trim() || (!editing && !proof) || (!editing && items.length >= MAX_ITEMS)}>{busy ? 'Đang gửi…' : editing ? 'Cập nhật và gửi lại' : items.length >= MAX_ITEMS ? 'Đã đạt tối đa 10 mục' : 'Gửi duyệt'}</button>
-      {editing && <button type="button" className={styles.cancel} onClick={reset} disabled={busy}>Hủy chỉnh sửa</button>}
-    </form>
-    <section className={styles.list} aria-label="Minh chứng đã gửi"><div className={styles.listHeading}><h2>Minh chứng đã gửi</h2><span>{items.length} mục</span></div>
-      {loading ? <p>Đang tải minh chứng…</p> : items.length === 0 ? <p className={styles.empty}>Chưa có minh chứng nào. Thêm chứng chỉ hoặc bằng cấp đầu tiên ở biểu mẫu phía trên.</p> : items.map(item => <article className={styles.item} key={item.id}>
-        <div className={styles.itemHead}><strong>{item.label}</strong><span className={`${styles.badge} ${styles[item.status.toLowerCase()]}`}>{statusLabel[item.status]}</span></div>
-        {item.status === 'APPROVED' && <p>Đang hiển thị trên hồ sơ công khai.</p>}
-        {item.status === 'REJECTED' && <p className={styles.rejectReason}>Lý do từ chối: {item.rejectedReason || 'Cần cập nhật minh chứng.'}</p>}
-        <div className={styles.actions}><button type="button" onClick={() => void viewProof(item)}>Xem file</button><button type="button" onClick={() => beginEdit(item)}>{item.status === 'REJECTED' ? 'Cập nhật và gửi lại' : 'Chỉnh sửa'}</button><button type="button" className={styles.delete} disabled={busy} onClick={() => void remove(item)}>Xóa</button></div>
-      </article>)}
-    </section>
-    {proofView && <div className={styles.viewerBackdrop} role="presentation" onClick={() => setProofView(null)}><section className={styles.viewer} role="dialog" aria-modal="true" aria-label="Xem file minh chứng" onClick={event => event.stopPropagation()}><div><strong>File minh chứng</strong><button type="button" onClick={() => setProofView(null)}>Đóng</button></div><iframe src={proofView} title="File minh chứng" /></section></div>}
+    <header className={styles.header}>
+      <h1>Minh chứng năng lực</h1>
+      <p>Gửi bằng cấp, chứng chỉ hoặc thành tích chuyên môn. Chỉ tên mục được duyệt hiển thị trên hồ sơ công khai; file minh chứng chỉ bạn và admin được xem.</p>
+    </header>
+    {(notice || error) && <div className={styles.feedback}>
+      {notice && <p className={styles.notice} role="status">{notice}</p>}
+      {error && <div className={styles.error} role="alert"><span>{error}</span>{error.startsWith('Không tải được') && <Button type="default" onClick={() => void load()}>Thử tải lại</Button>}</div>}
+    </div>}
+    <div className={styles.workspace}>
+      <section className={styles.list} aria-labelledby="credential-list-title" aria-busy={loading}>
+        <div className={styles.listHeading}><div><h2 id="credential-list-title">Minh chứng đã gửi</h2><p>Trạng thái xét duyệt và nội dung đang hiển thị trên hồ sơ.</p></div><span className={styles.count}>{items.length}<small> / {MAX_ITEMS}</small></span></div>
+        {loading ? <div className={styles.state} role="status">Đang tải minh chứng…</div> : items.length === 0
+          ? <section className={styles.empty} aria-label="Chưa có minh chứng"><h3>Chưa có minh chứng nào</h3><p>Thêm chứng chỉ hoặc bằng cấp để bắt đầu xác minh năng lực.</p></section>
+          : <ul className={styles.rows}>{items.map(item => <li className={styles.item} key={item.id}>
+            <header className={styles.itemHead}><div className={styles.itemTitle}><strong>{item.label}</strong>{item.status === 'APPROVED' && <p>Đang hiển thị trên hồ sơ công khai.</p>}{item.status === 'REJECTED' && <p className={styles.rejectReason}>Lý do từ chối: {item.rejectedReason || 'Cần cập nhật minh chứng.'}</p>}</div><output className={`${styles.badge} ${styles[item.status.toLowerCase()]}`}>{statusLabel[item.status]}</output></header>
+            <footer className={styles.actions}><Button type="default" onClick={() => void viewProof(item)}>Xem file</Button><Button type="default" onClick={() => beginEdit(item)}>{item.status === 'REJECTED' ? 'Cập nhật và gửi lại' : 'Chỉnh sửa'}</Button><Button type="default" className={styles.delete} disabled={busy} onClick={() => void remove(item)}>Xóa</Button></footer>
+          </li>)}</ul>}
+      </section>
+      <form onSubmit={submit} className={styles.form} aria-labelledby="credential-form-title">
+        <header className={styles.formHeading}><h2 id="credential-form-title">{editing ? 'Cập nhật minh chứng' : 'Thêm minh chứng'}</h2><p>Nhận JPG, PNG hoặc PDF, tối đa 5MB.</p></header>
+        {editing?.status === 'APPROVED' && <aside className={styles.warning}>Khi cập nhật, mục này sẽ tạm ẩn khỏi hồ sơ công khai cho đến khi được duyệt lại.</aside>}
+        <fieldset className={styles.field}><legend>Tên chứng chỉ hoặc bằng cấp</legend><input id="credential-label" aria-label="Tên chứng chỉ hoặc bằng cấp" value={label} onChange={event => setLabel(event.target.value)} placeholder="VD: Chứng chỉ TOEIC 850" maxLength={120} autoComplete="off" /></fieldset>
+        <fieldset className={styles.field}><legend>Ảnh/PDF minh chứng {editing && <span>(để trống nếu giữ file hiện tại)</span>}</legend>
+          <section aria-label="Chọn file minh chứng" className={`${styles.dropzone} ${dragging ? styles.dragging : ''}`} onDragOver={event => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={event => { event.preventDefault(); setDragging(false); selectFile(event.dataTransfer.files[0]); }}>
+            <input ref={inputRef} id="credential-proof" type="file" aria-label="Ảnh/PDF minh chứng" accept=".jpg,.jpeg,.png,.pdf" className={styles.fileInput} onChange={event => selectFile(event.target.files?.[0])} />
+            {proof ? <figure className={styles.selected}>{preview ? <img src={preview} alt="Xem trước file đã chọn" /> : <FilePdfOutlined aria-hidden="true" />}<figcaption><strong>{proof.name}</strong><small>{(proof.size / 1024 / 1024).toFixed(2)} MB</small></figcaption><Button type="default" onClick={clearFile}>Bỏ file</Button></figure> : <div className={styles.dropLabel}><UploadOutlined aria-hidden="true" /><strong>Kéo thả file hoặc bấm để chọn</strong><small>JPG, PNG, PDF · tối đa 5MB</small><Button type="default" htmlType="button" onClick={() => inputRef.current?.click()}>Chọn file</Button><span className={styles.visuallyHidden} id="credential-proof-label">Ảnh/PDF minh chứng</span></div>}
+          </section>
+        </fieldset>
+        <Button htmlType="submit" type="primary" className={styles.submit} disabled={busy || !label.trim() || (!editing && !proof) || (!editing && items.length >= MAX_ITEMS)}>{busy ? 'Đang gửi…' : editing ? 'Cập nhật và gửi lại' : items.length >= MAX_ITEMS ? 'Đã đạt tối đa 10 mục' : 'Gửi duyệt'}</Button>
+        {editing && <Button type="text" className={styles.cancel} onClick={reset} disabled={busy}>Hủy chỉnh sửa</Button>}
+      </form>
+    </div>
+    {proofView && <div className={styles.viewerBackdrop} role="presentation" onClick={() => setProofView(null)}><section className={styles.viewer} role="dialog" aria-modal="true" aria-label="Xem file minh chứng" onClick={event => event.stopPropagation()}><header><strong>File minh chứng</strong><Button type="default" onClick={() => setProofView(null)}>Đóng</Button></header><iframe src={proofView} title="File minh chứng" /></section></div>}
   </main>;
 }

@@ -1,13 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Upload, message, Typography } from 'antd';
-import { InboxOutlined } from '@ant-design/icons';
+import { Upload, message, Button } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import { TeacherDocument, teacherApi } from '@/shared/api/teacher';
-
-const { Dragger } = Upload;
-const { Text } = Typography;
 
 interface DocumentUploadBoxProps {
   onSuccess: (newDoc: TeacherDocument) => void;
@@ -17,6 +14,7 @@ export default function DocumentUploadBox({ onSuccess }: DocumentUploadBoxProps)
   const props: UploadProps = {
     name: 'file',
     multiple: true,
+    accept: '.pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg',
     customRequest: async (options) => {
       const { file, onSuccess: onUploadSuccess, onError } = options;
       try {
@@ -41,15 +39,10 @@ export default function DocumentUploadBox({ onSuccess }: DocumentUploadBoxProps)
     },
   };
 
-  return (
-    <Dragger {...props} style={{ padding: 24 }}>
-      <p className="ant-upload-drag-icon">
-        <InboxOutlined />
-      </p>
-      <p className="ant-upload-text">Kéo thả hoặc nhấp để tải giấy tờ tùy thân lên</p>
-      <p className="ant-upload-hint">
-        Chỉ nhận PDF, PNG, JPG, JPEG. File chỉ admin được xem.
-      </p>
-    </Dragger>
-  );
+  return <Upload className="tm-teacher-documents__upload" {...props}>
+    <div className="tm-teacher-documents__upload-control">
+      <Button icon={<UploadOutlined aria-hidden="true" />}>Chọn giấy tờ</Button>
+      <span>Kéo thả tệp vào đây hoặc chọn từ thiết bị.</span>
+    </div>
+  </Upload>;
 }

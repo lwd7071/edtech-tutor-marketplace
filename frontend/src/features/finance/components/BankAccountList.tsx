@@ -1,47 +1,45 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, Row, Col, Typography, Button, Tag, Space, Popconfirm, Empty } from 'antd';
-import {
-  BankOutlined,
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  CheckCircleOutlined,
-} from '@ant-design/icons';
-import { BankAccountView, UpsertBankAccountRequest } from '../types';
+import { useState } from 'react';
+import { Alert, Button, Empty, Popconfirm, Skeleton, Tag, Typography } from 'antd';
+import type { BankAccountView, UpsertBankAccountRequest } from '../types';
 import { BankAccountModal } from './BankAccountModal';
+import styles from './BankAccountList.module.css';
 
 interface BankAccountListProps {
   accounts?: BankAccountView[];
   loading?: boolean;
+  error?: boolean;
+  onRetry?: () => void;
   onCreateAccount: (data: UpsertBankAccountRequest) => Promise<void> | void;
   onUpdateAccount: (id: string, data: UpsertBankAccountRequest) => Promise<void> | void;
   onDeleteAccount: (id: string, version: number) => Promise<void> | void;
 }
 
-export const BankAccountList: React.FC<BankAccountListProps> = ({
+export const BankAccountList = ({
   accounts = [],
   loading = false,
+  error = false,
+  onRetry,
   onCreateAccount,
   onUpdateAccount,
   onDeleteAccount,
-}) => {
+}: BankAccountListProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<BankAccountView | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const handleOpenCreate = () => {
+  const openCreate = () => {
     setEditingAccount(null);
     setModalOpen(true);
   };
 
-  const handleOpenEdit = (account: BankAccountView) => {
+  const openEdit = (account: BankAccountView) => {
     setEditingAccount(account);
     setModalOpen(true);
   };
 
-  const handleSubmit = async (values: UpsertBankAccountRequest) => {
+  const submit = async (values: UpsertBankAccountRequest) => {
     setActionLoading(true);
     try {
       if (editingAccount) {
@@ -56,108 +54,63 @@ export const BankAccountList: React.FC<BankAccountListProps> = ({
   };
 
   return (
-    <div style={{ marginBottom: 24 }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 16,
-        }}
-      >
+    <section className={styles.section} aria-labelledby="bank-account-heading">
+      <header className={styles.heading}>
         <div>
-          <Typography.Title level={4} style={{ margin: 0 }}>
-            Tài khoản ngân hàng
-          </Typography.Title>
-          <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-            Tài khoản dùng để nhận tiền khi thực hiện rút tiền từ ví gia sư
-          </Typography.Text>
+          <h2 id="bank-account-heading">Tài khoản nhận tiền</h2>
+          <p>Chỉ hiển thị số tài khoản đã được che.</p>
         </div>
+        {!error && accounts.length > 0 && <Button type="primary" onClick={openCreate}>Thêm tài khoản</Button>}
+      </header>
 
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreate}>
-          Thêm tài khoản
-        </Button>
-      </div>
-
-      {accounts.length === 0 && !loading ? (
-        <Card style={{ textAlign: 'center', padding: '32px 0' }}>
-          <Empty
-            description="Bạn chưa liên kết tài khoản ngân hàng nào"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          >
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreate}>
-              Thêm tài khoản ngay
-            </Button>
-          </Empty>
-        </Card>
-      ) : (
-        <Row gutter={[16, 16]}>
-          {accounts.map((acc) => (
-            <Col xs={24} sm={12} md={8} key={acc.id}>
-              <Card
-                style={{
-                  borderRadius: 'var(--radius-lg, 12px)',
-                  border: acc.isDefault
-                    ? '1px solid var(--color-primary-500)'
-                    : '1px solid var(--color-border)',
-                  boxShadow: acc.isDefault ? 'var(--shadow-sm)' : undefined,
-                }}
-                actions={[
-                  <Button
-                    type="link"
-                    key="edit"
-                    icon={<EditOutlined />}
-                    onClick={() => handleOpenEdit(acc)}
-                  >
-                    Sửa
-                  </Button>,
-                  <Popconfirm
-                    key="delete"
-                    title="Xác nhận xóa tài khoản này?"
-                    okText="Xóa"
-                    cancelText="Hủy"
-                    okButtonProps={{ danger: true }}
-                    onConfirm={() => onDeleteAccount(acc.id, acc.version)}
-                  >
-                    <Button type="link" danger icon={<DeleteOutlined />}>
-                      Xóa
-                    </Button>
-                  </Popconfirm>,
-                ]}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography.Text strong style={{ fontSize: 15 }}>
-                      <BankOutlined style={{ marginRight: 8, color: 'var(--color-primary-600)' }} />
-                      {acc.bankName}
-                    </Typography.Text>
-                    {acc.isDefault && (
-                      <Tag color="success" icon={<CheckCircleOutlined />}>
-                        Mặc định
-                      </Tag>
-                    )}
-                  </div>
-
-                  <Typography.Text
-                    copyable={{ text: acc.accountNumberMasked }}
-                    style={{
-                      fontSize: 16,
-                      fontFamily: 'var(--font-mono)',
-                      letterSpacing: '0.05em',
-                      color: 'var(--color-text-primary)',
-                    }}
-                  >
-                    {acc.accountNumberMasked}
-                  </Typography.Text>
-
-                  <Typography.Text type="secondary" style={{ fontSize: 13, textTransform: 'uppercase' }}>
-                    {acc.accountHolderName}
-                  </Typography.Text>
-                </div>
-              </Card>
-            </Col>
+      {error && (
+        <Alert
+          type="error"
+          showIcon
+          title="Chưa tải được tài khoản ngân hàng"
+          action={<Button onClick={onRetry}>Thử lại tài khoản</Button>}
+        />
+      )}
+      {loading ? (
+        <div className={styles.loading} role="status" aria-label="Đang tải tài khoản ngân hàng">
+          {[0, 1].map(row => <Skeleton.Input active block key={row} />)}
+        </div>
+      ) : !error && accounts.length === 0 ? (
+        <div className={styles.empty}>
+          <Empty description="Bạn chưa liên kết tài khoản ngân hàng nào" />
+          <Button type="primary" onClick={openCreate}>Thêm tài khoản</Button>
+        </div>
+      ) : !error && (
+        <div className={styles.list} role="list" aria-label="Tài khoản ngân hàng đã liên kết">
+          {accounts.map(account => (
+            <article className={styles.account} key={account.id} role="listitem">
+              <div className={styles.identity}>
+                <strong>{account.bankName}</strong>
+                {account.isDefault && <Tag className={styles.defaultTag}>Mặc định</Tag>}
+                <Typography.Text className={styles.maskedNumber} copyable={{ text: account.accountNumberMasked }}>
+                  {account.accountNumberMasked}
+                </Typography.Text>
+                <span className={styles.holder}>{account.accountHolderName}</span>
+              </div>
+              <div className={styles.actions}>
+                <Button type="link" onClick={() => openEdit(account)} aria-label={`Sửa tài khoản ${account.bankName}`}>
+                  Sửa
+                </Button>
+                <Popconfirm
+                  title="Xác nhận xóa tài khoản này?"
+                  okText="Xóa"
+                  cancelText="Hủy"
+                  okButtonProps={{ danger: true }}
+                  onConfirm={() => onDeleteAccount(account.id, account.version)}
+                >
+                  <Button type="link" danger aria-label={`Xóa tài khoản ${account.bankName}`}>
+                    Xóa
+                  </Button>
+                </Popconfirm>
+              </div>
+            </article>
           ))}
-        </Row>
+        </div>
       )}
 
       <BankAccountModal
@@ -165,8 +118,8 @@ export const BankAccountList: React.FC<BankAccountListProps> = ({
         initialData={editingAccount}
         loading={actionLoading}
         onCancel={() => setModalOpen(false)}
-        onSubmit={handleSubmit}
+        onSubmit={submit}
       />
-    </div>
+    </section>
   );
 };

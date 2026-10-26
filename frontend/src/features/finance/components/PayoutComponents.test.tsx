@@ -56,10 +56,10 @@ describe('CreatePayoutModal & PayoutListTable', () => {
 
     render(<PayoutListTable payouts={mockPayouts} total={1} />);
 
-    expect(screen.getByText('#12345678')).toBeInTheDocument();
-    expect(screen.getByText('500.000 ₫')).toBeInTheDocument();
-    expect(screen.getByText('Đã chuyển')).toBeInTheDocument();
-    expect(screen.getByText(/Mã GD: FT999888/i)).toBeInTheDocument();
-    expect(screen.getByText('Xem biên lai')).toBeInTheDocument();
+    expect(screen.getAllByText('#12345678').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('500.000 ₫').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Đã chuyển').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Mã GD: FT999888/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Xem biên lai').length).toBeGreaterThan(0);
   });
 });

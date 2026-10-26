@@ -77,6 +77,10 @@ export interface SubmissionListItem {
 }
 
 export interface TeacherAssignmentDetail extends AssignmentDetail {
+  studentName: string;
+  subjectName: string;
+  submittedCount: number;
+  totalStudents: number;
   submissions: SubmissionDetail[];
 }
 

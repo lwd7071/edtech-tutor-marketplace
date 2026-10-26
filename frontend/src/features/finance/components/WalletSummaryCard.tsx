@@ -1,208 +1,80 @@
 'use client';
 
-import React from 'react';
-import { Card, Row, Col, Typography, Button, Space, Tooltip } from 'antd';
-import {
-  WalletOutlined,
-  ClockCircleOutlined,
-  LockOutlined,
-  ArrowUpOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
-import { WalletView } from '../types';
+import { Alert, Button, Skeleton } from 'antd';
+import type { WalletView } from '../types';
+import styles from './WalletSummaryCard.module.css';
 
 interface WalletSummaryCardProps {
   wallet?: WalletView | null;
   loading?: boolean;
+  error?: boolean;
+  onRetry?: () => void;
   onRequestPayout?: () => void;
 }
 
-export const WalletSummaryCard: React.FC<WalletSummaryCardProps> = ({
+const formatVnd = (value: number) => `${value.toLocaleString('vi-VN')} ₫`;
+
+export const WalletSummaryCard = ({
   wallet,
   loading = false,
+  error = false,
+  onRetry,
   onRequestPayout,
-}) => {
-  const available = wallet?.availableBalanceVnd ?? 0;
-  const pending = wallet?.pendingBalanceVnd ?? 0;
-  const reserved = wallet?.reservedBalanceVnd ?? 0;
-  const held = wallet?.heldBalanceVnd ?? 0;
+}: WalletSummaryCardProps) => (
+  <section className={styles.section} aria-labelledby="wallet-summary-heading">
+    <header className={styles.heading}>
+      <div>
+        <h2 id="wallet-summary-heading">Số dư ví</h2>
+        <p>Tiền đang giữ là khoản escrow và chưa thể rút.</p>
+      </div>
+    </header>
 
-  const canPayout = available > 0;
+    {error && (
+      <Alert
+        className={styles.error}
+        type="error"
+        showIcon
+        title="Chưa tải được số dư ví"
+        action={<Button onClick={onRetry}>Thử tải số dư</Button>}
+      />
+    )}
 
-  return (
-    <div style={{ marginBottom: 24 }}>
-      <Row gutter={[16, 16]}>
-        {/* Bucket 1: Số dư khả dụng (Primary) */}
-        <Col xs={24} sm={24} md={8}>
-          <Card
-            loading={loading}
-            style={{
-              borderRadius: 'var(--radius-lg, 12px)',
-              border: '1px solid var(--color-primary-100)',
-              background: 'var(--color-surface)',
-              boxShadow: 'var(--shadow-sm)',
-            }}
+    {loading && (
+      <div className={styles.loading} role="status" aria-label="Đang tải số dư ví">
+        {[0, 1, 2, 3].map(row => <Skeleton.Input active size="small" key={row} />)}
+      </div>
+    )}
+
+    {!loading && !error && wallet && (
+      <dl className={styles.balances}>
+        <div className={`${styles.balance} ${styles.available}`}>
+          <dt>Số dư khả dụng</dt>
+          <dd>{formatVnd(wallet.availableBalanceVnd)}</dd>
+          <p>Có thể yêu cầu rút về tài khoản ngân hàng.</p>
+          <Button
+            type="primary"
+            disabled={wallet.availableBalanceVnd <= 0}
+            onClick={onRequestPayout}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography.Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
-                  <WalletOutlined style={{ marginRight: 6, color: 'var(--color-primary-600)' }} />
-                  Số dư khả dụng
-                </Typography.Text>
-                <Tooltip title="Số tiền có thể rút về tài khoản ngân hàng ngay bây giờ.">
-                  <InfoCircleOutlined style={{ color: 'var(--color-text-tertiary)' }} />
-                </Tooltip>
-              </div>
-
-              <div>
-                <span
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 700,
-                    fontVariantNumeric: 'tabular-nums',
-                    color: 'var(--color-primary-600)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {available.toLocaleString('vi-VN')}
-                </span>
-                <span
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 500,
-                    color: 'var(--color-text-secondary)',
-                    marginLeft: 4,
-                  }}
-                >
-                  ₫
-                </span>
-              </div>
-
-              <Button
-                type="primary"
-                icon={<ArrowUpOutlined />}
-                disabled={!canPayout}
-                onClick={onRequestPayout}
-                style={{ width: '100%', marginTop: 4, fontWeight: 600 }}
-              >
-                Yêu cầu rút tiền
-              </Button>
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} md={8}>
-          <Card loading={loading} style={{ borderRadius: 'var(--radius-lg, 12px)', border: '1px solid #fed7aa' }}>
-            <Typography.Text type="secondary"><LockOutlined style={{ marginRight: 6, color: '#c2410c' }} />Tiền buổi học đang giữ</Typography.Text>
-            <div style={{ fontSize: 24, fontWeight: 600, marginTop: 12 }}>{held.toLocaleString('vi-VN')} ₫</div>
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>Chưa thể rút cho đến khi quyết toán</Typography.Text>
-          </Card>
-        </Col>
-
-        {/* Bucket 2: Số dư chờ quyết toán (Pending) */}
-        <Col xs={24} sm={12} md={8}>
-          <Card
-            loading={loading}
-            style={{
-              borderRadius: 'var(--radius-lg, 12px)',
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-surface)',
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography.Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
-                  <ClockCircleOutlined style={{ marginRight: 6, color: 'var(--color-warning-600)' }} />
-                  Chờ quyết toán
-                </Typography.Text>
-                <Tooltip title="Doanh thu từ các gói học đang dạy. Số tiền này sẽ tự động chuyển sang khả dụng sau khi từng buổi học được hoàn tất.">
-                  <InfoCircleOutlined style={{ color: 'var(--color-text-tertiary)' }} />
-                </Tooltip>
-              </div>
-
-              <div>
-                <span
-                  style={{
-                    fontSize: 24,
-                    fontWeight: 600,
-                    fontVariantNumeric: 'tabular-nums',
-                    color: 'var(--color-text-primary)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {pending.toLocaleString('vi-VN')}
-                </span>
-                <span
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 500,
-                    color: 'var(--color-text-secondary)',
-                    marginLeft: 4,
-                  }}
-                >
-                  ₫
-                </span>
-              </div>
-
-              <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', minHeight: 32 }}>
-                Sẽ giải ngân sau khi buổi học hoàn thành
-              </Typography.Text>
-            </div>
-          </Card>
-        </Col>
-
-        {/* Bucket 3: Số dư đang rút (Reserved) */}
-        <Col xs={24} sm={12} md={8}>
-          <Card
-            loading={loading}
-            style={{
-              borderRadius: 'var(--radius-lg, 12px)',
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-surface)',
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography.Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
-                  <LockOutlined style={{ marginRight: 6, color: 'var(--color-text-tertiary)' }} />
-                  Đang xử lý rút
-                </Typography.Text>
-                <Tooltip title="Số tiền đang giữ trong các lệnh rút tiền đang chờ quản trị viên phê duyệt và chuyển khoản.">
-                  <InfoCircleOutlined style={{ color: 'var(--color-text-tertiary)' }} />
-                </Tooltip>
-              </div>
-
-              <div>
-                <span
-                  style={{
-                    fontSize: 24,
-                    fontWeight: 600,
-                    fontVariantNumeric: 'tabular-nums',
-                    color: 'var(--color-text-secondary)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {reserved.toLocaleString('vi-VN')}
-                </span>
-                <span
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 500,
-                    color: 'var(--color-text-secondary)',
-                    marginLeft: 4,
-                  }}
-                >
-                  ₫
-                </span>
-              </div>
-
-              <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', minHeight: 32 }}>
-                Lệnh rút đang chờ duyệt & chuyển khoản
-              </Typography.Text>
-            </div>
-          </Card>
-        </Col>
-      </Row>
-    </div>
-  );
-};
+            Yêu cầu rút tiền
+          </Button>
+        </div>
+        <div className={styles.balance}>
+          <dt>Chờ quyết toán</dt>
+          <dd>{formatVnd(wallet.pendingBalanceVnd)}</dd>
+          <p>Chưa chuyển sang số dư có thể rút.</p>
+        </div>
+        <div className={styles.balance}>
+          <dt>Đang xử lý rút</dt>
+          <dd>{formatVnd(wallet.reservedBalanceVnd)}</dd>
+          <p>Đã dành cho các yêu cầu rút đang xử lý.</p>
+        </div>
+        <div className={`${styles.balance} ${styles.held}`}>
+          <dt>Tiền buổi học đang giữ</dt>
+          <dd>{formatVnd(wallet.heldBalanceVnd ?? 0)}</dd>
+          <p>Khoản escrow này không nằm trong số dư khả dụng.</p>
+        </div>
+      </dl>
+    )}
+  </section>
+);

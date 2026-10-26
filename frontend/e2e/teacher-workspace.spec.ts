@@ -17,18 +17,19 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test('teacher navigation is grouped by workflow and keeps the current destination', async ({ page }, testInfo) => {
+test('teacher priority navigation keeps the current destination and remaining routes reachable', async ({ page }, testInfo) => {
   await page.goto('/auth/login');
   await page.getByPlaceholder('Nhập email của bạn').fill(teacher.email);
   await page.getByPlaceholder('Nhập mật khẩu').fill('Password123!');
   await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
   await expect(page).toHaveURL(/\/teacher$/);
-  await expect(page.getByText('Chưa có buổi học sắp tới.')).toBeVisible();
+  await expect(page.locator('.tm-brand').first()).toHaveText('tutormatch');
+  await expect(page.getByText('Chưa có buổi học sắp tới.', { exact: false }).first()).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('teacher-overview-desktop.png'), fullPage: true });
   const nav = page.getByRole('navigation', { name: 'Điều hướng không gian làm việc' });
-  for (const group of ['Hồ sơ', 'Giảng dạy', 'Học tập', 'Tài chính', 'Giao tiếp']) {
-    await expect(nav.getByText(group, { exact: true })).toBeVisible();
-  }
+  await expect(nav.getByRole('link', { name: 'Tổng quan' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Lịch dạy' })).toBeVisible();
+  await expect(nav.locator('summary')).toContainText('Thêm chức năng');
   await nav.getByRole('link', { name: 'Lịch dạy' }).click();
   await expect(page).toHaveURL(/\/teacher\/bookings$/);
   await expect(nav.getByRole('link', { name: 'Lịch dạy' })).toHaveAttribute('aria-current', 'page');
@@ -41,7 +42,7 @@ test('mobile workspace menu opens, navigates, and restores focus', async ({ page
   await page.getByPlaceholder('Nhập mật khẩu').fill('Password123!');
   await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
   await expect(page).toHaveURL(/\/teacher$/);
-  await expect(page.getByText('Chưa có buổi học sắp tới.')).toBeVisible();
+  await expect(page.getByText('Chưa có buổi học sắp tới.', { exact: false }).first()).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('teacher-overview-mobile.png'), fullPage: true });
   const menu = page.getByRole('button', { name: 'Mở menu' });
   await menu.click();

@@ -1,0 +1,46 @@
+.page { display: grid; gap: 22px; width: 100%; min-width: 0; padding-bottom: 24px; color: var(--color-text-primary); }
+.header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px 20px; padding-bottom: 18px; border-bottom: 1px solid var(--color-border-strong); }
+.titleGroup { min-width: 0; }
+.kind { color: var(--color-text-secondary); font-size: 13px; }
+.title { margin: 4px 0 0; font-size: 30px; line-height: 1.2; overflow-wrap: anywhere; }
+.statuses { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.statuses :global(.ant-tag) { margin: 0; }
+.time { grid-column: 1 / -1; color: var(--color-text-primary); font-size: 18px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.warning { margin-top: -4px; }
+.contextGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, .9fr); gap: 28px; }
+.facts, .settlement, .cancelReason, .report { min-width: 0; }
+.facts h2, .settlement h2, .cancelReason h2, .report h2 { margin: 0 0 14px; font-size: 18px; line-height: 1.4; }
+.facts dl, .settlement dl { display: grid; gap: 0; margin: 0; }
+.facts dl > div, .settlement dl > div { display: grid; grid-template-columns: minmax(120px, .55fr) minmax(0, 1fr); gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--color-border); }
+.facts dt, .settlement dt { color: var(--color-text-secondary); font-size: 14px; }
+.facts dd, .settlement dd { margin: 0; font-size: 14px; font-weight: 550; overflow-wrap: anywhere; }
+.facts a { color: var(--color-text-primary); text-underline-offset: 4px; }
+.facts a:hover { color: var(--color-primary-700); }
+.settlement { padding-left: 22px; border-left: 1px solid var(--color-border); }
+.settlementStatus { margin: 0 0 6px; font-size: 14px; font-weight: 600; }
+.cancelReason { padding: 16px 18px; border-left: 3px solid var(--color-error-600); background: var(--color-surface-sunken); }
+.cancelReason p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-top: 4px; }
+.actions :global(.ant-btn) { min-height: 42px; border-radius: 4px; }
+.report { padding-top: 18px; border-top: 1px solid var(--color-border-strong); }
+.reportGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 28px; }
+.reportGrid h3 { margin: 0 0 6px; font-size: 15px; }
+.reportGrid p { margin: 0; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.actions :global(.ant-btn:focus-visible), .facts a:focus-visible { outline: 3px solid var(--color-primary-600); outline-offset: 2px; }
+
+@media (max-width: 900px) {
+  .contextGrid { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .settlement { padding: 0; border: 0; }
+}
+
+@media (max-width: 600px) {
+  .page { gap: 18px; padding-bottom: 120px; }
+  .header { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .title { font-size: 27px; }
+  .statuses { justify-content: flex-start; }
+  .time { grid-column: auto; font-size: 16px; }
+  .facts dl > div, .settlement dl > div { grid-template-columns: minmax(86px, .42fr) minmax(0, 1fr); gap: 12px; }
+  .actions { flex-direction: column; align-items: stretch; }
+  .actions :global(.ant-btn) { width: 100%; }
+  .reportGrid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+}

@@ -102,6 +102,9 @@ export const CreateRefundModal: React.FC<CreateRefundModalProps> = ({
         <Form.Item name="studentPackageId" hidden>
           <Input />
         </Form.Item>
+        <Form.Item name="packageVersion" hidden>
+          <InputNumber />
+        </Form.Item>
 
         <Form.Item
           label="Số buổi muốn hoàn lại"

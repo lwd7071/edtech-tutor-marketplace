@@ -1,0 +1,59 @@
+.page { display: grid; gap: 26px; width: 100%; min-width: 0; color: var(--color-text-primary); }
+.header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--color-border-strong); }
+.heading { min-width: 0; }
+.heading h1 { margin: 0 0 8px; font-size: 32px; line-height: 1.2; }
+.heading p { max-width: 68ch; margin: 0; color: var(--color-text-secondary); line-height: 1.6; }
+.createButton { min-height: 44px; flex: 0 0 auto; border: 1px solid var(--color-ink); border-radius: 4px; background: var(--color-brand-yellow); color: var(--color-ink); font-weight: 700; }
+.createButton:hover:not(:disabled) { background: var(--color-primary-hover) !important; color: var(--color-ink) !important; }
+.approvalNotice { margin-top: -6px; }
+.listSection { min-width: 0; }
+.listHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--color-border-strong); }
+.listHeading h2 { margin: 0; font-size: 20px; line-height: 1.35; }
+.listHeading > span { color: var(--color-text-secondary); font-size: 13px; font-variant-numeric: tabular-nums; }
+.packageList { display: grid; margin: 0; padding: 0; list-style: none; }
+.packageRow { display: grid; grid-template-columns: minmax(150px, 1.2fr) minmax(195px, 1.45fr) minmax(118px, .8fr) auto; align-items: center; gap: 18px; min-width: 0; padding: 22px 0; border-bottom: 1px solid var(--color-border); }
+.packageIdentity { min-width: 0; }
+.packageTitle { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px 10px; }
+.packageTitle h3 { min-width: 0; margin: 0; font-size: 17px; line-height: 1.4; overflow-wrap: anywhere; }
+.subject { margin: 6px 0 0; color: var(--color-text-secondary); font-size: 14px; }
+.description { margin: 8px 0 0; color: var(--color-text-secondary); font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.status { margin: 0; padding: 2px 7px; border: 0; border-radius: 3px; font-size: 12px; font-weight: 650; white-space: nowrap; }
+.status_DRAFT { background: var(--color-surface-sunken); color: var(--color-text-secondary); }
+.status_ACTIVE { background: var(--color-success-bg); color: var(--color-success-600); }
+.status_INACTIVE { background: var(--color-warning-bg); color: var(--color-warning-600); }
+.terms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; min-width: 0; margin: 0; }
+.terms > div { min-width: 0; }
+.terms dt, .priceBlock > span { margin-bottom: 5px; color: var(--color-text-secondary); font-size: 12px; line-height: 1.4; }
+.terms dd { margin: 0; font-size: 13px; font-weight: 600; line-height: 1.45; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.priceBlock { display: grid; justify-items: start; min-width: 0; }
+.priceBlock strong { font-size: 19px; line-height: 1.35; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.actions button { min-height: 40px; border-radius: 4px; }
+.actions button:focus-visible, .createButton:focus-visible, .error :global(button:focus-visible) { outline: 3px solid var(--color-primary-600); outline-offset: 2px; }
+.pagination { justify-self: end; }
+.loading { display: grid; gap: 12px; padding-top: 8px; color: var(--color-text-secondary); }
+.loading > span { font-size: 14px; }
+.error { margin-top: 4px; }
+.empty { display: grid; justify-items: center; padding: 34px 18px; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); text-align: center; }
+.empty :global(.ant-empty) { margin: 0 0 10px; }
+.empty h2 { margin: 0 0 6px; font-size: 18px; }
+.empty p { margin: 0; color: var(--color-text-secondary); line-height: 1.5; }
+
+@media (max-width: 1080px) {
+  .packageRow { grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.2fr) minmax(110px, .7fr); gap: 16px; }
+  .actions { grid-column: 2 / -1; }
+}
+@media (max-width: 760px) {
+  .page { gap: 22px; padding-bottom: 112px; }
+  .header { align-items: stretch; flex-direction: column; gap: 16px; }
+  .heading h1 { font-size: 27px; }
+  .createButton { width: 100%; }
+  .packageRow { grid-template-columns: minmax(0, 1fr) auto; gap: 14px 16px; padding: 18px 0; }
+  .packageIdentity { grid-column: 1 / -1; }
+  .terms { grid-column: 1 / -1; grid-row: 2; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .priceBlock { grid-column: 1; grid-row: 3; }
+  .actions { grid-column: 1 / -1; grid-row: 4; }
+  .actions button { flex: 1 1 140px; }
+  .pagination { justify-self: center; max-width: 100%; }
+  .loading { padding-bottom: 24px; }
+}

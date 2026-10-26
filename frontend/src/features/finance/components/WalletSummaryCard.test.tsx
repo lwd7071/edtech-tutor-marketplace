@@ -10,19 +10,22 @@ describe('WalletSummaryCard', () => {
     availableBalanceVnd: 1500000,
     pendingBalanceVnd: 500000,
     reservedBalanceVnd: 200000,
+    heldBalanceVnd: 300000,
     version: 1,
   };
 
-  it('renders 3 buckets formatted in VND', () => {
+  it('renders all four balance buckets formatted in VND', () => {
     render(<WalletSummaryCard wallet={mockWallet} />);
 
     expect(screen.getByText('Số dư khả dụng')).toBeInTheDocument();
     expect(screen.getByText('Chờ quyết toán')).toBeInTheDocument();
     expect(screen.getByText('Đang xử lý rút')).toBeInTheDocument();
+    expect(screen.getByText('Tiền buổi học đang giữ')).toBeInTheDocument();
 
-    expect(screen.getByText('1.500.000')).toBeInTheDocument();
-    expect(screen.getByText('500.000')).toBeInTheDocument();
-    expect(screen.getByText('200.000')).toBeInTheDocument();
+    expect(screen.getByText('1.500.000 ₫')).toBeInTheDocument();
+    expect(screen.getByText('500.000 ₫')).toBeInTheDocument();
+    expect(screen.getByText('200.000 ₫')).toBeInTheDocument();
+    expect(screen.getByText('300.000 ₫')).toBeInTheDocument();
   });
 
   it('enables Payout button when available balance > 0', () => {
@@ -42,5 +45,13 @@ describe('WalletSummaryCard', () => {
 
     const button = screen.getByRole('button', { name: /yêu cầu rút tiền/i });
     expect(button).toBeDisabled();
+  });
+
+  it('does not show a default zero balance when the wallet request fails', () => {
+    render(<WalletSummaryCard wallet={null} error onRetry={jest.fn()} />);
+
+    expect(screen.getByText('Chưa tải được số dư ví')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Thử tải số dư' })).toBeInTheDocument();
+    expect(screen.queryByText('0 ₫')).not.toBeInTheDocument();
   });
 });

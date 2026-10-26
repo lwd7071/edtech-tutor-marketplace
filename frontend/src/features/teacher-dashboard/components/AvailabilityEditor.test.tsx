@@ -1,36 +1,23 @@
 import React from 'react';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { AvailabilityEditor } from './AvailabilityEditor';
 import { teacherApi } from '@/shared/api/teacher';
-import { message } from 'antd';
 
 jest.mock('@/shared/api/teacher', () => ({
-  teacherApi: {
-    getAvailabilities: jest.fn(),
-    replaceAvailabilities: jest.fn(),
-  }
+  teacherApi: { getAvailabilities: jest.fn(), replaceAvailabilities: jest.fn() },
 }));
 
 jest.mock('antd', () => {
   const antd = jest.requireActual('antd');
-  return {
-    ...antd,
-    message: {
-      success: jest.fn(),
-      error: jest.fn(),
-    }
-  };
+  return { ...antd, message: { success: jest.fn(), error: jest.fn() } };
 });
 
-// Mock react-responsive so we always test Desktop view (Grid)
-jest.mock('react-responsive', () => ({
-  useMediaQuery: () => false,
-}));
+jest.mock('react-responsive', () => ({ useMediaQuery: () => false }));
 
 describe('AvailabilityEditor', () => {
   const mockAvailabilities = [
     { id: '1', dayOfWeek: 'MONDAY', startTime: '08:00:00', endTime: '09:00:00', timezone: 'Asia/Ho_Chi_Minh', isActive: true },
-    { id: '2', dayOfWeek: 'TUESDAY', startTime: '09:00:00', endTime: '10:00:00', timezone: 'Asia/Ho_Chi_Minh', isActive: true }
+    { id: '2', dayOfWeek: 'TUESDAY', startTime: '09:00:00', endTime: '10:00:00', timezone: 'Asia/Ho_Chi_Minh', isActive: true },
   ];
 
   beforeEach(() => {
@@ -38,58 +25,48 @@ describe('AvailabilityEditor', () => {
     (teacherApi.getAvailabilities as jest.Mock).mockResolvedValue(mockAvailabilities);
   });
 
-  it('renders loading initially and then shows grid', async () => {
+  it('loads and displays the schedule and its timezone', async () => {
     await act(async () => {
       render(<AvailabilityEditor />);
+      await Promise.resolve();
     });
-    
-    expect(screen.getByText(/Các khung giờ mới chỉ áp dụng cho những lịch học được tạo sau khi bạn lưu/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Lưu lịch rảnh/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Thứ 2, 08:00/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('heading', { name: 'Khung giờ trong tuần' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Lưu lịch rảnh' })).toBeEnabled();
   });
 
-  it('toggles a slot and saves', async () => {
+  it('toggles slots and sends the existing replace contract with browser timezone', async () => {
     (teacherApi.replaceAvailabilities as jest.Mock).mockResolvedValue({});
-    
-    await act(async () => {
-      render(<AvailabilityEditor />);
-    });
-
-    // Mock timezone for test predictability
     const originalIntl = Intl.DateTimeFormat;
     global.Intl.DateTimeFormat = function() {
       return { resolvedOptions: () => ({ timeZone: 'Asia/Ho_Chi_Minh' }) } as any;
     } as any;
 
-    // Toggle 10:00 on Monday (Day 1)
-    // The grid renders cells for each hour. Monday is day.id = 1.
-    // In our mocked Grid, onSlotClick passes day=1, hour=10.
-    // However, finding the exact cell in the grid using testing-library is tricky.
-    // Let's assume there is a way to find it by text or we test the handler directly.
-    // But since WeeklyScheduleGrid is already tested, we can just simulate the click.
-    // The grid renders `<div className="grid-time-label">10:00</div>`.
-    // The cell next to it for Monday is what we want.
-    // Actually, `WeeklyScheduleGrid` doesn't expose easy test-ids.
-    // Let's just find the cell and click it if possible. Or we can use querySelector.
-    const { container } = render(<AvailabilityEditor />);
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Lưu lịch rảnh/i })).toBeInTheDocument();
-    });
+    try {
+      render(<AvailabilityEditor />);
+      await act(async () => { await Promise.resolve(); });
+      await screen.findByRole('button', { name: /Thứ 2, 08:00/ });
+      fireEvent.click(screen.getByRole('button', { name: /Thứ 2, 08:00/ }));
+      fireEvent.click(screen.getByRole('button', { name: /Thứ 4, 10:00/ }));
+      fireEvent.click(screen.getByRole('button', { name: 'Lưu lịch rảnh' }));
 
-    // Instead of deep DOM traversal which might break, we mock WeeklyScheduleGrid for the interaction test, 
-    // or just assume we can find the save button and save unchanged first.
-    fireEvent.click(screen.getAllByRole('button', { name: /Lưu lịch rảnh/i })[0]);
+      await waitFor(() => expect(teacherApi.replaceAvailabilities).toHaveBeenCalledWith({
+        items: [
+          { dayOfWeek: 'TUESDAY', startTime: '09:00', endTime: '10:00', timezone: 'Asia/Ho_Chi_Minh', isActive: true },
+          { dayOfWeek: 'WEDNESDAY', startTime: '10:00', endTime: '11:00', timezone: 'Asia/Ho_Chi_Minh', isActive: true },
+        ],
+      }));
+    } finally {
+      global.Intl.DateTimeFormat = originalIntl;
+    }
+  });
 
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    expect(teacherApi.replaceAvailabilities).toHaveBeenCalledWith({
-      items: [
-        { dayOfWeek: 'MONDAY', startTime: '08:00', endTime: '09:00', timezone: 'Asia/Ho_Chi_Minh', isActive: true },
-        { dayOfWeek: 'TUESDAY', startTime: '09:00', endTime: '10:00', timezone: 'Asia/Ho_Chi_Minh', isActive: true }
-      ]
-    });
-    
-    global.Intl.DateTimeFormat = originalIntl;
+  it('blocks saving after a load error', async () => {
+    (teacherApi.getAvailabilities as jest.Mock).mockRejectedValue(new Error('unavailable'));
+    render(<AvailabilityEditor />);
+    await act(async () => { await Promise.resolve(); });
+    expect(await screen.findByText('Chưa tải được lịch rảnh')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Lưu lịch rảnh' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Thứ 2, 08:00/ })).toBeDisabled();
   });
 });

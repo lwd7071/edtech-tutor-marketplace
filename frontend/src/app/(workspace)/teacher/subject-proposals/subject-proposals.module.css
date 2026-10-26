@@ -1,0 +1,58 @@
+.page { width: min(100%, 1180px); margin: 0 auto; padding: 8px 0 112px; color: var(--color-text-primary); }
+.header { max-width: 700px; margin-bottom: 34px; }
+.header h1 { margin: 0 0 10px; font-size: 32px; line-height: 1.2; }
+.header p { margin: 0; color: var(--color-text-secondary); line-height: 1.65; }
+.workspace { display: grid; grid-template-columns: minmax(280px, .76fr) minmax(0, 1.24fr); align-items: start; gap: 48px; }
+.formSection, .history { min-width: 0; }
+.formSection { padding: 24px; background: var(--color-surface-sunken); }
+.sectionHeading { margin-bottom: 22px; }
+.sectionHeading h2 { margin: 0 0 7px; font-size: 20px; line-height: 1.35; }
+.sectionHeading p { margin: 0; color: var(--color-text-secondary); font-size: 14px; line-height: 1.55; }
+.form :global(.ant-form-item) { margin-bottom: 18px; }
+.form :global(.ant-form-item-label > label) { color: var(--color-text-primary); font-weight: 600; }
+.field { width: 100%; }
+.form :global(.ant-input), .form :global(.ant-select-selector) { min-height: 44px; border-radius: 4px !important; }
+.form :global(.ant-input-textarea textarea) { min-height: 112px; }
+.submit { min-height: 46px; padding-inline: 22px; border: 1px solid var(--color-ink); border-radius: 4px; background: var(--color-brand-yellow); color: var(--color-ink); font-weight: 700; }
+.submit:hover:not(:disabled) { background: var(--color-primary-hover) !important; color: var(--color-ink) !important; }
+.history { padding-top: 4px; }
+.history .sectionHeading { padding-bottom: 16px; border-bottom: 1px solid var(--color-border-strong); }
+.table :global(.ant-table) { background: transparent; }
+.tableRegion { max-width: 100%; overflow-x: auto; }
+.table :global(.ant-table-thead > tr > th) { padding: 12px 10px; background: transparent; color: var(--color-text-secondary); font-size: 12px; font-weight: 600; }
+.table :global(.ant-table-tbody > tr > td) { padding: 16px 10px; border-bottom-color: var(--color-border); vertical-align: top; line-height: 1.5; overflow-wrap: anywhere; }
+.table :global(.ant-table-tbody > tr:hover > td) { background: var(--color-surface-hover) !important; }
+.proposedName { color: var(--color-text-primary); font-weight: 650; }
+.mobileLabel { display: none; }
+.status { margin: 0; border: 0; border-radius: 3px; font-weight: 600; white-space: nowrap; }
+.pending { background: var(--color-warning-bg); color: var(--color-warning-600); }
+.approved { background: var(--color-success-bg); color: var(--color-success-600); }
+.rejected { background: var(--color-error-bg); color: var(--color-error-600); }
+.loading { display: flex; min-height: 130px; align-items: center; justify-content: center; gap: 12px; color: var(--color-text-secondary); }
+.retryHint { padding: 20px 0; color: var(--color-text-secondary); line-height: 1.6; }
+.error { margin-bottom: 24px; }
+.error :global(.ant-alert-action button) { min-height: 40px; }
+.page :global(button:focus-visible), .page :global(input:focus-visible), .page :global(textarea:focus-visible), .page :global(.ant-select-focused .ant-select-selector) { outline: 3px solid var(--color-primary-600); outline-offset: 2px; }
+
+@media (max-width: 960px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .formSection { order: 1; }
+  .history { order: 2; }
+}
+@media (max-width: 600px) {
+  .page { padding: 4px 0 128px; }
+  .header { margin-bottom: 24px; }
+  .header h1 { font-size: 27px; }
+  .workspace { gap: 28px; }
+  .formSection { padding: 18px 16px; }
+  .submit { width: 100%; }
+  .tableRegion { overflow: visible; }
+  .table :global(.ant-table-container), .table :global(.ant-table-content), .table :global(.ant-table-body) { overflow: visible !important; }
+  .table :global(.ant-table-content > table), .table :global(.ant-table-body > table) { width: 100% !important; min-width: 0 !important; table-layout: fixed; }
+  .table :global(.ant-table-thead) { display: none; }
+  .table :global(.ant-table-tbody) { display: block; }
+  .table :global(.ant-table-tbody > tr) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 16px; padding: 12px 14px; border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
+  .table :global(.ant-table-tbody > tr > td) { display: block; min-width: 0; padding: 8px 0 !important; border: 0 !important; font-size: 13px; overflow-wrap: anywhere; }
+  .table :global(.ant-table-tbody > tr > td:first-child), .table :global(.ant-table-tbody > tr > td:last-child) { grid-column: 1 / -1; }
+  .mobileLabel { display: block; margin-bottom: 3px; color: var(--color-text-secondary); font-size: 11px; font-weight: 600; }
+}

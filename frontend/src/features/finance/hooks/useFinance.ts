@@ -96,7 +96,7 @@ export function useCreatePayout() {
     mutationFn: (data: CreatePayoutRequest) => financeApi.createPayoutRequest(data, commandKey.forPayload(data)),
     onSuccess: (_, data) => {
       commandKey.clear(data);
-      queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.payouts() });
+      queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.payoutsPrefix() });
       queryClient.invalidateQueries({ queryKey: FINANCE_KEYS.wallet() });
     },
   });

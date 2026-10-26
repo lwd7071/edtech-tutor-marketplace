@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Select, Button, Space, message, Spin } from 'antd';
+import { Button, Select, Spin, message } from 'antd';
 import { teacherApi } from '@/shared/api/teacher';
+import styles from './subjects.module.css';
 
 interface PublicSubject {
   id: string;
@@ -19,27 +20,22 @@ export default function SubjectSelector({ onAdd }: SubjectSelectorProps) {
   const [fetching, setFetching] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
-
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const fetchOptions = React.useMemo(() => {
-    return (value: string) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+  const fetchOptions = React.useMemo(() => (value: string) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setOptions([]);
+    setFetching(true);
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        const data = await teacherApi.searchPublicSubjects(value);
+        setOptions(data);
+      } catch {
+        // Keep the current no-results behavior when catalog search is unavailable.
+      } finally {
+        setFetching(false);
       }
-      setOptions([]);
-      setFetching(true);
-      timeoutRef.current = setTimeout(async () => {
-        try {
-          const data = await teacherApi.searchPublicSubjects(value);
-          setOptions(data);
-        } catch (err) {
-          // ignore
-        } finally {
-          setFetching(false);
-        }
-      }, 400);
-    };
+    }, 400);
   }, []);
 
   const handleAdd = async () => {
@@ -54,26 +50,26 @@ export default function SubjectSelector({ onAdd }: SubjectSelectorProps) {
   };
 
   return (
-    <Space style={{ width: '100%' }} orientation="vertical" size="middle">
-      <div style={{ display: 'flex', gap: 16 }}>
-        <Select
-          showSearch
-          style={{ flex: 1 }}
-          placeholder="Tìm kiếm môn học (vd: Toán học, Vật lý...)"
-          filterOption={false}
-          onSearch={fetchOptions}
-          onChange={(val) => setSelectedId(val)}
-          value={selectedId}
-          notFoundContent={fetching ? <Spin size="small" /> : 'Không tìm thấy kết quả'}
-          options={options.map((opt) => ({
-            value: opt.id,
-            label: `${opt.name} (${opt.category})`,
-          }))}
-        />
-        <Button type="primary" onClick={handleAdd} loading={adding}>
-          Thêm môn học
-        </Button>
-      </div>
-    </Space>
+    <div className={styles.selector}>
+      <label className={styles.selectorLabel} htmlFor="teacher-subject-search">Danh mục môn học</label>
+      <Select
+        id="teacher-subject-search"
+        aria-label="Tìm kiếm môn học"
+        className={styles.catalogSelect}
+        showSearch
+        size="large"
+        placeholder="Tìm kiếm môn học (vd: Toán học, Vật lý...)"
+        filterOption={false}
+        onSearch={fetchOptions}
+        onChange={value => setSelectedId(value)}
+        value={selectedId}
+        notFoundContent={fetching ? <Spin size="small" /> : 'Không tìm thấy kết quả'}
+        options={options.map(option => ({ value: option.id, label: `${option.name} (${option.category})` }))}
+      />
+      <p className={styles.selectorHint}>Tìm theo tên môn, sau đó chọn một kết quả để thêm.</p>
+      <Button type="primary" className={styles.addButton} loading={adding} onClick={handleAdd} aria-label="Thêm môn học">
+        Thêm môn học
+      </Button>
+    </div>
   );
 }

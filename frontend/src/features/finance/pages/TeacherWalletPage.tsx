@@ -1,12 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Tabs, Typography, message } from 'antd';
-import {
-  WalletOutlined,
-  BankOutlined,
-  HistoryOutlined,
-} from '@ant-design/icons';
+import { useState } from 'react';
+import { Alert, App } from 'antd';
 import {
   useTeacherWallet,
   useTeacherLedger,
@@ -22,10 +17,12 @@ import { LedgerTable } from '../components/LedgerTable';
 import { BankAccountList } from '../components/BankAccountList';
 import { CreatePayoutModal } from '../components/CreatePayoutModal';
 import { PayoutListTable } from '../components/PayoutListTable';
-import { CreatePayoutRequest } from '../types';
+import type { CreatePayoutRequest } from '../types';
 import { isConcurrentModification, parseApiError } from '@/shared/backend';
+import styles from './teacher-wallet-page.module.css';
 
-export const TeacherWalletPage: React.FC = () => {
+export const TeacherWalletPage = () => {
+  const { message } = App.useApp();
   const [activeTab, setActiveTab] = useState('overview');
   const [payoutModalOpen, setPayoutModalOpen] = useState(false);
   const [ledgerPage, setLedgerPage] = useState(0);
@@ -33,22 +30,40 @@ export const TeacherWalletPage: React.FC = () => {
   const [payoutPage, setPayoutPage] = useState(0);
   const [payoutPageSize, setPayoutPageSize] = useState(20);
 
-  // Queries
-  const { data: walletRes, isLoading: walletLoading } = useTeacherWallet();
-  const { data: ledgerRes, isLoading: ledgerLoading } = useTeacherLedger(ledgerPage, ledgerPageSize);
-  const { data: bankRes, isLoading: bankLoading } = useTeacherBankAccounts();
-  const { data: payoutsRes, isLoading: payoutsLoading } = useTeacherPayouts(undefined, payoutPage, payoutPageSize);
+  const {
+    data: walletRes,
+    isLoading: walletLoading,
+    isError: walletError,
+    refetch: refetchWallet,
+  } = useTeacherWallet();
+  const {
+    data: ledgerRes,
+    isLoading: ledgerLoading,
+    isError: ledgerError,
+    refetch: refetchLedger,
+  } = useTeacherLedger(ledgerPage, ledgerPageSize);
+  const {
+    data: bankRes,
+    isLoading: bankLoading,
+    isError: bankError,
+    refetch: refetchBankAccounts,
+  } = useTeacherBankAccounts();
+  const {
+    data: payoutsRes,
+    isLoading: payoutsLoading,
+    isError: payoutsError,
+    refetch: refetchPayouts,
+  } = useTeacherPayouts(undefined, payoutPage, payoutPageSize);
 
-  // Mutations
   const createBankMutation = useCreateBankAccount();
   const updateBankMutation = useUpdateBankAccount();
   const deleteBankMutation = useDeleteBankAccount();
   const createPayoutMutation = useCreatePayout();
 
   const wallet = walletRes?.data;
-  const ledgerEntries = ledgerRes?.data || [];
-  const bankAccounts = bankRes?.data || [];
-  const payouts = payoutsRes?.data || [];
+  const ledgerEntries = ledgerRes?.data ?? [];
+  const bankAccounts = bankRes?.data ?? [];
+  const payouts = payoutsRes?.data ?? [];
 
   const handleCreatePayoutSubmit = async (values: CreatePayoutRequest) => {
     if (!wallet) {
@@ -64,134 +79,161 @@ export const TeacherWalletPage: React.FC = () => {
     }
   };
 
+  const tabs = [
+    {
+      key: 'overview',
+      label: 'Sổ cái giao dịch',
+      content: (
+        <LedgerTable
+          entries={ledgerEntries}
+          loading={ledgerLoading}
+          error={ledgerError}
+          onRetry={() => { void refetchLedger(); }}
+          total={ledgerRes?.meta?.totalElements ?? ledgerEntries.length}
+          page={ledgerPage}
+          pageSize={ledgerPageSize}
+          onPageChange={(nextPage, nextSize) => {
+            setLedgerPage(nextPage);
+            setLedgerPageSize(nextSize);
+          }}
+        />
+      ),
+    },
+    {
+      key: 'payouts',
+      label: `Lịch sử rút tiền (${payoutsRes?.meta?.totalElements ?? payouts.length})`,
+      content: (
+        <PayoutListTable
+          payouts={payouts}
+          loading={payoutsLoading}
+          error={payoutsError}
+          onRetry={() => { void refetchPayouts(); }}
+          total={payoutsRes?.meta?.totalElements ?? payouts.length}
+          page={payoutPage}
+          pageSize={payoutPageSize}
+          onPageChange={(nextPage, nextSize) => {
+            setPayoutPage(nextPage);
+            setPayoutPageSize(nextSize);
+          }}
+        />
+      ),
+    },
+    {
+      key: 'bank',
+      label: `Tài khoản ngân hàng (${bankAccounts.length})`,
+      content: (
+        <BankAccountList
+          accounts={bankAccounts}
+          loading={bankLoading}
+          error={bankError}
+          onRetry={() => { void refetchBankAccounts(); }}
+          onCreateAccount={async data => {
+            try {
+              await createBankMutation.mutateAsync(data);
+              message.success('Thêm tài khoản ngân hàng thành công');
+            } catch (error) {
+              message.error(parseApiError(error).message);
+            }
+          }}
+          onUpdateAccount={async (id, data) => {
+            try {
+              await updateBankMutation.mutateAsync({ id, data });
+              message.success('Cập nhật tài khoản ngân hàng thành công');
+            } catch (error) {
+              message.error(isConcurrentModification(error)
+                ? 'Dữ liệu đã được thay đổi bởi người khác. Vui lòng tải lại.'
+                : parseApiError(error).message);
+            }
+          }}
+          onDeleteAccount={async (id, version) => {
+            try {
+              await deleteBankMutation.mutateAsync({ id, version });
+              message.success('Đã xóa tài khoản ngân hàng');
+            } catch (error) {
+              message.error(isConcurrentModification(error)
+                ? 'Dữ liệu đã được thay đổi bởi người khác. Vui lòng tải lại.'
+                : parseApiError(error).message);
+            }
+          }}
+        />
+      ),
+    },
+  ];
+
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'var(--space-6) 0' }}>
-      <div style={{ marginBottom: 24 }}>
-        <Typography.Title level={2} style={{ marginBottom: 4 }}>
-          Ví và thu nhập gia sư
-        </Typography.Title>
-        <Typography.Text type="secondary" style={{ fontSize: 14 }}>
-          Quản lý số dư thu nhập, sổ cái biến động tiền, tài khoản nhận và yêu cầu rút tiền
-        </Typography.Text>
-      </div>
+    <div className={styles.page}>
+      <header className={styles.heading}>
+        <h1>Ví và thu nhập gia sư</h1>
+        <p>Quản lý số dư, theo dõi biến động và kiểm tra các yêu cầu rút tiền.</p>
+      </header>
 
       <WalletSummaryCard
         wallet={wallet}
         loading={walletLoading}
+        error={walletError}
+        onRetry={() => { void refetchWallet(); }}
         onRequestPayout={() => setPayoutModalOpen(true)}
       />
 
-      <div
-        style={{
-          background: 'var(--color-surface)',
-          borderRadius: 'var(--radius-lg, 12px)',
-          padding: 20,
-        }}
-      >
-        <Tabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          items={[
-            {
-              key: 'overview',
-              label: (
-                <span>
-                  <WalletOutlined style={{ marginRight: 6 }} />
-                  Sổ cái giao dịch
-                </span>
-              ),
-              children: (
-                <LedgerTable
-                  entries={ledgerEntries}
-                  loading={ledgerLoading}
-                  total={ledgerRes?.meta?.totalElements || ledgerEntries.length}
-                  page={ledgerPage}
-                  pageSize={ledgerPageSize}
-                  onPageChange={(p, s) => {
-                    setLedgerPage(p);
-                    setLedgerPageSize(s);
-                  }}
-                />
-              ),
-            },
-            {
-              key: 'payouts',
-              label: (
-                <span>
-                  <HistoryOutlined style={{ marginRight: 6 }} />
-                  Lịch sử rút tiền ({payouts.length})
-                </span>
-              ),
-              children: (
-                <PayoutListTable
-                  payouts={payouts}
-                  loading={payoutsLoading}
-                  total={payoutsRes?.meta?.totalElements || payouts.length}
-                  page={payoutPage}
-                  pageSize={payoutPageSize}
-                  onPageChange={(p, s) => {
-                    setPayoutPage(p);
-                    setPayoutPageSize(s);
-                  }}
-                />
-              ),
-            },
-            {
-              key: 'bank',
-              label: (
-                <span>
-                  <BankOutlined style={{ marginRight: 6 }} />
-                  Tài khoản ngân hàng ({bankAccounts.length})
-                </span>
-              ),
-              children: (
-                <BankAccountList
-                  accounts={bankAccounts}
-                  loading={bankLoading}
-                  onCreateAccount={async (data) => {
-                    try {
-                      await createBankMutation.mutateAsync(data);
-                      message.success('Thêm tài khoản ngân hàng thành công');
-                    } catch (error) {
-                      message.error(parseApiError(error).message);
-                    }
-                  }}
-                  onUpdateAccount={async (id, data) => {
-                    try {
-                      await updateBankMutation.mutateAsync({ id, data });
-                      message.success('Cập nhật tài khoản ngân hàng thành công');
-                    } catch (error) {
-                      message.error(isConcurrentModification(error)
-                        ? 'Dữ liệu đã được thay đổi bởi người khác. Vui lòng tải lại.'
-                        : parseApiError(error).message);
-                    }
-                  }}
-                  onDeleteAccount={async (id, version) => {
-                    try {
-                      await deleteBankMutation.mutateAsync({ id, version });
-                      message.success('Đã xóa tài khoản ngân hàng');
-                    } catch (error) {
-                      message.error(isConcurrentModification(error)
-                        ? 'Dữ liệu đã được thay đổi bởi người khác. Vui lòng tải lại.'
-                        : parseApiError(error).message);
-                    }
-                  }}
-                />
-              ),
-            },
-          ]}
-        />
-      </div>
+      <section className={styles.activity} aria-label="Giao dịch và tài khoản">
+        <div className={styles.tabs}>
+          <div className={styles.tabList} role="tablist" aria-label="Giao dịch và tài khoản">
+            {tabs.map((tab, index) => (
+              <button
+                key={tab.key}
+                id={`wallet-tab-${tab.key}`}
+                className={`${styles.tabButton} ${activeTab === tab.key ? styles.tabButtonActive : ''}`}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab.key}
+                aria-controls={`wallet-panel-${tab.key}`}
+                tabIndex={activeTab === tab.key ? 0 : -1}
+                onClick={() => setActiveTab(tab.key)}
+                onKeyDown={event => {
+                  const nextIndex = event.key === 'ArrowRight' ? (index + 1) % tabs.length
+                    : event.key === 'ArrowLeft' ? (index - 1 + tabs.length) % tabs.length
+                      : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : -1;
+                  if (nextIndex >= 0) {
+                    event.preventDefault();
+                    const nextTab = tabs[nextIndex];
+                    setActiveTab(nextTab.key);
+                    document.getElementById(`wallet-tab-${nextTab.key}`)?.focus();
+                  }
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {tabs.map(tab => (
+            <div
+              key={tab.key}
+              className={styles.tabPanel}
+              id={`wallet-panel-${tab.key}`}
+              role="tabpanel"
+              aria-labelledby={`wallet-tab-${tab.key}`}
+              hidden={activeTab !== tab.key}
+            >
+              {tab.content}
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {wallet && <CreatePayoutModal
-        open={payoutModalOpen}
-        availableBalanceVnd={wallet.availableBalanceVnd}
-        walletVersion={wallet.version}
-        bankAccounts={bankAccounts}
-        loading={createPayoutMutation.isPending}
-        onCancel={() => setPayoutModalOpen(false)}
-        onSubmit={handleCreatePayoutSubmit}
-      />}
+      {wallet && (
+        <CreatePayoutModal
+          open={payoutModalOpen}
+          availableBalanceVnd={wallet.availableBalanceVnd}
+          walletVersion={wallet.version}
+          bankAccounts={bankAccounts}
+          loading={createPayoutMutation.isPending}
+          onCancel={() => setPayoutModalOpen(false)}
+          onSubmit={handleCreatePayoutSubmit}
+        />
+      )}
+      {walletError && activeTab !== 'overview' && (
+        <Alert className={styles.walletNotice} type="warning" showIcon title="Chưa tải được số dư ví. Không thể tạo yêu cầu rút tiền." />
+      )}
     </div>
   );
 };

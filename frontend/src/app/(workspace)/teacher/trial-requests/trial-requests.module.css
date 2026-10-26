@@ -1,0 +1,277 @@
+.page {
+  width: min(100%, 1040px);
+  margin: 0 auto;
+  padding: 8px 0 32px;
+  color: var(--ink, #171714);
+}
+
+.pageHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line, #dedbd2);
+}
+
+.pageHeading h1,
+.empty h2 {
+  margin: 0;
+  color: var(--ink, #171714);
+  font-family: var(--font-heading, 'Be Vietnam Pro', sans-serif);
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.15;
+}
+
+.pageHeading p:last-child,
+.empty > p:last-child {
+  max-width: 620px;
+  margin: 10px 0 0;
+  color: var(--muted, #62615a);
+  line-height: 1.65;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--muted, #62615a);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.total {
+  flex: 0 0 auto;
+  padding: 8px 0 4px 16px;
+  border-left: 3px solid var(--brand-yellow, #ffd43b);
+  color: var(--ink, #171714);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.list {
+  border-top: 2px solid var(--ink, #171714);
+}
+
+.request {
+  padding: 22px 0 24px;
+  border-bottom: 1px solid var(--line, #dedbd2);
+}
+
+.requestHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.requestHeading h2 {
+  margin: 0;
+  font-size: 1.12rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.requestHeading :global(.ant-tag) {
+  margin: 0;
+  padding: 3px 9px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+.statusTag {
+  line-height: 1.5;
+}
+
+.requestDetails {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.7fr) minmax(120px, 0.7fr) minmax(230px, 1.4fr);
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.fact {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+}
+
+.fact span {
+  color: var(--muted, #62615a);
+  font-size: 0.76rem;
+}
+
+.fact strong {
+  overflow-wrap: anywhere;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.note {
+  margin-top: 18px;
+  padding: 13px 16px;
+  border-left: 3px solid var(--brand-yellow, #ffd43b);
+  background: var(--surface-muted, #f5f3ed);
+}
+
+.note h3 {
+  margin: 0 0 5px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.note p,
+.rejection {
+  margin: 0;
+  color: var(--ink, #171714);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.rejection {
+  margin-top: 16px;
+  color: var(--muted, #62615a);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.actions :global(.ant-btn),
+.submitButton,
+.retryButton {
+  min-height: 42px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.acceptButton,
+.submitButton {
+  border-color: var(--ink, #171714);
+  background: var(--brand-yellow, #ffd43b);
+  color: var(--ink, #171714);
+}
+
+.acceptButton:hover,
+.submitButton:hover {
+  border-color: var(--ink, #171714) !important;
+  background: #f3c727 !important;
+  color: var(--ink, #171714) !important;
+}
+
+.responseForm {
+  display: grid;
+  gap: 2px;
+}
+
+.formItem {
+  margin-bottom: 14px;
+}
+
+.formControl {
+  width: 100%;
+}
+
+.errorAlert {
+  max-width: 720px;
+}
+
+.paginationControl {
+  margin: 0;
+}
+
+.loading,
+.state,
+.empty {
+  padding: 26px 0;
+}
+
+.loading {
+  display: grid;
+  gap: 20px;
+}
+
+.empty {
+  border-top: 2px solid var(--ink, #171714);
+  border-bottom: 1px solid var(--line, #dedbd2);
+}
+
+.empty h2 {
+  font-size: 1.35rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 20px;
+}
+
+.modal :global(.ant-modal-content) {
+  border-radius: 4px;
+}
+
+.modal :global(.ant-modal-body) {
+  max-height: min(68vh, 640px);
+  overflow: auto;
+  padding-top: 16px;
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding: 0 0 28px;
+  }
+
+  .pageHeading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 17px;
+  }
+
+  .total {
+    padding: 2px 0 2px 10px;
+  }
+
+  .request {
+    padding: 18px 0 20px;
+  }
+
+  .requestDetails {
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 12px;
+    margin-top: 16px;
+  }
+
+  .fact:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .actions :global(.ant-btn) {
+    width: 100%;
+  }
+
+  .pagination {
+    justify-content: center;
+    overflow-x: auto;
+  }
+
+  .modal {
+    max-width: calc(100vw - 24px);
+    margin-inline: 12px;
+  }
+}

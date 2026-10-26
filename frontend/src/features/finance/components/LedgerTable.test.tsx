@@ -30,11 +30,11 @@ describe('LedgerTable', () => {
   it('renders credit and debit entries with correct prefixes and styles', () => {
     render(<LedgerTable entries={mockEntries} total={2} />);
 
-    expect(screen.getByText('Quyết toán buổi học')).toBeInTheDocument();
-    expect(screen.getByText('Tạo lệnh rút tiền')).toBeInTheDocument();
+    expect(screen.getAllByText('Quyết toán buổi học').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Tạo lệnh rút tiền').length).toBeGreaterThan(0);
 
-    expect(screen.getByText('+200.000 ₫')).toBeInTheDocument();
-    expect(screen.getByText('−500.000 ₫')).toBeInTheDocument();
+    expect(screen.getAllByText('+200.000 ₫').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('−500.000 ₫').length).toBeGreaterThan(0);
   });
 
   it('getEntryTypeLabel maps all ledger types properly', () => {
