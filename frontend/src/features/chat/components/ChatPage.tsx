@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Alert, Button, Spin } from 'antd';
+import { Spin } from 'antd';
 import { ChatLayout } from './ChatLayout';
 import { ChatThread } from './ChatThread';
 import { chatApi } from '../api/chatApi';
@@ -42,6 +42,7 @@ function ChatPageContent() {
   useEffect(() => { activeConversationRef.current = activeConversationId; }, [activeConversationId]);
   
   const { user } = useAuthStore();
+  const participantLabel = user?.role === 'TEACHER' ? 'học viên' : 'gia sư';
   const { lastMessage, sendMessage, reconnecting, isConnected } = useChatStomp();
 
   const fetchConversations = async (page = 0) => {
@@ -208,6 +209,7 @@ function ChatPageContent() {
   return (
     <ChatLayout
       conversations={conversations}
+      participantLabel={participantLabel}
       activeConversationId={activeConversationId}
       loadingConversations={loadingConv}
       error={conversationError}
@@ -221,6 +223,7 @@ function ChatPageContent() {
         <ChatThread
           conversationId={activeConversationId}
           participantName={activeConv.participantName}
+          participantLabel={participantLabel}
           messages={messages}
           loading={loadingMsg}
           onSendMessage={content => queueMessage(content)}
@@ -234,21 +237,21 @@ function ChatPageContent() {
           onLoadOlder={() => void fetchMessages(activeConversationId, messagePage + 1)}
         />
       ) : (
-        <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100%',color:'var(--color-text-secondary)',padding:32,textAlign:'center'}}>
-          <div style={{fontSize:56,marginBottom:16,opacity:.25}}>💬</div>
-          <h3 style={{fontSize:20,color:'var(--color-text-primary)',margin:'0 0 8px'}}>Chưa chọn cuộc trò chuyện</h3>
-          <p>Hãy chọn một cuộc trò chuyện từ danh sách bên trái để bắt đầu nhắn tin.</p>
-        </div>
+        <section className="tm-chat-welcome" aria-label="Chọn cuộc trò chuyện">
+          <h2>Chọn một cuộc trò chuyện</h2>
+          <p>Tin nhắn với {participantLabel} sẽ xuất hiện tại đây.</p>
+        </section>
       )}
     </ChatLayout>
   );
 }
 export function ChatPage() {
   return (
-    <div style={{background:'var(--color-surface)',borderRadius:12,overflow:'hidden',border:'1px solid var(--color-border)'}}>
-      <Suspense fallback={<div style={{padding:32,textAlign:'center'}}><Spin size="large" /></div>}>
+    <section className="tm-chat-page" aria-label="Tin nhắn">
+      <Suspense fallback={<section className="tm-chat-page__loading" role="status" aria-label="Đang mở tin nhắn…"><Spin size="large" /><span>Đang mở tin nhắn…</span></section>}>
         <ChatPageContent />
       </Suspense>
-    </div>
+      <style>{`.tm-chat-page{min-width:0}.tm-chat-page__loading{display:flex;min-height:320px;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--color-text-secondary)}.tm-chat-welcome{display:flex;min-height:100%;flex-direction:column;align-items:flex-start;justify-content:center;padding:clamp(28px,6vw,84px);background:#faf8f2}.tm-chat-welcome h2{max-width:15ch;margin:0;font-size:clamp(28px,4vw,46px);line-height:1.1;letter-spacing:-.03em}.tm-chat-welcome>p{margin:12px 0 0;color:#625f57;font-size:16px}`}</style>
+    </section>
   );
 }

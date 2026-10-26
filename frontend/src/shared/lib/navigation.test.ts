@@ -9,6 +9,9 @@ describe('workspace navigation', () => {
     expect(safeReturnTo('/student/bookings?status=SCHEDULED', 'TEACHER')).toBe('/teacher');
     expect(safeReturnTo('/student/bookings?redirect=https://evil.test&status=SCHEDULED', 'STUDENT')).toBe('/student/bookings?status=SCHEDULED');
     expect(safeReturnTo('/teachers/t1?packageId=p1&redirect=https://evil.test#packages', 'STUDENT')).toBe('/teachers/t1?packageId=p1#packages');
+    expect(safeReturnTo('/subjects?subjectId=s1&keyword=Toan&page=2&redirect=https://evil.test', 'STUDENT')).toBe('/subjects?subjectId=s1&keyword=Toan&page=2');
+    expect(safeReturnTo('/teachers?subjectId=s1&minRating=4&dayOfWeek=MONDAY&startTime=09%3A00%3A00&endTime=10%3A00%3A00&page=2', 'STUDENT')).toBe('/teachers?subjectId=s1&minRating=4&dayOfWeek=MONDAY&startTime=09%3A00%3A00&endTime=10%3A00%3A00&page=2');
+    expect(safeReturnTo('/teachers?dayOfWeek=MONDAY&startTime=09%3A00%3A00', 'STUDENT')).toBe('/teachers');
     expect(safeReturnTo('/admin', 'ADMIN')).toBe('/admin');
     expect(safeReturnTo('//outside.test', 'STUDENT')).toBe('/student');
   });

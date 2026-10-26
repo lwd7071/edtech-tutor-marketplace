@@ -22,11 +22,18 @@ function filteredReturnQuery(url: URL) {
   const allowedByPath: Record<string, string[]> = {
     '/student/bookings': ['status'],
     '/student/payments/callback': ['invoiceId'],
+    '/subjects': ['subjectId', 'keyword', 'educationLevel', 'page'],
+    '/teachers': ['keyword', 'subjectId', 'minPrice', 'maxPrice', 'minRating', 'deliveryMode', 'provinceCode', 'wardCode', 'dayOfWeek', 'startTime', 'endTime', 'sort', 'page', 'size'],
   };
   const allowed = allowedByPath[url.pathname] ?? (url.pathname.startsWith('/teachers/') ? ['packageId'] : []);
   for (const key of allowed) {
     const value = url.searchParams.get(key);
     if (value) params.set(key, value);
+  }
+  if (url.pathname === '/teachers' && (!params.has('dayOfWeek') || !params.has('startTime') || !params.has('endTime'))) {
+    params.delete('dayOfWeek');
+    params.delete('startTime');
+    params.delete('endTime');
   }
   return params.toString();
 }
