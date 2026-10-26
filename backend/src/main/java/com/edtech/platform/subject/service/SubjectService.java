@@ -4,6 +4,8 @@ import com.edtech.platform.subject.domain.EducationLevel;
 import com.edtech.platform.subject.domain.Subject;
 import com.edtech.platform.subject.dto.SubjectSummary;
 import com.edtech.platform.subject.repository.SubjectRepository;
+import com.edtech.platform.common.exception.BusinessException;
+import com.edtech.platform.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +35,13 @@ public class SubjectService {
         return subjectRepository.findAll(spec, pageable).map(this::toSummary);
     }
 
+    @Transactional(readOnly = true)
+    public SubjectSummary getPublicSubject(java.util.UUID id) {
+        Subject subject = subjectRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SUBJECT_NOT_FOUND));
+        return toSummary(subject);
+    }
+
     private Specification<Subject> isActiveTrue() {
         return (root, query, cb) -> cb.isTrue(root.get("isActive"));
     }
@@ -48,16 +57,26 @@ public class SubjectService {
     }
 
     private Specification<Subject> hasEducationLevel(EducationLevel educationLevel) {
+        if (educationLevel == EducationLevel.ELEMENTARY || educationLevel == EducationLevel.PRIMARY_SCHOOL) {
+            return (root, query, cb) -> cb.or(
+                    cb.equal(root.get("educationLevel"), EducationLevel.ELEMENTARY),
+                    cb.equal(root.get("educationLevel"), EducationLevel.PRIMARY_SCHOOL)
+            );
+        }
         return (root, query, cb) -> cb.equal(root.get("educationLevel"), educationLevel);
     }
 
     private SubjectSummary toSummary(Subject subject) {
+        EducationLevel level = subject.getEducationLevel();
+        if (level == EducationLevel.PRIMARY_SCHOOL) {
+            level = EducationLevel.ELEMENTARY;
+        }
         return new SubjectSummary(
                 subject.getId(),
                 subject.getCode(),
                 subject.getName(),
                 subject.getSlug(),
-                subject.getEducationLevel(),
+                level,
                 subject.getDescription()
         );
     }
