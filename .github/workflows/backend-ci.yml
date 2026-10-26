@@ -16,6 +16,9 @@ jobs:
   test:
     name: Build and Integration Tests
     runs-on: ubuntu-latest
+    env:
+      EDTECH_POSTGRES_ADMIN_PASSWORD: ci-only-postgres-admin-password
+      DB_PASSWORD: ci-only-application-password
 
     steps:
       - name: Checkout Code
