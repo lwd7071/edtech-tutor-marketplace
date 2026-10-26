@@ -4,12 +4,9 @@ import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Input, Button, Typography, Alert } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Alert, Button, Input } from 'antd';
 import Link from 'next/link';
 import { authApi } from '@/shared/api/auth';
-
-const { Title, Text } = Typography;
 
 const forgotPasswordSchema = z.object({
   email: z.string().min(1, 'Email không được để trống').email('Email không đúng định dạng'),
@@ -41,69 +38,58 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div>
-      <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
-        <Title level={3} style={{ marginBottom: 'var(--space-2)' }}>Quên mật khẩu?</Title>
-        <Text style={{ color: 'var(--color-text-secondary)' }}>
-          Đừng lo lắng, hãy nhập email của bạn và chúng tôi sẽ gửi liên kết để đặt lại mật khẩu.
-        </Text>
-      </div>
-
-      {errorMsg && (
-        <Alert title={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
-      )}
+    <main className="tm-forgot-page">
+      <header className="tm-forgot-heading">
+        <h1>Quên mật khẩu?</h1>
+        <p>Đừng lo lắng, hãy nhập email của bạn và chúng tôi sẽ gửi liên kết để đặt lại mật khẩu.</p>
+      </header>
 
       {success ? (
-        <div aria-live="polite" style={{ textAlign: 'center' }}>
-          <Alert 
-            title="Đã gửi email khôi phục" 
+        <section className="tm-forgot-success" aria-live="polite">
+          <Alert
+            title="Đã gửi email khôi phục"
             description="Nếu email này có trong hệ thống, bạn sẽ nhận được một liên kết để khôi phục mật khẩu. Vui lòng kiểm tra hộp thư đến (và thư mục rác)."
-            type="success" 
-            showIcon 
-            style={{ marginBottom: 'var(--space-6)', textAlign: 'left' }} 
+            type="success"
+            showIcon
           />
-          <Link href="/auth/login">
-            <Button size="large" icon={<ArrowLeftOutlined />}>Quay lại đăng nhập</Button>
+          <Link href="/auth/login" className="tm-forgot-success-link">
+            <Button size="large">Quay lại đăng nhập</Button>
           </Link>
-        </div>
+        </section>
       ) : (
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div style={{ marginBottom: 'var(--space-6)' }}>
-            <Text strong style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Email</Text>
-            <Controller
-              name="email"
-              control={control}
-              render={({ field }) => (
-                <Input 
-                  {...field} 
-                  size="large" 
-                  placeholder="Nhập email của bạn" 
-                  autoComplete="email"
-                  status={errors.email ? 'error' : ''}
-                />
-              )}
-            />
-            {errors.email && <Text type="danger" style={{ fontSize: 'var(--text-body-sm)' }}>{errors.email.message}</Text>}
-          </div>
+        <>
+          {errorMsg && <Alert className="tm-forgot-error" description={errorMsg} type="error" showIcon role="alert" />}
 
-          <Button 
-            type="primary" 
-            htmlType="submit" 
-            size="large" 
-            block 
-            loading={loading}
-            style={{ marginBottom: 'var(--space-6)' }}
-          >
-            Gửi liên kết khôi phục
-          </Button>
+          <form className="tm-forgot-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+            <div className="tm-forgot-field">
+              <label htmlFor="forgot-email">Email</label>
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    id="forgot-email"
+                    size="large"
+                    placeholder="Nhập email của bạn"
+                    autoComplete="email"
+                    status={errors.email ? 'error' : ''}
+                    aria-invalid={Boolean(errors.email)}
+                    aria-describedby={errors.email ? 'forgot-email-error' : undefined}
+                  />
+                )}
+              />
+              {errors.email && <p className="tm-forgot-field-error" id="forgot-email-error">{errors.email.message}</p>}
+            </div>
 
-          <div style={{ textAlign: 'center' }}>
-            <Link href="/auth/login" style={{ color: 'var(--color-primary-600)', fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <ArrowLeftOutlined /> Quay lại đăng nhập
-            </Link>
-          </div>
-        </form>
+            <Button className="tm-forgot-submit" type="primary" htmlType="submit" size="large" block loading={loading}>
+              Gửi liên kết khôi phục
+            </Button>
+          </form>
+
+          <Link href="/auth/login" className="tm-forgot-login-link">Quay lại đăng nhập</Link>
+        </>
       )}
-    </div>
+    </main>
   );
 }

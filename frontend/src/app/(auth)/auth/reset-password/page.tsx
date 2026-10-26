@@ -1,17 +1,14 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Input, Button, Typography, Alert } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Alert, Button, Input } from 'antd';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
 import { ErrorState } from '@/shared/components/feedback/ErrorState';
-
-const { Title, Text } = Typography;
 
 const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
 
@@ -31,7 +28,6 @@ function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isTokenInvalid, setIsTokenInvalid] = useState(false);
@@ -46,7 +42,7 @@ function ResetPasswordForm() {
       setIsTokenInvalid(true);
       return;
     }
-    
+
     try {
       setLoading(true);
       setErrorMsg(null);
@@ -65,89 +61,84 @@ function ResetPasswordForm() {
 
   if (!token || isTokenInvalid) {
     return (
-      <ErrorState 
-        title="Liên kết không hợp lệ hoặc đã hết hạn"
-        message="Liên kết đặt lại mật khẩu này đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu một liên kết mới."
-        actionText="Gửi lại liên kết khôi phục"
-        onRetry={() => {
-          router.push('/auth/forgot-password');
-        }}
-      />
+      <div className="tm-reset-invalid">
+        <ErrorState
+          title="Liên kết không hợp lệ hoặc đã hết hạn"
+          message="Liên kết đặt lại mật khẩu này đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu một liên kết mới."
+          actionText="Gửi lại liên kết khôi phục"
+          onRetry={() => router.push('/auth/forgot-password')}
+        />
+      </div>
     );
   }
 
   return (
-    <div>
-      <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
-        <Title level={3} style={{ marginBottom: 'var(--space-2)' }}>Đặt lại mật khẩu</Title>
-        <Text style={{ color: 'var(--color-text-secondary)' }}>
-          Vui lòng nhập mật khẩu mới cho tài khoản của bạn.
-        </Text>
-      </div>
+    <main className="tm-reset-page">
+      <header className="tm-reset-heading">
+        <h1>Đặt lại mật khẩu</h1>
+        <p>Vui lòng nhập mật khẩu mới cho tài khoản của bạn.</p>
+      </header>
 
-      {errorMsg && (
-        <Alert title={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
-      )}
+      {errorMsg && <Alert className="tm-reset-error" title={errorMsg} type="error" showIcon role="alert" />}
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ marginBottom: 'var(--space-4)' }}>
-          <Text strong style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Mật khẩu mới</Text>
+      <form className="tm-reset-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="tm-reset-field">
+          <label htmlFor="reset-new-password">Mật khẩu mới</label>
           <Controller
             name="newPassword"
             control={control}
             render={({ field }) => (
-              <Input.Password 
-                {...field} 
-                size="large" 
-                placeholder="Nhập mật khẩu mới" 
+              <Input.Password
+                {...field}
+                id="reset-new-password"
+                size="large"
+                placeholder="Nhập mật khẩu mới"
+                autoComplete="new-password"
                 status={errors.newPassword ? 'error' : ''}
+                aria-invalid={Boolean(errors.newPassword)}
+                aria-describedby={errors.newPassword ? 'reset-new-password-error' : 'reset-password-hint'}
               />
             )}
           />
-          {errors.newPassword && <Text type="danger" style={{ fontSize: 'var(--text-body-sm)' }}>{errors.newPassword.message}</Text>}
+          {errors.newPassword
+            ? <p className="tm-reset-field-error" id="reset-new-password-error">{errors.newPassword.message}</p>
+            : <p className="tm-reset-password-hint" id="reset-password-hint">Tối thiểu 8 ký tự, gồm chữ cái, chữ số và ký tự đặc biệt (@$!%*#?&).</p>}
         </div>
 
-        <div style={{ marginBottom: 'var(--space-6)' }}>
-          <Text strong style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Xác nhận mật khẩu</Text>
+        <div className="tm-reset-field">
+          <label htmlFor="reset-confirm-password">Xác nhận mật khẩu</label>
           <Controller
             name="confirmPassword"
             control={control}
             render={({ field }) => (
-              <Input.Password 
-                {...field} 
-                size="large" 
-                placeholder="Nhập lại mật khẩu mới" 
+              <Input.Password
+                {...field}
+                id="reset-confirm-password"
+                size="large"
+                placeholder="Nhập lại mật khẩu mới"
+                autoComplete="new-password"
                 status={errors.confirmPassword ? 'error' : ''}
+                aria-invalid={Boolean(errors.confirmPassword)}
+                aria-describedby={errors.confirmPassword ? 'reset-confirm-password-error' : undefined}
               />
             )}
           />
-          {errors.confirmPassword && <Text type="danger" style={{ fontSize: 'var(--text-body-sm)' }}>{errors.confirmPassword.message}</Text>}
+          {errors.confirmPassword && <p className="tm-reset-field-error" id="reset-confirm-password-error">{errors.confirmPassword.message}</p>}
         </div>
 
-        <Button 
-          type="primary" 
-          htmlType="submit" 
-          size="large" 
-          block 
-          loading={loading}
-          style={{ marginBottom: 'var(--space-6)' }}
-        >
+        <Button className="tm-reset-submit" type="primary" htmlType="submit" size="large" block loading={loading}>
           Xác nhận đặt lại mật khẩu
         </Button>
-
-        <div style={{ textAlign: 'center' }}>
-          <Link href="/auth/login" style={{ color: 'var(--color-primary-600)', fontWeight: 'var(--weight-semibold)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <ArrowLeftOutlined /> Quay lại đăng nhập
-          </Link>
-        </div>
       </form>
-    </div>
+
+      <Link href="/auth/login" className="tm-reset-login-link">Quay lại đăng nhập</Link>
+    </main>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div>Đang tải...</div>}>
+    <Suspense fallback={<main className="tm-reset-page tm-reset-loading" aria-busy="true">Đang tải...</main>}>
       <ResetPasswordForm />
     </Suspense>
   );

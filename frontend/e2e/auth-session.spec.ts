@@ -1,5 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
 
+test.describe.configure({ mode: 'serial' });
+
 const users = {
   student: { id: 'student-1', email: 'student@example.test', fullName: 'Student', role: 'STUDENT', status: 'ACTIVE' },
   teacher: { id: 'teacher-1', email: 'teacher@example.test', fullName: 'Teacher', role: 'TEACHER', status: 'APPROVED' },
@@ -53,4 +55,16 @@ test('two pages in one browser context synchronize the account change', async ({
   await login(page, users.teacher.email);
   await expect(page).toHaveURL(/\/teacher$/);
   await expect(secondPage).toHaveURL(/\/auth\/login$/);
+});
+
+test('student cannot enter the teacher workspace and sees the forbidden state', async ({ page }) => {
+  await mockAuth(page);
+  await page.goto('/auth/login');
+  await login(page, users.student.email);
+  await expect(page).toHaveURL(/\/student$/);
+
+  await page.goto('/teacher');
+  await expect(page).toHaveURL(/\/forbidden$/);
+  await expect(page.getByRole('heading', { name: 'Truy cập bị từ chối', level: 1 })).toBeVisible();
+  await expect(page.getByText('Bạn không có quyền truy cập vào trang này.')).toBeVisible();
 });

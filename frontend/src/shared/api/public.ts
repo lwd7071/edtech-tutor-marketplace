@@ -13,39 +13,30 @@ export interface PaginatedResponse<T> {
 // Define missing types locally if they don't exist in shared/types yet
 export interface SubjectSummary {
   id: string;
+  code: string;
   name: string;
-  description?: string;
-  educationLevel?: string;
-  thumbnailUrl?: string;
-  totalTeachers?: number;
+  slug: string;
+  educationLevel: string | null;
+  description: string | null;
 }
 
 export interface TeacherCard {
   id: string;
-  fullName?: string;
-  user?: {
-    fullName: string;
-    avatarUrl?: string;
-  };
-  name?: string;
-  avatarUrl?: string;
-  headline?: string;
-  bioExcerpt?: string;
-  yearsOfExperience?: number;
-  rating?: number;
-  averageRating?: number;
-  bayesianRating?: number;
-  reviewCount?: number;
-  minPrice?: number;
-  lowestPrice?: number;
-  startingPriceVnd?: number;
-  subjects?: ({ id: string; name: string } | string)[];
-  isVerified?: boolean;
-  verifiedBadge?: boolean;
-  supportsOnline?: boolean;
-  supportsOffline?: boolean;
-  provinceName?: string;
-  wardName?: string;
+  fullName: string;
+  avatarUrl: string | null;
+  bioExcerpt: string | null;
+  yearsOfExperience: number;
+  verifiedBadge: boolean;
+  supportsOnline: boolean;
+  supportsOffline: boolean;
+  subjects: { id: string; name: string }[];
+  startingPriceVnd: number;
+  averageRating: number;
+  bayesianRating: number;
+  reviewCount: number;
+  globalRank: number | null;
+  provinceName: string | null;
+  wardName: string | null;
 }
 
 export interface AdministrativeProvince { code: string; name: string; }

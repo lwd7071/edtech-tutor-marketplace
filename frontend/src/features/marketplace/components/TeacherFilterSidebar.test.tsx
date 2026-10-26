@@ -36,7 +36,7 @@ describe('TeacherFilterSidebar', () => {
       minRating: undefined,
       deliveryMode: ''
     },
-    subjects: [{ id: 'sub1', name: 'Toán' }, { id: 'sub2', name: 'Lý' }],
+    subjects: [{ id: 'sub1', code: 'MATH', slug: 'toan', name: 'Toán', educationLevel: 'HIGH_SCHOOL', description: null }, { id: 'sub2', code: 'PHYSICS', slug: 'ly', name: 'Lý', educationLevel: 'HIGH_SCHOOL', description: null }],
     onChange: jest.fn(),
     onClear: jest.fn()
   };
@@ -50,8 +50,9 @@ describe('TeacherFilterSidebar', () => {
     expect(screen.getByText('Lọc kết quả')).toBeInTheDocument();
     expect(screen.getByText('Môn học')).toBeInTheDocument();
     expect(screen.getByText('Giá trọn gói (VNĐ)')).toBeInTheDocument();
-    expect(screen.getByText('Đánh giá')).toBeInTheDocument();
     expect(screen.getByText('Hình thức')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Bộ lọc khác/i }));
+    expect(screen.getByText('Đánh giá')).toBeInTheDocument();
   });
 
   it('calls onClear when clear button is clicked', () => {

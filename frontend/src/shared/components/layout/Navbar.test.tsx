@@ -20,7 +20,7 @@ describe('Navbar Component', () => {
     renderNavbar();
     
     // Should see Logo
-    expect(screen.getByRole('link', { name: /tutor match/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'tutormatch' })).toBeInTheDocument();
     
     // Should see Menu items
     expect(screen.getByText('Tìm gia sư')).toBeInTheDocument();

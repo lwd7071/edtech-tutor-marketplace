@@ -8,7 +8,7 @@ export async function generateStaticParams(){ return []; }
 export default async function Page({params}:{params:Promise<{id:string}>}){
  const {id}=await params;
  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))notFound();
- const [teacherResult,packages,availability,reviews,subjects]=await Promise.allSettled([getTeacherDetailServer(id),getTeacherPackagesServer(id,0,6),getTeacherAvailabilityServer(id),getTeacherReviewsServer(id,0,10),getPublicSubjectsServer({size:100})]);
+ const [teacherResult,packages,availability,reviews,subjects]=await Promise.allSettled([getTeacherDetailServer(id),getTeacherPackagesServer(id,0,6),getTeacherAvailabilityServer(id),getTeacherReviewsServer(id,0,10),getPublicSubjectsServer({size:11})]);
  if(teacherResult.status==='rejected') { if(teacherResult.reason instanceof PublicApiError && teacherResult.reason.status===404) notFound(); throw teacherResult.reason; }
  const teacher=teacherResult.value;
  const p=packages.status==='fulfilled'?packages.value:{data:[],meta:{}};

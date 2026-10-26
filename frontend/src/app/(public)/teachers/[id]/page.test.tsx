@@ -78,7 +78,7 @@ describe('TeacherDetailPage', () => {
     expect(getTeacherPackagesServer).toHaveBeenCalledWith(teacherId, 0, 6);
     expect(getTeacherAvailabilityServer).toHaveBeenCalledWith(teacherId);
     expect(getTeacherReviewsServer).toHaveBeenCalledWith(teacherId, 0, 10);
-    expect(getPublicSubjectsServer).toHaveBeenCalledWith({ size: 100 });
+    expect(getPublicSubjectsServer).toHaveBeenCalledWith({ size: 11 });
   });
 });
 

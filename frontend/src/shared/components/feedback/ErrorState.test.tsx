@@ -34,4 +34,16 @@ describe('ErrorState Component', () => {
     render(<ErrorState trackingId="REQ-12345" />);
     expect(screen.getByText('Tracking ID: REQ-12345')).toBeInTheDocument();
   });
+
+  it('applies an optional presentation class to the inline state root', () => {
+    const { container } = render(<ErrorState variant="inline" className="route-error" title="403" message="Access denied" />);
+    expect(container.querySelector('.route-error')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '403', level: 2 })).toBeInTheDocument();
+    expect(screen.getByText('Access denied')).toBeInTheDocument();
+  });
+
+  it('keeps the auth result status and layout when no presentation class is passed', () => {
+    const { container } = render(<ErrorState variant="auth" title="403" />);
+    expect(container.querySelector('.ant-result-403')).toBeInTheDocument();
+  });
 });

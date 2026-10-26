@@ -29,8 +29,8 @@ describe('TeacherGrid', () => {
 
   it('renders teacher cards when teachers are provided', () => {
     const teachers = [
-      { id: '1', fullName: 'Nguyễn Văn A' },
-      { id: '2', fullName: 'Trần Thị B' },
+      { id: '1', fullName: 'Nguyễn Văn A', avatarUrl: null, bioExcerpt: null, provinceName: null, wardName: null, yearsOfExperience: 3, verifiedBadge: true, supportsOnline: true, supportsOffline: false, subjects: [], startingPriceVnd: 250000, averageRating: 4.8, bayesianRating: 4.7, reviewCount: 12, globalRank: 4 },
+      { id: '2', fullName: 'Trần Thị B', avatarUrl: null, bioExcerpt: null, provinceName: null, wardName: null, yearsOfExperience: 5, verifiedBadge: false, supportsOnline: true, supportsOffline: true, subjects: [], startingPriceVnd: 300000, averageRating: 5, bayesianRating: 4.9, reviewCount: 8, globalRank: null },
     ];
     render(<TeacherGrid isLoading={false} teachers={teachers} />);
     

@@ -21,7 +21,8 @@ describe('TeacherSortBar', () => {
     const mockOnChange = jest.fn();
     render(<TeacherSortBar totalElements={15} value="price_asc" onChange={mockOnChange} />);
     
-    expect(screen.getByText('Tìm thấy 15 gia sư')).toBeInTheDocument();
+    expect(screen.getByText('15')).toBeInTheDocument();
+    expect(screen.getByText('gia sư phù hợp')).toBeInTheDocument();
     
     const select = screen.getByTestId('sort-select');
     fireEvent.change(select, { target: { value: 'rating_desc' } });
@@ -31,7 +32,8 @@ describe('TeacherSortBar', () => {
 
   it('handles undefined value', () => {
     render(<TeacherSortBar totalElements={0} value={undefined} onChange={jest.fn()} />);
-    expect(screen.getByText('Tìm thấy 0 gia sư')).toBeInTheDocument();
+    expect(screen.getByText('0')).toBeInTheDocument();
+    expect(screen.getByText('gia sư phù hợp')).toBeInTheDocument();
     const select = screen.getByTestId('sort-select');
     expect(select).toHaveValue('');
   });

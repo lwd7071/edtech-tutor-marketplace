@@ -1,25 +1,22 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { Button, Typography, Alert, Spin } from 'antd';
-import { MailOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import React, { Suspense, useEffect, useState } from 'react';
+import { Alert, Button, Spin } from 'antd';
+import { CheckCircleOutlined, MailOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
 import { ErrorState } from '@/shared/components/feedback/ErrorState';
 
-const { Title, Text } = Typography;
-
 function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-  const email = searchParams.get('email'); // To pre-fill resend
+  const email = searchParams.get('email');
 
   const [verifying, setVerifying] = useState(!!token);
   const [verifySuccess, setVerifySuccess] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
-  
   const [resending, setResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
 
@@ -40,20 +37,19 @@ function VerifyEmailContent() {
   }, [token]);
 
   const handleResend = async () => {
-    // In a real app, if we don't have the email from params, we might need a form
-    // or we get it from auth context. For simplicity, we assume we have it or user is logged in.
+    // Keep the current missing-email recovery behavior used by this route.
     if (!email) {
       alert('Vui lòng cung cấp email trong URL hoặc đăng nhập để gửi lại.');
       return;
     }
-    
+
     try {
       setResending(true);
       setResendSuccess(false);
       await authApi.resendVerification(email);
       setResendSuccess(true);
     } catch (error: any) {
-      // Handle error
+      // Preserve the existing resend failure behavior.
     } finally {
       setResending(false);
     }
@@ -61,79 +57,73 @@ function VerifyEmailContent() {
 
   if (verifying) {
     return (
-      <div style={{ textAlign: 'center', padding: 'var(--space-10) 0' }}>
+      <main className="tm-verify-page tm-verify-progress" aria-busy="true" aria-live="polite">
         <Spin size="large" />
-        <Title level={4} style={{ marginTop: 'var(--space-4)' }}>Đang xác minh email...</Title>
-      </div>
+        <h1>Đang xác minh email...</h1>
+      </main>
     );
   }
 
   if (verifyError) {
     return (
-      <ErrorState 
-        title="Xác minh thất bại"
-        message={verifyError}
-        actionText="Tới trang Đăng nhập"
-        onRetry={() => {
-          router.push('/auth/login');
-        }}
-      />
+      <div className="tm-verify-page tm-verify-failure">
+        <ErrorState
+          title="Xác minh thất bại"
+          message={verifyError}
+          actionText="Tới trang Đăng nhập"
+          onRetry={() => router.push('/auth/login')}
+        />
+      </div>
     );
   }
 
   if (verifySuccess) {
     return (
-      <div style={{ textAlign: 'center' }}>
-        <CheckCircleOutlined style={{ fontSize: 64, color: 'var(--color-success-600)', marginBottom: 'var(--space-4)' }} />
-        <Title level={3} style={{ marginBottom: 'var(--space-2)' }}>Xác minh thành công</Title>
-        <Text style={{ color: 'var(--color-text-secondary)', display: 'block', marginBottom: 'var(--space-6)' }}>
-          Email của bạn đã được xác minh. Bây giờ bạn có thể sử dụng đầy đủ các tính năng của nền tảng.
-        </Text>
-        <Link href="/auth/login">
+      <main className="tm-verify-page tm-verify-result">
+        <CheckCircleOutlined className="tm-verify-icon tm-verify-success-icon" aria-hidden="true" />
+        <h1>Xác minh thành công</h1>
+        <p>Email của bạn đã được xác minh. Bây giờ bạn có thể sử dụng đầy đủ các tính năng của nền tảng.</p>
+        <Link className="tm-verify-primary-link" href="/auth/login">
           <Button type="primary" size="large" block>Tới trang Đăng nhập</Button>
         </Link>
-      </div>
+      </main>
     );
   }
 
-  // State when just registered and waiting to check email
   return (
-    <div style={{ textAlign: 'center' }}>
-      <MailOutlined style={{ fontSize: 64, color: 'var(--color-primary-500)', marginBottom: 'var(--space-4)' }} />
-      <Title level={3} style={{ marginBottom: 'var(--space-2)' }}>Vui lòng xác minh email</Title>
-      
-      <Alert 
-        title="Kiểm tra hộp thư đến" 
+    <main className="tm-verify-page tm-verify-waiting">
+      <MailOutlined className="tm-verify-icon" aria-hidden="true" />
+      <h1>Vui lòng xác minh email</h1>
+      <p className="tm-verify-intro">Kiểm tra hộp thư đến và mở liên kết xác minh để kích hoạt tài khoản.</p>
+
+      <Alert
+        className="tm-verify-instructions"
+        title="Kiểm tra hộp thư đến"
         description="Chúng tôi đã gửi một email xác minh đến địa chỉ của bạn. Vui lòng nhấp vào liên kết trong email để kích hoạt tài khoản."
-        type="info" 
-        showIcon 
-        style={{ marginBottom: 'var(--space-6)', textAlign: 'left' }} 
+        type="info"
+        showIcon
       />
 
+      {email && <p className="tm-verify-address">{email}</p>}
       {resendSuccess && (
-        <Alert title="Đã gửi lại email xác minh thành công." type="success" style={{ marginBottom: 'var(--space-4)' }} />
+        <Alert className="tm-verify-resend-success" title="Đã gửi lại email xác minh thành công." type="success" showIcon />
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-        <Button 
-          type="primary" 
-          size="large" 
-          onClick={handleResend} 
-          loading={resending}
-        >
+      <div className="tm-verify-actions">
+        <Button className="tm-verify-resend" type="primary" size="large" onClick={handleResend} loading={resending}>
           Gửi lại email xác minh
         </Button>
-        <Link href="/auth/login">
-          <Button size="large" block type="default">Quay lại trang đăng nhập</Button>
+        <Link href="/auth/login" className="tm-verify-login-link">
+          Quay lại trang đăng nhập
         </Link>
       </div>
-    </div>
+    </main>
   );
 }
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<div style={{ textAlign: 'center', padding: 'var(--space-10)' }}><Spin size="large" /></div>}>
+    <Suspense fallback={<main className="tm-verify-page tm-verify-progress" aria-busy="true"><Spin size="large" /></main>}>
       <VerifyEmailContent />
     </Suspense>
   );

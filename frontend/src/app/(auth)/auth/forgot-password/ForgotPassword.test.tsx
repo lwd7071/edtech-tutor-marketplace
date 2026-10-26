@@ -45,7 +45,7 @@ describe('ForgotPasswordPage', () => {
       // Should show the alert message
       expect(screen.getByText('Đã gửi email khôi phục')).toBeInTheDocument();
       // Should contain aria-live
-      expect(screen.getByText('Quay lại đăng nhập').closest('div[aria-live="polite"]')).toBeInTheDocument();
+      expect(screen.getByText('Quay lại đăng nhập').closest('section[aria-live="polite"]')).toBeInTheDocument();
     });
   });
 });

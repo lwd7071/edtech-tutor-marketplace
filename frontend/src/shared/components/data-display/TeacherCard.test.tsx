@@ -31,6 +31,8 @@ describe('TeacherCard', () => {
     
     // Price
     expect(screen.getByText(/150\.000/)).toBeInTheDocument();
+    expect(screen.getByText('Xem hồ sơ')).toBeInTheDocument();
+    expect(screen.queryByText('Xem hồ sơ →')).not.toBeInTheDocument();
   });
 
   it('renders correctly in compact variant', () => {

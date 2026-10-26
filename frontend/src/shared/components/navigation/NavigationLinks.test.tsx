@@ -16,5 +16,7 @@ describe('navigation links', () => {
     expect(screen.getByRole('link', { name: 'Đăng ký gia sư' })).toHaveClass('tm-action-link-primary');
     expect(screen.getByRole('link', { name: 'Tiếp tục hồ sơ' })).toHaveClass('tm-action-link-secondary');
     expect(screen.getByRole('link', { name: 'Tất cả môn học' })).toHaveClass('tm-inline-link');
+    expect(screen.getByRole('link', { name: 'Tiếp tục hồ sơ' }).querySelector('svg')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Tất cả môn học' }).querySelector('svg')).toBeNull();
   });
 });

@@ -35,7 +35,7 @@ describe('RankingPage', () => {
 
     expect(screen.getAllByText('Teacher One').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Teacher Four').length).toBeGreaterThan(0);
-    expect(getPublicSubjectsServer).toHaveBeenCalledWith({ size: 100 });
+    expect(getPublicSubjectsServer).toHaveBeenCalledWith({ size: 11 });
     expect(getGlobalRankingServer).toHaveBeenCalledWith(undefined, 0, 50);
   });
 });

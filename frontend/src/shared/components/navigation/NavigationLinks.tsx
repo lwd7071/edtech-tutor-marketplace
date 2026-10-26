@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 type LinkProps = {
   href: string;
@@ -30,7 +30,6 @@ export function ActionLink({
   return (
     <Link className={classes('tm-action-link', `tm-action-link-${variant}`, className)} href={href}>
       <span>{children}</span>
-      {variant === 'secondary' && <ArrowRightOutlined aria-hidden />}
     </Link>
   );
 }
@@ -39,7 +38,6 @@ export function InlineActionLink({ href, children, className }: LinkProps) {
   return (
     <Link className={classes('tm-inline-link', className)} href={href}>
       <span>{children}</span>
-      <ArrowRightOutlined className="tm-inline-link-arrow" aria-hidden />
     </Link>
   );
 }

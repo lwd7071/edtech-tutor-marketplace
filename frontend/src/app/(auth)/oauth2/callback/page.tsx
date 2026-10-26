@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useRef, useState } from 'react';
-import { Alert, Spin } from 'antd';
+import { Spin } from 'antd';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '@/shared/api/auth';
@@ -52,21 +52,35 @@ function OAuthCallbackContent() {
 
   if (error) {
     return (
-      <Alert
-        type="error"
-        showIcon
-        title={error}
-        action={<Link href="/auth/login">Quay lai dang nhap</Link>}
-      />
+      <main className="tm-oauth-callback" aria-labelledby="oauth-callback-title">
+        <section className="tm-oauth-callback-content" aria-live="assertive">
+          <p className="tm-oauth-callback-status">Không thể đăng nhập</p>
+          <h1 id="oauth-callback-title">Xác thực Google chưa hoàn tất</h1>
+          <p className="tm-oauth-callback-message">{error}</p>
+          <Link className="tm-oauth-callback-recovery" href="/auth/login">Quay lại đăng nhập</Link>
+        </section>
+      </main>
     );
   }
 
-  return <Spin description="Đang hoàn tất đăng nhập Google..." />;
+  return (
+    <main className="tm-oauth-callback" aria-labelledby="oauth-callback-title" aria-busy="true">
+      <section className="tm-oauth-callback-content" aria-live="polite">
+        <Spin className="tm-oauth-callback-spinner" />
+        <h1 id="oauth-callback-title">Đang hoàn tất đăng nhập</h1>
+        <p className="tm-oauth-callback-message">Đang xác thực tài khoản Google và chuẩn bị không gian học tập của bạn.</p>
+      </section>
+    </main>
+  );
 }
 
 export default function OAuthCallbackPage() {
   return (
-    <Suspense fallback={<Spin />}>
+    <Suspense fallback={
+      <main className="tm-oauth-callback" aria-busy="true" aria-label="Đang tải phản hồi xác thực">
+        <section className="tm-oauth-callback-content"><Spin className="tm-oauth-callback-spinner" /><p role="status">Đang tải phản hồi xác thực...</p></section>
+      </main>
+    }>
       <OAuthCallbackContent />
     </Suspense>
   );

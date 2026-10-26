@@ -94,6 +94,9 @@ async function serverApiGetPage<T>(
 export const getPublicSubjectsServer = (params: GetPublicSubjectsParams = {}) =>
   serverApiGetPage<SubjectSummary>('/api/public/subjects', params, { revalidate: 300, tags: ['public-subjects'] });
 
+export const getPublicSubjectServer = (id: string) =>
+  serverApiGet<SubjectSummary>(`/api/public/subjects/${encodeURIComponent(id)}`, {}, { revalidate: 300, tags: ['public-subjects', `public-subject:${id}`] });
+
 export const getPublicTeachersServer = (params: TeacherSearchParams = {}) =>
   serverApiGetPage<TeacherCard>('/api/public/teachers', params, { revalidate: 300, tags: ['public-teachers'] });
 

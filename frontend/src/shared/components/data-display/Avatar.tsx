@@ -2,7 +2,7 @@ import React from 'react';
 import { Avatar as AntdAvatar, Badge, AvatarProps as AntdAvatarProps } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
 
-export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type AvatarSize = 'xs' | 'sm' | 'md' | 'compact' | 'lg' | 'xl';
 
 export interface AvatarProps extends Omit<AntdAvatarProps, 'size'> {
   size?: AvatarSize;
@@ -13,6 +13,7 @@ const sizeMap: Record<AvatarSize, number> = {
   xs: 24,
   sm: 32,
   md: 40,
+  compact: 44,
   lg: 64,
   xl: 96,
 };

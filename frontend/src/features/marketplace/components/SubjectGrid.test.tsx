@@ -30,13 +30,21 @@ describe('SubjectGrid', () => {
 
   it('renders subject cards when subjects are provided', () => {
     const subjects = [
-      { id: '1', name: 'Toán' },
-      { id: '2', name: 'Lý' },
+      { id: '1', code: 'MATH', slug: 'toan', name: 'Toán', educationLevel: 'HIGH_SCHOOL', description: null },
+      { id: '2', code: 'PHYSICS', slug: 'ly', name: 'Lý', educationLevel: 'HIGH_SCHOOL', description: null },
     ];
     render(<SubjectGrid isLoading={false} subjects={subjects} />);
     
     expect(screen.getAllByRole('link')).toHaveLength(2);
     expect(screen.getByText('Toán')).toBeInTheDocument();
     expect(screen.getByText('Lý')).toBeInTheDocument();
+  });
+
+  it('renders a compact card with the subject level and without its long description', () => {
+    render(<SubjectGrid isLoading={false} subjects={[{ id: 'math-id', code: 'MATH', slug: 'toan', name: 'Toán', educationLevel: 'HIGH_SCHOOL', description: 'Ôn tập kiến thức và luyện thi.' }]} />);
+
+    expect(screen.getByText('THPT')).toBeInTheDocument();
+    expect(screen.queryByText('Ôn tập kiến thức và luyện thi.')).not.toBeInTheDocument();
+    expect(screen.queryByText('Chọn môn này →')).not.toBeInTheDocument();
   });
 });

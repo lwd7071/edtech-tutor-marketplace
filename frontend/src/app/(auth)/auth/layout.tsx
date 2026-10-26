@@ -1,59 +1,21 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--color-surface)' }}>
-      {/* Left side: Illustration / Branding (hidden on mobile) */}
-      <div 
-        style={{ 
-          flex: 1, 
-          display: 'none', 
-          backgroundColor: 'var(--color-primary-50)', 
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: 'var(--space-10)',
-        }}
-        className="auth-illustration"
-      >
-        <div style={{ maxWidth: 480, textAlign: 'center' }}>
-          <h1 style={{ fontSize: 'var(--text-display-md)', color: 'var(--color-primary-900)', marginBottom: 'var(--space-4)' }}>
-            Học Trực Tuyến Cùng Gia Sư Giỏi
-          </h1>
-          <p style={{ fontSize: 'var(--text-body-lg)', color: 'var(--color-text-secondary)' }}>
-            Nền tảng kết nối học viên với gia sư phù hợp, giúp bạn tiến gần mục tiêu học tập theo nhịp riêng.
-          </p>
+    <div className="tm-auth-shell">
+      <aside className="tm-auth-story" aria-label="Giới thiệu Tutor Match">
+        <Link href="/" className="tm-brand" aria-label="tutormatch">tutormatch</Link>
+        <div className="tm-auth-story-content">
+          <h1>Học đúng người.<br />Tiến đúng mục tiêu.</h1>
+          <p>Kết nối học viên và gia sư trong những buổi học 1–1 theo mục tiêu của bạn.</p>
+          <Image src="/images/tutor-hero-illustration.png" alt="Học viên và gia sư học cùng nhau" width={728} height={512} />
         </div>
-      </div>
-      <style>{`
-        @media (min-width: 900px) {
-          .auth-illustration {
-            display: flex !important;
-          }
-        }
-      `}</style>
-
-      {/* Right side: Form (Card on desktop, full width on mobile) */}
-      <div 
-        style={{ 
-          flex: 1, 
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: 'var(--space-6)',
-          backgroundColor: 'var(--color-surface)',
-        }}
-      >
-        <div style={{ width: '100%', maxWidth: 440 }}>
-          <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
-            <Link href="/" style={{ textDecoration: 'none' }}>
-              <div style={{ fontSize: 32, fontWeight: 'var(--weight-bold)', color: 'var(--color-primary-600)' }}>
-                EdTech Tutor
-              </div>
-            </Link>
-          </div>
+      </aside>
+      <div className="tm-auth-form-side">
+        <div className="tm-auth-form-wrap">
+          <Link href="/" className="tm-brand tm-auth-mobile-brand" aria-label="tutormatch">tutormatch</Link>
           {children}
         </div>
       </div>

@@ -14,6 +14,7 @@ export interface ErrorStateProps {
   actionText?: string;
   trackingId?: string;
   style?: React.CSSProperties;
+  className?: string;
 }
 
 export const ErrorState: React.FC<ErrorStateProps> = ({
@@ -25,6 +26,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   actionText,
   trackingId,
   style,
+  className,
 }) => {
   const isInline = variant === 'inline';
 
@@ -45,13 +47,11 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 
   if (isInline) {
     return (
-      <div style={{ textAlign: 'center', padding: '16px', ...style }}>
-        <Text type="danger" strong>{title}</Text>
-        <div style={{ margin: '8px 0' }}>
-          <Text type="secondary">{message}</Text>
-        </div>
+      <section className={className} aria-label="Thông báo lỗi" style={{ textAlign: 'center', padding: '16px', ...style }}>
+        <h2 className="tm-error-inline-title">{title}</h2>
+        <p className="tm-error-inline-message">{message}</p>
         {extraContent}
-      </div>
+      </section>
     );
   }
 
@@ -64,6 +64,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
       subTitle={message}
       extra={extraContent}
       style={style}
+      className={className}
     />
   );
 };

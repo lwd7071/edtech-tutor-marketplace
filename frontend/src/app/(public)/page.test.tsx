@@ -44,18 +44,30 @@ describe('LandingPage', () => {
     (getPublicTeachersServer as jest.Mock).mockResolvedValue({ data: [], meta: {} });
 
     const Page = await LandingPage();
-    render(Page);
+    const { container } = render(Page);
 
-    expect(screen.getByText(/Một người hướng dẫn/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Học đúng người\. Tiến đúng mục tiêu\./i })).toBeInTheDocument();
+    expect(screen.getByRole('main')).toHaveClass('tm-home-page');
     expect(screen.getByTestId('hero-search')).toBeInTheDocument();
     expect(screen.getByTestId('subject-grid')).toBeInTheDocument();
     expect(screen.getByTestId('teacher-grid')).toBeInTheDocument();
     expect(screen.getByTestId('public-data-recovery')).toHaveAttribute('data-error', 'false');
-    expect(screen.getByText('Một khởi đầu rõ ràng')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Trở thành gia sư/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Cách hoạt động' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Đăng ký làm gia sư/i })).toHaveAttribute('href', '/become-a-tutor');
+    expect(screen.getByRole('heading', { name: 'Một người đồng hành phù hợp tạo nên khác biệt.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Khám phá các môn học phổ biến' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Trở thành gia sư' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Học viên viết bài trong buổi học trực tuyến cùng gia sư' })).toBeInTheDocument();
+    const sections = [...document.querySelectorAll('section')];
+    expect(sections.findIndex(section => section.getAttribute('aria-labelledby') === 'home-subjects-title'))
+      .toBeLessThan(sections.findIndex(section => section.getAttribute('aria-labelledby') === 'home-story-title'));
+    expect(screen.getByRole('img', { name: 'Học viên trao đổi bài cùng gia sư trong lớp học trực tuyến' }).getAttribute('src')).toContain('tutor-learning-illustration.png');
+    expect(container.querySelector('.tm-home-tutor-art')).toHaveAttribute('alt', '');
+    expect(screen.getByRole('link', { name: 'Tất cả môn học' })).toHaveAttribute('href', '/subjects');
+    expect(screen.getByRole('link', { name: 'Tất cả gia sư' })).toHaveAttribute('href', '/teachers');
 
-    expect(getPublicSubjectsServer).toHaveBeenCalled();
-    expect(getPublicTeachersServer).toHaveBeenCalled();
+    expect(getPublicSubjectsServer).toHaveBeenCalledWith({ page: 0, size: 9 });
+    expect(getPublicTeachersServer).toHaveBeenCalledWith({ sort: 'rating_desc', page: 0, size: 6 });
   });
 
   it('enables client recovery when a server-side public request fails', async () => {

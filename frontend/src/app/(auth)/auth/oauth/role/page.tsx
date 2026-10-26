@@ -1,15 +1,13 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
-import { Button, Typography, Alert, Space } from 'antd';
+import React, { Suspense, useState } from 'react';
+import { Alert, Button } from 'antd';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { authApi } from '@/shared/api/auth';
 import { useAuthStore } from '@/features/auth';
 import RadioCard from '@/shared/components/ui/RadioCard';
 import { roleHome } from '@/shared/lib/navigation';
-import { useQueryClient } from '@tanstack/react-query';
-
-const { Title, Text } = Typography;
 
 function OAuthRoleContent() {
   const router = useRouter();
@@ -17,7 +15,6 @@ function OAuthRoleContent() {
   const registrationToken = searchParams.get('registrationToken');
   const establish = useAuthStore((state) => state.establish);
   const queryClient = useQueryClient();
-
   const [role, setRole] = useState<'STUDENT' | 'TEACHER'>('STUDENT');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -31,10 +28,8 @@ function OAuthRoleContent() {
     try {
       setLoading(true);
       setErrorMsg(null);
-
       const payload = { registrationToken, role };
       const res = await authApi.completeOAuthRegistration(payload);
-
       if (res.data) {
         queryClient.clear();
         establish(res.data, true);
@@ -48,28 +43,28 @@ function OAuthRoleContent() {
   };
 
   return (
-    <div>
-      <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
-        <Title level={3} style={{ marginBottom: 'var(--space-2)' }}>Hoàn tất đăng ký</Title>
-        <Text style={{ color: 'var(--color-text-secondary)' }}>
-          Bạn muốn tham gia với vai trò gì?
-        </Text>
-      </div>
+    <main className="tm-oauth-role-page">
+      <header className="tm-oauth-role-heading">
+        <h1>Hoàn tất đăng ký</h1>
+        <p>Bạn muốn tham gia với vai trò gì?</p>
+      </header>
 
       <Alert
+        className="tm-oauth-role-warning"
         title="Lưu ý quan trọng"
         description="Vai trò này không thể thay đổi sau khi bạn hoàn tất đăng ký."
         type="warning"
         showIcon
-        style={{ marginBottom: 'var(--space-6)', textAlign: 'left' }}
       />
 
       {errorMsg && (
-        <Alert title={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
+        <Alert className="tm-oauth-role-error" title={errorMsg} type="error" showIcon role="alert" />
       )}
 
-      <Space orientation="vertical" style={{ width: '100%', marginBottom: 'var(--space-8)' }} size="middle">
+      <fieldset className="tm-oauth-role-options">
+        <legend>Chọn vai trò</legend>
         <RadioCard
+          className="tm-oauth-role-option"
           title="Học viên / Phụ huynh"
           description="Tìm kiếm gia sư và tham gia các khóa học"
           value="STUDENT"
@@ -77,15 +72,17 @@ function OAuthRoleContent() {
           onChange={() => setRole('STUDENT')}
         />
         <RadioCard
+          className="tm-oauth-role-option"
           title="Gia sư"
           description="Trở thành người giảng dạy và tạo thu nhập"
           value="TEACHER"
           checked={role === 'TEACHER'}
           onChange={() => setRole('TEACHER')}
         />
-      </Space>
+      </fieldset>
 
       <Button
+        className="tm-oauth-role-submit"
         type="primary"
         size="large"
         block
@@ -94,13 +91,13 @@ function OAuthRoleContent() {
       >
         Hoàn tất đăng ký
       </Button>
-    </div>
+    </main>
   );
 }
 
 export default function OAuthRolePage() {
   return (
-    <Suspense fallback={<div>Đang tải...</div>}>
+    <Suspense fallback={<main className="tm-oauth-role-page tm-oauth-role-loading" aria-busy="true">Đang tải...</main>}>
       <OAuthRoleContent />
     </Suspense>
   );

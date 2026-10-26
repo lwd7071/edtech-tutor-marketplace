@@ -1,21 +1,19 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Input, Button, Checkbox, Typography, Divider, Alert } from 'antd';
+import { Alert, Button, Checkbox, Divider, Input } from 'antd';
 import { GoogleOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { authApi } from '@/shared/api/auth';
 import { BASE_API_URL } from '@/shared/backend';
 import { useAuthStore } from '@/features/auth';
 import { ErrorState } from '@/shared/components/feedback/ErrorState';
 import { roleHome, safeReturnTo } from '@/shared/lib/navigation';
-import { useQueryClient } from '@tanstack/react-query';
-
-const { Title, Text } = Typography;
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email không được để trống').email('Email không đúng định dạng'),
@@ -30,7 +28,6 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const establish = useAuthStore((state) => state.establish);
   const queryClient = useQueryClient();
-  
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isLocked, setIsLocked] = useState(false);
@@ -44,15 +41,12 @@ function LoginForm() {
     try {
       setLoading(true);
       setErrorMsg(null);
-      
       const payload = {
         email: values.email,
         password: values.password,
         deviceInfo: navigator.userAgent,
       };
-
       const res = await authApi.login(payload);
-      
       if (res.data) {
         queryClient.clear();
         establish(res.data, values.remember);
@@ -73,119 +67,110 @@ function LoginForm() {
 
   if (isLocked) {
     return (
-      <ErrorState 
+      <ErrorState
         title="Tài khoản bị khóa"
         message="Tài khoản của bạn đã bị khóa do vi phạm chính sách của chúng tôi. Vui lòng liên hệ bộ phận hỗ trợ để biết thêm chi tiết."
         actionText="Liên hệ hỗ trợ"
-        onRetry={() => {
-          router.push('/support');
-        }}
+        onRetry={() => router.push('/support')}
       />
     );
   }
 
   return (
-    <div>
-      <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
-        <Title level={3} style={{ marginBottom: 'var(--space-2)' }}>Đăng nhập</Title>
-        <Text style={{ color: 'var(--color-text-secondary)' }}>
-          Chào mừng bạn quay trở lại!
-        </Text>
-      </div>
+    <main className="tm-login-page">
+      <header className="tm-login-heading">
+        <h1>Đăng nhập</h1>
+        <p>Chào mừng bạn quay trở lại!</p>
+      </header>
 
       {errorMsg && (
-        <Alert description={errorMsg} type="error" showIcon style={{ marginBottom: 'var(--space-4)' }} />
+        <Alert className="tm-login-error" description={errorMsg} type="error" showIcon role="alert" />
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ marginBottom: 'var(--space-4)' }}>
-          <Text strong style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Email</Text>
+      <form className="tm-login-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="tm-login-field">
+          <label htmlFor="login-email">Email</label>
           <Controller
             name="email"
             control={control}
             render={({ field }) => (
-              <Input 
-                {...field} 
-                size="large" 
-                placeholder="Nhập email của bạn" 
+              <Input
+                {...field}
+                id="login-email"
+                size="large"
+                placeholder="Nhập email của bạn"
                 autoComplete="username"
                 status={errors.email ? 'error' : ''}
+                aria-invalid={Boolean(errors.email)}
+                aria-describedby={errors.email ? 'login-email-error' : undefined}
               />
             )}
           />
-          {errors.email && <Text type="danger" style={{ fontSize: 'var(--text-body-sm)' }}>{errors.email.message}</Text>}
+          {errors.email && <p className="tm-login-field-error" id="login-email-error">{errors.email.message}</p>}
         </div>
 
-        <div style={{ marginBottom: 'var(--space-4)' }}>
-          <Text strong style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Mật khẩu</Text>
+        <div className="tm-login-field">
+          <div className="tm-login-password-heading">
+            <label htmlFor="login-password">Mật khẩu</label>
+            <Link href="/auth/forgot-password">Quên mật khẩu?</Link>
+          </div>
           <Controller
             name="password"
             control={control}
             render={({ field }) => (
-              <Input.Password 
-                {...field} 
-                size="large" 
-                placeholder="Nhập mật khẩu" 
+              <Input.Password
+                {...field}
+                id="login-password"
+                size="large"
+                placeholder="Nhập mật khẩu"
                 autoComplete="current-password"
                 status={errors.password ? 'error' : ''}
+                aria-invalid={Boolean(errors.password)}
+                aria-describedby={errors.password ? 'login-password-error' : undefined}
               />
             )}
           />
-          {errors.password && <Text type="danger" style={{ fontSize: 'var(--text-body-sm)' }}>{errors.password.message}</Text>}
+          {errors.password && <p className="tm-login-field-error" id="login-password-error">{errors.password.message}</p>}
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
-          <Controller
-            name="remember"
-            control={control}
-            render={({ field }) => (
-              <Checkbox checked={field.value} onChange={field.onChange}>
-                Ghi nhớ đăng nhập
-              </Checkbox>
-            )}
-          />
-          <Link href="/auth/forgot-password" style={{ color: 'var(--color-primary-600)' }}>
-            Quên mật khẩu?
-          </Link>
-        </div>
+        <Controller
+          name="remember"
+          control={control}
+          render={({ field }) => (
+            <Checkbox className="tm-login-remember" checked={field.value} onChange={field.onChange}>
+              Ghi nhớ đăng nhập
+            </Checkbox>
+          )}
+        />
 
-        <Button 
-          type="primary" 
-          htmlType="submit" 
-          size="large" 
-          block 
-          loading={loading}
-          style={{ marginBottom: 'var(--space-4)' }}
-        >
+        <Button className="tm-login-submit" type="primary" htmlType="submit" size="large" block loading={loading}>
           Đăng nhập
         </Button>
       </form>
 
-      <Divider plain>Hoặc</Divider>
+      <Divider className="tm-login-divider" plain>Hoặc</Divider>
 
       <Button
+        className="tm-login-google"
         size="large"
         block
         icon={<GoogleOutlined />}
         href={`${BASE_API_URL}/oauth2/authorization/google`}
-        style={{ marginBottom: 'var(--space-6)' }}
       >
         Đăng nhập bằng Google
       </Button>
 
-      <div style={{ textAlign: 'center' }}>
-        <Text type="secondary">Chưa có tài khoản? </Text>
-        <Link href="/auth/register" style={{ color: 'var(--color-primary-600)', fontWeight: 'var(--weight-semibold)' }}>
-          Đăng ký ngay
-        </Link>
-      </div>
-    </div>
+      <footer className="tm-login-register">
+        <span>Chưa có tài khoản?</span>
+        <Link href="/auth/register">Đăng ký ngay</Link>
+      </footer>
+    </main>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div>Đang tải...</div>}>
+    <Suspense fallback={<main className="tm-login-page tm-login-loading" aria-busy="true">Đang tải...</main>}>
       <LoginForm />
     </Suspense>
   );

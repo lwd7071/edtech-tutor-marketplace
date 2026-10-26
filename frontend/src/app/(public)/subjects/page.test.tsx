@@ -1,24 +1,23 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import SubjectsPage from './page';
-import { getPublicSubjectsServer } from '@/shared/api/public.server';
+import { getPublicSubjectServer, getPublicSubjectsServer } from '@/shared/api/public.server';
 
 // Mock dependencies
 jest.mock('@/shared/api/public.server', () => ({
   getPublicSubjectsServer: jest.fn(),
+  getPublicSubjectServer: jest.fn(),
 }));
 
-jest.mock('@/features/marketplace/components/SubjectGrid', () => {
-  return function MockSubjectGrid({ subjects, isLoading, isError }: any) {
-    if (isLoading) return <div data-testid="subject-grid-loading" />;
-    if (isError) return <div data-testid="subject-grid-error" />;
+jest.mock('./SubjectPickerClient', () => ({ SubjectPickerClient: (props: any) => {
+    if (props.hasError) return <div data-testid="subject-grid-error" />;
     return (
       <div data-testid="subject-grid">
-        {subjects?.map((s: any) => <span key={s.id}>{s.name}</span>)}
+        {props.subjects?.map((s: any) => <span key={s.id}>{s.name}</span>)}
+        <span data-testid="selected-subject">{props.selectedSubject?.name || ''}</span>
       </div>
     );
-  };
-});
+  }}));
 
 // Mock Next.js Link and useRouter
 jest.mock('next/link', () => {
@@ -45,7 +44,7 @@ describe('SubjectsPage', () => {
   it('renders search input and fetches subjects', async () => {
     const mockData = {
       data: [{ id: '1', name: 'Môn Toán' }],
-      meta: { page: 0, totalElements: 1, size: 20 }
+      meta: { page: 0, totalElements: 1, size: 11 }
     };
     (getPublicSubjectsServer as jest.Mock).mockResolvedValue(mockData);
 
@@ -54,8 +53,6 @@ describe('SubjectsPage', () => {
     const PageComponent = await SubjectsPage({ searchParams: Promise.resolve(searchParams) });
     render(PageComponent);
 
-    expect(screen.getByLabelText('Tên môn học')).toHaveValue('Toán');
-    expect(screen.getByRole('button', { name: 'Tìm môn học' })).toBeInTheDocument();
     expect(screen.getByTestId('subject-grid')).toBeInTheDocument();
     expect(screen.getByText('Môn Toán')).toBeInTheDocument();
     
@@ -64,7 +61,7 @@ describe('SubjectsPage', () => {
       keyword: 'Toán',
       page: 0,
       educationLevel: undefined,
-      size: 16
+      size: 11
     });
   });
 

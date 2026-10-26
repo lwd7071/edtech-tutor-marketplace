@@ -15,6 +15,7 @@ describe('RegisterPage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.history.replaceState({}, '', '/auth/register');
     (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
   });
 
@@ -58,8 +59,36 @@ describe('RegisterPage', () => {
     fireEvent.submit(document.querySelector('form')!); 
 
     await waitFor(() => {
-      expect(authApi.register).toHaveBeenCalled();
+      expect(authApi.register).toHaveBeenCalledWith({
+        fullName: 'Test User',
+        email: 'test@example.com',
+        password: 'StrongPass123!',
+        role: 'STUDENT',
+      });
       expect(mockPush).toHaveBeenCalledWith('/auth/verify-email?email=test%40example.com');
     });
   });
+
+  it('applies the teacher role from the query without adding parent fields to the request', async () => {
+    (authApi.register as jest.Mock).mockResolvedValueOnce({ data: { success: true, email: 'teacher@example.com' } });
+    window.history.replaceState({}, '', '/auth/register?role=TEACHER');
+
+    render(<RegisterPage />);
+    fireEvent.change(screen.getByPlaceholderText('Ví dụ: Nguyễn Văn A'), { target: { value: 'Test Teacher' } });
+    fireEvent.change(screen.getByPlaceholderText('Nhập email của bạn'), { target: { value: 'teacher@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText('Nhập mật khẩu'), { target: { value: 'StrongPass123!' } });
+    fireEvent.click(document.querySelector('input[type="checkbox"]')!);
+    fireEvent.submit(document.querySelector('form')!);
+
+    await waitFor(() => {
+      expect(authApi.register).toHaveBeenCalledWith({
+        fullName: 'Test Teacher',
+        email: 'teacher@example.com',
+        password: 'StrongPass123!',
+        role: 'TEACHER',
+      });
+      expect(mockPush).toHaveBeenCalledWith('/auth/verify-email?email=teacher%40example.com');
+    });
+  });
+
 });
