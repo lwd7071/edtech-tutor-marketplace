@@ -70,3 +70,4 @@ chay-backend.bat
 /data/postgres/
 /backups/*
 !/backups/.gitkeep
+frontend/.next-*/
