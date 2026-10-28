@@ -7,7 +7,6 @@ export interface TeacherDocumentSnapshot {
   id: string;
   type: string;
   title: string;
-  secureUrl: string;
   mimeType: string;
   fileSize: number;
   verificationStatus: string;

@@ -18,6 +18,8 @@ Backend là modular monolith Spring Boot. Mỗi module trong `com.edtech.platfor
 
 Các side effect ra email provider, WebSocket và notification chỉ chạy sau khi transaction nghiệp vụ commit. Các invariant về tiền, ledger, lượt học và lock order vẫn nằm trong transaction của module sở hữu.
 
+Giấy tờ định danh upload mới sử dụng authenticated delivery; admin tải nội dung qua backend proxy, không nhận URL storage. Object cũ được kiểm kê và chuyển theo [runbook](../operations/teacher-identity-document-rollout.md). WebSocket kiểm tra trạng thái tài khoản và hạn JWT theo từng session khi nhận lệnh và khi phát dữ liệu; chỉ lưu ID và thời hạn, không lưu token.
+
 ## Identity và OAuth
 
 `AuthService` tổng đã được thay bằng các lifecycle riêng:

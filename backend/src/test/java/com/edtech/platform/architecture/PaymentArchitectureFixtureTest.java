@@ -24,7 +24,11 @@ class PaymentArchitectureFixtureTest {
     }
     @Test void entityManagerServiceFixtureIsCaught() {
         var imported = new ClassFileImporter().importClasses(BadEntityManagerService.class);
-        assertThrows(AssertionError.class, () -> noClasses().should().dependOnClassesThat().haveFullyQualifiedName("jakarta.persistence.EntityManager").check(imported));
+        assertThrows(AssertionError.class, () -> SolidGuardrailsArchitectureTest.SERVICES_NO_ENTITY_MANAGER.check(imported));
+    }
+    @Test void serviceRepositoryInheritanceFixtureIsCaught() {
+        var imported = new ClassFileImporter().importClasses(com.edtech.platform.architecture.paymentfixtures.service.BadRepositoryService.class);
+        assertThrows(AssertionError.class, () -> SolidGuardrailsArchitectureTest.SERVICES_NO_REPOSITORY_INHERITANCE.check(imported));
     }
     @Test void commandQueryFixturesAreCaught() {
         var command = new ClassFileImporter().importClasses(BadCommandService.class);

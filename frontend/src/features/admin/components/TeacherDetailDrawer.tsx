@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Button, Drawer, Input, message, Tag } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Button, Drawer, Input, message, Modal, Tag } from 'antd';
+import { adminApi } from '../api/adminApi';
 import { TeacherApprovalSnapshot } from '../types';
 import { useApproveTeacher, useRejectTeacher } from '../hooks/useAdminApprovals';
 import { parseApiError } from '@/shared/backend';
@@ -19,10 +20,21 @@ export function TeacherDetailDrawer({ open, teacher, onClose }: TeacherDetailDra
   const [rejectReason, setRejectReason] = useState('');
   const [approvalNote, setApprovalNote] = useState('');
   const [showRejectInput, setShowRejectInput] = useState(false);
+  const [proof, setProof] = useState<string | null>(null);
+  const [proofLoading, setProofLoading] = useState(false);
+  useEffect(() => () => { if (proof) URL.revokeObjectURL(proof); }, [proof]);
+  useEffect(() => { if (!open) setProof(null); }, [open]);
   const approveMutation = useApproveTeacher();
   const rejectMutation = useRejectTeacher();
 
   if (!teacher) return null;
+
+  const viewProof = async (id: string) => {
+    setProofLoading(true);
+    try { setProof(URL.createObjectURL(await adminApi.getTeacherDocumentProof(id))); }
+    catch { message.error('Không mở được giấy tờ xác minh.'); }
+    finally { setProofLoading(false); }
+  };
 
   const handleApprove = async () => {
     try {
@@ -97,7 +109,7 @@ export function TeacherDetailDrawer({ open, teacher, onClose }: TeacherDetailDra
           <ul className={styles.documents}>
             {teacher.documents.map(document => <li key={document.id}>
               <div><h3>{document.title}</h3><p>{document.type} · {(document.fileSize / 1024).toFixed(0)} KB · {document.verificationStatus}</p></div>
-              <a href={document.secureUrl} target="_blank" rel="noopener noreferrer">Xem tài liệu</a>
+              <Button loading={proofLoading} onClick={() => void viewProof(document.id)}>Xem tài liệu</Button>
             </li>)}
           </ul>}
       </section>
@@ -114,5 +126,8 @@ export function TeacherDetailDrawer({ open, teacher, onClose }: TeacherDetailDra
         </>}
       </section>}
     </div>
+    <Modal title="Giấy tờ xác minh" open={proof !== null} onCancel={() => setProof(null)} footer={null} destroyOnHidden>
+      {proof && <iframe title="Giấy tờ xác minh" src={proof} style={{ width: '100%', height: '70vh', border: 0 }} />}
+    </Modal>
   </Drawer>;
 }

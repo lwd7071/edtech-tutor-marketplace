@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -43,12 +42,12 @@ public class InvoiceReconciliationJob {
         // Find invoices that were created at least 15 minutes ago
         Instant cutoff = Instant.now().minus(15, ChronoUnit.MINUTES);
 
-        int page = 0;
+        long afterOrderCode = 0;
         int size = 50;
         List<Invoice> pendingInvoices;
 
         do {
-            pendingInvoices = invoiceQueryRepository.findPendingExpiredBefore(cutoff, PageRequest.of(page, size));
+            pendingInvoices = invoiceQueryRepository.findPendingExpiredAfterOrderCode(cutoff, afterOrderCode, size);
 
             for (Invoice invoice : pendingInvoices) {
                 try {
@@ -57,7 +56,7 @@ public class InvoiceReconciliationJob {
                     log.error("Error reconciling invoice: {}", invoice.getInvoiceNumber(), e);
                 }
             }
-            page++;
+            if (!pendingInvoices.isEmpty()) afterOrderCode = pendingInvoices.get(pendingInvoices.size() - 1).getPayosOrderCode();
         } while (pendingInvoices.size() == size);
 
         log.info("Finished Invoice Reconciliation Job.");
@@ -78,13 +77,12 @@ public class InvoiceReconciliationJob {
         String status = linkStatus.status();
 
         if ("PAID".equalsIgnoreCase(status) || "SUCCESS".equalsIgnoreCase(status)) {
-            VerifiedPayment verifiedPayment = new VerifiedPayment(
-                    "RECONCILE-" + invoice.getInvoiceNumber(),
-                    invoice.getPayosOrderCode(),
-                    invoice.getAmountVnd(), // Assuming fully paid
-                    Instant.now(),
-                    null // Dummy sanitized payload
-            );
+            VerifiedPayment verifiedPayment = linkStatus.verifiedPayment();
+            if (verifiedPayment == null || verifiedPayment.orderCode() != invoice.getPayosOrderCode()
+                    || verifiedPayment.amountVnd() != invoice.getAmountVnd()) {
+                log.error("Provider payment evidence missing or mismatched for invoice {}", invoice.getInvoiceNumber());
+                return;
+            }
 
             try {
                 paymentWebhookService.processWebhook(verifiedPayment);

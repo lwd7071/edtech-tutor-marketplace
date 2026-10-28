@@ -1,8 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { TeacherApprovalTable } from './TeacherApprovalTable';
 import { TeacherDetailDrawer } from './TeacherDetailDrawer';
 import { TeacherApprovalSnapshot } from '../types';
+import { adminApi } from '../api/adminApi';
+
+jest.mock('../api/adminApi', () => ({ adminApi: { getTeacherDocumentProof: jest.fn() } }));
 
 // Mock hook useTeacherApprovals, useApproveTeacher, useRejectTeacher
 jest.mock('../hooks/useAdminApprovals', () => ({
@@ -24,7 +27,6 @@ jest.mock('../hooks/useAdminApprovals', () => ({
               id: 'd-1',
               type: 'DEGREE',
               title: 'Bằng Cử nhân Sư phạm Toán',
-              secureUrl: 'https://cdn.example.com/degree.pdf',
               mimeType: 'application/pdf',
               fileSize: 1048576,
               verificationStatus: 'PENDING',
@@ -57,7 +59,11 @@ describe('TeacherApprovalTable & Drawer (TDD)', () => {
     expect(screen.getByRole('button', { name: /Xem hồ sơ/i })).toBeInTheDocument();
   });
 
-  it('should display drawer details when teacher profile is selected', () => {
+  it('should load a private document through the admin proxy', async () => {
+    const blob = new Blob(['proof'], { type: 'application/pdf' });
+    jest.mocked(adminApi.getTeacherDocumentProof).mockResolvedValue(blob);
+    URL.createObjectURL = jest.fn(() => 'blob:proof');
+    URL.revokeObjectURL = jest.fn();
     const mockTeacher: TeacherApprovalSnapshot = {
       teacherProfileId: 't-101',
       userId: 'u-1',
@@ -73,7 +79,6 @@ describe('TeacherApprovalTable & Drawer (TDD)', () => {
           id: 'd-1',
           type: 'DEGREE',
           title: 'Bằng Cử nhân Sư phạm Toán',
-          secureUrl: 'https://cdn.example.com/degree.pdf',
           mimeType: 'application/pdf',
           fileSize: 1048576,
           verificationStatus: 'PENDING',
@@ -87,7 +92,12 @@ describe('TeacherApprovalTable & Drawer (TDD)', () => {
     expect(screen.getByText('Chi tiết hồ sơ gia sư')).toBeInTheDocument();
     expect(screen.getByText('Tiếng Việt')).toBeInTheDocument();
     expect(screen.getByText('Bằng Cử nhân Sư phạm Toán')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Xem tài liệu/i })).toHaveAttribute('href', 'https://cdn.example.com/degree.pdf');
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Xem tài liệu/i }));
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(adminApi.getTeacherDocumentProof).toHaveBeenCalledWith('d-1'));
+    expect(await screen.findByTitle('Giấy tờ xác minh')).toHaveAttribute('src', 'blob:proof');
     expect(screen.getByRole('button', { name: /Phê duyệt/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Từ chối/i })).toBeInTheDocument();
   });

@@ -382,19 +382,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
                 WHERE tgrelid = 'public.platform_ledger_entries'::regclass
                   AND tgname='trg_platform_ledger_append_only'
                 """, Integer.class)).isEqualTo(1);
-        for (String role : List.of("anon", "authenticated")) {
-            boolean exists = Boolean.TRUE.equals(jdbcTemplate.queryForObject(
-                    "SELECT EXISTS (SELECT 1 FROM pg_roles WHERE rolname=?)", Boolean.class, role));
-            if (exists) {
-                for (String table : List.of("booking_settlements", "platform_ledger_entries")) {
-                    for (String privilege : List.of("SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE")) {
-                        Boolean granted = jdbcTemplate.queryForObject(
-                                "SELECT has_table_privilege(?, ?, ?)", Boolean.class, role, table, privilege);
-                        assertThat(granted).as(role + " " + privilege + " " + table).isFalse();
-                    }
-                }
-            }
-        }
+        // Role grants are exercised on an isolated upgrade path by RlsGrantMigrationTest.
     }
 
     @Test

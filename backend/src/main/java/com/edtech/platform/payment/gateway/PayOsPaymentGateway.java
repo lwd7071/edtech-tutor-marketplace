@@ -17,6 +17,9 @@ import vn.payos.model.webhooks.WebhookData;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Slf4j
@@ -77,13 +80,31 @@ public class PayOsPaymentGateway implements PaymentGateway {
             }
             Instant expiresAt = Instant.now().plus(Duration.ofMinutes(15));
             String checkoutUrl = info.getId() != null ? "https://checkout.payos.vn/web/" + info.getId() : null;
+            VerifiedPayment payment = null;
+            if (info.getOrderCode() != null && info.getOrderCode() == orderCode && info.getAmount() != null
+                    && info.getAmountPaid() != null && info.getAmountRemaining() != null
+                    && info.getAmount().equals(info.getAmountPaid()) && info.getAmountRemaining() == 0
+                    && info.getTransactions() != null && info.getTransactions().size() == 1) {
+                var tx = info.getTransactions().get(0);
+                if (tx.getReference() != null && !tx.getReference().isBlank() && tx.getAmount() != null
+                        && tx.getAmount().equals(info.getAmountPaid()) && tx.getTransactionDateTime() != null) {
+                    try {
+                        Instant paidAt = LocalDateTime.parse(tx.getTransactionDateTime(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                                .atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toInstant();
+                        payment = new VerifiedPayment(tx.getReference(), orderCode, tx.getAmount(), paidAt, null);
+                    } catch (java.time.DateTimeException ignored) {
+                        log.warn("Cannot parse provider transaction time for orderCode={}", orderCode);
+                    }
+                }
+            }
             return Optional.of(new PaymentLinkStatus(
                     info.getOrderCode(),
                     info.getId(),
                     checkoutUrl,
                     null,
                     expiresAt,
-                    info.getStatus() != null ? info.getStatus().name() : "UNKNOWN"
+                    info.getStatus() != null ? info.getStatus().name() : "UNKNOWN",
+                    payment
             ));
         } catch (NotFoundException e) {
             return Optional.empty();

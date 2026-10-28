@@ -116,6 +116,7 @@ class PaymentWebhookServiceTest {
         UUID invoiceId = UUID.randomUUID();
         when(invoice.getId()).thenReturn(invoiceId);
         when(invoice.getStatus()).thenReturn(InvoiceStatus.PAID);
+        when(invoice.getAmountVnd()).thenReturn(500000L);
         when(invoiceCommandRepository.findByPayosOrderCodeForUpdate(orderCode)).thenReturn(Optional.of(invoice));
         PaymentTransaction existing = mock(PaymentTransaction.class);
         when(existing.getInvoiceId()).thenReturn(invoiceId);
@@ -126,6 +127,32 @@ class PaymentWebhookServiceTest {
         verify(invoice, never()).markPaid(any());
         verify(enrollmentFacade, never()).activateStudentPackage(any(), any(), any(), any(), any(), any(), anyInt(), anyInt(), anyLong(), any(), any());
         verify(financeFacade, never()).creditTeacherPendingBalance(any(), anyLong(), any(), any());
+    }
+
+    @Test
+    void paidInvoiceRejectsWebhookWithDifferentAmount() {
+        Invoice invoice = mock(Invoice.class);
+        when(invoice.getAmountVnd()).thenReturn(500000L);
+        when(invoiceCommandRepository.findByPayosOrderCodeForUpdate(123L)).thenReturn(Optional.of(invoice));
+        assertThatThrownBy(() -> webhookService.processWebhook(new VerifiedPayment("REF", 123L, 499999L, Instant.now(), null)))
+                .isInstanceOfSatisfying(BusinessException.class, ex -> assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PAYMENT_AMOUNT_MISMATCH));
+    }
+
+    @Test
+    void webhookAfterLegacyReconciliationIsIdempotent() {
+        Invoice invoice = mock(Invoice.class);
+        UUID id = UUID.randomUUID();
+        when(invoice.getId()).thenReturn(id);
+        when(invoice.getAmountVnd()).thenReturn(500000L);
+        when(invoice.getStatus()).thenReturn(InvoiceStatus.PAID);
+        when(invoice.getInvoiceNumber()).thenReturn("INV-1");
+        when(invoiceCommandRepository.findByPayosOrderCodeForUpdate(123L)).thenReturn(Optional.of(invoice));
+        PaymentTransaction legacy = mock(PaymentTransaction.class);
+        when(legacy.getInvoiceId()).thenReturn(id);
+        when(paymentTransactionRepository.findByProviderReference("REAL-REF")).thenReturn(Optional.empty());
+        when(paymentTransactionRepository.findByProviderReference("RECONCILE-INV-1")).thenReturn(Optional.of(legacy));
+        webhookService.processWebhook(new VerifiedPayment("REAL-REF", 123L, 500000L, Instant.now(), null));
+        verifyNoInteractions(enrollmentFacade, financeFacade);
     }
 
     @Test

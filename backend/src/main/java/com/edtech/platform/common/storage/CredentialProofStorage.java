@@ -9,6 +9,7 @@ public interface CredentialProofStorage {
     void delete(String publicId) throws IOException;
     String signedUrl(String publicId);
     DownloadedFile download(String publicId) throws IOException;
+    DownloadedFile downloadLegacy(String publicId) throws IOException;
     record StoredFile(String publicId, String secureUrl, String mimeType, long fileSize) {}
     record DownloadedFile(byte[] bytes, String mimeType) {}
 }

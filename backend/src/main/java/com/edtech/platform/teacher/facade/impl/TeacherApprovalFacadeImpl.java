@@ -111,7 +111,7 @@ public class TeacherApprovalFacadeImpl implements TeacherApprovalFacade {
 
     private TeacherDocumentSnapshot documentSnapshot(TeacherDocument document) {
         return new TeacherDocumentSnapshot(document.getId(), document.getDocumentType().name(), document.getTitle(),
-                document.getSecureUrl(), document.getMimeType(), document.getFileSize(),
+                document.getMimeType(), document.getFileSize(),
                 document.getVerificationStatus().name());
     }
 }

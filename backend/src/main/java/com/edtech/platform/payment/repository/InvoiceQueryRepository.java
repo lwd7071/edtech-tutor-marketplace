@@ -12,4 +12,5 @@ public interface InvoiceQueryRepository {
     Optional<Invoice> findByPayosOrderCode(long orderCode);
     Page<Invoice> findByStudentId(UUID studentId, Pageable pageable);
     List<Invoice> findPendingExpiredBefore(Instant cutoff, Pageable pageable);
+    List<Invoice> findPendingExpiredAfterOrderCode(Instant cutoff, long afterOrderCode, int limit);
 }

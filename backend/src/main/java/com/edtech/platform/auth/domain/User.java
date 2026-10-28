@@ -1,6 +1,8 @@
 package com.edtech.platform.auth.domain;
 
 import com.edtech.platform.common.persistence.BaseEntity;
+import com.edtech.platform.common.exception.BusinessException;
+import com.edtech.platform.common.exception.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -95,12 +97,19 @@ public class User extends BaseEntity {
         this.passwordHash = passwordHash;
     }
 
-    public void setEmailVerified(Boolean emailVerified) {
-        this.emailVerified = emailVerified;
+    public void lock() {
+        if (status != UserStatus.ACTIVE) throw new BusinessException(ErrorCode.USER_MODERATION_INVALID_STATE);
+        status = UserStatus.LOCKED;
     }
 
-    public void setStatus(UserStatus status) {
-        this.status = status;
+    public void unlock() {
+        if (status != UserStatus.LOCKED) throw new BusinessException(ErrorCode.USER_MODERATION_INVALID_STATE);
+        status = UserStatus.ACTIVE;
+    }
+
+    public void verifyEmail() {
+        emailVerified = true;
+        if (status == UserStatus.PENDING_VERIFICATION) status = UserStatus.ACTIVE;
     }
 
     public void setParentFullName(String parentFullName) {

@@ -9,6 +9,7 @@ import com.edtech.platform.payment.config.PaymentProviderProperties;
 import com.edtech.platform.payment.domain.Invoice;
 import com.edtech.platform.payment.dto.InvoiceDetail;
 import com.edtech.platform.payment.gateway.PaymentGateway;
+import com.edtech.platform.payment.gateway.PaymentLinkStatus;
 import com.edtech.platform.payment.gateway.PaymentLinkCommand;
 import com.edtech.platform.payment.gateway.PaymentLinkResult;
 import com.edtech.platform.payment.gateway.PaymentGatewayUnavailableException;
@@ -110,6 +111,20 @@ class InvoiceServiceTest {
         verify(invoiceCommandRepository).findByIdForUpdate(any());
 
         assertThat(result.checkoutUrl()).isEqualTo("https://checkout.payos.vn/1001");
+    }
+
+    @Test
+    void retryPendingInvoiceRecoversProviderLink() {
+        UUID student = UUID.randomUUID(), teacher = UUID.randomUUID(), pkg = UUID.randomUUID(), key = UUID.randomUUID(), id = UUID.randomUUID();
+        String fingerprint = new InvoiceRequestFingerprint().sha256(student, pkg, 500000L, properties.getDefaultReturnUrl(), properties.getDefaultCancelUrl());
+        Invoice existing = spy(Invoice.pending("INV-1", 1001L, student, teacher, pkg, 500000L, key, fingerprint));
+        when(existing.getId()).thenReturn(id);
+        when(invoiceQueryRepository.findByStudentIdAndIdempotencyKey(student, key)).thenReturn(Optional.of(existing));
+        when(invoiceCommandRepository.findByIdForUpdate(id)).thenReturn(Optional.of(existing));
+        when(paymentGateway.findPaymentLink(1001L)).thenReturn(Optional.of(new PaymentLinkStatus(1001L, "link", "https://checkout.example/1", "qr", Instant.now().plusSeconds(900), "PENDING")));
+
+        assertThat(invoiceService.createInvoiceAndPaymentLink(student, pkg, key).checkoutUrl()).isEqualTo("https://checkout.example/1");
+        verify(paymentGateway, never()).createPaymentLink(any());
     }
 
     @Test

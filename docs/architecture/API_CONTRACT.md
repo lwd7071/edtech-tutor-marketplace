@@ -326,7 +326,7 @@ reference tables V38. Hai field có thể để trống; nếu truyền `wardCod
 `provinceCode`. `PUT /api/teacher/profile/residence` chỉ cập nhật nơi ở và không đưa
 profile đã `APPROVED` về `DRAFT` hoặc yêu cầu duyệt lại.
 
-Upload document dùng parts `file`, `documentType=IDENTITY`, `title`. Đây là giấy tờ tùy thân riêng tư; `TeacherDocumentView` không serialize `secureUrl`, và file chỉ được admin xem trong luồng duyệt hồ sơ. Bằng cấp/chứng chỉ dùng credential API ở mục 10. MIME/size theo `CODING_CONVENTION.md` và spec upload.
+Upload document dùng parts `file`, `documentType=IDENTITY`, `title`. Đây là giấy tờ tùy thân riêng tư; upload mới dùng Cloudinary authenticated delivery. `TeacherDocumentView` và snapshot duyệt không serialize URL. Admin xem file qua `GET /api/admin/teacher-documents/{id}/proof`; endpoint trả bytes và `Cache-Control: no-store`, chỉ role ADMIN được phép. Object cũ vẫn có thể công khai trên provider cho tới khi hoàn tất rollout theo runbook. Bằng cấp/chứng chỉ dùng credential API ở mục 10. MIME/size theo `CODING_CONVENTION.md` và spec upload.
 
 ```json
 // ReplaceAvailabilityRequest

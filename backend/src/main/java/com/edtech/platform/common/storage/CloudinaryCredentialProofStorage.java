@@ -26,7 +26,13 @@ public class CloudinaryCredentialProofStorage implements CredentialProofStorage 
         return cloudinary.url().secure(true).resourceType("auto").type("authenticated").signed(true).generate(publicId);
     }
     @Override public DownloadedFile download(String publicId) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) URI.create(signedUrl(publicId)).toURL().openConnection();
+        return downloadUrl(signedUrl(publicId));
+    }
+    @Override public DownloadedFile downloadLegacy(String publicId) throws IOException {
+        return downloadUrl(cloudinary.url().secure(true).resourceType("auto").type("upload").signed(true).generate(publicId));
+    }
+    private DownloadedFile downloadUrl(String url) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) URI.create(url).toURL().openConnection();
         connection.setRequestMethod("GET");
         connection.setConnectTimeout(10_000);
         connection.setReadTimeout(30_000);

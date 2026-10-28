@@ -34,6 +34,11 @@ class JpaInvoiceQueryRepository implements InvoiceQueryRepository {
                 .setParameter("status", InvoiceStatus.PENDING).setParameter("cutoff", cutoff)
                 .setFirstResult((int)p.getOffset()).setMaxResults(p.getPageSize()).getResultList();
     }
+    public List<Invoice> findPendingExpiredAfterOrderCode(Instant cutoff, long afterOrderCode, int limit) {
+        return entityManager.createQuery("select i from Invoice i where i.status=:status and i.paymentExpiredAt<:cutoff and i.payosOrderCode>:after order by i.payosOrderCode", Invoice.class)
+                .setParameter("status", InvoiceStatus.PENDING).setParameter("cutoff", cutoff)
+                .setParameter("after", afterOrderCode).setMaxResults(limit).getResultList();
+    }
     private Optional<Invoice> findOwned(UUID id, UUID studentId) {
         return entityManager.createQuery("select i from Invoice i where i.id=:id and i.studentId=:student", Invoice.class)
                 .setParameter("id", id).setParameter("student", studentId).getResultList().stream().findFirst();

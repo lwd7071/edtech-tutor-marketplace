@@ -45,7 +45,7 @@ public class IdentityModerationFacadeImpl implements IdentityModerationFacade {
         }
         IdentitySnapshot before = snapshot(user);
         statusCache.beforeStatusChange(user.getId());
-        user.setStatus(next);
+        if (next == UserStatus.LOCKED) user.lock(); else user.unlock();
         if (next == UserStatus.LOCKED) refreshTokens.updateRevokedAtByUserId(user.getId(), Instant.now());
         statusCache.afterStatusChange(user.getId(), next.name());
         return new IdentityModerationChange(before, snapshot(user));

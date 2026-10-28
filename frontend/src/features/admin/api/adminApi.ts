@@ -25,6 +25,7 @@ export const adminApi = {
   approveCredential: async (id: string, version: number) => (await axiosClient.post(`/api/admin/credentials/${id}/approve`, null, {params:{version}})).data,
   rejectCredential: async (id: string, reason: string, version: number) => (await axiosClient.post(`/api/admin/credentials/${id}/reject`, null, {params:{reason,version}})).data,
   getCredentialProof: async (id: string): Promise<Blob> => (await axiosClient.get<Blob>(`/api/admin/credentials/${id}/proof`, {responseType:'blob'})).data,
+  getTeacherDocumentProof: async (id: string): Promise<Blob> => (await axiosClient.get<Blob>(`/api/admin/teacher-documents/${id}/proof`, {responseType:'blob'})).data,
   // 1. Phê duyệt hồ sơ giáo viên
   getTeacherApprovals: async (
     status: string = 'PENDING_APPROVAL',

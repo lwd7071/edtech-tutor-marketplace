@@ -3,6 +3,7 @@ package com.edtech.platform.teacher.service;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.common.storage.FileStoragePort;
+import com.edtech.platform.common.storage.CredentialProofStorage;
 import com.edtech.platform.teacher.domain.DocumentType;
 import com.edtech.platform.teacher.domain.TeacherDocument;
 import com.edtech.platform.teacher.domain.TeacherProfile;
@@ -17,6 +18,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,6 +42,9 @@ class TeacherDocumentServiceTest {
 
     @Mock
     private FileStoragePort fileStoragePort;
+
+    @Mock
+    private CredentialProofStorage privateStorage;
 
     @InjectMocks
     private TeacherDocumentService teacherDocumentService;
@@ -94,14 +100,14 @@ class TeacherDocumentServiceTest {
         byte[] pngBytes = new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
         MockMultipartFile file = new MockMultipartFile("file", "cert.png", "image/png", pngBytes);
 
-        FileStoragePort.UploadResult uploadResult = new FileStoragePort.UploadResult(
+        CredentialProofStorage.StoredFile uploadResult = new CredentialProofStorage.StoredFile(
                 "teacher_documents/" + teacherProfileId + "/sample",
                 "https://res.cloudinary.com/demo/image/upload/v1/sample.png",
                 "image/png",
                 (long) pngBytes.length
         );
 
-        when(fileStoragePort.upload(eq(file), eq("teacher_documents/" + teacherProfileId)))
+        when(privateStorage.upload(eq(file), eq("teacher_documents/" + teacherProfileId)))
                 .thenReturn(uploadResult);
 
         TeacherDocument savedDoc = mock(TeacherDocument.class);
@@ -119,8 +125,40 @@ class TeacherDocumentServiceTest {
 
         assertNotNull(view);
         assertEquals("CCCD", view.title());
-        verify(fileStoragePort).upload(eq(file), eq("teacher_documents/" + teacherProfileId));
+        verify(privateStorage).upload(eq(file), eq("teacher_documents/" + teacherProfileId));
         verify(teacherDocumentRepository).save(any(TeacherDocument.class));
+    }
+
+    @Test
+    void uploadedPrivateDocumentIsRemovedWhenTransactionRollsBack() throws Exception {
+        when(teacherProfile.getId()).thenReturn(teacherProfileId);
+        when(teacherProfileRepository.findByUserId(userId)).thenReturn(Optional.of(teacherProfile));
+        byte[] png = new byte[]{(byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a};
+        var file = new MockMultipartFile("file", "id.png", "image/png", png);
+        when(privateStorage.upload(any(), any())).thenReturn(new CredentialProofStorage.StoredFile("private-id", "https://res.cloudinary.com/demo/image/authenticated/id", "image/png", png.length));
+        when(teacherDocumentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            teacherDocumentService.uploadDocument(userId, file, DocumentType.IDENTITY, "ID");
+            for (var synchronization : TransactionSynchronizationManager.getSynchronizations()) {
+                synchronization.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK);
+            }
+            verify(privateStorage).delete("private-id");
+        } finally { TransactionSynchronizationManager.clearSynchronization(); }
+    }
+
+    @Test
+    void adminProofSupportsLegacyPublicAndNewPrivateAssets() throws Exception {
+        var id = UUID.randomUUID();
+        var doc = mock(TeacherDocument.class);
+        when(teacherDocumentRepository.findById(id)).thenReturn(Optional.of(doc));
+        when(doc.getCloudinaryPublicId()).thenReturn("asset");
+        when(doc.getSecureUrl()).thenReturn("https://res.cloudinary.com/demo/image/upload/asset", "https://res.cloudinary.com/demo/image/authenticated/asset");
+        var file = new CredentialProofStorage.DownloadedFile(new byte[]{1}, "image/png");
+        when(privateStorage.downloadLegacy("asset")).thenReturn(file);
+        when(privateStorage.download("asset")).thenReturn(file);
+        assertSame(file, teacherDocumentService.adminProof(id));
+        assertSame(file, teacherDocumentService.adminProof(id));
     }
 
     @Test

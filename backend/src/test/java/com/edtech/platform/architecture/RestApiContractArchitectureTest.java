@@ -45,7 +45,8 @@ class RestApiContractArchitectureTest {
                         && method.getName().equals("health"))
                         || (method.getName().equals("proof")
                         && (controller.getSimpleName().equals("TeacherCredentialController")
-                        || controller.getSimpleName().equals("AdminCredentialController")));
+                        || controller.getSimpleName().equals("AdminCredentialController")
+                        || controller.getSimpleName().equals("AdminTeacherDocumentController")));
                 if (!sharedEnvelope && !noContent && !documentedException) {
                     violations.add(controller.getSimpleName() + "#" + method.getName() + " -> "
                             + method.getGenericReturnType().getTypeName());

@@ -140,6 +140,17 @@ class SecurityIdorIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("RBAC: only Admin may access identity document proxy")
+    void rbac_onlyAdminCanAccessTeacherDocumentProxy() throws Exception {
+        UUID id = UUID.randomUUID();
+        String path = "/api/admin/teacher-documents/" + id + "/proof";
+        mockMvc.perform(get(path)).andExpect(status().isUnauthorized());
+        mockMvc.perform(get(path).header("Authorization", teacher1Token)).andExpect(status().isForbidden());
+        mockMvc.perform(get(path).header("Authorization", student1Token)).andExpect(status().isForbidden());
+        mockMvc.perform(get(path).header("Authorization", adminToken)).andExpect(status().isNotFound());
+    }
+
+    @Test
     @DisplayName("RBAC: Anonymous user cannot access Student Packages")
     void rbac_anonymousCannotAccessStudentPackages() throws Exception {
         mockMvc.perform(get("/api/student/packages"))

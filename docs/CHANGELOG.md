@@ -1,5 +1,11 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-28 — Nghiệm thu backend/frontend và chẩn đoán Docker
+- Backend Maven/Testcontainers full suite: 536/536. Frontend `npm run check`: typecheck, ESLint, Jest 122 suites / 329 tests và production build 63 trang pass. `--detectOpenHandles` cũng pass.
+- Proxy giấy tờ admin, bảo vệ WebSocket theo session, retry/reconciliation payment, transition User, RLS grant test và ArchUnit guardrails được kiểm thử trong backend suite.
+- Docker log cho thấy Engine/API stopped trước khi khởi tạo; sau ~56 giây WSL2 Engine báo running. Lỗi đầu nhiều khả năng do daemon chưa sẵn sàng; nguyên nhân ACL cụ thể không xác minh được.
+- Đã dọn ba image Testcontainers mới kéo. Migration diff trống; không kết nối Supabase hay provider thật.
+
 ## 2026-10-26 — Khôi phục CI và dọn nhánh GitHub
 - Sửa cấu hình backend CI, cô lập và giới hạn test Flyway lịch sử, sửa Compose smoke probe; Frontend CI fixture/E2E cũng được ổn định. GitHub CI Frontend main/dev và Backend main/dev đều PASS; backend main run `40274450357`, frontend main run `40274727494`, dev runs `40274887729`/`40274887807`.
 - Merge riêng PR #2 checkout v7, #3 upload-artifact v7, #4 setup-java v6, #6 setup-node v6. Xóa các branch Dependabot đã merge; GitHub còn `main`/`dev`, cùng SHA `1f5f47f0`, không PR mở. Migration diff trống; không kết nối Supabase.

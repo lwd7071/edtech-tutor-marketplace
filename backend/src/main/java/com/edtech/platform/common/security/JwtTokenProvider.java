@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
@@ -40,16 +41,24 @@ public class JwtTokenProvider {
     }
 
     public AuthenticatedUser getAuthenticatedUserFromToken(String token) {
+        return parseAccessToken(token).user();
+    }
+
+    public record VerifiedAccessToken(AuthenticatedUser user, Instant expiresAt) {}
+
+    public VerifiedAccessToken parseAccessToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(key)
+                .clock(() -> Date.from(clock.instant()))
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-                
-        return new AuthenticatedUser(
+        if (claims.getExpiration() == null) throw new IllegalArgumentException("Token expiry required");
+        AuthenticatedUser user = new AuthenticatedUser(
                 UUID.fromString(claims.getSubject()),
                 claims.get("email", String.class),
                 claims.get("role", String.class)
         );
+        return new VerifiedAccessToken(user, claims.getExpiration().toInstant());
     }
 }

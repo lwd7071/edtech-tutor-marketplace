@@ -30,11 +30,12 @@ public class AccountVerificationService {
         String userId = oneTimeTokens.consume(RedisTokenService.Purpose.EMAIL_VERIFY, request.token(), String.class);
         User user = users.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new BusinessException(ErrorCode.AUTH_VERIFY_TOKEN_INVALID));
-        user.setEmailVerified(true);
         if (user.getStatus() == UserStatus.PENDING_VERIFICATION) {
             statusCache.beforeStatusChange(user.getId());
-            user.setStatus(UserStatus.ACTIVE);
+            user.verifyEmail();
             statusCache.afterStatusChange(user.getId(), UserStatus.ACTIVE.name());
+        } else {
+            user.verifyEmail();
         }
         users.save(user);
     }

@@ -417,3 +417,12 @@ Các con số trên chỉ là bằng chứng gần nhất đã có; benchmark v�
 ## Provider chưa xác minh
 
 Google OAuth thật, PayOS thật, Cloudinary thật, Brevo tới người dùng thật và application deployment production chưa được tính là pass trong trạng thái này. Database schema production đã rollout tới V41 `Success`.
+
+## 2026-10-28 — Nghiệm thu backend và dọn Docker
+
+- Backend Maven/Testcontainers: **536/536 pass**, không failure/error/skip.
+- Frontend `npm run check`: typecheck, ESLint, Jest **122 suites / 329 tests** và production build 63 trang pass. `--detectOpenHandles` cũng pass.
+- Docker log ghi Linux Engine/API `stopped`, pipe sẵn có trước khi daemon hoàn tất khởi động; WSL2 bắt đầu `dockerd` sau 55 giây, API `running` sau 56 giây. Đây là nguyên nhân khả dĩ của lỗi transient; log không xác nhận ACL.
+- Cả hai pipe hiện truy cập được; `com.docker.service` Manual/Stopped không ngăn Linux Engine WSL2 chạy.
+- Migration diff trống, không kết nối Supabase. Testcontainers tự xóa container; đã gỡ ba image mới kéo, không còn container/volume.
+- Cloudinary/payOS thật, grants production và object cũ chưa được xác minh/chuyển đổi.

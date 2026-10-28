@@ -3,6 +3,7 @@ package com.edtech.platform.teacher.service;
 import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.common.storage.FileStoragePort;
+import com.edtech.platform.common.storage.CredentialProofStorage;
 import com.edtech.platform.teacher.domain.DocumentType;
 import com.edtech.platform.teacher.domain.TeacherDocument;
 import com.edtech.platform.teacher.domain.TeacherProfile;
@@ -15,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -29,6 +32,7 @@ public class TeacherDocumentService {
     private final TeacherDocumentRepository teacherDocumentRepository;
     private final TeacherProfileRepository teacherProfileRepository;
     private final FileStoragePort fileStoragePort;
+    private final CredentialProofStorage privateStorage;
     private final Tika tika = new Tika();
 
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -63,7 +67,8 @@ public class TeacherDocumentService {
             TeacherProfile profile = teacherProfileRepository.findByUserId(userId)
                     .orElseThrow(() -> new BusinessException(ErrorCode.TEACHER_PROFILE_NOT_FOUND));
 
-            FileStoragePort.UploadResult result = fileStoragePort.upload(file, "teacher_documents/" + profile.getId());
+            CredentialProofStorage.StoredFile result = privateStorage.upload(file, "teacher_documents/" + profile.getId());
+            cleanupOnRollback(result.publicId());
 
             TeacherDocument document = TeacherDocument.builder()
                     .teacher(profile)
@@ -83,6 +88,29 @@ public class TeacherDocumentService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public CredentialProofStorage.DownloadedFile adminProof(UUID documentId) throws IOException {
+        TeacherDocument document = teacherDocumentRepository.findById(documentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+        String storedUrl = document.getSecureUrl();
+        if (storedUrl != null && storedUrl.contains("/authenticated/")) {
+            return privateStorage.download(document.getCloudinaryPublicId());
+        }
+        return privateStorage.downloadLegacy(document.getCloudinaryPublicId());
+    }
+
+    private void cleanupOnRollback(String publicId) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) return;
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCompletion(int status) {
+                if (status != STATUS_COMMITTED) {
+                    try { privateStorage.delete(publicId); }
+                    catch (IOException e) { log.warn("Failed to clean up private document", e); }
+                }
+            }
+        });
+    }
+
     @Transactional
     public void deleteDocument(UUID userId, UUID documentId) {
         TeacherDocument document = teacherDocumentRepository.findById(documentId)
@@ -98,7 +126,11 @@ public class TeacherDocumentService {
 
         try {
             if (document.getCloudinaryPublicId() != null) {
-                fileStoragePort.delete(document.getCloudinaryPublicId());
+                if (document.getSecureUrl() != null && document.getSecureUrl().contains("/authenticated/")) {
+                    privateStorage.delete(document.getCloudinaryPublicId());
+                } else {
+                    fileStoragePort.delete(document.getCloudinaryPublicId());
+                }
             }
         } catch (IOException e) {
             log.warn("Failed to delete file from Cloudinary: {}", document.getCloudinaryPublicId(), e);

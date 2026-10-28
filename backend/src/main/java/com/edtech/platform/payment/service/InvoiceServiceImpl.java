@@ -66,6 +66,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         final String acceptedCancelUrl = cancelUrl;
 
         Optional<Invoice> existingOpt = invoiceQueryRepository.findByStudentIdAndIdempotencyKey(studentId, idempotencyKey);
+        Invoice pendingInvoice = null;
         if (existingOpt.isPresent()) {
             Invoice existing = existingOpt.get();
             boolean sameRequest = existing.getPricingPackageId().equals(pricingPackageId)
@@ -74,9 +75,13 @@ public class InvoiceServiceImpl implements InvoiceService {
                     && existing.getRequestFingerprint().equals(fingerprintHelper.sha256(
                             studentId, pricingPackageId, existing.getAmountVnd(), returnUrl, cancelUrl));
             if (!sameRequest) throw new BusinessException(ErrorCode.IDEMPOTENCY_KEY_REUSED);
-            return InvoiceDetail.from(existing);
+            if (existing.getStatus() != InvoiceStatus.PENDING || existing.getCheckoutUrl() != null) {
+                return InvoiceDetail.from(existing);
+            }
+            pendingInvoice = existing;
         }
 
+        if (pendingInvoice == null) {
         // 1. Fetch package snapshot
         PricingPackageSnapshot pkg = pricingPackageFacade.getPurchasablePackage(pricingPackageId);
         if (pkg == null) {
@@ -97,7 +102,6 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         // 3. Check idempotency
         // 4. Phase 1: Local DB Transaction 1 (Prepare & Insert Pending Invoice)
-        Invoice pendingInvoice = null;
         {
             try {
                 pendingInvoice = transactionTemplate.execute(status -> {
@@ -135,6 +139,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 }
             }
         }
+        }
 
         // 5. Phase 2: Gateway Network Call (OUTSIDE DB Transaction)
         PaymentLinkResult linkResult = null;
@@ -158,7 +163,15 @@ public class InvoiceServiceImpl implements InvoiceService {
                         org.springframework.web.util.UriComponentsBuilder.fromUriString(returnUrl).queryParam("invoiceId", pendingInvoice.getId()).build().toUri(),
                         org.springframework.web.util.UriComponentsBuilder.fromUriString(cancelUrl).queryParam("invoiceId", pendingInvoice.getId()).build().toUri()
                 );
-                linkResult = paymentGateway.createPaymentLink(command);
+                try {
+                    linkResult = paymentGateway.createPaymentLink(command);
+                } catch (PaymentGatewayRejectedException rejected) {
+                    // Another caller may have created the same provider order after our lookup.
+                    Optional<PaymentLinkStatus> recovered = paymentGateway.findPaymentLink(pendingInvoice.getPayosOrderCode());
+                    if (recovered.isEmpty() || recovered.get().checkoutUrl() == null) throw rejected;
+                    PaymentLinkStatus st = recovered.get();
+                    linkResult = new PaymentLinkResult(st.orderCode(), st.paymentLinkId(), st.checkoutUrl(), st.qrCode(), st.expiresAt());
+                }
             }
         } catch (PaymentGatewayUnavailableException e) {
             log.error("Payment gateway unavailable for orderCode={}", pendingInvoice.getPayosOrderCode(), e);
@@ -179,6 +192,10 @@ public class InvoiceServiceImpl implements InvoiceService {
             Invoice inv = invoiceCommandRepository.findByIdForUpdate(invoiceId)
                     .orElseThrow(() -> new BusinessException(ErrorCode.INVOICE_NOT_FOUND));
 
+            if (inv.getStatus() != InvoiceStatus.PENDING) return InvoiceDetail.from(inv);
+            if (inv.getCheckoutUrl() != null && Objects.equals(inv.getPayosPaymentLinkId(), finalLinkResult.paymentLinkId())) {
+                return InvoiceDetail.from(inv);
+            }
             inv.attachPaymentLink(
                     finalLinkResult.paymentLinkId(),
                     finalLinkResult.checkoutUrl(),

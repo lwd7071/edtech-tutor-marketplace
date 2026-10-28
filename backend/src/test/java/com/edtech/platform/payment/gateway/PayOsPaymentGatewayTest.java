@@ -109,6 +109,24 @@ class PayOsPaymentGatewayTest {
     }
 
     @Test
+    void paidLinkCarriesActualProviderTransactionEvidence() throws Exception {
+        var transaction = vn.payos.model.v2.paymentRequests.Transaction.builder()
+                .reference("BANK-123").amount(500000L).accountNumber("ignored")
+                .description("payment").transactionDateTime("2026-09-04 12:00:00").build();
+        PaymentLink link = PaymentLink.builder().orderCode(9999L).id("link-123")
+                .amount(500000L).amountPaid(500000L).amountRemaining(0L)
+                .status(PaymentLinkStatus.PAID).createdAt("2026-09-04 12:00:00")
+                .transactions(java.util.List.of(transaction)).build();
+        PaymentRequestsService service = mock(PaymentRequestsService.class);
+        when(payOS.paymentRequests()).thenReturn(service);
+        when(service.get(9999L)).thenReturn(link);
+        var evidence = gateway.findPaymentLink(9999L).orElseThrow().verifiedPayment();
+        assertThat(evidence.providerReference()).isEqualTo("BANK-123");
+        assertThat(evidence.amountVnd()).isEqualTo(500000L);
+        assertThat(evidence.paidAt()).isEqualTo(java.time.Instant.parse("2026-09-04T05:00:00Z"));
+    }
+
+    @Test
     void findPaymentLink_shouldReturnEmpty_whenNotFound() throws Exception {
         long orderCode = 8888L;
         PaymentRequestsService paymentRequestsService = mock(PaymentRequestsService.class);

@@ -46,24 +46,28 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
         Invoice invoice = invoiceCommandRepository.findByPayosOrderCodeForUpdate(payment.orderCode())
                 .orElseThrow(() -> new BusinessException(ErrorCode.INVOICE_NOT_FOUND));
 
+        if (payment.amountVnd() != invoice.getAmountVnd()) {
+            log.error("Amount mismatch for orderCode {}: expected {}, received {}",
+                    payment.orderCode(), invoice.getAmountVnd(), payment.amountVnd());
+            throw new BusinessException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
+        }
+
         // 2. Idempotency Check: Already PAID or Transaction already processed
         if (invoice.getStatus() == InvoiceStatus.PAID) {
-            paymentTransactionRepository.findByProviderReference(payment.providerReference())
-                    .filter(existing -> invoice.getId().equals(existing.getInvoiceId()))
-                    .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_ALREADY_PROCESSED));
+            var existing = paymentTransactionRepository.findByProviderReference(payment.providerReference());
+            if (existing.isPresent()) {
+                if (!invoice.getId().equals(existing.get().getInvoiceId())) throw new BusinessException(ErrorCode.PAYMENT_ALREADY_PROCESSED);
+            } else {
+                paymentTransactionRepository.findByProviderReference("RECONCILE-" + invoice.getInvoiceNumber())
+                        .filter(reconciled -> invoice.getId().equals(reconciled.getInvoiceId()))
+                        .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_ALREADY_PROCESSED));
+            }
             log.info("Invoice {} is already marked PAID. Skipping duplicate processing.", invoice.getInvoiceNumber());
             return;
         }
 
         if (paymentTransactionRepository.existsByProviderReference(payment.providerReference())) {
             throw new BusinessException(ErrorCode.PAYMENT_ALREADY_PROCESSED);
-        }
-
-        // 3. Amount verification
-        if (payment.amountVnd() != invoice.getAmountVnd()) {
-            log.error("Amount mismatch for orderCode {}: expected {}, received {}",
-                    payment.orderCode(), invoice.getAmountVnd(), payment.amountVnd());
-            throw new BusinessException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
         }
 
         // 4. Mark Invoice PAID

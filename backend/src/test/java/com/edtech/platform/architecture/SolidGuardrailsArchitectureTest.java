@@ -10,15 +10,27 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.repository.Repository;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityManager;
+import com.tngtech.archunit.lang.ArchRule;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 class SolidGuardrailsArchitectureTest {
+    static final ArchRule SERVICES_NO_ENTITY_MANAGER = noClasses().that().resideInAPackage("..service..")
+            .should().dependOnClassesThat().areAssignableTo(EntityManager.class).allowEmptyShould(true);
+    static final ArchRule SERVICES_NO_REPOSITORY_INHERITANCE = noClasses().that().resideInAPackage("..service..")
+            .should().beAssignableTo(Repository.class).allowEmptyShould(true);
     private final JavaClasses production = new ClassFileImporter()
             .withImportOption(new ImportOption.DoNotIncludeTests())
             .importPackages("com.edtech.platform");
+
+    @Test
+    void servicesDoNotUseEntityManagerOrExtendRepository() {
+        SERVICES_NO_ENTITY_MANAGER.check(production);
+        SERVICES_NO_REPOSITORY_INHERITANCE.check(production);
+    }
 
     @Test
     void controllersDoNotAccessPersistenceDirectly() {
