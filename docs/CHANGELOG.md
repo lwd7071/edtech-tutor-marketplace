@@ -1,5 +1,12 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-29 — Đồng bộ toàn diện hệ thống nút Button (TDD & UI/UX Pro Max)
+- Thống nhất quy tắc nút chính: Nền vàng chữ đen viền mực 1.5px và bo góc 8px trên toàn bộ các trang và surface thông thường.
+- Giữ ngoại lệ tương phản: Chỉ khu vực nền vàng (Hero banner trang chủ) dùng nút đen chữ trắng để tránh chìm màu.
+- Đồng bộ các vị trí lệch: Đổi nút section `.home-join` sang nút vàng chữ đen, nâng cấp thẻ gia sư trang chủ thành cụm Dual Action Stack, chuẩn hóa form Auth `.auth-submit` và React preview link `.tm-preview-link`.
+- Kiểm thử TDD: Mở rộng `ButtonSystemLayoutTest.java` (6 tests). Toàn bộ 29 backend tests và 3 frontend tests PASS 100%, TypeScript 0 lỗi.
+
+
 ## 2026-10-29 — Sửa seed snapshot thời lượng gói học V42
 - Điền snapshot thời lượng 60 phút cho mọi `student_packages` trong seed, khớp invoice và constraint V42.
 

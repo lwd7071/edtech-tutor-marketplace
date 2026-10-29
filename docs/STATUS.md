@@ -1,5 +1,21 @@
 # Trạng thái dự án
 
+## Đồng bộ toàn diện hệ thống nút Button (TDD & UI/UX Pro Max) — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:**
+  - Chuẩn hóa toàn bộ hệ thống CTA theo quy tắc: Nút chính thống nhất mang nền vàng chữ đen viền mực (`background: #FFD43B; color: #171714; border: 1.5px solid var(--ink); border-radius: 8px`).
+  - **Ngoại lệ duy nhất:** Chỉ riêng các khu vực có nền vàng tự thân (như Hero banner và Header trên trang chủ mang `--brand-yellow`), nút chuyển sang nền đen chữ trắng (`#171714` background, `#FFFFFF` text) để bảo đảm độ tương phản và tránh chìm màu ("vàng đè vàng").
+  - **Rà soát & đồng bộ các điểm bị lệch:**
+    - Cụm Call-To-Action chân trang chủ (`.home-join` trên nền kem `--surface-warm`): Chuyển từ nút đen cũ sang nút vàng chữ đen `.button .button--primary`.
+    - Thẻ gia sư trang chủ (`home/index.html`): Chuyển từ link đơn sang cụm Dual Action Stack `.teacher-card__actions` (Xem hồ sơ vàng chữ đen + Nhắn tin phụ) đồng bộ với trang tìm kiếm và React `TeacherCard.tsx`.
+    - Biểu mẫu xác thực (`auth.css`): Nâng cấp `.auth-submit` sang bo góc `8px`, viền mực 1.5px và hover tactile shadow `0 2px 0 var(--ink)`.
+    - Quick preview bên React frontend (`tutor-match.css`): Đổi `.tm-preview-link` từ nút đen sang nền vàng `#FFD43B`, chữ đen `#171714`, viền 1.5px.
+- **Bằng chứng kiểm thử backend & frontend:**
+  - Tạo mới và mở rộng `ButtonSystemLayoutTest.java` (6 tests) xác minh tokens, viền mực, nút vàng trên `.home-join`, thẻ gia sư trang chủ và `.auth-submit`.
+  - Backend: `ButtonSystemLayoutTest`, `HomePageControllerTest`, `TeacherSearchPageControllerTest`, `TeacherProfilePageControllerTest` PASS **29/29**.
+  - Frontend: `TeacherCard.test.tsx` PASS **3/3**, `typecheck` PASS **0 lỗi**.
+- **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không đụng vào `.env.cloud`, Supabase hay port 8080.
+
+
 ## Sửa seed snapshot thời lượng gói học V42 — 2026-10-29
 - Bổ sung `session_duration_minutes_snapshot` vào mọi câu lệnh tạo `student_packages`, gồm ba gói ban đầu, các trạng thái demo và 120 gói tạo theo cặp. Giá trị 60 phút khớp snapshot invoice tương ứng và constraint V42 (`> 0`); không thay đổi tài khoản hay migration.
 - Rà soát tĩnh các insert gói học và đối chiếu V42. Chưa chạy lại trên PostgreSQL; môi trường hiện không có `psql` và Docker daemon không chạy. Cần chạy lại toàn bộ seed trên database test để xác nhận SQL runtime.
