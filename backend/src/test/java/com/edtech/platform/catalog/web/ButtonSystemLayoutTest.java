@@ -49,15 +49,49 @@ class ButtonSystemLayoutTest {
     }
 
     @Test
-    @DisplayName("public.css: .button--secondary phải có viền 1.5px tương phản rõ ràng")
+    @DisplayName("public.css: .button--secondary phải có viền 1.5px mực ink tương phản sắc nét theo phong cách Neubrutalism-lite")
     void secondaryButtonShouldHaveCrispBorder() throws Exception {
         Path publicCssPath = Path.of("src/main/resources/static/css/public.css");
         assertTrue(Files.exists(publicCssPath), "public.css must exist");
         String css = Files.readString(publicCssPath);
 
         assertTrue(
-                css.contains(".button--secondary") && (css.contains("border: 1.5px solid") || css.contains("border-width: 1.5px")),
-                ".button--secondary must have a crisp 1.5px border"
+                css.contains(".button--secondary") && (css.contains("border: 1.5px solid var(--ink)") || css.contains("border: 1.5px solid #171714")),
+                ".button--secondary must have a crisp 1.5px ink border"
+        );
+        assertFalse(
+                css.contains("border: 1.5px solid var(--border)"),
+                ".button--secondary must not use washed-out grey border"
+        );
+    }
+
+    @Test
+    @DisplayName("home.css: card thẻ gia sư, môn học và khối join phải có viền mực 1.5px sắc nét thay vì viền xám mờ")
+    void homeCardsShouldHaveCrispInkBorder() throws Exception {
+        Path homeCssPath = Path.of("src/main/resources/static/css/home.css");
+        assertTrue(Files.exists(homeCssPath), "home.css must exist");
+        String css = Files.readString(homeCssPath);
+
+        // Teacher card co vien muc 1.5px
+        assertTrue(
+                css.contains(".teacher-card {") && (css.contains("border: 1.5px solid var(--ink)") || css.contains("border: 1.5px solid #171714")),
+                ".teacher-card must have crisp 1.5px ink border"
+        );
+        assertFalse(
+                css.contains(".teacher-card { min-width: 0; padding: 20px; background: var(--surface); border: 1px solid var(--border);"),
+                ".teacher-card must not use faint 1px border"
+        );
+
+        // Home subject card co vien muc 1.5px
+        assertTrue(
+                css.contains(".home-subject {") && (css.contains("border: 1.5px solid var(--ink)") || css.contains("border: 1.5px solid #171714")),
+                ".home-subject must have crisp 1.5px ink border"
+        );
+
+        // Home join block co vien muc 1.5px
+        assertTrue(
+                css.contains(".home-join {") && (css.contains("border: 1.5px solid var(--ink)") || css.contains("border: 1.5px solid #171714")),
+                ".home-join must have crisp 1.5px ink border"
         );
     }
 
@@ -109,6 +143,27 @@ class ButtonSystemLayoutTest {
         assertFalse(
                 css.contains("box-shadow: 0 2px 0 var(--ink)") || css.contains("box-shadow: 0 2px 0 #171714"),
                 ".auth-submit must not have bottom shadow"
+        );
+    }
+
+    @Test
+    @DisplayName("auth.css: .auth-submit và .auth-oauth phải căn giữa chữ (justify-content: center, gap: 8px) thay vì dạt hai bên")
+    void authButtonsShouldCenterAlignContent() throws Exception {
+        Path authCssPath = Path.of("src/main/resources/static/css/auth.css");
+        assertTrue(Files.exists(authCssPath), "auth.css must exist");
+        String css = Files.readString(authCssPath);
+
+        assertTrue(
+                css.contains(".auth-submit {") && css.contains("justify-content: center;"),
+                ".auth-submit must center its label and arrow using justify-content: center"
+        );
+        assertTrue(
+                css.contains(".auth-submit {") && (css.contains("gap: 8px;") || css.contains("gap: 10px;")),
+                ".auth-submit must have balanced gap between text label and trailing arrow"
+        );
+        assertFalse(
+                css.contains(".auth-submit { display: flex; align-items: center; justify-content: space-between;"),
+                ".auth-submit must not use justify-content: space-between which pushes text and icon to edges"
         );
     }
 
@@ -206,5 +261,145 @@ class ButtonSystemLayoutTest {
         String extensionsCss = Files.readString(adminExtensionsCss);
         assertTrue(extensionsCss.contains("background:var(--brand-yellow)") || extensionsCss.contains("background: var(--brand-yellow)"));
         assertTrue(extensionsCss.contains("border:1.5px solid var(--ink)") || extensionsCss.contains("border: 1.5px solid var(--ink)"));
+    }
+
+    @Test
+    @DisplayName("auth.css: logo, text links và radio role phải đồng bộ màu đen ink, không sử dụng màu cam warning")
+    void authPagesShouldUseInkColorForBrandLinksAndRadioInsteadOfWarning() throws Exception {
+        Path authCssPath = Path.of("src/main/resources/static/css/auth.css");
+        assertTrue(Files.exists(authCssPath), "auth.css must exist");
+        String css = Files.readString(authCssPath);
+
+        // Logo match khong dung warning ma dong bo ink nhu landing page
+        assertFalse(
+                css.contains(".auth-brand span { color: var(--warning); }") || css.contains(".auth-brand span{color:var(--warning)}"),
+                "Logo .auth-brand span must not use --warning color"
+        );
+
+        // Text links khong dung warning ma dung ink
+        assertFalse(
+                css.contains("a { color: var(--warning)") || css.contains("a{color:var(--warning)"),
+                "Auth links must not use --warning color"
+        );
+        assertTrue(
+                css.contains(".auth-label-row a, .auth-register a, .auth-back a, .auth-parent a") &&
+                (css.contains("color: var(--ink)") || css.contains("color:var(--ink)")),
+                "Auth links must use var(--ink) for high contrast and clean minimalist aesthetic"
+        );
+
+        // Radio role accent-color khong dung warning ma dung ink
+        assertFalse(
+                css.contains("accent-color: var(--warning)") || css.contains("accent-color:var(--warning)"),
+                "Auth radio button must not use --warning accent-color"
+        );
+        assertTrue(
+                css.contains("accent-color: var(--ink)") || css.contains("accent-color:var(--ink)"),
+                "Auth radio button must use var(--ink) accent-color"
+        );
+    }
+
+    @Test
+    @DisplayName("home.css: thanh tìm kiếm, nút hero, nút header phải dùng box chữ nhật bo góc 8px/12px, không dùng pill 9999px")
+    void homeHeroAndHeaderShouldUseStandardRectangularRoundedBordersInsteadOfPills() throws Exception {
+        Path homeCssPath = Path.of("src/main/resources/static/css/home.css");
+        assertTrue(Files.exists(homeCssPath), "home.css must exist");
+        String css = Files.readString(homeCssPath);
+
+        // Header button
+        assertTrue(
+                css.contains(".home-body .site-header .button--primary") &&
+                (css.contains("border-radius: var(--radius-control)") || css.contains("border-radius: 8px") || css.contains("border-radius:var(--radius-control)")),
+                "Header button on home page must use rectangular rounded border-radius (8px)"
+        );
+
+        // Hero search container
+        assertTrue(
+                css.contains(".home-search {") &&
+                (css.contains("border-radius: var(--radius-card)") || css.contains("border-radius: 12px") || css.contains("border-radius:var(--radius-card)")),
+                "Hero search container must use rectangular rounded border-radius (12px)"
+        );
+
+        // Hero search submit button
+        assertTrue(
+                css.contains(".home-button {") &&
+                (css.contains("border-radius: var(--radius-control)") || css.contains("border-radius: 8px") || css.contains("border-radius:var(--radius-control)")),
+                "Hero search button must use rectangular rounded border-radius (8px)"
+        );
+
+        // Hero badge
+        assertTrue(
+                css.contains(".home-hero__badge {") &&
+                (css.contains("border-radius: var(--radius-control)") || css.contains("border-radius: 8px") || css.contains("border-radius:var(--radius-control)")),
+                "Hero badge must use rectangular rounded border-radius (8px)"
+        );
+    }
+
+    @Test
+    @DisplayName("Public & Auth CSS: card và panel chính phải có viền mực 1.5px ink dứt khoát")
+    void publicAndAuthCardsShouldHaveCrispInkBorder() throws Exception {
+        // auth.css
+        Path authCssPath = Path.of("src/main/resources/static/css/auth.css");
+        assertTrue(Files.exists(authCssPath), "auth.css must exist");
+        String authCss = Files.readString(authCssPath);
+        assertTrue(
+                authCss.contains(".auth-card {") && (authCss.contains("border: 1.5px solid var(--ink)") || authCss.contains("border: 1.5px solid #171714")),
+                ".auth-card must have crisp 1.5px ink border"
+        );
+        assertTrue(
+                authCss.contains(".auth-role {") && (authCss.contains("border: 1.5px solid var(--ink)") || authCss.contains("border: 1.5px solid #171714")),
+                ".auth-role must have crisp 1.5px ink border"
+        );
+
+        // teachers.css (Search page)
+        Path teachersCssPath = Path.of("src/main/resources/static/css/teachers.css");
+        assertTrue(Files.exists(teachersCssPath), "teachers.css must exist");
+        String teachersCss = Files.readString(teachersCssPath);
+        assertTrue(
+                teachersCss.contains(".teacher-card {") && (teachersCss.contains("border: 1.5px solid var(--ink)") || teachersCss.contains("border: 1.5px solid #171714")),
+                ".teacher-card in teachers.css must have crisp 1.5px ink border"
+        );
+
+        // subjects.css
+        Path subjectsCssPath = Path.of("src/main/resources/static/css/subjects.css");
+        assertTrue(Files.exists(subjectsCssPath), "subjects.css must exist");
+        String subjectsCss = Files.readString(subjectsCssPath);
+        assertTrue(
+                subjectsCss.contains(".subjects-filters") && (subjectsCss.contains("border: 1.5px solid var(--ink)") || subjectsCss.contains("border: 1.5px solid #171714") || subjectsCss.contains("border:1.5px solid var(--ink)")),
+                ".subjects-filters must have crisp 1.5px ink border"
+        );
+    }
+
+    @Test
+    @DisplayName("Workspace CSS (Student/Teacher/Admin): card và panel chính phải có viền mực 1.5px ink dứt khoát")
+    void workspaceCardsShouldHaveCrispInkBorder() throws Exception {
+        // student-dashboard.css
+        Path studentDashboardCssPath = Path.of("src/main/resources/static/css/student-dashboard.css");
+        assertTrue(Files.exists(studentDashboardCssPath), "student-dashboard.css must exist");
+        String studentCss = Files.readString(studentDashboardCssPath);
+        assertTrue(
+                studentCss.contains(".overview-card, .dashboard-panel") &&
+                (studentCss.contains("border: 1.5px solid var(--ink)") || studentCss.contains("border: 1.5px solid #171714") || studentCss.contains("border:1.5px solid var(--ink)")),
+                ".overview-card, .dashboard-panel must have crisp 1.5px ink border"
+        );
+
+        // student-packages.css
+        Path studentPackagesCssPath = Path.of("src/main/resources/static/css/student-packages.css");
+        assertTrue(Files.exists(studentPackagesCssPath), "student-packages.css must exist");
+        String packagesCss = Files.readString(studentPackagesCssPath);
+        assertTrue(
+                packagesCss.contains(".package-card") &&
+                (packagesCss.contains("border: 1.5px solid var(--ink)") || packagesCss.contains("border: 1.5px solid #171714") || packagesCss.contains("border:1.5px solid var(--ink)")),
+                ".package-card must have crisp 1.5px ink border"
+        );
+
+        // teacher-dashboard.css
+        Path teacherDashboardCssPath = Path.of("src/main/resources/static/css/teacher-dashboard.css");
+        assertTrue(Files.exists(teacherDashboardCssPath), "teacher-dashboard.css must exist");
+        String teacherCss = Files.readString(teacherDashboardCssPath);
+        assertTrue(
+                teacherCss.contains(".teacher-card-section {") &&
+                (teacherCss.contains("border: 1.5px solid var(--ink)") || teacherCss.contains("border: 1.5px solid #171714") || teacherCss.contains("border:1.5px solid var(--ink)")),
+                ".teacher-card-section must have crisp 1.5px ink border"
+        );
     }
 }

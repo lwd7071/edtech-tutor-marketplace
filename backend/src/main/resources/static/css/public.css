@@ -246,7 +246,7 @@ details[open] > summary .summary-chevron {
 .button--secondary {
   color: var(--ink);
   background: var(--surface);
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--ink);
 }
 
 .button--secondary:hover {
@@ -344,6 +344,107 @@ details[open] > summary .summary-chevron {
     width: calc(100% - 32px);
     padding-block: 24px;
     gap: 12px;
+  }
+}
+
+/* ==========================================================================
+   Mobile System Foundation (UI/UX Pro Max & Neubrutalism-lite)
+   ========================================================================== */
+
+.mobile-bottom-nav {
+  display: none;
+}
+
+.mobile-bottom-sheet {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: var(--mobile-nav-height);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--surface);
+    border-top: 1.5px solid var(--ink);
+  }
+
+  .mobile-bottom-nav__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    padding: var(--space-1) var(--space-2);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    gap: 4px;
+    transition: color 150ms ease;
+  }
+
+  .mobile-bottom-nav__item svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    stroke-width: 1.75;
+  }
+
+  .mobile-bottom-nav__item--active {
+    color: var(--ink);
+  }
+
+  .mobile-bottom-nav__item--active svg {
+    stroke-width: 2.25;
+  }
+
+  .mobile-bottom-sheet {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+    background: var(--surface);
+    border-top: 1.5px solid var(--ink);
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    box-shadow: 0 -4px 20px rgba(23, 23, 20, 0.12);
+  }
+
+  .mobile-bottom-sheet__handle {
+    width: 36px;
+    height: 4px;
+    margin: 10px auto 6px;
+    background: var(--border);
+    border-radius: 2px;
+  }
+
+  .mobile-has-bottom-nav {
+    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 16px);
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important; /* Prevents iOS auto-zoom on focus */
+  }
+
+  .button,
+  button,
+  .auth-submit,
+  .search-submit {
+    min-height: var(--touch-target-min);
   }
 }
 

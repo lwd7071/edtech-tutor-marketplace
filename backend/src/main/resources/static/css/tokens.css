@@ -75,6 +75,9 @@
   --radius-control: 8px;
   --radius-card: 12px;
   --radius-panel: 16px;
+  --radius-sheet: 16px;
+  --mobile-nav-height: 64px;
+  --touch-target-min: 48px;
   --content-width: 1200px;
   --font-body: "Inter", "Be Vietnam Pro", sans-serif;
   --font-heading: "Be Vietnam Pro", "Inter", sans-serif;
