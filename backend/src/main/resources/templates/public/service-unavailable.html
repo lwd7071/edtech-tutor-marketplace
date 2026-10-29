@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Tạm thời chưa thể tải trang | Tutor Match</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public-forbidden.css">
+</head>
+<body>
+<a class="forbidden-skip" href="#main-content">Bỏ qua nội dung đầu trang</a>
+<main id="main-content" class="forbidden-page">
+  <a class="forbidden-brand" href="/" aria-label="Tutor Match — Trang chủ">tutor<span>match</span></a>
+  <section class="forbidden-state" aria-labelledby="unavailable-title">
+    <p class="forbidden-code">503 <span aria-hidden="true">·</span> TẠM THỜI GIÁN ĐOẠN</p>
+    <h1 id="unavailable-title">Chưa thể tải trang này</h1>
+    <p class="forbidden-copy">Thông tin tài khoản đang tạm thời không truy cập được. Hãy thử lại sau ít phút.</p>
+    <nav class="forbidden-actions" aria-label="Hành động">
+      <a class="forbidden-action forbidden-action--primary" th:href="${retryUrl}">Thử tải lại</a>
+      <a class="forbidden-action forbidden-action--secondary" href="/">Về trang chủ</a>
+    </nav>
+  </section>
+  <p class="forbidden-help">Phiên đăng nhập của bạn vẫn được giữ nguyên.</p>
+</main>
+</body>
+</html>

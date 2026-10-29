@@ -8,6 +8,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class TeacherSearchCache {
@@ -23,5 +27,9 @@ public class TeacherSearchCache {
         int page = params.page() == null ? 0 : params.page();
         int size = params.size() == null ? 20 : params.size();
         return CachedTeacherSearchPage.from(repository.searchTeachers(params, PageRequest.of(page, size)));
+    }
+
+    public Map<UUID, Long> countPublicTeachersBySubject(Collection<UUID> subjectIds) {
+        return repository.countPublicTeachersBySubject(subjectIds);
     }
 }

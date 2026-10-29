@@ -11,8 +11,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Sort;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +39,12 @@ public class SubjectFacadeImpl implements SubjectFacade {
     public Map<UUID, SubjectSnapshot> getSubjects(Collection<UUID> subjectIds) {
         return subjectRepository.findAllById(subjectIds).stream()
                 .collect(Collectors.toMap(Subject::getId, this::toSnapshot));
+    }
+
+    @Override
+    public List<SubjectSnapshot> getActiveSubjects() {
+        return subjectRepository.findAllByIsActiveTrue(Sort.by(Sort.Direction.ASC, "name"))
+                .stream().map(this::toSnapshot).toList();
     }
 
     private SubjectSnapshot toSnapshot(Subject subject) {

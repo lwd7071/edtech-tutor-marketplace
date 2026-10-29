@@ -1,0 +1,130 @@
+.public-support {
+  min-height: calc(100vh - 156px);
+  background: var(--surface);
+}
+
+.public-support__shell {
+  width: min(100% - 48px, 880px);
+  margin: 0 auto;
+  padding: 28px 0 88px;
+}
+
+.public-support__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.public-support__breadcrumb a,
+.public-support__topics a {
+  color: var(--ink);
+  text-underline-offset: 4px;
+}
+
+.public-support__heading {
+  max-width: 700px;
+  margin: 52px 0 48px;
+}
+
+.public-support__heading h1 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: clamp(40px, 5vw, 60px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.public-support__heading p,
+.public-support__topics > p {
+  max-width: 62ch;
+  margin: 16px 0 0;
+  color: var(--muted-strong);
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.public-support__topics {
+  max-width: 760px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+
+.public-support__topics h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.public-support__topics ul {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.public-support__topics li {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.public-support__note {
+  margin-top: 30px !important;
+  padding: 18px 20px;
+  border-radius: var(--radius-card);
+  background: var(--surface-warm);
+  color: var(--muted-strong) !important;
+  font-size: 15px !important;
+}
+
+.public-support a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+
+::selection {
+  background: var(--brand-yellow);
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .public-support {
+    min-height: auto;
+  }
+
+  .public-support__shell {
+    width: min(100% - 36px, 880px);
+    padding: 20px 0 64px;
+  }
+
+  .public-support__heading {
+    margin: 38px 0 34px;
+  }
+
+  .public-support__heading h1 {
+    font-size: clamp(38px, 10vw, 48px);
+  }
+
+  .public-support__heading p,
+  .public-support__topics > p {
+    font-size: 16px;
+  }
+
+  .public-support__topics h2 {
+    font-size: 22px;
+  }
+
+  .public-support__topics li {
+    font-size: 16px;
+  }
+}

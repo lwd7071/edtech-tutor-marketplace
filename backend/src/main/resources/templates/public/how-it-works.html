@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Cách hoạt động | Tutor Match</title>
+  <meta name="description" content="Các bước tìm gia sư, chọn cách bắt đầu và theo dõi việc học trên Tutor Match.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preload" href="/fonts/be-vietnam-pro-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/public-guide.css">
+</head>
+<body>
+<div th:replace="~{fragments/public-header :: header}"></div>
+<main id="main-content" class="public-guide">
+  <div class="public-guide__shell">
+    <nav class="public-guide__breadcrumb" aria-label="Đường dẫn">
+      <a href="/">Trang chủ</a><span aria-hidden="true">/</span><span aria-current="page">Cách hoạt động</span>
+    </nav>
+
+    <header class="public-guide__heading">
+      <h1>Từ tìm gia sư đến buổi học đầu tiên</h1>
+      <p>Chọn người hướng dẫn, thống nhất lịch học và theo dõi tiến độ trong tài khoản của bạn.</p>
+    </header>
+
+    <ol class="public-guide__steps" aria-label="Các bước học cùng gia sư">
+      <li class="public-guide-step">
+        <span class="public-guide-step__number" aria-hidden="true">1</span>
+        <div class="public-guide-step__body">
+          <h2>Tìm người phù hợp</h2>
+          <p>Lọc gia sư theo môn học, hình thức và mức giá. Mở hồ sơ để xem kinh nghiệm, gói học và đánh giá.</p>
+        </div>
+      </li>
+      <li class="public-guide-step">
+        <span class="public-guide-step__number" aria-hidden="true">2</span>
+        <div class="public-guide-step__body">
+          <h2>Chọn cách bắt đầu</h2>
+          <p>Bạn có thể gửi yêu cầu học thử để gia sư phản hồi, hoặc mua gói học và thanh toán hóa đơn.</p>
+          <p class="public-guide-step__note">Yêu cầu học thử chưa phải buổi học đã xác nhận.</p>
+        </div>
+      </li>
+      <li class="public-guide-step">
+        <span class="public-guide-step__number" aria-hidden="true">3</span>
+        <div class="public-guide-step__body">
+          <h2>Thống nhất lịch và theo dõi việc học</h2>
+          <p>Sau khi mua gói, bạn gửi yêu cầu đặt buổi. Gia sư xác nhận giờ học cụ thể; lịch, bài tập và gói học được theo dõi trong không gian học tập.</p>
+        </div>
+      </li>
+    </ol>
+
+    <nav class="public-guide__actions" aria-label="Bắt đầu tại Tutor Match">
+      <a class="button button--primary" href="/teachers">Tìm gia sư</a>
+      <a class="public-guide__actions-secondary" href="/become-a-tutor">Trở thành gia sư</a>
+    </nav>
+  </div>
+</main>
+<div th:replace="~{fragments/public-header :: footer}"></div>
+</body>
+</html>
+

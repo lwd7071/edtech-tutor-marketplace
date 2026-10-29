@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Gia sư được xếp hạng | Tutor Match</title>
+  <meta name="description" content="Xem bảng xếp hạng gia sư theo thành tích và môn giảng dạy.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/ranking.css">
+</head>
+<body>
+<div th:replace="~{fragments/public-header :: header}"></div>
+<main id="main-content" class="ranking-page">
+  <div class="ranking-shell">
+    <nav class="ranking-breadcrumb" aria-label="Đường dẫn"><a href="/">Trang chủ</a><span aria-hidden="true">/</span><span aria-current="page">Bảng xếp hạng</span></nav>
+    <header class="ranking-heading">
+      <h1 id="page-title">Bảng xếp hạng gia sư</h1>
+      <p>Xem hồ sơ gia sư theo môn học và thành tích được ghi nhận trên Tutor Match.</p>
+    </header>
+
+    <form class="ranking-filter" action="/ranking" method="get" aria-labelledby="filter-heading">
+      <h2 id="filter-heading" class="visually-hidden">Lọc bảng xếp hạng</h2>
+      <div>
+        <label for="subjectId">Môn học</label>
+        <select id="subjectId" name="subjectId">
+          <option value="">Tất cả môn học</option>
+          <option th:each="subject : ${subjects}" th:value="${subject.id}" th:text="${subject.name}" th:selected="${subjectId == subject.id.toString()}">Toán học</option>
+        </select>
+      </div>
+      <button class="ranking-button" type="submit">Lọc gia sư</button>
+      <a class="ranking-reset" href="/ranking">Xóa lọc</a>
+    </form>
+
+    <p class="ranking-error" role="alert" th:if="${invalidSubjectId}">Môn học không hợp lệ. Hãy chọn lại từ danh sách.</p>
+    <p class="ranking-filter-note" th:if="${subjectsUnavailable}">Bộ lọc môn học chưa tải được; bảng xếp hạng vẫn hiển thị.</p>
+
+    <section class="ranking-results" aria-labelledby="results-heading">
+      <header class="ranking-results__heading">
+        <h2 id="results-heading">Gia sư nổi bật</h2>
+        <p th:if="${!unavailable and !invalidSubjectId}" th:text="|${#numbers.formatInteger(results.totalElements, 1, 'POINT')} hồ sơ|">0 hồ sơ</p>
+      </header>
+      <div class="ranking-state" th:if="${unavailable}" role="alert">
+        <h3>Chưa tải được bảng xếp hạng</h3>
+        <p>Thử tải lại sau hoặc xem danh sách gia sư.</p>
+        <a class="ranking-button ranking-button--inline" th:href="${retryUrl}">Thử lại</a>
+      </div>
+      <div class="ranking-state" th:if="${invalidSubjectId}">
+        <h3>Kiểm tra lại bộ lọc môn học</h3>
+        <a href="/ranking">Xem toàn bộ bảng xếp hạng</a>
+      </div>
+      <div class="ranking-state" th:if="${!unavailable and !invalidSubjectId and results.empty}">
+        <h3>Chưa có hồ sơ trong bảng xếp hạng này</h3>
+        <p>Thử môn học khác hoặc xem danh sách gia sư.</p>
+        <a href="/teachers">Tìm gia sư</a>
+      </div>
+
+      <ol class="ranking-list" th:if="${!unavailable and !invalidSubjectId and !results.empty}">
+        <li class="ranking-row" th:each="teacher, iter : ${results.content}">
+          <span class="ranking-position" th:text="${teacher.globalRank != null ? teacher.globalRank : results.number * results.size + iter.count}">1</span>
+          <img class="ranking-avatar" th:if="${teacher.avatarUrl != null and !#strings.isEmpty(teacher.avatarUrl)}" th:src="${teacher.avatarUrl}" th:alt="|Ảnh đại diện ${teacher.fullName}|" loading="lazy">
+          <span class="ranking-avatar ranking-avatar--fallback" th:unless="${teacher.avatarUrl != null and !#strings.isEmpty(teacher.avatarUrl)}" aria-hidden="true" th:text="${teacher.fullName != null and !#strings.isEmpty(teacher.fullName) ? #strings.substring(teacher.fullName, 0, 1) : 'G'}">G</span>
+          <div class="ranking-person">
+            <h3><a th:if="${teacher.teacherId != null}" th:href="@{/teachers/{id}(id=${teacher.teacherId})}" th:text="${teacher.fullName != null ? teacher.fullName : 'Hồ sơ gia sư'}">Tên gia sư</a><span th:unless="${teacher.teacherId != null}" th:text="${teacher.fullName != null ? teacher.fullName : 'Hồ sơ gia sư'}">Tên gia sư</span></h3>
+            <p th:if="${teacher.bioExcerpt != null and !#strings.isEmpty(teacher.bioExcerpt)}" th:text="${teacher.bioExcerpt}">Giới thiệu gia sư</p>
+            <p class="ranking-person__sessions" th:if="${teacher.completedSessionCount != null and teacher.completedSessionCount > 0}" th:text="|${teacher.completedSessionCount} buổi học đã hoàn tất|">0 buổi học đã hoàn tất</p>
+            <p class="ranking-person__sessions" th:unless="${teacher.completedSessionCount != null and teacher.completedSessionCount > 0}">Chưa có buổi học hoàn tất được ghi nhận</p>
+          </div>
+          <span class="ranking-score" th:if="${teacher.bayesianRating != null}" th:text="|${#numbers.formatDecimal(teacher.bayesianRating, 1, 2)} điểm|">0 điểm</span>
+        </li>
+      </ol>
+      <nav class="ranking-pagination" aria-label="Phân trang" th:if="${!unavailable and !invalidSubjectId and results.totalPages > 1}">
+        <a th:if="${previousUrl != null}" th:href="${previousUrl}">Trang trước</a>
+        <span th:unless="${previousUrl != null}" aria-disabled="true">Trang trước</span>
+        <span th:text="|Trang ${results.number + 1} / ${results.totalPages}|">Trang 1 / 1</span>
+        <a th:if="${nextUrl != null}" th:href="${nextUrl}">Trang sau</a>
+        <span th:unless="${nextUrl != null}" aria-disabled="true">Trang sau</span>
+      </nav>
+    </section>
+  </div>
+</main>
+<div th:replace="~{fragments/public-header :: footer}"></div>
+</body>
+</html>

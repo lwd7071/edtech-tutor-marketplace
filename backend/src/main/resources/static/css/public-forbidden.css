@@ -1,0 +1,156 @@
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--surface-warm);
+}
+
+.forbidden-skip {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  padding: 10px 14px;
+  transform: translateY(-160%);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.forbidden-skip:focus {
+  transform: translateY(0);
+}
+
+.forbidden-skip:focus-visible,
+.forbidden-page a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+
+.forbidden-page {
+  display: flex;
+  box-sizing: border-box;
+  min-height: 100svh;
+  flex-direction: column;
+  justify-content: center;
+  width: min(100% - 48px, 840px);
+  margin: 0 auto;
+  padding: 48px 0;
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+.forbidden-brand {
+  width: fit-content;
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.06em;
+  text-decoration: none;
+}
+
+.forbidden-brand span {
+  color: var(--warning);
+}
+
+.forbidden-state {
+  margin: auto 0;
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.forbidden-code {
+  margin: 0 0 18px;
+  color: var(--warning);
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+}
+
+.forbidden-code span {
+  margin-inline: 5px;
+  color: var(--border);
+}
+
+.forbidden-state h1 {
+  max-width: 18ch;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(34px, 5vw, 54px);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.forbidden-copy {
+  max-width: 62ch;
+  margin: 16px 0 0;
+  color: var(--muted-strong);
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.forbidden-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.forbidden-action {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.forbidden-action--primary {
+  border-color: var(--brand-yellow);
+  background: var(--brand-yellow);
+}
+
+.forbidden-action--secondary {
+  background: transparent;
+}
+
+.forbidden-help {
+  margin: 28px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .forbidden-page {
+    width: min(100% - 36px, 840px);
+    padding: 24px 0;
+  }
+
+  .forbidden-state {
+    padding: 28px 0;
+  }
+
+  .forbidden-state h1 {
+    font-size: clamp(34px, 9vw, 42px);
+  }
+
+  .forbidden-copy {
+    font-size: 16px;
+  }
+
+  .forbidden-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

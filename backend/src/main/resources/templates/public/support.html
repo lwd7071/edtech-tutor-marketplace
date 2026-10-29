@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Hỗ trợ | Tutor Match</title>
+  <meta name="description" content="Tìm các khu vực thường dùng để theo dõi yêu cầu, thông báo và trao đổi với gia sư.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/public-support.css">
+</head>
+<body>
+<div th:replace="~{fragments/public-header :: header}"></div>
+<main id="main-content" class="public-support">
+  <div class="public-support__shell">
+    <nav class="public-support__breadcrumb" aria-label="Đường dẫn">
+      <a href="/">Trang chủ</a><span aria-hidden="true">/</span><span aria-current="page">Hỗ trợ</span>
+    </nav>
+    <header class="public-support__heading">
+      <h1>Bạn cần hỗ trợ?</h1>
+      <p>Kiểm tra trạng thái ngay trong tài khoản trước khi liên hệ bộ phận vận hành.</p>
+    </header>
+    <section aria-labelledby="support-topics-title" class="public-support__topics">
+      <h2 id="support-topics-title">Các mục thường dùng</h2>
+      <p>Đăng nhập để xem chi tiết và trạng thái hiện tại.</p>
+      <ul>
+        <li><a href="/student/requests">Yêu cầu học thử, hoàn tiền và gia hạn</a></li>
+        <li><a href="/student/notifications">Thông báo và kết quả xử lý</a></li>
+        <li><a href="/student/messages">Trao đổi với gia sư</a></li>
+      </ul>
+      <p class="public-support__note">Nếu vấn đề chưa được giải quyết, hãy chuẩn bị mã giao dịch hoặc mã yêu cầu khi liên hệ bộ phận vận hành Tutor Match.</p>
+    </section>
+  </div>
+</main>
+<div th:replace="~{fragments/public-header :: footer}"></div>
+</body>
+</html>

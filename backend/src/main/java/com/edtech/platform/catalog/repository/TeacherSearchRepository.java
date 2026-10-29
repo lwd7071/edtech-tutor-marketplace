@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,29 @@ import java.util.stream.Collectors;
 public class TeacherSearchRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
+
+    public Map<UUID, Long> countPublicTeachersBySubject(Collection<UUID> subjectIds) {
+        if (subjectIds == null || subjectIds.isEmpty()) return Map.of();
+        String sql = """
+                SELECT tsub.subject_id, COUNT(DISTINCT tp.id) AS teacher_count
+                FROM teacher_subjects tsub
+                JOIN subjects s ON s.id = tsub.subject_id
+                JOIN teacher_profiles tp ON tp.id = tsub.teacher_id
+                JOIN users u ON u.id = tp.user_id
+                WHERE tsub.subject_id IN (:subjectIds)
+                  AND tsub.is_deleted = false AND tsub.is_active = true
+                  AND s.is_deleted = false AND s.is_active = true
+                  AND tp.profile_status = 'APPROVED'
+                  AND tp.is_visible = true AND tp.is_deleted = false
+                  AND u.status = 'ACTIVE' AND u.is_deleted = false
+                GROUP BY tsub.subject_id
+                """;
+        Map<UUID, Long> counts = new HashMap<>();
+        jdbcTemplate.query(sql, new MapSqlParameterSource("subjectIds", subjectIds),
+                (org.springframework.jdbc.core.RowCallbackHandler) rs ->
+                        counts.put((UUID) rs.getObject("subject_id"), rs.getLong("teacher_count")));
+        return counts;
+    }
 
     private static final String PRICE_JOIN = """
             LEFT JOIN LATERAL (
