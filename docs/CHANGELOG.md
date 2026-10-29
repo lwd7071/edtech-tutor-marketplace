@@ -1,5 +1,11 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-29 — Tinh gọn ô Chat Box & Sửa căn lề thẻ Gói học
+- Tái cấu trúc ô soạn tin nhắn `.message-composer` (`student/messages.html`, `workspace/teacher-messages.html` & `student-messages.css`) thành Modern Chat Bar 1 hàng duy nhất: nút kẹp giấy 📎 đính kèm tệp nhỏ gọn (ẩn input file mặc định), ô nhập tin bo góc mềm mại, nút gửi vàng thương hiệu tinh tế; file đã chọn hiển thị dạng chip nhỏ phía trên.
+- Sửa lỗi lệch lề thẻ gói học `.profile-package` trên trang hồ sơ gia sư (`teachers/profile.html` & `teachers-profile.css`) theo mô hình Horizontal 2-Column Split: Cột trái $70\%$ chứa thông tin môn học và hàng 3 chip thông số; Cột phải $30\%$ có đường phân cách mỏng gom nhãn, giá tiền to nổi bật và nút "Chọn gói học" căn thẳng lề phải.
+- Quy trình TDD: Bổ sung test suites `TeacherProfilePageControllerTest`, `StudentMessagesPageControllerTest`, `TeacherMessagesPageControllerTest` kiểm tra cấu trúc layout mới, regression test PASS 23/23. Không sửa DB schema hay kết nối Supabase.
+
+
 ## 2026-10-29 — Tối ưu Header & Workspace Navigation Học viên (`/student`)
 - Đưa mục "Thông báo" từ thanh tab bên dưới lên Header trên cùng (`student-header.html`) dạng icon chuông (tương đồng với giao diện Teacher và Admin), hiển thị text và SVG chuông trên desktop và tự động rút gọn thành icon tròn ở màn hình di động `<= 640px`.
 - Rút gọn thanh điều hướng `workspace-nav` của Học viên (`student-workspace-nav.html`) chỉ còn thuần 7 tab học tập: `Tổng quan`, `Gói học`, `Lịch học`, `Bài tập`, `Báo cáo buổi học`, `Yêu cầu`, `Hồ sơ`.

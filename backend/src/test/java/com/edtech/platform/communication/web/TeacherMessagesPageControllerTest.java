@@ -90,6 +90,21 @@ class TeacherMessagesPageControllerTest {
     }
 
     @Test
+    void chatComposerShouldRenderCompactModernChatBarWithAttachAndSendButtons() throws Exception {
+        when(chatQueries.getConversations(eq(teacherId), any())).thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 21));
+        when(chatQueries.getConversation(eq(conversationId), eq(teacherId))).thenReturn(conversation());
+        when(chatQueries.getMessages(eq(conversationId), eq(teacherId), any()))
+                .thenReturn(new PageImpl<>(List.of(message("Chào bạn")), PageRequest.of(0, 20), 1));
+
+        mockMvc.perform(get("/teacher/messages").param("id", conversationId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"message-composer\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("message-composer__attach-btn")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("message-composer__send-btn")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("placeholder=\"Nhập tin nhắn...\"")));
+    }
+
+    @Test
     void textMessageUsesPrincipalAndIdempotencyIdThenRedirects() throws Exception {
         mockMvc.perform(post("/teacher/messages/send")
                         .param("conversationId", conversationId.toString())

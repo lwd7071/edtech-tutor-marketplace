@@ -1,5 +1,13 @@
 # Trạng thái dự án
 
+## Tinh gọn ô Chat Box & Sửa căn lề thẻ Gói học — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:**
+  - Chat Box (`/student/messages`, `/teacher/messages`): Tinh gọn thành Modern Chat Bar 1 hàng cao $\sim 50\text{px}$, nút đính kèm kẹp giấy SVG, ô nhập bo góc mềm, nút gửi gọn gàng; file đính kèm chọn hiển thị dạng chip nhỏ phía trên.
+  - Gói học (`/teachers/{id}`): Tái cấu trúc thành Horizontal 2-Column Split (Cột trái $70\%$ chứa môn học, tên gói, mô tả, 3 chip thông số; Cột phải $30\%$ có border-left nhẹ, căn thẳng lề phải giá tiền và nút chọn gói).
+- **Bằng chứng kiểm thử backend:** MockMvc test suites `TeacherProfilePageControllerTest`, `StudentMessagesPageControllerTest`, `TeacherMessagesPageControllerTest` PASS **23/23**.
+- **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không dùng port 8080 cho test ngầm.
+
+
 ## Tối ưu Header & Workspace Navigation Học viên — 2026-10-29
 - **Trục nghiệm thu giao diện & TDD:** Chuyển mục "Thông báo" lên thanh Header trên cùng (`student-header.html`) với icon chuông SVG và nhãn "Thông báo" (thu gọn thành icon trên mobile `<= 640px`). Rút gọn thanh điều hướng `workspace-nav` chỉ còn thuần 7 tab học tập (`Tổng quan`, `Gói học`, `Lịch học`, `Bài tập`, `Báo cáo buổi học`, `Yêu cầu`, `Hồ sơ`).
 - **Bằng chứng kiểm thử backend:** Chạy MockMvc TDD suite `StudentHeaderAndNavLayoutTest` (2 tests) và regression tests `StudentDashboardPageControllerTest`, `NotificationPageControllerTest` (7 tests) PASS **9/9**.

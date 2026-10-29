@@ -98,15 +98,29 @@
             <input type="hidden" name="conversationId" th:value="${activeConversation.id}">
             <input type="hidden" name="clientMessageId" th:value="${chatClientMessageId}">
             <input type="hidden" name="page" th:value="${conversationPage}">
-            <label for="chatContent">Tin nhắn</label>
-            <textarea id="chatContent" name="content" rows="3" th:text="${chatDraft}"></textarea>
-            <div class="message-composer__file">
-              <label for="chatFile">Đính kèm tệp <span>(tùy chọn)</span></label>
-              <input id="chatFile" type="file" name="file" accept=".pdf,.docx,.xlsx,.pptx,.zip,.jpg,.jpeg,.png,.gif,.webp">
-              <p>PDF, Office, ZIP hoặc ảnh; giới hạn 20 MB.</p>
-              <p class="message-composer__selected" th:if="${chatAttachmentName != null}" th:text="|Cần chọn lại tệp: ${chatAttachmentName}|">Cần chọn lại tệp</p>
+            <label class="sr-only" for="chatContent">Nội dung tin nhắn</label>
+            <div class="message-composer__bar">
+              <label class="message-composer__attach-btn" for="chatFile" title="Đính kèm tệp (PDF, Office, ZIP, ảnh; tối đa 20MB)" aria-label="Đính kèm tệp">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                </svg>
+                <input id="chatFile" class="message-composer__file-input" type="file" name="file" accept=".pdf,.docx,.xlsx,.pptx,.zip,.jpg,.jpeg,.png,.gif,.webp">
+              </label>
+              <textarea id="chatContent" class="message-composer__input" name="content" rows="1" placeholder="Nhập tin nhắn..." th:text="${chatDraft}"></textarea>
+              <button class="message-composer__send-btn" type="submit" title="Gửi tin nhắn" aria-label="Gửi tin nhắn">
+                <span>Gửi</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              </button>
             </div>
-            <button type="submit">Gửi tin nhắn</button>
+            <div class="message-composer__status" th:if="${chatAttachmentName != null}">
+              <span class="message-composer__selected-chip">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                <span th:text="|Cần chọn lại tệp: ${chatAttachmentName}|">Cần chọn lại tệp</span>
+              </span>
+            </div>
           </form>
         </div>
       </section>
