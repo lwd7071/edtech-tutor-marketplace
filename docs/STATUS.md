@@ -1,5 +1,14 @@
 # Trạng thái dự án
 
+## Supabase schema V42 — 2026-10-29
+- Sau khi lệnh apply bị cắt ở output ngay sau thông báo bắt đầu áp dụng, chạy lại quy trình guarded ở chế độ chỉ đọc để xác minh trạng thái thật. Flyway `info` báo V42 `Success`; Flyway `validate` thành công với 42 migrations. Không áp migration trong lần xác minh này.
+- PostgreSQL 17.6 phát cảnh báo phiên bản mới hơn mức Flyway 9.22.3 đã kiểm thử hỗ trợ (PostgreSQL 15); migration history vẫn validate thành công.
+- Chưa khởi động lại Spring Cloud sau khi xác minh V42; lần khởi động trước V42 thất bại vì thiếu bảng `booking_requests` khi Flyway bị tắt. Cần chạy lại `mvn spring-boot:run` với profile `cloud`, không tắt Flyway, để xác minh app khởi động.
+
+## Seed invoice idempotency keys — 2026-10-29
+- Đổi các giá trị chữ `idem-inv-004`–`idem-inv-010` trong `supabase_seed_data.sql` thành UUID hợp lệ, mỗi giá trị trùng ID của invoice tương ứng. Điều này khớp kiểu `invoices.idempotency_key uuid` và giữ unique key giữa các invoice.
+- Tại thời điểm ghi mục này, seed SQL chưa được thực thi. Sau đó, người dùng báo đã chạy `supabase_seed_data.sql` trên Supabase; kết quả seed chưa được kiểm tra độc lập. Migration không đổi trong phần seed.
+
 ## Thymeleaf `/` — landing page editorial — 2026-10-29
 - Bố cục SSR theo brief mới và ADR 0015: mở đầu hai dòng, mục lục môn có số đếm thật, tối đa bốn gia sư từ backend, ba bước, FAQ `<details>` và footer. Bỏ minh họa lớn/CTA trang trí/KPI. Số gia sư theo môn là một truy vấn nhóm, chỉ đếm teacher-subject active cùng hồ sơ APPROVED/visible và user ACTIVE; lỗi đếm không hiển thị số giả.
 - Header mobile dùng menu native `<details>`; không thêm JavaScript. Avatar lấy URL gia sư cung cấp, thiếu thì hiện chữ cái đầu. Không sửa migration; file V42 untracked có sẵn giữ nguyên.

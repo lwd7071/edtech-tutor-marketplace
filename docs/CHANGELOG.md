@@ -1,5 +1,12 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-29 — Xác minh Supabase schema V42
+- Flyway read-only info xác nhận V42 ở trạng thái `Success`; validate toàn bộ 42 migrations thành công. Không áp migration trong lần xác minh này.
+- Backend Cloud chưa được khởi động lại sau khi xác minh schema; cảnh báo tương thích Flyway 9.22.3 với PostgreSQL 17.6 được ghi nhận trong `docs/STATUS.md`.
+
+## 2026-10-29 — Sửa UUID trong invoice seed
+- Thay bảy chuỗi `idem-inv-*` không hợp lệ ở cột `invoices.idempotency_key` bằng UUID của từng invoice. Tại thời điểm sửa chưa chạy SQL; sau đó người dùng báo đã chạy seed, chi tiết xác minh nằm trong `docs/STATUS.md`.
+
 ## 2026-10-29 — Dựng lại landing page Thymeleaf `/`
 - Thay hero minh họa và CTA trang trí bằng phần mở đầu editorial, mục lục môn có số gia sư lấy từ một truy vấn nhóm, bốn hồ sơ gia sư thật, ba bước, FAQ native `<details>` và menu gọn cho mobile. Không thêm số liệu tin cậy, script hay migration.
 - Browser report của lượt dựng ghi 7 viewport, keyboard menu/focus, FAQ và console sạch; hai ảnh desktop/mobile được giữ tại `acceptance-20261029/home/`. Trong lượt rà cuối, hai ảnh đã được mở/xem và `HomePageControllerTest` + `TeacherSearchRepositoryIntegrationTest` chạy lại PASS 8/8. JavaScript-off chưa xác minh. Route `/` tiếp tục `Đang làm`.
