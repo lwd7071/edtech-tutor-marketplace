@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Thanh toán gói học | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/student-payment.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-payment-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+    <a class="payment-back" href="/student/packages">← Về gói học</a>
+    <section class="payment-panel" aria-labelledby="payment-title">
+      <div class="payment-state payment-state--error" role="alert" th:if="${paymentUnavailable}">
+        <h1 id="payment-title">Chưa tải được thông tin thanh toán</h1>
+        <p>Hóa đơn vẫn được giữ an toàn. Hãy tải lại trang để kiểm tra trạng thái mới nhất.</p>
+        <a class="payment-button payment-button--primary" th:href="@{/student/checkout/{id}(id=${invoiceId})}">Thử lại</a>
+      </div>
+      <div th:if="${!paymentUnavailable and invoice != null}">
+        <p class="payment-eyebrow">Hóa đơn <span th:text="${invoice.invoiceNumber}">TM-0000</span></p>
+        <h1 id="payment-title" th:text="${invoice.status == 'PENDING' ? 'Hoàn tất thanh toán' : (invoice.status == 'EXPIRED' ? 'Hóa đơn đã hết hạn' : (invoice.status == 'CANCELLED' ? 'Thanh toán đã bị hủy' : 'Chưa xác định được trạng thái'))}">Hoàn tất thanh toán</h1>
+        <p class="payment-intro" th:text="${invoice.status == 'PENDING' ? 'Mở trang thanh toán an toàn để quét mã QR hoặc chọn phương thức phù hợp.' : (invoice.status == 'EXPIRED' ? 'Tạo hóa đơn mới từ hồ sơ gia sư nếu bạn vẫn muốn mua gói học này.' : (invoice.status == 'CANCELLED' ? 'Hóa đơn này đã được hủy. Bạn có thể quay lại danh sách gói học.' : 'Hãy kiểm tra lại trạng thái hóa đơn trước khi tiếp tục.'))}">Mở trang thanh toán an toàn để quét mã QR hoặc chọn phương thức phù hợp.</p>
+        <dl class="payment-summary">
+          <div><dt>Số tiền</dt><dd th:text="${invoice.amountLabel}">0 ₫</dd></div>
+          <div><dt>Mã hóa đơn</dt><dd th:text="${invoice.invoiceNumber}">TM-0000</dd></div>
+          <div th:if="${invoice.expiryLabel != null and invoice.status == 'PENDING'}"><dt>Hạn thanh toán</dt><dd th:text="${invoice.expiryLabel}">00:00, 01/01/2026</dd></div>
+        </dl>
+        <div class="payment-actions" th:if="${invoice.status == 'PENDING'}">
+          <a class="payment-button payment-button--primary" th:if="${invoice.checkoutUrl != null and !#strings.isEmpty(invoice.checkoutUrl)}" th:href="${invoice.checkoutUrl}" target="_blank" rel="noopener noreferrer">Mở trang thanh toán</a>
+          <p class="payment-inline-error" role="alert" th:if="${invoice.checkoutUrl == null or #strings.isEmpty(invoice.checkoutUrl)}">Hóa đơn chưa có liên kết thanh toán. Hãy thử kiểm tra lại sau.</p>
+          <a class="payment-button payment-button--secondary" th:href="@{/student/payment-result/{id}(id=${invoice.id})}">Kiểm tra trạng thái hóa đơn</a>
+        </div>
+        <div class="payment-actions" th:if="${invoice.status == 'UNKNOWN'}">
+          <a class="payment-button payment-button--secondary" th:href="@{/student/payment-result/{id}(id=${invoice.id})}">Kiểm tra trạng thái</a>
+        </div>
+        <div class="payment-actions" th:if="${invoice.status == 'EXPIRED' or invoice.status == 'CANCELLED'}">
+          <a class="payment-button payment-button--primary" href="/teachers">Tìm gói học khác</a>
+          <a class="payment-button payment-button--secondary" href="/student/packages">Xem gói học của tôi</a>
+        </div>
+        <p class="payment-note" th:if="${invoice.status == 'PENDING'}">Sau khi thanh toán, quay lại đây và chọn “Kiểm tra trạng thái hóa đơn”.</p>
+      </div>
+    </section>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

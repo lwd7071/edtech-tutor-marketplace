@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Tổng quan học tập | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+
+<main id="main-content" class="student-dashboard">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+
+    <section class="dashboard-heading" aria-labelledby="dashboard-title">
+      <div>
+        <h1 id="dashboard-title">Tổng quan học tập</h1>
+        <p class="dashboard-heading__copy">Theo dõi lịch học và những việc cần làm tiếp theo.</p>
+      </div>
+    </section>
+
+    <div class="dashboard-alert" role="alert" th:if="${dashboardUnavailable}">
+      <div><strong>Chưa tải được tổng quan.</strong><p>Hãy thử tải lại trang sau ít phút.</p></div>
+      <a href="/student">Thử lại</a>
+    </div>
+
+    <section class="dashboard-overview" aria-label="Tóm tắt học tập" th:if="${summary != null}">
+      <article class="overview-card overview-card--next">
+        <h2>Buổi học tiếp theo</h2>
+        <p class="overview-card__value" th:if="${nextLessonLabel != null}" th:text="${nextLessonLabel}">19:00 · Thứ Hai, 14/09/2026</p>
+        <p class="overview-card__value overview-card__value--empty" th:unless="${nextLessonLabel != null}">Chưa có lịch học</p>
+        <a href="/student/bookings">Xem lịch học <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M3 10h13m-5-5 5 5-5 5"/></svg></a>
+      </article>
+      <article class="overview-card overview-card--sessions">
+        <div><h2>Lượt học còn lại</h2><p class="overview-card__value"><span th:text="${summary.remainingSessions}">0</span> <small>buổi</small></p></div>
+        <a href="/student/packages">Xem gói học <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M3 10h13m-5-5 5 5-5 5"/></svg></a>
+      </article>
+    </section>
+
+    <section class="dashboard-lower" aria-label="Thông tin bổ sung" th:if="${summary != null}">
+      <article class="dashboard-panel dashboard-panel--tasks">
+        <h2>Việc cần theo dõi</h2>
+        <ul class="dashboard-task-list">
+          <li><a href="/student/assignments"><span>Bài tập cần làm</span><strong th:text="${summary.todoAssignments}">0</strong></a></li>
+          <li><a href="/student/requests"><span>Yêu cầu đang chờ</span><strong th:text="${summary.pendingRequests}">0</strong></a></li>
+          <li><a href="/student/notifications"><span>Thông báo chưa đọc</span><strong th:text="${summary.unreadNotifications}">0</strong></a></li>
+        </ul>
+      </article>
+      <aside class="dashboard-next-step"><h2>Đang tìm gia sư?</h2><p>Xem hồ sơ, môn dạy và gói học trước khi chọn.</p><a href="/teachers">Khám phá gia sư <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M3 10h13m-5-5 5 5-5 5"/></svg></a></aside>
+    </section>
+  </div>
+</main>
+
+<footer class="student-footer"><div><a href="/">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

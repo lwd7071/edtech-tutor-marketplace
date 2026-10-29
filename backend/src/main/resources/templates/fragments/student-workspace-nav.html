@@ -1,0 +1,10 @@
+<nav class="workspace-nav" aria-label="Điều hướng học viên" th:fragment="nav(active)">
+  <a th:classappend="${active == 'overview' ? ' workspace-nav__active' : ''}" href="/student" th:attr="aria-current=${active == 'overview' ? 'page' : null}">Tổng quan</a>
+  <a th:classappend="${active == 'packages' ? ' workspace-nav__active' : ''}" href="/student/packages" th:attr="aria-current=${active == 'packages' ? 'page' : null}">Gói học</a>
+  <a th:classappend="${active == 'bookings' ? ' workspace-nav__active' : ''}" href="/student/bookings" th:attr="aria-current=${active == 'bookings' ? 'page' : null}">Lịch học</a>
+  <a th:classappend="${active == 'assignments' ? ' workspace-nav__active' : ''}" href="/student/assignments" th:attr="aria-current=${active == 'assignments' ? 'page' : null}">Bài tập</a>
+  <a th:classappend="${active == 'reports' ? ' workspace-nav__active' : ''}" href="/student/session-reports" th:attr="aria-current=${active == 'reports' ? 'page' : null}">Báo cáo buổi học</a>
+  <a th:classappend="${active == 'notifications' ? ' workspace-nav__active' : ''}" href="/student/notifications" th:attr="aria-current=${active == 'notifications' ? 'page' : null}">Thông báo</a>
+  <a th:classappend="${active == 'requests' ? ' workspace-nav__active' : ''}" href="/student/requests" th:attr="aria-current=${active == 'requests' ? 'page' : null}">Yêu cầu</a>
+  <a th:classappend="${active == 'profile' ? ' workspace-nav__active' : ''}" href="/student/profile" th:attr="aria-current=${active == 'profile' ? 'page' : null}">Hồ sơ</a>
+</nav>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Tin nhắn | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/student-messages.css">
+  <link rel="stylesheet" href="/css/teacher-workspace.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-messages-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+    <header class="messages-heading"><h1>Tin nhắn</h1><p>Trao đổi với gia sư khi bạn có gói học, yêu cầu học thử hoặc buổi học hợp lệ.</p></header>
+    <div class="messages-flash" role="status" th:if="${chatNotice != null}" th:text="${chatNotice}">Tin nhắn đã được gửi.</div>
+    <div class="messages-flash messages-flash--error" role="alert" th:if="${chatActionError != null}" th:text="${chatActionError}">Chưa gửi được tin nhắn.</div>
+
+    <section class="messages-layout" th:classappend="${activeConversation != null ? ' messages-layout--thread-selected' : ''}" aria-label="Hộp thư">
+      <aside class="messages-sidebar" aria-labelledby="conversation-list-title">
+        <header class="messages-sidebar__heading"><h2 id="conversation-list-title">Cuộc trò chuyện</h2><span th:text="${conversationCount}">0</span></header>
+        <div class="messages-state messages-state--error" role="alert" th:if="${conversationUnavailable}">
+          <p>Chưa tải được danh sách trò chuyện.</p><a href="/student/messages">Tải lại</a>
+        </div>
+        <p class="messages-state" th:if="${!conversationUnavailable and #lists.isEmpty(conversationRows)}">Chưa có cuộc trò chuyện.</p>
+        <ol class="conversation-list" th:if="${!conversationUnavailable and !#lists.isEmpty(conversationRows)}">
+          <li th:each="row : ${conversationRows}">
+            <a class="conversation-link" th:classappend="${selectedConversationId == row.data.id ? ' conversation-link--active' : ''}"
+               th:href="@{/student/messages(id=${row.data.id},page=${conversationPage})}"
+               th:attr="aria-current=${selectedConversationId == row.data.id ? 'page' : null}">
+              <span class="conversation-link__avatar" aria-hidden="true"
+                    th:text="${row.data.participantName != null and !#strings.isEmpty(row.data.participantName) ? #strings.substring(row.data.participantName, 0, 1) : 'G'}">G</span>
+              <span class="conversation-link__body">
+                <strong th:text="${row.data.participantName != null ? row.data.participantName : 'Gia sư'}">Tên gia sư</strong>
+                <span th:text="${row.data.lastMessagePreview != null and !#strings.isEmpty(row.data.lastMessagePreview) ? row.data.lastMessagePreview : 'Chưa có tin nhắn'}">Tin nhắn gần nhất</span>
+                <small th:text="${row.lastMessageLabel}">21:00, 28/10/2026</small>
+              </span>
+              <span class="conversation-link__unread" th:if="${row.data.unreadCount > 0}"
+                    th:attr="aria-label=|${row.data.unreadCount} tin nhắn chưa đọc|" th:text="${row.data.unreadCount}">1</span>
+            </a>
+          </li>
+        </ol>
+        <nav class="messages-pagination" aria-label="Phân trang cuộc trò chuyện" th:if="${hasPreviousConversations or hasNextConversations}">
+          <a th:if="${hasPreviousConversations}" th:href="@{/student/messages(page=${conversationPage - 1})}">← Trước</a>
+          <span th:text="|Trang ${conversationPage + 1}|">Trang 1</span>
+          <a th:if="${hasNextConversations}" th:href="@{/student/messages(page=${conversationPage + 1})}">Sau →</a>
+        </nav>
+      </aside>
+
+      <section class="messages-thread" aria-labelledby="thread-title">
+        <section class="messages-state messages-state--error" role="alert" th:if="${selectedConversationUnavailable}">
+          <h2 id="thread-title">Không tìm thấy cuộc trò chuyện</h2><p>Cuộc trò chuyện không tồn tại hoặc bạn không có quyền truy cập.</p>
+          <a href="/student/messages">Về danh sách</a>
+        </section>
+        <section class="messages-welcome" th:if="${activeConversation == null and !selectedConversationUnavailable}">
+          <h2 id="thread-title">Chọn một cuộc trò chuyện</h2><p>Tin nhắn với gia sư sẽ xuất hiện tại đây.</p>
+        </section>
+        <div class="messages-thread__active" th:if="${activeConversation != null and !selectedConversationUnavailable}">
+          <header class="thread-heading">
+            <div><a class="thread-back" th:href="@{/student/messages(page=${conversationPage})}">← Cuộc trò chuyện</a><h2 id="thread-title" th:text="${activeConversation.participantName != null ? activeConversation.participantName : 'Gia sư'}">Gia sư</h2><p>Tin nhắn riêng</p></div>
+            <form method="post" th:if="${activeConversation.unreadCount > 0}" th:action="@{/student/messages/{id}/read(id=${activeConversation.id})}">
+              <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <input type="hidden" name="page" th:value="${conversationPage}">
+              <button type="submit">Đánh dấu đã đọc</button>
+            </form>
+          </header>
+          <div class="message-history">
+            <div class="message-history__error" role="alert" th:if="${messageUnavailable}">
+              <p>Chưa tải được tin nhắn.</p><a th:href="@{/student/messages(id=${activeConversation.id},page=${conversationPage})}">Thử tải lại</a>
+            </div>
+            <p class="message-history__empty" th:if="${!messageUnavailable and #lists.isEmpty(messageRows) and !hasOlderMessages}">Chưa có tin nhắn. Hãy gửi lời chào để bắt đầu.</p>
+            <nav class="message-history__older" aria-label="Tin nhắn cũ hơn" th:if="${hasOlderMessages}">
+              <a th:href="@{/student/messages(id=${activeConversation.id},page=${conversationPage},messagePage=${messagePage + 1})}">Tải tin nhắn cũ hơn</a>
+            </nav>
+            <ol class="message-list" aria-label="Nội dung cuộc trò chuyện" th:unless="${#lists.isEmpty(messageRows)}">
+              <li th:each="row : ${messageRows}">
+                <article class="chat-message" th:classappend="${row.own ? ' chat-message--own' : ''}">
+                  <div class="chat-message__bubble">
+                    <a class="chat-message__attachment" th:if="${row.data.attachment != null and row.attachmentUrl != null}"
+                       th:href="${row.attachmentUrl}" target="_blank" rel="noopener noreferrer"
+                       th:text="${row.data.attachment.originalFilename != null ? row.data.attachment.originalFilename : 'Tệp đính kèm'}">Tệp đính kèm</a>
+                    <span class="chat-message__attachment" th:if="${row.data.attachment != null and row.attachmentUrl == null}"
+                          th:text="${row.data.attachment.originalFilename != null ? row.data.attachment.originalFilename : 'Tệp đính kèm'}">Tệp đính kèm</span>
+                    <p th:if="${row.data.content != null and !#strings.isEmpty(row.data.content)}" th:text="${row.data.content}">Nội dung tin nhắn</p>
+                    <footer><time th:if="${row.data.sentAt != null}" th:datetime="${row.data.sentAt}" th:text="${row.sentLabel}">21:00, 28/10/2026</time><span th:unless="${row.data.sentAt != null}" th:text="${row.sentLabel}">Chưa có thời gian</span></footer>
+                  </div>
+                </article>
+              </li>
+            </ol>
+          </div>
+          <form class="message-composer" method="post" enctype="multipart/form-data" action="/student/messages/send">
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" name="conversationId" th:value="${activeConversation.id}">
+            <input type="hidden" name="clientMessageId" th:value="${chatClientMessageId}">
+            <input type="hidden" name="page" th:value="${conversationPage}">
+            <label for="chatContent">Tin nhắn</label>
+            <textarea id="chatContent" name="content" rows="3" th:text="${chatDraft}"></textarea>
+            <div class="message-composer__file">
+              <label for="chatFile">Đính kèm tệp <span>(tùy chọn)</span></label>
+              <input id="chatFile" type="file" name="file" accept=".pdf,.docx,.xlsx,.pptx,.zip,.jpg,.jpeg,.png,.gif,.webp">
+              <p>PDF, Office, ZIP hoặc ảnh; giới hạn 20 MB.</p>
+              <p class="message-composer__selected" th:if="${chatAttachmentName != null}" th:text="|Cần chọn lại tệp: ${chatAttachmentName}|">Cần chọn lại tệp</p>
+            </div>
+            <button type="submit">Gửi tin nhắn</button>
+          </form>
+        </div>
+      </section>
+    </section>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/student">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

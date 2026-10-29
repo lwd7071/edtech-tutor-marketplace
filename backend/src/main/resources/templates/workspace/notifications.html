@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Thông báo | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css"><link rel="stylesheet" href="/css/notifications.css">
+</head>
+<body>
+<th:block th:if="${role == 'STUDENT'}"><div th:replace="~{fragments/student-header :: header}"></div></th:block>
+<header class="notification-teacher-header" th:if="${role == 'TEACHER'}">
+  <a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
+  <div class="notification-teacher-header__inner">
+    <a class="brand" href="/teacher/notifications" aria-label="Tutor Match — thông báo gia sư">
+      <span class="brand__mark" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M4 8.5c4.7-1.2 8.6-.3 12 2.4 3.4-2.7 7.3-3.6 12-2.4v15c-4.7-1.2-8.6-.3-12 2.4-3.4-2.7-7.3-3.6-12-2.4z"/><path d="M16 11v14"/></svg></span>
+      <span class="brand__name">tutor<span>match</span></span>
+    </a>
+    <nav aria-label="Điều hướng chính"><a href="/teachers">Tìm gia sư</a><a href="/support">Hỗ trợ</a></nav>
+    <div><span>Gia sư</span><form method="post" action="/auth/logout"><input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button type="submit">Đăng xuất</button></form></div>
+  </div>
+</header>
+<main id="main-content" class="student-dashboard notification-page">
+  <div class="student-dashboard__container">
+    <th:block th:if="${role == 'STUDENT'}"><div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div></th:block>
+    <nav class="notification-teacher-nav" aria-label="Điều hướng gia sư" th:if="${role == 'TEACHER'}"><a href="/teacher/notifications" aria-current="page">Thông báo</a></nav>
+    <header class="notification-heading">
+      <div><h1>Thông báo</h1><p th:text="${role == 'TEACHER' ? 'Theo dõi lịch dạy, bài tập, thu nhập và trạng thái tài khoản.' : 'Theo dõi lịch học, bài tập, tài chính và trạng thái tài khoản.'}">Theo dõi thông tin mới nhất về việc học.</p></div>
+      <form method="post" th:action="@{${basePath} + '/read-all'}">
+        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <input type="hidden" name="filter" th:value="${filter}">
+        <button class="notification-button notification-button--secondary" type="submit">Đánh dấu tất cả đã đọc</button>
+      </form>
+    </header>
+    <p class="notification-flash" role="status" th:if="${notice != null}" th:text="${notice}">Đã cập nhật thông báo.</p>
+    <p class="notification-flash notification-flash--error" role="alert" th:if="${actionError != null}" th:text="${actionError}">Chưa thực hiện được thao tác.</p>
+    <p class="notification-flash notification-flash--error" role="alert" th:if="${filterInvalid}">Bộ lọc không hợp lệ. Đang hiển thị tất cả thông báo.</p>
+    <nav class="notification-filters" aria-label="Lọc thông báo">
+      <a th:each="option : ${filters}" th:href="@{${basePath}(filter=${option.value},page=0)}"
+         th:classappend="${option.value == filter ? ' is-active' : ''}"
+         th:attr="aria-current=${option.value == filter ? 'page' : null}" th:text="${option.label}">Tất cả</a>
+    </nav>
+    <section class="notification-content" aria-label="Danh sách thông báo">
+      <div class="notification-state notification-state--error" role="alert" th:if="${notificationsUnavailable}">
+        <h2>Chưa tải được thông báo</h2><p>Hãy kiểm tra kết nối rồi thử lại.</p>
+        <a class="notification-button notification-button--secondary" th:href="@{${basePath}(filter=${filter},page=${currentPage})}">Thử tải lại</a>
+      </div>
+      <div class="notification-state" th:if="${!notificationsUnavailable and #lists.isEmpty(notificationRows)}">
+        <h2>Chưa có thông báo ở mục này</h2><p>Thông tin mới sẽ xuất hiện tại đây.</p>
+        <a th:if="${filter != 'ALL'}" th:href="@{${basePath}(filter='ALL',page=0)}">Xem tất cả thông báo</a>
+      </div>
+      <ol class="notification-list" th:if="${!notificationsUnavailable and !#lists.isEmpty(notificationRows)}">
+        <li class="notification-item" th:each="row : ${notificationRows}" th:classappend="${!row.data.isRead ? ' notification-item--unread' : ''}">
+          <a class="notification-item__main" th:if="${row.destination != null}" th:href="${row.destination}">
+            <span class="notification-item__copy"><span class="notification-item__title" th:text="${row.data.title}">Tiêu đề thông báo</span><span class="notification-item__body" th:text="${row.data.content}">Nội dung thông báo</span></span>
+          </a>
+          <div class="notification-item__main" th:unless="${row.destination != null}">
+            <span class="notification-item__copy"><span class="notification-item__title" th:text="${row.data.title}">Tiêu đề thông báo</span><span class="notification-item__body" th:text="${row.data.content}">Nội dung thông báo</span></span>
+          </div>
+          <div class="notification-item__meta"><span th:text="${row.dateLabel}">09:00, 28/10/2026</span><span th:text="${row.data.isRead ? 'Đã đọc' : 'Chưa đọc'}">Chưa đọc</span></div>
+          <form method="post" th:if="${!row.data.isRead}" th:action="@{${basePath} + '/' + ${row.data.id} + '/read'}">
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" name="filter" th:value="${filter}"><input type="hidden" name="page" th:value="${currentPage}">
+            <button class="notification-read-button" type="submit">Đánh dấu đã đọc</button>
+          </form>
+        </li>
+      </ol>
+      <nav class="notification-pagination" aria-label="Phân trang" th:if="${!notificationsUnavailable and totalPages > 1}">
+        <a th:if="${hasPrevious}" th:href="@{${basePath}(filter=${filter},page=${currentPage - 1})}">Trang trước</a>
+        <span th:text="|Trang ${currentPage + 1} / ${totalPages}|">Trang 1 / 2</span>
+        <a th:if="${hasNext}" th:href="@{${basePath}(filter=${filter},page=${currentPage + 1})}">Trang sau</a>
+      </nav>
+    </section>
+  </div>
+</main>
+</body>
+</html>

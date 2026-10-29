@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Chi tiết gói học | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/student-packages.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-packages-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+    <p class="package-breadcrumb"><a href="/student/packages">Gói học của tôi</a><span aria-hidden="true">/</span> Chi tiết</p>
+    <div class="package-state package-state--error" role="alert" th:if="${packageUnavailable}">
+      <h1>Chưa tải được gói học.</h1><p>Hãy thử lại sau ít phút.</p><a href="/student/packages">Về danh sách gói học</a>
+    </div>
+    <article class="package-detail" th:if="${packageRow != null}">
+      <p class="package-notice package-notice--success" role="status" th:if="${bookingRequestSuccess}" th:text="${bookingRequestSuccess}">Đã gửi yêu cầu.</p>
+      <p class="package-notice package-notice--error" role="alert" th:if="${bookingRequestError}" th:text="${bookingRequestError}">Không thể gửi yêu cầu.</p>
+      <header class="package-detail__heading">
+        <div><p class="package-card__subject" th:text="${packageRow.data.subject.name}">Môn học</p><h1 th:text="${packageRow.data.packageName}">Tên gói học</h1><p>Gia sư <strong th:text="${packageRow.data.teacher.fullName}">Tên gia sư</strong></p></div>
+        <span class="package-status" th:classappend="${' package-status--' + #strings.toLowerCase(packageRow.data.status)}" th:text="${packageRow.statusLabel}">Đang hoạt động</span>
+      </header>
+      <section class="package-detail__progress" aria-labelledby="session-title">
+        <div class="package-detail__progress-heading"><h2 id="session-title">Phân bổ buổi học</h2><span th:text="|Còn ${packageRow.data.remainingSessions} / ${packageRow.data.totalSessions} buổi|">Còn 0 / 0 buổi</span></div>
+        <div class="session-progress" role="img" th:attr="aria-label=|Đã hoàn thành ${packageRow.data.completedSessions} trong tổng ${packageRow.data.totalSessions} buổi|"><span th:style="|width: ${packageRow.data.totalSessions == 0 ? 0 : T(java.lang.Math).min(100, packageRow.data.completedSessions * 100 / packageRow.data.totalSessions)}%|"></span></div>
+        <dl class="package-sessions package-sessions--detail">
+          <div><dt>Còn lại</dt><dd th:text="${packageRow.data.remainingSessions}">0</dd></div><div><dt>Đã lên lịch</dt><dd th:text="${packageRow.data.reservedSessions}">0</dd></div><div><dt>Đã học</dt><dd th:text="${packageRow.data.completedSessions}">0</dd></div><div><dt>Đã hoàn tiền</dt><dd th:text="${packageRow.data.refundedSessions}">0</dd></div>
+        </dl>
+      </section>
+      <section class="package-detail__terms" aria-labelledby="terms-title">
+        <h2 id="terms-title">Thông tin gói</h2>
+        <dl><div><dt>Môn học</dt><dd th:text="${packageRow.data.subject.name}">Môn học</dd></div><div><dt>Hạn dùng</dt><dd th:text="${packageRow.expiryLabel}">Không giới hạn</dd></div><div><dt>Đã thanh toán</dt><dd th:text="${packageRow.priceLabel}">0 ₫</dd></div><div th:if="${packageRow.data.startsAt != null}"><dt>Bắt đầu từ</dt><dd th:text="${#temporals.format(packageRow.data.startsAt, 'dd/MM/yyyy', 'Asia/Ho_Chi_Minh')}">01/01/2026</dd></div></dl>
+        <p class="package-lock-reason" th:if="${packageRow.data.lockedReason != null and !#strings.isEmpty(packageRow.data.lockedReason)}" th:text="${packageRow.data.lockedReason}">Lý do khóa gói</p>
+      </section>
+      <section class="package-booking-request" aria-labelledby="booking-request-title"
+               th:if="${packageRow.data.status == 'ACTIVE' and packageRow.data.remainingSessions > 0}">
+        <div class="package-booking-request__intro">
+          <p class="package-booking-request__eyebrow">Bước tiếp theo</p>
+          <h2 id="booking-request-title">Yêu cầu đặt buổi học</h2>
+          <p>Chọn thời gian bạn mong muốn. Gia sư sẽ xác nhận giờ học cuối cùng trước khi buổi học được lên lịch.</p>
+        </div>
+        <div class="package-booking-request__pending" th:if="${pendingBookingRequest != null}">
+          <p><strong>Yêu cầu đang chờ phản hồi</strong></p>
+          <p th:text="|Thời gian mong muốn: ${#temporals.format(pendingBookingRequest.preferredStartTime, 'dd/MM/yyyy HH:mm', 'Asia/Ho_Chi_Minh')}|"></p>
+          <form method="post" th:action="@{/student/packages/{packageId}/booking-request/{requestId}/cancel(packageId=${packageRow.data.id},requestId=${pendingBookingRequest.id})}">
+            <input type="hidden" name="version" th:value="${pendingBookingRequest.version}">
+            <button class="button button--secondary" type="submit">Hủy yêu cầu</button>
+          </form>
+        </div>
+        <form class="package-booking-request__form" method="post"
+              th:if="${pendingBookingRequest == null}"
+              th:action="@{/student/packages/{id}/booking-request(id=${packageRow.data.id})}">
+          <label for="preferredStartTime">Thời gian bạn mong muốn</label>
+          <input id="preferredStartTime" name="preferredStartTime" type="datetime-local" required>
+          <label for="studentNote">Lời nhắn cho gia sư <span>(không bắt buộc)</span></label>
+          <textarea id="studentNote" name="studentNote" rows="3" maxlength="500"></textarea>
+          <p class="form-hint">Múi giờ Việt Nam. Gửi yêu cầu chưa trừ buổi học trong gói.</p>
+          <button class="button button--primary" type="submit">Gửi yêu cầu</button>
+        </form>
+      </section>
+      <section class="package-request-actions" aria-labelledby="package-request-title">
+        <h2 id="package-request-title">Hỗ trợ gói học</h2>
+        <a th:if="${packageRow.data.remainingSessions > 0 and (packageRow.data.status == 'ACTIVE' or packageRow.data.status == 'LOCKED_EXPIRED')}" th:href="@{/student/requests(tab='refund',packageId=${packageRow.data.id})}">Yêu cầu hoàn tiền</a>
+        <a th:if="${packageRow.data.status == 'LOCKED_EXPIRED'}" th:href="@{/student/requests(tab='extension',packageId=${packageRow.data.id})}">Yêu cầu gia hạn</a>
+        <p th:if="${(packageRow.data.status == 'ACTIVE' and packageRow.data.remainingSessions == 0) or (packageRow.data.status != 'ACTIVE' and packageRow.data.status != 'LOCKED_EXPIRED')}">Gói học này hiện không có yêu cầu hoàn tiền hoặc gia hạn khả dụng.</p>
+      </section>
+      <footer class="package-detail__footer"><a class="package-back-link" href="/student/packages"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M17 10H4m5 5-5-5 5-5"/></svg> Về gói học của tôi</a></footer>
+    </article>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

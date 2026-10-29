@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Lịch học | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/student-bookings.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-bookings-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+    <header class="bookings-heading"><h1>Lịch học</h1><p>Xem các buổi học và trạng thái xác nhận.</p></header>
+
+    <form class="bookings-filter" method="get" action="/student/bookings">
+      <label for="bookingStatus">Trạng thái</label>
+      <select id="bookingStatus" name="status">
+        <option th:each="option : ${bookingStatuses}" th:value="${option.value}" th:text="${option.label}" th:selected="${bookingFilter == option.value}">Tất cả trạng thái</option>
+      </select>
+      <button type="submit">Lọc lịch</button>
+      <a href="/student/bookings">Xóa lọc</a>
+      <p class="bookings-filter__notice" role="status" th:if="${filterInvalid}">Trạng thái lọc không hợp lệ; đang hiển thị tất cả lịch học.</p>
+    </form>
+
+    <section class="bookings-state bookings-state--error" role="alert" th:if="${bookingsUnavailable}">
+      <h2>Chưa tải được lịch học</h2><p>Hãy thử tải lại trang.</p>
+      <a th:href="@{/student/bookings(status=${bookingFilter},page=${currentPage})}">Tải lại</a>
+    </section>
+
+    <section th:if="${!bookingsUnavailable}">
+      <div class="bookings-state" th:if="${#lists.isEmpty(bookingRows)}">
+        <h2 th:text="${bookingFilter == 'ALL' ? 'Chưa có lịch học' : 'Không có lịch học ở trạng thái này'}">Chưa có lịch học</h2>
+        <p>Các buổi học sẽ xuất hiện tại đây sau khi được gia sư xác nhận.</p>
+        <a href="/teachers">Tìm gia sư</a>
+      </div>
+      <ol class="booking-list" aria-label="Danh sách lịch học" th:unless="${#lists.isEmpty(bookingRows)}">
+        <li th:each="row : ${bookingRows}">
+          <article class="booking-row">
+            <div class="booking-row__date"><p th:text="${row.startLabel}">Thứ Hai, 28/10/2026 · 19:00</p><span th:if="${row.trial}">Buổi học thử</span></div>
+            <div class="booking-row__main">
+              <h2><a th:href="@{/student/bookings/{id}(id=${row.data.id})}" th:text="${row.data.subject.name}">Toán học</a></h2>
+              <p th:text="|Gia sư: ${row.data.teacher.fullName}|">Gia sư: Trần Thu Hà</p>
+            </div>
+            <div class="booking-row__meta"><span class="booking-status" th:text="${row.statusLabel}">Đã lên lịch</span><span th:text="${row.modeLabel}">Trực tuyến</span></div>
+            <a class="booking-row__link" th:href="@{/student/bookings/{id}(id=${row.data.id})}">Xem chi tiết</a>
+          </article>
+        </li>
+      </ol>
+      <nav class="booking-pagination" aria-label="Phân trang lịch học" th:if="${totalPages > 1}">
+        <a th:if="${hasPrevious}" th:href="@{/student/bookings(status=${bookingFilter},page=${currentPage - 1})}">← Trang trước</a>
+        <span th:text="|Trang ${currentPage + 1} / ${totalPages}|">Trang 1 / 1</span>
+        <a th:if="${hasNext}" th:href="@{/student/bookings(status=${bookingFilter},page=${currentPage + 1})}">Trang sau →</a>
+      </nav>
+    </section>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/student">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

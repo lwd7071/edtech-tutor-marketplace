@@ -97,7 +97,7 @@ class PaymentWebhookServiceTest {
         // Assert Enrollment Facade called with exact domain values
         verify(enrollmentFacade).activateStudentPackage(
                 eq(studentId), eq(teacherId), eq(subjectId), eq(packageId), eq(invoiceId),
-                eq("Advanced Java"), eq(20), eq(90), eq(amount), eq(new BigDecimal("5.00")), eq(now)
+                eq("Advanced Java"), eq(20), eq(90), eq(60), eq(amount), eq(new BigDecimal("5.00")), eq(now)
         );
 
         // Assert Finance Facade called with netAmount = 950,000 (1,000,000 - 5%)
@@ -125,7 +125,7 @@ class PaymentWebhookServiceTest {
         webhookService.processWebhook(payment);
 
         verify(invoice, never()).markPaid(any());
-        verify(enrollmentFacade, never()).activateStudentPackage(any(), any(), any(), any(), any(), any(), anyInt(), anyInt(), anyLong(), any(), any());
+        verify(enrollmentFacade, never()).activateStudentPackage(any(), any(), any(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyLong(), any(), any());
         verify(financeFacade, never()).creditTeacherPendingBalance(any(), anyLong(), any(), any());
     }
 
@@ -190,7 +190,7 @@ class PaymentWebhookServiceTest {
 
         verify(enrollmentFacade).activateStudentPackage(
                 eq(studentId), eq(teacherId), eq(subjectId), eq(packageId), eq(invoiceId),
-                eq("Package"), eq(10), eq(30), eq(amount), eq(new BigDecimal("100")), eq(paidAt));
+                eq("Package"), eq(10), eq(30), eq(60), eq(amount), eq(new BigDecimal("100")), eq(paidAt));
         verifyNoInteractions(financeFacade);
     }
 }

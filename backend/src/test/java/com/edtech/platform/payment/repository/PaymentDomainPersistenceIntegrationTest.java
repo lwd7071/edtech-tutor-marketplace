@@ -50,7 +50,7 @@ class PaymentDomainPersistenceIntegrationTest extends AbstractIntegrationTest {
         transactions.append(transaction);
 
         StudentPackage studentPackage = StudentPackage.activateAfterPayment(f.studentId, f.teacherId, f.subjectId,
-                f.pricingId, invoice.getId(), "Package", 2, 30, 100_000, new BigDecimal("5.00"), Instant.now());
+                f.pricingId, invoice.getId(), "Package", 2, 30, 60, 100_000, new BigDecimal("5.00"), Instant.now());
         packages.saveAndFlush(studentPackage);
         assertThat(packages.findByIdForUpdate(studentPackage.getId())).isPresent();
 

@@ -1,0 +1,21 @@
+<header class="site-header student-site-header" th:fragment="header">
+  <a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
+  <div class="site-header__inner">
+    <a class="brand" href="/student" aria-label="Tutor Match — Tổng quan học viên">
+      <span class="brand__mark" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M4 8.5c4.7-1.2 8.6-.3 12 2.4 3.4-2.7 7.3-3.6 12-2.4v15c-4.7-1.2-8.6-.3-12 2.4-3.4-2.7-7.3-3.6-12-2.4z"/><path d="M16 11v14"/></svg></span>
+      <span class="brand__name">tutor<span>match</span></span>
+    </a>
+    <nav class="public-nav" aria-label="Điều hướng chính">
+      <a class="public-nav__link" href="/teachers">Tìm gia sư</a>
+      <a class="public-nav__link" href="/subjects">Môn học</a>
+      <a class="public-nav__link" href="/support">Hỗ trợ</a>
+    </nav>
+    <div class="student-site-header__actions">
+      <span class="student-role-label">Học viên</span>
+      <form method="post" action="/auth/logout">
+        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit">Đăng xuất</button>
+      </form>
+    </div>
+  </div>
+</header>
