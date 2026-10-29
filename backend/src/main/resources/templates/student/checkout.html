@@ -26,7 +26,24 @@
       <div th:if="${!paymentUnavailable and invoice != null}">
         <p class="payment-eyebrow">Hóa đơn <span th:text="${invoice.invoiceNumber}">TM-0000</span></p>
         <h1 id="payment-title" th:text="${invoice.status == 'PENDING' ? 'Hoàn tất thanh toán' : (invoice.status == 'EXPIRED' ? 'Hóa đơn đã hết hạn' : (invoice.status == 'CANCELLED' ? 'Thanh toán đã bị hủy' : 'Chưa xác định được trạng thái'))}">Hoàn tất thanh toán</h1>
-        <p class="payment-intro" th:text="${invoice.status == 'PENDING' ? 'Mở trang thanh toán an toàn để quét mã QR hoặc chọn phương thức phù hợp.' : (invoice.status == 'EXPIRED' ? 'Tạo hóa đơn mới từ hồ sơ gia sư nếu bạn vẫn muốn mua gói học này.' : (invoice.status == 'CANCELLED' ? 'Hóa đơn này đã được hủy. Bạn có thể quay lại danh sách gói học.' : 'Hãy kiểm tra lại trạng thái hóa đơn trước khi tiếp tục.'))}">Mở trang thanh toán an toàn để quét mã QR hoặc chọn phương thức phù hợp.</p>
+        <p class="payment-intro" th:text="${invoice.status == 'PENDING' ? 'Quét mã VietQR bên dưới bằng ứng dụng ngân hàng hoặc mở trang thanh toán PayOS để thanh toán an toàn.' : (invoice.status == 'EXPIRED' ? 'Tạo hóa đơn mới từ hồ sơ gia sư nếu bạn vẫn muốn mua gói học này.' : (invoice.status == 'CANCELLED' ? 'Hóa đơn này đã được hủy. Bạn có thể quay lại danh sách gói học.' : 'Hãy kiểm tra lại trạng thái hóa đơn trước khi tiếp tục.'))}">Quét mã VietQR bên dưới bằng ứng dụng ngân hàng hoặc mở trang thanh toán PayOS để thanh toán an toàn.</p>
+
+        <!-- VietQR Box -->
+        <div class="payment-qr-block" th:if="${invoice.status == 'PENDING' and invoice.qrCodeDataUri != null and !#strings.isEmpty(invoice.qrCodeDataUri)}">
+          <div class="payment-qr-card">
+            <div class="payment-qr-badge">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              <span>Quét mã VietQR để thanh toán</span>
+            </div>
+            <img class="payment-qr-image" th:src="${invoice.qrCodeDataUri}" alt="Mã QR thanh toán PayOS" width="220" height="220" />
+            <p class="payment-qr-hint">Mở app Ngân hàng (VCB, MB, Techcombank, ...) hoặc Ví điện tử</p>
+          </div>
+          <div class="payment-polling-status" id="polling-status">
+            <span class="payment-polling-dot" aria-hidden="true"></span>
+            <span>Đang chờ giao dịch... Trang tự động chuyển sau khi quét thành công.</span>
+          </div>
+        </div>
+
         <dl class="payment-summary">
           <div><dt>Số tiền</dt><dd th:text="${invoice.amountLabel}">0 ₫</dd></div>
           <div><dt>Mã hóa đơn</dt><dd th:text="${invoice.invoiceNumber}">TM-0000</dd></div>
@@ -44,11 +61,38 @@
           <a class="payment-button payment-button--primary" href="/teachers">Tìm gói học khác</a>
           <a class="payment-button payment-button--secondary" href="/student/packages">Xem gói học của tôi</a>
         </div>
-        <p class="payment-note" th:if="${invoice.status == 'PENDING'}">Sau khi thanh toán, quay lại đây và chọn “Kiểm tra trạng thái hóa đơn”.</p>
+        <p class="payment-note" th:if="${invoice.status == 'PENDING'}">Sau khi thanh toán, hệ thống sẽ tự động cập nhật hoặc bạn có thể bấm “Kiểm tra trạng thái hóa đơn”.</p>
       </div>
     </section>
   </div>
 </main>
 <footer class="student-footer"><div><a href="/">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+<script th:if="${invoice != null and invoice.status == 'PENDING'}" th:inline="javascript">
+  (function() {
+    var invoiceId = /*[[${invoice.id}]]*/ '';
+    if (!invoiceId) return;
+    var pollInterval = 3000;
+    var maxAttempts = 100;
+    var attempts = 0;
+    var timer = setInterval(function() {
+      attempts++;
+      if (attempts > maxAttempts) {
+        clearInterval(timer);
+        return;
+      }
+      fetch('/api/student/invoices/' + invoiceId, {
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(function(res) { return res.ok ? res.json() : null; })
+      .then(function(res) {
+        if (res && res.data && res.data.status === 'PAID') {
+          clearInterval(timer);
+          window.location.href = '/student/payment-result/' + invoiceId;
+        }
+      })
+      .catch(function() {});
+    }, pollInterval);
+  })();
+</script>
 </body>
 </html>

@@ -25,9 +25,13 @@ public class PaymentProviderProperties {
 
     @PostConstruct
     void validate() {
-        if ("payos".equalsIgnoreCase(provider)
+        if (isPayosEnabled()
                 && Stream.of(clientId, apiKey, checksumKey).anyMatch(v -> v == null || v.isBlank())) {
             throw new IllegalStateException("payOS provider requires client-id, api-key and checksum-key");
         }
+    }
+
+    public boolean isPayosEnabled() {
+        return "payos".equalsIgnoreCase(provider) || "enabled".equalsIgnoreCase(provider);
     }
 }

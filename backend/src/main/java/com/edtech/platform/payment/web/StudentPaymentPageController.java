@@ -3,12 +3,13 @@ package com.edtech.platform.payment.web;
 import com.edtech.platform.common.security.AuthenticatedUser;
 import com.edtech.platform.payment.facade.InvoiceReadFacade;
 import com.edtech.platform.payment.facade.dto.InvoiceSnapshot;
+import com.edtech.platform.payment.service.support.QrCodeSvgService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,12 +17,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.net.URI;
 import java.text.NumberFormat;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.UUID;
-import java.net.URI;
 
 @Controller
 @RequiredArgsConstructor
@@ -34,6 +35,7 @@ public class StudentPaymentPageController {
 
     private final InvoiceReadFacade invoices;
     private final Environment environment;
+    private final QrCodeSvgService qrCodeSvgService;
 
     @GetMapping("/student/payments/callback")
     public String providerReturn(@RequestParam(required = false) String invoiceId) {
@@ -93,9 +95,17 @@ public class StudentPaymentPageController {
             case "PENDING", "PAID", "EXPIRED", "CANCELLED" -> invoice.status();
             default -> "UNKNOWN";
         };
+        String checkoutUrl = safePayOsUrl(invoice.checkoutUrl());
+        String qrPayload = (invoice.qrCode() != null && !invoice.qrCode().isBlank())
+                ? invoice.qrCode()
+                : checkoutUrl;
+        String qrCodeDataUri = (qrPayload != null && !qrPayload.isBlank())
+                ? qrCodeSvgService.generateSvgDataUri(qrPayload, 260)
+                : null;
+
         return new InvoiceView(invoice.id(), invoice.invoiceNumber(),
                 NumberFormat.getNumberInstance(VIETNAMESE).format(invoice.amountVnd()) + " ₫",
-                status, safePayOsUrl(invoice.checkoutUrl()), expiry);
+                status, checkoutUrl, expiry, qrCodeDataUri);
     }
 
     private String safePayOsUrl(String rawUrl) {
@@ -118,5 +128,5 @@ public class StudentPaymentPageController {
     }
 
     public record InvoiceView(UUID id, String invoiceNumber, String amountLabel, String status,
-                              String checkoutUrl, String expiryLabel) {}
+                              String checkoutUrl, String expiryLabel, String qrCodeDataUri) {}
 }

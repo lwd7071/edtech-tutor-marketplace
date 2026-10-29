@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import com.edtech.platform.payment.config.OnPayOsProviderCondition;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 import vn.payos.PayOS;
 import vn.payos.exception.NotFoundException;
@@ -24,7 +25,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@ConditionalOnProperty(name = "app.payment.provider", havingValue = "payos")
+@Conditional(OnPayOsProviderCondition.class)
 public class PayOsPaymentGateway implements PaymentGateway {
 
     private final PayOS payOS;

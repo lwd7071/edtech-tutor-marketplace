@@ -43,6 +43,19 @@ class PayOsPaymentGatewayConfigurationTest {
     }
 
     @Test
+    void shouldLoadBeans_whenProviderIsEnabled_AndCredentialsAreProvided() {
+        contextRunner.withPropertyValues(
+                "app.payment.provider=enabled",
+                "app.payment.client-id=client123",
+                "app.payment.api-key=api123",
+                "app.payment.checksum-key=checksum123"
+        ).run(context -> {
+            assertThat(context).hasSingleBean(PayOS.class);
+            assertThat(context).hasSingleBean(PayOsPaymentGateway.class);
+        });
+    }
+
+    @Test
     void shouldFailToStart_whenProviderIsPayos_ButMissingCredentials() {
         contextRunner.withPropertyValues(
                 "app.payment.provider=payos"

@@ -1,13 +1,13 @@
 package com.edtech.platform.payment.config;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import vn.payos.PayOS;
 import vn.payos.core.ClientOptions;
 
 @Configuration
-@ConditionalOnProperty(name = "app.payment.provider", havingValue = "payos")
+@Conditional(OnPayOsProviderCondition.class)
 public class PayOSConfig {
 
     @Bean
