@@ -220,6 +220,16 @@
       </section>
     </aside>
   </div>
+
+  <aside class="mobile-booking-dock" aria-label="Thao tác nhanh cho học viên">
+    <div class="mobile-booking-dock__info">
+      <span class="mobile-booking-dock__label">Học phí</span>
+      <strong class="mobile-booking-dock__price" th:text="${!teacher.packages.isEmpty() ? #numbers.formatInteger(teacher.packages[0].priceVnd, 1, 'POINT') + 'đ' : 'Liên hệ'}">Liên hệ</strong>
+    </div>
+    <div class="mobile-booking-dock__actions">
+      <a class="button button--primary" href="#packages">Chọn gói học</a>
+    </div>
+  </aside>
 </main>
 
 <footer class="site-footer">

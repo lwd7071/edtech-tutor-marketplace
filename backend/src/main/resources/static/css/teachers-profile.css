@@ -32,7 +32,7 @@
   margin-top: 24px;
   padding: 32px;
   background: var(--surface-warm);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--ink);
   border-radius: var(--radius-panel);
 }
 
@@ -142,7 +142,7 @@
   min-width: 0;
   padding: 24px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--ink);
   border-radius: var(--radius-card);
 }
 
@@ -554,3 +554,57 @@
   }
 }
 .profile-message-action{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;margin:18px 0}.profile-message-action form{margin:0}.profile-message-action button{cursor:pointer}.profile-message-action p{margin:0;color:var(--muted-strong);line-height:1.5}.profile-message-action--guest a{display:inline-flex;min-height:44px;align-items:center;color:var(--ink);font-weight:700;text-underline-offset:4px}.profile-message-notice{margin:12px 0;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-card);background:#fff4f1;color:#7a271a;line-height:1.5}.profile-message-action button:focus-visible,.profile-message-action a:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+
+/* ==========================================================================
+   Mobile Booking Dock (UI/UX Pro Max)
+   ========================================================================== */
+
+.mobile-booking-dock {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .teacher-profile-page {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .mobile-booking-dock {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--surface);
+    border-top: 1.5px solid var(--ink);
+    box-shadow: 0 -4px 16px rgba(23, 23, 20, 0.08);
+  }
+
+  .mobile-booking-dock__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .mobile-booking-dock__label {
+    font-size: 12px;
+    color: var(--muted-strong);
+    font-weight: 500;
+  }
+
+  .mobile-booking-dock__price {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .mobile-booking-dock__actions .button {
+    min-height: 44px;
+    padding: 0 20px;
+  }
+}

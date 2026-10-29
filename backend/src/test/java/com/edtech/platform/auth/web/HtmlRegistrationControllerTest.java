@@ -83,6 +83,14 @@ class HtmlRegistrationControllerTest {
     }
 
     @Test
+    void rendersRoleOptionsWithDescriptiveSubLabels() throws Exception {
+        mockMvc.perform(get("/auth/register"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Học viên — tìm gia sư và theo dõi buổi học")))
+                .andExpect(content().string(containsString("Gia sư — tạo hồ sơ và quản lý lớp học")));
+    }
+
+    @Test
     void registrationUsesPostRedirectGetAndDoesNotReturnTokens() throws Exception {
         when(registrations.register(any(), eq("127.0.0.1")))
                 .thenReturn(new RegistrationResult("learner@example.com", true));

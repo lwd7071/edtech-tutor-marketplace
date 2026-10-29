@@ -145,4 +145,58 @@ class TeacherSearchPageControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.not(
                         org.hamcrest.Matchers.containsString("0 ₫ / buổi"))));
     }
+
+    @Test
+    void removesHeroBannerAndRendersCompactPageHeader() throws Exception {
+        TeacherCard teacher = new TeacherCard(
+                UUID.randomUUID(), "Nguyễn Minh An", null, "Dạy Toán theo mục tiêu của học viên.",
+                5, true, true, false, List.of(), 350000, 4.8, 4.7, 12, 3, "Đà Nẵng", "Hải Châu");
+        when(teacherMarketplaceService.searchTeachers(any())).thenReturn(new PageImpl<>(List.of(teacher)));
+        when(subjectFacade.getActiveSubjects()).thenReturn(List.of());
+        when(locationService.getProvinces()).thenReturn(List.of());
+
+        mockMvc.perform(get("/teachers"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("marketplace-intro"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("cho chặng học tiếp theo"))))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("teachers-page-header")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Gia sư cho mục tiêu của bạn")));
+    }
+
+    @Test
+    void rendersHorizontalTopFilterBarWithKeyFilters() throws Exception {
+        TeacherCard teacher = new TeacherCard(
+                UUID.randomUUID(), "Nguyễn Minh An", null, "Dạy Toán theo mục tiêu của học viên.",
+                5, true, true, false, List.of(), 350000, 4.8, 4.7, 12, 3, "Đà Nẵng", "Hải Châu");
+        when(teacherMarketplaceService.searchTeachers(any())).thenReturn(new PageImpl<>(List.of(teacher)));
+        when(subjectFacade.getActiveSubjects()).thenReturn(List.of());
+        when(locationService.getProvinces()).thenReturn(List.of());
+
+        mockMvc.perform(get("/teachers"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("teachers-top-filter")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"keyword\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"subjectId\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"deliveryMode\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"minPrice\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"maxPrice\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"minRating\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"provinceCode\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"sort\"")));
+    }
+
+    @Test
+    void removesSidebarAndRendersFullWidthResultsLayout() throws Exception {
+        TeacherCard teacher = new TeacherCard(
+                UUID.randomUUID(), "Nguyễn Minh An", null, "Dạy Toán theo mục tiêu của học viên.",
+                5, true, true, false, List.of(), 350000, 4.8, 4.7, 12, 3, "Đà Nẵng", "Hải Châu");
+        when(teacherMarketplaceService.searchTeachers(any())).thenReturn(new PageImpl<>(List.of(teacher)));
+        when(subjectFacade.getActiveSubjects()).thenReturn(List.of());
+        when(locationService.getProvinces()).thenReturn(List.of());
+
+        mockMvc.perform(get("/teachers"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("filter-panel"))))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("teachers-results-wrapper")));
+    }
 }

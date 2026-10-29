@@ -220,4 +220,11 @@ class HtmlAccountAccessControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.not(containsString("<script"))))
                 .andExpect(content().string(org.hamcrest.Matchers.not(containsString("BẢO MẬT TÀI KHOẢN"))));
     }
+
+    @Test
+    void verifiedEmailCompleteRendersPrimaryLoginCtaButton() throws Exception {
+        mockMvc.perform(get("/auth/verify-email").flashAttr("verificationComplete", true))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("class=\"auth-submit\" href=\"/auth/login\">Đăng nhập ngay")));
+    }
 }

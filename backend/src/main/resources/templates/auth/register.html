@@ -28,8 +28,8 @@
       <fieldset class="auth-role">
         <legend>Bạn muốn dùng Tutor Match với vai trò nào?</legend>
         <label class="auth-role-option"><input type="radio" value="STUDENT" th:field="*{role}" required
-                                                th:attr="autofocus=${#fields.hasErrors('role') ? 'autofocus' : null}"> Học viên</label>
-        <label class="auth-role-option"><input type="radio" value="TEACHER" th:field="*{role}" required> Gia sư</label>
+                                                th:attr="autofocus=${#fields.hasErrors('role') ? 'autofocus' : null}"> Học viên — tìm gia sư và theo dõi buổi học</label>
+        <label class="auth-role-option"><input type="radio" value="TEACHER" th:field="*{role}" required> Gia sư — tạo hồ sơ và quản lý lớp học</label>
         <p class="auth-field-error" th:if="${#fields.hasErrors('role')}" th:errors="*{role}"></p>
       </fieldset>
 

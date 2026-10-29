@@ -14,6 +14,9 @@
     <p class="auth-intro" th:if="${registered}">Tài khoản đã được tạo. Mở email xác minh rồi quay lại đây để kích hoạt tài khoản.</p>
     <p class="auth-intro" th:unless="${registered}">Xác minh địa chỉ email để hoàn tất kích hoạt tài khoản.</p>
     <div th:if="${verificationComplete}" class="auth-notice auth-notice--success" role="status">Email đã được xác minh. Bạn có thể đăng nhập.</div>
+    <div th:if="${verificationComplete}" class="auth-form--spaced">
+      <a class="auth-submit" href="/auth/login">Đăng nhập ngay <span aria-hidden="true">→</span></a>
+    </div>
     <div th:if="${resendNotice}" class="auth-notice auth-notice--success" role="status" th:text="${resendNotice}"></div>
     <div th:if="${verificationError}" class="auth-notice auth-notice--error" role="alert" tabindex="-1" autofocus th:text="${verificationError}"></div>
     <div th:if="${resendError}" class="auth-notice auth-notice--error" role="alert" th:text="${resendError}"></div>

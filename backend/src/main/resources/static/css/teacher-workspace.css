@@ -249,4 +249,8 @@
     width: calc(100% - 32px);
     flex-wrap: wrap;
   }
+  .teacher-overview-page,
+  .teacher-workspace-container {
+    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 24px);
+  }
 }
