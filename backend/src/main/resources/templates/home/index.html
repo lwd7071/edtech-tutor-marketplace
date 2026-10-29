@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#fffdf7">
-  <title>Tutor Match | Tìm gia sư đúng môn, đúng lịch</title>
-  <meta name="description" content="Tìm, so sánh hồ sơ gia sư và chọn cách học phù hợp với lịch của bạn.">
+  <title>Tutor Match | Tìm người đồng hành cho mục tiêu học tập</title>
+  <meta name="description" content="So sánh gia sư theo môn học, lịch rảnh và mức học phí. Xem hồ sơ trước khi chọn gói.">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/tokens.css">
@@ -14,97 +14,70 @@
 </head>
 <body>
 <div th:replace="~{fragments/public-header :: header}"></div>
-
 <main id="main-content" class="home-page">
-  <section class="home-opening" aria-labelledby="home-title">
-    <div class="home-opening__inner">
-      <h1 id="home-title">Tìm gia sư đúng môn,<br><span>đúng lịch.</span></h1>
-      <p class="home-opening__lead">Xem hồ sơ, kinh nghiệm và học phí trước khi chọn người dạy.</p>
-      <form class="home-search" action="/teachers" method="get" role="search">
-        <label for="home-keyword">Bạn muốn học môn gì?</label>
-        <div class="home-search__row">
-          <input id="home-keyword" name="keyword" type="search" maxlength="100" placeholder="Ví dụ: Toán lớp 9, tiếng Anh giao tiếp">
-          <button class="home-button" type="submit">Tìm gia sư</button>
-        </div>
-      </form>
-      <p class="home-opening__browse"><a href="/teachers">Xem tất cả gia sư</a></p>
+  <section class="home-hero" aria-labelledby="home-title">
+    <div class="home-hero__inner">
+      <div class="home-hero__copy">
+        <h1 id="home-title">Học đúng người.<br><span>Tiến đúng mục tiêu.</span></h1>
+        <p class="home-hero__lead">Tìm gia sư phù hợp với môn học, cách học và mục tiêu của bạn.</p>
+        <form class="home-search" action="/teachers" method="get" role="search">
+          <label for="home-keyword">Bạn muốn học môn gì?</label>
+          <div class="home-search__row">
+            <input id="home-keyword" name="keyword" type="search" maxlength="100" placeholder="Ví dụ: Toán lớp 9, tiếng Anh giao tiếp">
+            <button class="home-button" type="submit">Tìm gia sư <span aria-hidden="true">→</span></button>
+          </div>
+        </form>
+        <p class="home-hero__browse"><a href="/teachers">Xem tất cả gia sư</a><span aria-hidden="true"> · </span>Xem hồ sơ và gói học trước khi chọn</p>
+      </div>
+      <div class="home-hero__art" aria-hidden="true">
+        <span class="home-hero__sun"></span>
+        <span class="home-hero__note home-hero__note--top">Mỗi người học một cách</span>
+        <svg class="home-hero__book" viewBox="0 0 440 300" focusable="false">
+          <path class="book-shadow" d="M28 58 216 42l184 14 8 198-185 20-188-16z"/>
+          <path class="book-page" d="m22 43 190-16v202L38 246z"/>
+          <path class="book-page" d="m212 27 181 16-8 203-173-17z"/>
+          <path class="book-line" d="m55 104 112-9m-108 34 107-9m-102 34 97-8m69-31 105 9m-105 22 102 9m-102 22 98 8"/>
+          <path class="book-spine" d="M212 28v201"/>
+        </svg>
+        <span class="home-hero__pencil"></span>
+        <span class="home-hero__note home-hero__note--bottom">Tìm người đồng hành</span>
+        <span class="home-hero__plus home-hero__plus--one">+</span><span class="home-hero__plus home-hero__plus--two">+</span>
+      </div>
     </div>
   </section>
 
   <div class="home-content">
-    <section class="home-section home-subjects" aria-labelledby="subjects-title">
-      <header class="home-section__heading">
-        <div><h2 id="subjects-title">Mục lục môn học</h2><p class="home-section__lead">Chọn môn để xem gia sư đang nhận học viên.</p></div>
-        <a class="home-text-link" href="/subjects">Tất cả môn học</a>
-      </header>
-      <div class="subject-index" th:if="${!#lists.isEmpty(featuredSubjects)}">
-        <a class="subject-index__row" th:each="subject : ${featuredSubjects}" th:href="@{/teachers(subjectId=${subject.id})}">
-          <span class="subject-index__name" th:text="${subject.name}">Toán học</span>
-          <span class="subject-index__count" th:if="${subjectCountsUnavailable == null or subjectCountsUnavailable == false}" th:text="|${teacherCountsBySubject[subject.id] ?: 0} gia sư|">0 gia sư</span>
-          <span class="subject-index__count" th:if="${subjectCountsUnavailable == true}">Số lượng chưa tải được</span>
-        </a>
+    <section class="home-section" aria-labelledby="subjects-title">
+      <header class="home-section__heading"><div><h2 id="subjects-title">Khám phá môn học</h2><p>Chọn môn học để tìm gia sư phù hợp.</p></div><a class="home-text-link" href="/subjects">Tất cả môn học <span aria-hidden="true">→</span></a></header>
+      <div class="home-subjects" th:if="${!#lists.isEmpty(featuredSubjects)}">
+        <a class="home-subject" th:each="subject : ${featuredSubjects}" th:href="@{/teachers(subjectId=${subject.id})}"><span class="home-subject__mark" aria-hidden="true">↗</span><span th:text="${subject.name}">Toán học</span></a>
       </div>
-      <div class="home-state" th:if="${#lists.isEmpty(featuredSubjects)}">
-        <p th:if="${subjectsUnavailable}">Danh sách môn học chưa tải được.</p>
-        <p th:unless="${subjectsUnavailable}">Danh mục đang được cập nhật.</p>
-        <a href="/subjects">Mở danh mục môn học</a>
-      </div>
-    </section>
-
-    <section class="home-section home-teachers" aria-labelledby="teachers-title">
-      <header class="home-section__heading">
-        <div><h2 id="teachers-title">Gia sư nổi bật</h2><p class="home-section__lead">Thông tin hồ sơ và đánh giá được lấy từ hệ thống.</p></div>
-        <a class="home-text-link" href="/teachers">Tìm gia sư</a>
-      </header>
-      <div class="featured-list" th:if="${!#lists.isEmpty(featuredTeachers)}">
-        <article class="featured-card" th:each="teacher : ${featuredTeachers}">
-          <a class="featured-card__main" th:href="@{/teachers/{id}(id=${teacher.id})}">
-            <img class="featured-card__avatar" th:if="${teacher.avatarUrl != null and !#strings.isEmpty(teacher.avatarUrl)}" th:src="${teacher.avatarUrl}" th:alt="|Ảnh đại diện ${teacher.fullName}|" loading="lazy">
-            <span class="featured-card__avatar featured-card__avatar--fallback" th:unless="${teacher.avatarUrl != null and !#strings.isEmpty(teacher.avatarUrl)}" aria-hidden="true" th:text="${#strings.substring(teacher.fullName, 0, 1)}">G</span>
-            <span class="featured-card__identity"><strong th:text="${teacher.fullName}">Tên gia sư</strong><span th:if="${!#lists.isEmpty(teacher.subjects)}"><th:block th:each="subject, iter : ${teacher.subjects}"><th:block th:if="${iter.index > 0}">, </th:block><span th:text="${subject.name}">Môn học</span></th:block></span><span th:if="${#lists.isEmpty(teacher.subjects)}">Môn dạy đang cập nhật</span></span>
-          </a>
-          <p class="featured-card__experience" th:text="${teacher.yearsOfExperience > 0 ? teacher.yearsOfExperience + ' năm kinh nghiệm' : 'Kinh nghiệm đang cập nhật'}">Kinh nghiệm</p>
-          <div class="featured-card__footer">
-            <span class="featured-card__rating" th:if="${teacher.reviewCount > 0}"><span th:text="${#numbers.formatDecimal(teacher.averageRating, 1, 1)}">4.8</span><span class="featured-card__muted" th:text="| · ${teacher.reviewCount} đánh giá|"> · 12 đánh giá</span></span>
-            <span class="featured-card__muted" th:unless="${teacher.reviewCount > 0}">Chưa có đánh giá</span>
-            <span class="featured-card__price" th:if="${teacher.startingPriceVnd > 0}" th:text="|Từ ${#numbers.formatInteger(teacher.startingPriceVnd, 1, 'POINT')} đ/buổi|">Từ 300.000 đ/buổi</span>
-            <span class="featured-card__price" th:unless="${teacher.startingPriceVnd > 0}">Học phí đang cập nhật</span>
-          </div>
-          <a class="featured-card__profile" th:href="@{/teachers/{id}(id=${teacher.id})}">Xem hồ sơ</a>
-        </article>
-      </div>
-      <div class="home-state" th:if="${#lists.isEmpty(featuredTeachers)}">
-        <p th:if="${teachersUnavailable}">Danh sách gia sư chưa tải được.</p>
-        <p th:unless="${teachersUnavailable}">Chưa có gia sư phù hợp để giới thiệu.</p>
-        <a href="/teachers">Tìm trong danh sách gia sư</a>
-      </div>
+      <div class="home-state" th:if="${#lists.isEmpty(featuredSubjects)}"><p th:if="${subjectsUnavailable}">Danh sách môn học chưa tải được.</p><p th:unless="${subjectsUnavailable}">Danh mục đang được cập nhật.</p><a href="/subjects">Mở danh mục môn học</a></div>
     </section>
 
     <section class="home-section home-how" aria-labelledby="how-title">
-      <header class="home-section__heading">
-        <div><h2 id="how-title">Cách bắt đầu</h2><p class="home-section__lead">Ba bước từ tìm kiếm đến buổi học đầu tiên.</p></div>
-        <a class="home-text-link" href="/how-it-works">Xem cách hoạt động</a>
-      </header>
-      <ol class="home-steps">
-        <li><span class="home-step__number" aria-hidden="true">1</span><div><h3>Tìm và so sánh</h3><p>Lọc theo môn học, lịch và thông tin hồ sơ.</p></div></li>
-        <li><span class="home-step__number" aria-hidden="true">2</span><div><h3>Chọn gói và thanh toán</h3><p>Xem nội dung gói, học phí rồi chọn gói phù hợp.</p></div></li>
-        <li><span class="home-step__number" aria-hidden="true">3</span><div><h3>Đặt buổi học</h3><p>Gửi yêu cầu lịch học để gia sư xác nhận.</p></div></li>
-      </ol>
+      <header class="home-section__heading"><div><h2 id="how-title">Bắt đầu học theo cách của bạn</h2><p>Ba bước để tìm người đồng hành phù hợp.</p></div><a class="home-text-link" href="/how-it-works">Cách hoạt động <span aria-hidden="true">→</span></a></header>
+      <ol class="home-steps"><li><span>01</span><h3>Chọn gia sư</h3><p>Xem môn dạy, kinh nghiệm và đánh giá.</p></li><li><span>02</span><h3>Trao đổi nhu cầu</h3><p>Thống nhất mục tiêu, lịch học và hình thức học.</p></li><li><span>03</span><h3>Bắt đầu học</h3><p>Chọn gói phù hợp và theo dõi các buổi học.</p></li></ol>
     </section>
 
-    <section class="home-section home-faq" aria-labelledby="faq-title">
-      <header class="home-section__heading">
-        <div><h2 id="faq-title">Câu hỏi thường gặp</h2><p class="home-section__lead">Thông tin cơ bản trước khi bạn chọn gia sư.</p></div>
-        <a class="home-text-link" href="/support">Cần hỗ trợ?</a>
-      </header>
-      <div class="home-faq__list">
-        <details><summary>Tôi có thể tìm gia sư theo môn học không?</summary><p>Có. Chọn môn ở mục lục hoặc nhập từ khóa để xem danh sách gia sư phù hợp.</p></details>
-        <details><summary>Tôi xem thông tin nào trước khi chọn?</summary><p>Hồ sơ công khai có thể hiển thị môn dạy, kinh nghiệm, học phí và đánh giá khi có dữ liệu.</p></details>
-        <details><summary>Gửi yêu cầu lịch học có nghĩa là đã đặt xong chưa?</summary><p>Chưa. Đây là yêu cầu để gia sư xem và xác nhận thời gian học.</p></details>
-        <details><summary>Tôi có thể xem học phí trước khi mua gói không?</summary><p>Có. Mở hồ sơ gia sư để xem các gói đang được cung cấp và mức phí tương ứng.</p></details>
-        <details><summary>Tôi cần tài khoản để tìm gia sư không?</summary><p>Bạn có thể xem danh sách và hồ sơ công khai khi chưa đăng nhập. Một số thao tác sẽ yêu cầu tài khoản.</p></details>
+    <section class="home-section" aria-labelledby="teachers-title">
+      <header class="home-section__heading"><div><h2 id="teachers-title">Gia sư được học viên quan tâm</h2><p>Xem hồ sơ và lựa chọn người dạy phù hợp.</p></div><a class="home-text-link" href="/teachers">Tìm gia sư <span aria-hidden="true">→</span></a></header>
+      <div class="home-teachers" th:if="${!#lists.isEmpty(featuredTeachers)}">
+        <article class="teacher-card" th:each="teacher : ${featuredTeachers}">
+          <a class="teacher-card__top" th:href="@{/teachers/{id}(id=${teacher.id})}">
+            <img class="teacher-card__avatar" th:if="${teacher.avatarUrl != null and !#strings.isEmpty(teacher.avatarUrl)}" th:src="${teacher.avatarUrl}" th:alt="|Ảnh đại diện ${teacher.fullName}|" loading="lazy">
+            <span class="teacher-card__avatar teacher-card__avatar--fallback" th:unless="${teacher.avatarUrl != null and !#strings.isEmpty(teacher.avatarUrl)}" aria-hidden="true" th:text="${#strings.substring(teacher.fullName, 0, 1)}">G</span>
+            <span class="teacher-card__identity"><strong th:text="${teacher.fullName}">Tên gia sư</strong><span th:if="${!#lists.isEmpty(teacher.subjects)}"><th:block th:each="subject, iter : ${teacher.subjects}"><th:block th:if="${iter.index > 0}">, </th:block><span th:text="${subject.name}">Môn học</span></th:block></span><span th:if="${#lists.isEmpty(teacher.subjects)}">Môn dạy đang cập nhật</span></span>
+          </a>
+          <p class="teacher-card__experience" th:text="${teacher.yearsOfExperience > 0 ? teacher.yearsOfExperience + ' năm kinh nghiệm' : 'Kinh nghiệm đang cập nhật'}">Kinh nghiệm</p>
+          <div class="teacher-card__meta"><span th:if="${teacher.reviewCount > 0}" th:text="|★ ${#numbers.formatDecimal(teacher.averageRating, 1, 1)} (${teacher.reviewCount} đánh giá)|">★ 4.8 (12 đánh giá)</span><span th:unless="${teacher.reviewCount > 0}">Chưa có đánh giá</span><strong th:if="${teacher.startingPriceVnd > 0}" th:text="|Từ ${#numbers.formatInteger(teacher.startingPriceVnd, 1, 'POINT')} đ/buổi|">Từ 300.000 đ/buổi</strong><strong th:unless="${teacher.startingPriceVnd > 0}">Học phí đang cập nhật</strong></div>
+          <a class="teacher-card__link" th:href="@{/teachers/{id}(id=${teacher.id})}">Xem hồ sơ <span aria-hidden="true">↗</span></a>
+        </article>
       </div>
+      <div class="home-state" th:if="${#lists.isEmpty(featuredTeachers)}"><p th:if="${teachersUnavailable}">Danh sách gia sư chưa tải được.</p><p th:unless="${teachersUnavailable}">Chưa có gia sư phù hợp để giới thiệu.</p></div>
     </section>
+
+    <section class="home-join" aria-labelledby="join-title"><div><p class="home-join__eyebrow">Dành cho gia sư</p><h2 id="join-title">Chia sẻ cách bạn giúp học viên tiến bộ.</h2><p>Tạo hồ sơ, giới thiệu môn dạy và nhận yêu cầu học phù hợp.</p><a class="home-button" href="/become-a-tutor">Trở thành gia sư <span aria-hidden="true">→</span></a></div><span class="home-join__mark" aria-hidden="true">TM</span></section>
   </div>
 </main>
 <div th:replace="~{fragments/public-header :: footer}"></div>

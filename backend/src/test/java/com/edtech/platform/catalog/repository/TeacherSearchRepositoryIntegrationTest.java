@@ -22,36 +22,6 @@ class TeacherSearchRepositoryIntegrationTest extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    void subjectCountsOnlyIncludePublicActiveTeachers() {
-        UUID subjectId = UUID.randomUUID();
-        jdbcTemplate.update("INSERT INTO subjects (id, code, name, slug) VALUES (?, ?, 'Toán học', ?)",
-                subjectId, "count-" + subjectId, "count-" + subjectId);
-        UUID visibleTeacher = insertTeacher("visible-count-" + subjectId, "APPROVED", true);
-        UUID pendingTeacher = insertTeacher("pending-count-" + subjectId, "PENDING_APPROVAL", true);
-        UUID hiddenTeacher = insertTeacher("hidden-count-" + subjectId, "APPROVED", false);
-        for (UUID teacherId : List.of(visibleTeacher, pendingTeacher, hiddenTeacher)) {
-            jdbcTemplate.update("INSERT INTO teacher_subjects (teacher_id, subject_id) VALUES (?, ?)", teacherId, subjectId);
-        }
-
-        assertThat(repository.countPublicTeachersBySubject(List.of(subjectId)))
-                .containsEntry(subjectId, 1L);
-    }
-
-    private UUID insertTeacher(String key, String profileStatus, boolean visible) {
-        UUID userId = UUID.randomUUID();
-        UUID teacherId = UUID.randomUUID();
-        jdbcTemplate.update("""
-                INSERT INTO users (id, email, full_name, role, status, email_verified)
-                VALUES (?, ?, 'Gia sư kiểm thử', 'TEACHER', 'ACTIVE', true)
-                """, userId, key + "@example.test");
-        jdbcTemplate.update("""
-                INSERT INTO teacher_profiles (id, user_id, profile_status, is_visible, supports_online)
-                VALUES (?, ?, ?, ?, true)
-                """, teacherId, userId, profileStatus, visible);
-        return teacherId;
-    }
-
-    @Test
     void searchTeachersMatchesVietnameseTextWithoutAccents() {
         UUID userId = UUID.randomUUID();
         UUID teacherId = UUID.randomUUID();

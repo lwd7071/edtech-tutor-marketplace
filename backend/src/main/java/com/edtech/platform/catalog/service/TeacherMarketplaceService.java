@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
 import com.edtech.platform.teacher.service.TeacherCredentialService;
@@ -56,10 +55,6 @@ public class TeacherMarketplaceService {
 
     public org.springframework.data.domain.Page<TeacherCard> searchTeachers(TeacherSearchParams params) {
         return teacherSearchCache.search(params).toPage();
-    }
-
-    public Map<UUID, Long> countPublicTeachersBySubject(Collection<UUID> subjectIds) {
-        return teacherSearchCache.countPublicTeachersBySubject(subjectIds);
     }
 
     @Cacheable(value = "TEACHER_PUBLIC_PROFILE", key = "#teacherId")

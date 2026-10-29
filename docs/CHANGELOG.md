@@ -1505,3 +1505,6 @@ efresh_tokens`, `teacher_documents`, `subject_proposals`, `subjects`, `pricing_p
 ## 2026-10-29 — Browser recheck `/teacher/students`
 - Teacher learner list/detail được browser-check một phần trên Spring `test`: SSR, Guest redirect, Student 403, links, logout POST+CSRF, viewport desktop/mobile, focus cơ bản, console và screenshot. Browser phát hiện 404 detail dùng JSON envelope; đã đổi thành HTTP 404 với HTML SSR thân thiện, không lộ ownership, và regression `TeacherStudentsPageControllerTest` PASS 7/7.
 - Cập nhật route spec, progress acceptance/cutover và STATUS. JS-off bị CDP permission gate chặn; browser empty/error và full keyboard sweep còn thiếu nên hai route vẫn `Đang làm`. Không đổi API contract/schema; không kết nối Supabase hoặc môi trường production.
+
+## 2026-10-29 — Hoàn tác landing page editorial
+- Trả trang chủ về hero minh họa và cấu trúc trước thử nghiệm; bỏ menu mobile và truy vấn số đếm môn được thêm cho bản editorial. Route vẫn `Đang làm` vì bản khôi phục chưa được nghiệm thu lại; ảnh editorial còn lưu nhưng không còn là bằng chứng cho trang hiện tại.

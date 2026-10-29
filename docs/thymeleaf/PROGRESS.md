@@ -2,15 +2,15 @@
 
 Chỉ theo dõi trạng thái route; không thay thế [docs/STATUS.md](../STATUS.md). Source inventory gốc gồm 70 route sản phẩm + 1 route sandbox. `/teacher/booking-requests` là route workflow bổ sung theo ADR 0017, không đổi mẫu số parity của 70 route legacy. Route động tính một lần.
 
-Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang làm`, `Bị chặn`, `Hoàn thành`. Landing page `/` đang được dựng lại sau đợt nghiệm thu trước; vì vậy route này cần nghiệm thu lại trước khi tiếp tục ghi nhận đủ 70/70.
+Trạng thái hợp lệ: `Chưa bắt đầu`, `Đang làm`, `Bị chặn`, `Hoàn thành`. Landing page `/` đã được trả về bố cục hero minh họa trước thử nghiệm editorial; route cần nghiệm thu lại trước khi tiếp tục ghi nhận đủ 70/70.
 
 Kết quả sweep trước được ghi nhận trong repo, nhưng đợt kiểm tra cuối hiện tại chưa độc lập xác minh lại toàn bộ route. Đặc biệt, không tìm thấy runner/log bền vững chứng minh JavaScript đã tắt; kiểm tra no-JS qua browser bị CDP permission gate chặn và không được thay bằng một browser automation khác. Vì vậy các nhãn `Hoàn thành` bên dưới là trạng thái từ sweep trước, không phải bằng chứng no-JS được tái xác nhận trong lượt này.
 
-Ảnh tồn tại trong `acceptance-20261029/` là bằng chứng hình ảnh của sweep trước, không tự chứng minh cấu hình JS, role/session, CSRF hay toàn bộ 7 viewport. Có 345 ảnh cũ trong nhóm route và 2 ảnh mới cho `/`; chưa có manifest ánh xạ ảnh với từng route/trạng thái.
+Ảnh tồn tại trong `acceptance-20261029/` là bằng chứng hình ảnh của sweep trước, không tự chứng minh cấu hình JS, role/session, CSRF hay toàn bộ 7 viewport. Có 345 ảnh cũ trong nhóm route; chưa có manifest ánh xạ ảnh với từng route/trạng thái.
 
 | Route | Thymeleaf | Ghi chú |
 |---|---|---|
-| `/` | Đang làm | Focused tests PASS 8/8. Hai ảnh desktop/mobile tại `acceptance-20261029/home/home-{desktop,mobile}.png` đã được mở và xem; giao diện hiển thị đủ các phần chính, avatar và footer. No-JS chưa được xác minh trực tiếp; route chưa hoàn tất theo tiêu chí nghiệm thu. |
+| `/` | Đang làm | Đã khôi phục layout hero minh họa; chưa nghiệm thu lại sau khi khôi phục. |
 | `/teachers` | Hoàn thành | SSR thật, GET filters giữ query, empty/error, MockMvc/browser/no-JS; link hồ sơ hoạt động tới `/teachers/{id}`; 4 ảnh tại `acceptance-20261029/public/`. |
 | `/teachers/{id}` | Hoàn thành | SSR hồ sơ gia sư, lịch, gói học, review. Guest/Student access, form chọn gói POST+CSRF, form học thử POST+CSRF; 7 viewports không tràn; 4 ảnh tại `acceptance-20261029/public/`. |
 | `/subjects` | Hoàn thành | SSR catalog/search/level filter/paging; MockMvc/browser/no-JS GET filter; link sang `/teachers` hoạt động; 4 ảnh tại `acceptance-20261029/public/`. |
@@ -85,7 +85,7 @@ Kết quả sweep trước được ghi nhận trong repo, nhưng đợt kiểm 
 
 ## Trục 1 — Nghiệm thu route bằng browser (69/70 được ghi nhận từ sweep trước; `/` chưa hoàn tất)
 
-69 route còn lại được ghi nhận hoàn thành từ sweep trước trên Spring Boot test runtime (`http://127.0.0.1:18087`); đợt cuối này chưa chạy lại toàn bộ. Trang chủ `/` đã đổi cấu trúc sau đợt sweep. No-JS cho các route chưa được tái xác minh do browser gate; không coi ảnh cũ hoặc nội dung template không có script là bằng chứng browser đã tắt JavaScript.
+69 route còn lại được ghi nhận hoàn thành từ sweep trước trên Spring Boot test runtime (`http://127.0.0.1:18087`); đợt cuối này chưa chạy lại toàn bộ. Trang chủ `/` đã được khôi phục bố cục trước thử nghiệm editorial nhưng chưa nghiệm thu lại. No-JS cho các route chưa được tái xác minh do browser gate; không coi ảnh cũ hoặc nội dung template không có script là bằng chứng browser đã tắt JavaScript.
 - **Public & Auth (17/18 được ghi nhận từ sweep trước)**: Báo cáo cũ ghi SSR/role/form/responsive/A11y; `/` đang làm lại. Các khẳng định no-JS chưa tái xác minh.
 - **Student (15 route được ghi nhận từ sweep trước)**: Báo cáo cũ ghi role/ownership/SSR/responsive và ảnh; no-JS chưa tái xác minh.
 - **Teacher (26 route được ghi nhận từ sweep trước, gồm 1 route bổ sung)**: Báo cáo cũ ghi SSR/role/ownership/responsive và các sửa lỗi ở `/teacher/bookings` cùng `/teacher/assignments/{id}`; no-JS chưa tái xác minh.
@@ -107,4 +107,4 @@ Cutover được đánh giá độc lập với việc nghiệm thu từng route
 - Admin: 12/12 route đã nghiệm thu đầy đủ.
 - Internal sandbox: 1 route (không tính feature parity).
 
-Tiến độ được ghi nhận: **69/70 route sản phẩm từ sweep trước**; `/` đang làm lại. Đây chưa phải nghiệm thu lại 70/70 theo toàn bộ tiêu chí hiện hành. Breakdown 18 + 15 + 26 + 12 = 71 route vì nhóm Teacher có thêm `/teacher/booking-requests` (route workflow bổ sung, ngoài mẫu số 70 route legacy). 345 ảnh cũ không có manifest route/trạng thái; 2 ảnh trang chủ mới được lưu riêng.
+Tiến độ được ghi nhận: **69/70 route sản phẩm từ sweep trước**; `/` đang chờ nghiệm thu lại sau khi khôi phục bố cục. Đây chưa phải nghiệm thu lại 70/70 theo toàn bộ tiêu chí hiện hành. Breakdown 18 + 15 + 26 + 12 = 71 route vì nhóm Teacher có thêm `/teacher/booking-requests` (route workflow bổ sung, ngoài mẫu số 70 route legacy). 345 ảnh cũ không có manifest route/trạng thái.

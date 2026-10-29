@@ -20,8 +20,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HomePageController {
     private static final Logger log = LoggerFactory.getLogger(HomePageController.class);
-    private static final int FEATURED_TEACHER_COUNT = 4;
-    private static final int FEATURED_SUBJECT_COUNT = 12;
+    private static final int FEATURED_TEACHER_COUNT = 6;
+    private static final int FEATURED_SUBJECT_COUNT = 9;
 
     private final TeacherMarketplaceService teacherMarketplaceService;
     private final SubjectFacade subjectFacade;
@@ -29,22 +29,9 @@ public class HomePageController {
     @GetMapping("/")
     public String home(Model model) {
         model.addAttribute("activeNav", "home");
-        List<SubjectSnapshot> subjects = loadSubjects(model);
-        model.addAttribute("featuredSubjects", subjects);
-        model.addAttribute("teacherCountsBySubject", loadTeacherCounts(subjects, model));
+        model.addAttribute("featuredSubjects", loadSubjects(model));
         model.addAttribute("featuredTeachers", loadTeachers(model));
         return "home/index";
-    }
-
-    private java.util.Map<java.util.UUID, Long> loadTeacherCounts(List<SubjectSnapshot> subjects, Model model) {
-        try {
-            return teacherMarketplaceService.countPublicTeachersBySubject(
-                    subjects.stream().map(SubjectSnapshot::id).toList());
-        } catch (RuntimeException ex) {
-            log.warn("Public home subject counts are unavailable", ex);
-            model.addAttribute("subjectCountsUnavailable", true);
-            return java.util.Map.of();
-        }
     }
 
     private List<SubjectSnapshot> loadSubjects(Model model) {

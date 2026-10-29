@@ -27,27 +27,6 @@
         <button class="header-login" type="submit">Đăng xuất</button>
       </form>
     </div>
-    <details class="mobile-menu">
-      <summary aria-label="Mở điều hướng">Menu</summary>
-      <div class="mobile-menu__panel">
-        <nav aria-label="Điều hướng chính trên di động">
-          <a href="/teachers">Tìm gia sư</a>
-          <a href="/subjects">Môn học</a>
-          <a href="/how-it-works">Cách hoạt động</a>
-        </nav>
-        <div th:if="${htmlUser == null}" class="mobile-menu__actions">
-          <a href="/auth/login">Đăng nhập</a>
-          <a class="button button--small button--primary" href="/auth/register">Tạo tài khoản</a>
-        </div>
-        <div th:if="${htmlUser != null}" class="mobile-menu__actions">
-          <a th:href="${htmlUser.role == 'STUDENT' ? '/student' : (htmlUser.role == 'TEACHER' ? '/teacher' : '/admin')}">Không gian của tôi</a>
-          <form method="post" action="/auth/logout">
-            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-            <button type="submit">Đăng xuất</button>
-          </form>
-        </div>
-      </div>
-    </details>
   </div>
 </header>
 
@@ -55,11 +34,8 @@
   <div class="site-footer__inner">
     <a class="brand" href="/" aria-label="Tutor Match — Trang chủ"><span class="brand__name">tutor<span>match</span></span></a>
     <nav aria-label="Liên kết thông tin">
-      <a href="/teachers">Tìm gia sư</a>
-      <a href="/subjects">Môn học</a>
-      <a href="/how-it-works">Cách hoạt động</a>
-      <a href="/become-a-tutor">Dạy cùng Tutor Match</a>
       <a href="/ranking">Bảng xếp hạng gia sư</a>
+      <a href="/how-it-works">Cách hoạt động</a>
       <a href="/terms">Điều khoản</a>
       <a href="/privacy">Quyền riêng tư</a>
       <a href="/support">Hỗ trợ</a>

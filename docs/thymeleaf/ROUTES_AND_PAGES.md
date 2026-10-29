@@ -109,11 +109,11 @@ Ghi rõ: mục tiêu; role; URL/query; layout desktop/mobile; dữ liệu và ng
 ### `/` — Trang chủ công khai
 
 - **Mục tiêu/role:** giúp Guest bắt đầu tìm gia sư hoặc khám phá môn học; không yêu cầu đăng nhập.
-- **Dữ liệu:** danh sách môn đang hoạt động, số gia sư public theo môn và tối đa bốn gia sư nổi bật lấy qua `SubjectFacade`/`TeacherMarketplaceService`. Số đếm nhóm trong một truy vấn, chỉ gồm hồ sơ APPROVED/visible và user ACTIVE; khi lỗi thì ẩn số và báo trạng thái. Không đưa số liệu/giới thiệu giả.
-- **Desktop:** header public gọn; phần mở đầu dạng bài báo với tiêu đề hai dòng và form tìm GET; mục lục môn dạng hàng chữ và số đếm; gia sư nổi bật với avatar thật hoặc chữ cái đầu; ba bước tìm/chọn gói/đặt buổi; FAQ native `<details>`; footer. Không có khối KPI. **Mobile:** menu native `<details>`, danh sách một cột ở 320px, form search xếp dọc.
-- **Hành động/no-JS:** nhập từ khóa rồi GET `/teachers`; mở môn để tìm gia sư theo subject; mở FAQ bằng native details; link tới trang nội dung/auth. Form, link và mọi section được SSR; không có script.
+- **Dữ liệu:** tối đa chín môn đang hoạt động và sáu gia sư nổi bật lấy qua `SubjectFacade`/`TeacherMarketplaceService`; hồ sơ gia sư có ảnh thật hoặc chữ cái đầu khi thiếu ảnh. Không hiển thị số đếm giả.
+- **Desktop:** header public; hero có tiêu đề, mô tả, form tìm GET và minh họa sách; danh sách môn; ba bước giới thiệu quy trình; gia sư nổi bật dạng thẻ; CTA dành cho gia sư; footer. **Mobile:** các phần xếp thành một cột, form tìm kiếm xếp dọc.
+- **Hành động/no-JS:** nhập từ khóa rồi GET `/teachers`; mở môn để tìm gia sư theo subject; link tới trang nội dung/auth. Form và link được SSR.
 - **Trạng thái:** dữ liệu môn và gia sư lỗi/rỗng độc lập, mỗi vùng có copy và link khôi phục rõ; không dùng skeleton cho SSR.
-- **A11y/acceptance:** một h1, thứ bậc heading, nhãn tìm kiếm, skip link, focus rõ, menu mobile bàn phím được; kiểm tra JS bật/tắt, reduced motion và viewport 320–1440px.
+- **A11y/acceptance:** một h1, thứ bậc heading, nhãn tìm kiếm, skip link, focus rõ; kiểm tra JS bật/tắt, reduced motion và viewport 320–1440px.
 
 ### `/subjects` — Danh mục môn học
 
