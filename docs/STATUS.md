@@ -1,5 +1,25 @@
 # Trạng thái dự án
 
+## Đồng bộ viền thẻ Dashboard Học viên (Xóa viền vàng dạ quang) — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:**
+  - Khắc phục hiện tượng 2 thẻ "Buổi học tiếp theo" (`.overview-card--next`) và "Đang tìm gia sư?" (`.dashboard-next-step`) trên trang Tổng quan học viên (`/student`) bị áp viền vàng dạ quang (`border-color: var(--brand-yellow);` / `border: 1px solid var(--brand-yellow);`), gây chói mắt và mất đồng bộ với các thẻ còn lại trong Bento Grid.
+  - Cập nhật `student-dashboard.css`:
+    - Gỡ bỏ `border-color: var(--brand-yellow);` trên `.overview-card--next`, để thẻ kế thừa `border: 1px solid var(--border)` đồng nhất từ `.overview-card`.
+    - Thay thế `border: 1px solid var(--brand-yellow);` thành `border: 1px solid var(--border);` trên `.dashboard-next-step`.
+    - Bổ sung hiệu ứng gạch chân hover cho liên kết trong thẻ tiếp bước: `.dashboard-next-step a:hover { text-decoration: underline; }`.
+- **Bằng chứng kiểm thử backend:** Thêm test case TDD `cardsShouldNotHaveBrandYellowBorderAndUseConsistentBorder` trong `StudentDashboardPageControllerTest`. Chạy MockMvc test suite `StudentDashboardPageControllerTest` và `StudentHeaderAndNavLayoutTest` PASS **6/6**.
+- **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không dùng port 8080 cho test ngầm.
+
+## Tối ưu bố cục hàng đôi Bài tập có bài nộp & Thu nhập trên Teacher Dashboard — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:** Tái cấu trúc phân vùng thẻ bên cột phải của trang Tổng quan gia sư (`/teacher`):
+  - Nhóm thẻ *Bài tập có bài nộp* và thẻ *Thu nhập* thành hàng đôi song song nằm ngang (`.teacher-overview-side-row`), áp dụng nguyên tắc thiết kế Bento Grid và compact card theo chuẩn `ui-ux-pro-max`:
+    - Grid 2 cột cân xứng `repeat(2, minmax(0, 1fr))` với `gap: 16px`, co giãn đồng đều theo chiều cao (`align-items: stretch`).
+    - Thẻ Bài tập: Tinh gọn danh mục bài tập thành dạng compact list với badge trạng thái 'Chờ chấm' dạng pill chip nổi bật, link rút gọn 'Tất cả bài tập →'.
+    - Thẻ Thu nhập: Tối ưu khối số dư khả dụng và số dư tạm giữ thành 2 hàng dọc gọn gàng với typography to rõ `1.25rem`, dòng chú thích số dư tự động bám đáy card (`margin-top: auto`).
+    - Responsive: Tự động giữ nguyên 2 cột trên tablet (`max-width: 1023px`) do cột phụ bung full-width, và chuyển sang 1 cột đơn linh hoạt trên mobile hẹp (`max-width: 640px`) tránh co ép nội dung.
+- **Bằng chứng kiểm thử backend:** Bổ sung test case TDD xác minh sự hiện diện của `.teacher-overview-side-row` bọc hai thẻ `Bài tập có bài nộp` và `Thu nhập` trong `TeacherWorkspaceNavAndDashboardLayoutTest`. Chạy regression tests gồm `TeacherWorkspaceNavAndDashboardLayoutTest` và `TeacherDashboardPageControllerTest` PASS **9/9**.
+- **Ranh giới an toàn:** Không đổi DB schema, migration diff rỗng. Không đụng vào `.env.cloud`, Supabase hay port 8080.
+
 ## Đồng bộ màu nền Full-Width cho Teacher Dashboard — 2026-10-29
 - **Trục nghiệm thu giao diện & TDD:** Khắc phục lỗi trang Tổng quan gia sư (`/teacher`) bị thu hẹp nền màu be vào khoảng giữa $1180\text{px}$ và lộ nền trắng hai bên mép màn hình khi chuyển đổi giữa các tab.
   - Gỡ bỏ `max-width: 1180px;` và `margin-inline: auto;` khỏi class `.teacher-overview-page` trong `teacher-dashboard.css`, giúp thẻ `<main class="student-dashboard teacher-overview-page">` trải rộng full-width 100% viewport và phủ kín màu nền `--surface-warm` (#f7f3e8) đồng nhất với tất cả các trang con (`/teacher/bookings`, `/teacher/availability`, v.v.).

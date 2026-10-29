@@ -25,21 +25,21 @@
 .dashboard-alert a { flex: 0 0 auto; font-weight: 700; }
 .dashboard-overview { display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px; }
 .overview-card, .dashboard-panel { min-width: 0; padding: 22px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); }
-.overview-card--next { background: var(--surface); border-color: var(--brand-yellow); }
+.overview-card--next { background: var(--surface); }
 .overview-card h2, .dashboard-panel h2, .dashboard-next-step h2 { margin: 0; font-family: var(--font-heading); font-size: 19px; line-height: 1.35; }
 .overview-card__value { min-height: 42px; margin: 22px 0; font-family: var(--font-heading); font-size: 25px; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
 .overview-card__value small { font-family: var(--font-body); font-size: 14px; font-weight: 500; }
 .overview-card__value--empty { color: var(--muted); font-size: 20px; }
 .overview-card a { display: inline-flex; align-items: center; gap: 8px; color: var(--muted-strong); font-size: 14px; font-weight: 600; text-decoration: none; }
 .overview-card--sessions { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; background: var(--surface-warm); }
-.overview-card a:hover, .dashboard-panel a:hover { text-decoration: underline; }
+.overview-card a:hover, .dashboard-panel a:hover, .dashboard-next-step a:hover { text-decoration: underline; }
 .dashboard-lower { display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px; margin-top: 18px; }
 .dashboard-panel { padding: 24px; }
 .dashboard-task-list { padding: 0; margin: 12px 0 0; list-style: none; }
 .dashboard-task-list li + li { border-top: 1px solid var(--border); }
 .dashboard-task-list a { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 48px; color: var(--ink); text-decoration: none; }
 .dashboard-task-list strong { min-width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
-.dashboard-next-step { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 24px; border: 1px solid var(--brand-yellow); border-radius: var(--radius-card); background: var(--surface-warm); }
+.dashboard-next-step { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 24px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface-warm); }
 .dashboard-next-step p { max-width: 40ch; margin: 8px 0 14px; color: var(--muted-strong); }
 .dashboard-next-step a { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-weight: 700; text-decoration: none; }
 .student-footer { display: flex; justify-content: space-between; align-items: center; gap: 24px; width: min(var(--content-width), calc(100% - 48px)); margin: 0 auto; padding: 24px 0; color: var(--muted); font-size: 14px; }

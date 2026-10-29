@@ -79,4 +79,28 @@ class StudentDashboardPageControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Chưa tải được tổng quan.")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("href=\"/student\">Thử lại")));
     }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("Các card Buổi học tiếp theo và Đang tìm gia sư không có viền vàng dạ quang, đồng bộ var(--border)")
+    void cardsShouldNotHaveBrandYellowBorderAndUseConsistentBorder() throws Exception {
+        java.nio.file.Path cssPath = java.nio.file.Path.of("src/main/resources/static/css/student-dashboard.css");
+        org.junit.jupiter.api.Assertions.assertTrue(java.nio.file.Files.exists(cssPath), "File CSS student-dashboard.css phải tồn tại");
+        String css = java.nio.file.Files.readString(cssPath);
+
+        org.junit.jupiter.api.Assertions.assertFalse(
+                css.contains("overview-card--next { background: var(--surface); border-color: var(--brand-yellow); }") ||
+                css.contains("overview-card--next { border-color: var(--brand-yellow)"),
+                "Thẻ Buổi học tiếp theo không được có viền vàng dạ quang brand-yellow"
+        );
+
+        org.junit.jupiter.api.Assertions.assertFalse(
+                css.contains(".dashboard-next-step { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 24px; border: 1px solid var(--brand-yellow);"),
+                "Thẻ Đang tìm gia sư không được có viền vàng dạ quang brand-yellow"
+        );
+
+        org.junit.jupiter.api.Assertions.assertTrue(
+                css.contains(".dashboard-next-step { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 24px; border: 1px solid var(--border);"),
+                "Thẻ Đang tìm gia sư phải dùng border chuẩn 1px solid var(--border) đồng bộ toàn trang"
+        );
+    }
 }

@@ -1,5 +1,19 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-29 — Đồng bộ viền thẻ Dashboard Học viên (Xóa viền vàng dạ quang)
+- Loại bỏ viền vàng dạ quang (`var(--brand-yellow)`) trên 2 thẻ "Buổi học tiếp theo" (`.overview-card--next`) và "Đang tìm gia sư?" (`.dashboard-next-step`) trong `student-dashboard.css`.
+- Đưa viền của cả 4 thẻ trên trang Tổng quan học viên (`/student`) về chuẩn mực thiết kế đồng bộ với hệ thống token `1px solid var(--border)`. Bổ sung hiệu ứng hover text-decoration cho link trong `.dashboard-next-step`.
+- Bổ sung kiểm thử TDD trong `StudentDashboardPageControllerTest` xác minh tính đồng nhất của viền thẻ và ngăn ngừa tái xuất hiện viền vàng dạ quang. Toàn bộ 6/6 tests liên quan PASS.
+
+## 2026-10-29 — Tối ưu bố cục hàng đôi Bài tập có bài nộp & Thu nhập trên Teacher Dashboard (`/teacher`)
+- Sắp xếp lại giao diện cột phải của trang Tổng quan gia sư (`/teacher`) theo Phương án 1 (Bento Compact Row):
+  - Nhóm thẻ *Bài tập có bài nộp* và thẻ *Thu nhập* thành hàng đôi song song nằm ngang (`.teacher-overview-side-row`), giảm bớt chiều dài dọc của trang tổng quan.
+  - Áp dụng kỹ thuật Bento Card và compact design: chia tỉ lệ grid 2 cột `repeat(2, minmax(0, 1fr))` với khoảng cách `gap: 16px`, co giãn chiều cao bằng nhau (`align-items: stretch`).
+  - Thẻ Bài tập có bài nộp: Tối ưu list item hiển thị 2 tầng (tiêu đề bài tập + môn/học viên ở trên, badge trạng thái 'Chờ chấm' ở dưới dạng pill bo tròn), link điều hướng tinh gọn 'Tất cả bài tập →'.
+  - Thẻ Thu nhập: Chuyển 2 khối số dư khả dụng và tạm giữ thành 2 hàng dọc thoáng mắt, font số tabular-nums to rõ `1.25rem`, ghi chú bám đáy card.
+  - Tối ưu responsive: Giữ 2 cột trên tablet (`<= 1023px`) và tự động xếp chồng 1 cột trên mobile (`<= 640px`) tránh tràn màn hình.
+- Quy trình TDD backend: Thêm test case `assignmentsAndWalletShouldBeRenderedSideBySide` trong `TeacherWorkspaceNavAndDashboardLayoutTest`, toàn bộ 9/9 tests liên quan PASS. Không chạm vào DB migration hay Supabase.
+
 ## 2026-10-29 — Đồng bộ màu nền Full-Width cho Teacher Dashboard (`/teacher`)
 - Xử lý triệt để hiện tượng lệch màu nền giữa trang Tổng quan gia sư (`/teacher`) và các phân hệ khác (`/teacher/bookings`, `/teacher/wallet`, v.v.):
   - Loại bỏ các thuộc tính `max-width: 1180px;` và `margin-inline: auto;` trên `.teacher-overview-page` trong `teacher-dashboard.css`.
