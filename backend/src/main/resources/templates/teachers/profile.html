@@ -109,9 +109,27 @@
                 <p class="profile-package__description" th:if="${package.description != null and !#strings.isEmpty(package.description)}" th:text="${package.description}">Mô tả</p>
               </div>
               <dl class="profile-package__terms">
-                <div><dt>Số buổi</dt><dd th:text="${package.totalSessions}">0</dd></div>
-                <div><dt>Thời lượng</dt><dd th:text="|${package.sessionDurationMinutes} phút/buổi|">0 phút/buổi</dd></div>
-                <div><dt>Thời hạn</dt><dd th:text="|${package.durationDays} ngày|">0 ngày</dd></div>
+                <div>
+                  <dt>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Số buổi</span>
+                  </dt>
+                  <dd th:text="${package.totalSessions}">0</dd>
+                </div>
+                <div>
+                  <dt>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Thời lượng</span>
+                  </dt>
+                  <dd th:text="|${package.sessionDurationMinutes} phút/buổi|">0 phút/buổi</dd>
+                </div>
+                <div>
+                  <dt>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 8 14"/></svg>
+                    <span>Thời hạn</span>
+                  </dt>
+                  <dd th:text="|${package.durationDays} ngày|">0 ngày</dd>
+                </div>
               </dl>
             </div>
             <div class="profile-package__action">

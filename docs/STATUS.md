@@ -1,9 +1,9 @@
 # Trạng thái dự án
 
-## Tinh gọn ô Chat Box & Sửa căn lề thẻ Gói học — 2026-10-29
+## Tinh gọn ô Chat Box & Tối ưu thẻ Gói học (Phương án 1) — 2026-10-29
 - **Trục nghiệm thu giao diện & TDD:**
+  - Gói học (`/teachers/{id}`): Hoàn thiện Phương án 1 (Horizontal Compact Card) - chấm dứt hoàn toàn hiện tượng 3 cột rỗng stretch; chuyển 3 thông số thành các pill badges nhỏ gọn cao $\sim 26\text{px}$ bo tròn 999px có SVG icons tinh tế; cột phải gom học phí to rõ và nút chọn gói học căn thẳng lề phải.
   - Chat Box (`/student/messages`, `/teacher/messages`): Tinh gọn thành Modern Chat Bar 1 hàng cao $\sim 50\text{px}$, nút đính kèm kẹp giấy SVG, ô nhập bo góc mềm, nút gửi gọn gàng; file đính kèm chọn hiển thị dạng chip nhỏ phía trên.
-  - Gói học (`/teachers/{id}`): Tái cấu trúc thành Horizontal 2-Column Split (Cột trái $70\%$ chứa môn học, tên gói, mô tả, 3 chip thông số; Cột phải $30\%$ có border-left nhẹ, căn thẳng lề phải giá tiền và nút chọn gói).
 - **Bằng chứng kiểm thử backend:** MockMvc test suites `TeacherProfilePageControllerTest`, `StudentMessagesPageControllerTest`, `TeacherMessagesPageControllerTest` PASS **23/23**.
 - **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không dùng port 8080 cho test ngầm.
 

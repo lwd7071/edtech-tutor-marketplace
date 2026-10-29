@@ -1,8 +1,11 @@
 # Changelog theo đợt hoàn thành
 
-## 2026-10-29 — Tinh gọn ô Chat Box & Sửa căn lề thẻ Gói học
+## 2026-10-29 — Tinh gọn ô Chat Box & Tối ưu thẻ Gói học (Phương án 1 - Compact Card)
+- Hoàn thiện thẻ gói học `.profile-package` (`teachers/profile.html` & `teachers-profile.css`) theo Phương án 1 (Horizontal Compact Card):
+  - Loại bỏ hoàn toàn 3 khối cột rỗng bị hiệu ứng stretch kéo giãn.
+  - Chuyển 3 thông số (Số buổi, Thời lượng, Thời hạn) thành các pill badges nhỏ gọn cao $\sim 26\text{px}$ có bo tròn 999px kèm icon SVG mini (Lịch, Đồng hồ, Thời hạn) đặt ngay dưới phần mô tả.
+  - Cột thanh toán bên phải căn lề phải ngay ngắn với nhãn "Giá trọn gói", số tiền to nổi bật và nút "Chọn gói học" vàng thương hiệu vừa vặn; trên mobile tự động co giãn 2 bên không bị vỡ hàng.
 - Tái cấu trúc ô soạn tin nhắn `.message-composer` (`student/messages.html`, `workspace/teacher-messages.html` & `student-messages.css`) thành Modern Chat Bar 1 hàng duy nhất: nút kẹp giấy 📎 đính kèm tệp nhỏ gọn (ẩn input file mặc định), ô nhập tin bo góc mềm mại, nút gửi vàng thương hiệu tinh tế; file đã chọn hiển thị dạng chip nhỏ phía trên.
-- Sửa lỗi lệch lề thẻ gói học `.profile-package` trên trang hồ sơ gia sư (`teachers/profile.html` & `teachers-profile.css`) theo mô hình Horizontal 2-Column Split: Cột trái $70\%$ chứa thông tin môn học và hàng 3 chip thông số; Cột phải $30\%$ có đường phân cách mỏng gom nhãn, giá tiền to nổi bật và nút "Chọn gói học" căn thẳng lề phải.
 - Quy trình TDD: Bổ sung test suites `TeacherProfilePageControllerTest`, `StudentMessagesPageControllerTest`, `TeacherMessagesPageControllerTest` kiểm tra cấu trúc layout mới, regression test PASS 23/23. Không sửa DB schema hay kết nối Supabase.
 
 
