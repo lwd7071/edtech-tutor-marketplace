@@ -28,6 +28,31 @@ class TeacherMarketplacePublicProfileTest {
     void hidesApprovedButInvisibleTeacherProfileFromPublicDetails() {
         assertNotPublic(snapshot("APPROVED", false));
     }
+    @Test
+    void returnsFullBioWhenAvailableInSnapshot() {
+        UUID teacherId = UUID.randomUUID();
+        String fullBio = "Thạc sĩ Toán học ĐH Sư Phạm Hà Nội, 10 năm kinh nghiệm luyện thi ĐH và bồi dưỡng học sinh giỏi. Phương pháp dạy tư duy mạch lạc, dễ nhớ.";
+        TeacherSnapshot snapshot = new TeacherSnapshot(
+                teacherId, UUID.randomUUID(), "APPROVED", true, true,
+                "Thầy Toán", null, "Thạc sĩ Toán...", 10,
+                true, false, List.of("Vietnamese"), null, null, null, null, fullBio);
+
+        TeacherFacade teacherFacade = mock(TeacherFacade.class);
+        IdentityFacade identityFacade = mock(IdentityFacade.class);
+        TeacherStatsFacade statsFacade = mock(TeacherStatsFacade.class);
+        SubjectFacade subjectFacade = mock(SubjectFacade.class);
+        PricingPackageService packages = mock(PricingPackageService.class);
+        TeacherSearchCache searchCache = mock(TeacherSearchCache.class);
+
+        when(teacherFacade.getTeacher(teacherId)).thenReturn(snapshot);
+        when(teacherFacade.getSubjectIdsForTeacher(teacherId)).thenReturn(List.of());
+
+        TeacherMarketplaceService service = new TeacherMarketplaceService(
+                teacherFacade, identityFacade, statsFacade, subjectFacade, packages, searchCache);
+
+        var detail = service.getTeacherDetail(teacherId);
+        org.junit.jupiter.api.Assertions.assertEquals(fullBio, detail.bio());
+    }
 
     private void assertNotPublic(TeacherSnapshot snapshot) {
         TeacherFacade teacherFacade = mock(TeacherFacade.class);

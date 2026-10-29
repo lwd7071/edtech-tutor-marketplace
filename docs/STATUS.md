@@ -1,5 +1,11 @@
 # Trạng thái dự án
 
+## Hiển thị đầy đủ phần Giới thiệu Gia sư — 2026-10-29
+- **Trục nghiệm thu & TDD:** Sửa lỗi bio bị cắt ở 100 ký tự (do facade trước đó chỉ map `bioExcerpt`). Cập nhật `TeacherSnapshot`, `TeacherFacadeImpl` và `TeacherMarketplaceService` truyền toàn bộ chuỗi `bio` cho trang chi tiết `/teachers/{id}`.
+- **Bằng chứng kiểm thử backend:** Các test suites `TeacherMarketplacePublicProfileTest`, `TeacherProfilePageControllerTest`, `TeacherFacadeImplTest` PASS **22/22**.
+- **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không dùng port 8080 cho test ngầm.
+
+
 ## Tinh gọn ô Chat Box & Tối ưu thẻ Gói học (Phương án 1) — 2026-10-29
 - **Trục nghiệm thu giao diện & TDD:**
   - Gói học (`/teachers/{id}`): Hoàn thiện Phương án 1 (Horizontal Compact Card) - chấm dứt hoàn toàn hiện tượng 3 cột rỗng stretch; chuyển 3 thông số thành các pill badges nhỏ gọn cao $\sim 26\text{px}$ bo tròn 999px có SVG icons tinh tế; cột phải gom học phí to rõ và nút chọn gói học căn thẳng lề phải.

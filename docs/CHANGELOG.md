@@ -1,5 +1,11 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-29 — Sửa lỗi hiển thị đầy đủ phần Giới thiệu Gia sư (`/teachers/{id}`)
+- Phát hiện và khắc phục nguyên nhân phần Giới thiệu (`bio`) trên trang hồ sơ gia sư bị cắt cụt ở ký tự thứ 100 thành 'Phươ...': `TeacherMarketplaceService` truyền `TeacherSnapshot.bioExcerpt()` thay vì toàn bộ `bio`.
+- Bổ sung trường `bio` vào `TeacherSnapshot`, cập nhật `TeacherFacadeImpl` truyền đầy đủ `profile.getBio()`, và `TeacherMarketplaceService` ưu tiên `bio` đầy đủ cho trang hồ sơ chi tiết.
+- TDD backend: Thêm test case trong `TeacherFacadeImplTest` và `TeacherMarketplacePublicProfileTest`, chạy toàn bộ 3 test suites liên quan PASS 22/22. Không thay đổi DB migration hay đụng vào Supabase.
+
+
 ## 2026-10-29 — Tinh gọn ô Chat Box & Tối ưu thẻ Gói học (Phương án 1 - Compact Card)
 - Hoàn thiện thẻ gói học `.profile-package` (`teachers/profile.html` & `teachers-profile.css`) theo Phương án 1 (Horizontal Compact Card):
   - Loại bỏ hoàn toàn 3 khối cột rỗng bị hiệu ứng stretch kéo giãn.

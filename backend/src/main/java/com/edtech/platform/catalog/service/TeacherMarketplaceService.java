@@ -74,7 +74,7 @@ public class TeacherMarketplaceService {
             ts.id(),
             ts.fullName(),
             ts.avatarUrl(),
-            ts.bioExcerpt(),
+            ts.bio() != null ? ts.bio() : ts.bioExcerpt(),
             ts.yearsOfExperience() != null ? ts.yearsOfExperience() : 0,
             ts.languages() != null ? ts.languages() : List.of(),
             ts.supportsOnline(),

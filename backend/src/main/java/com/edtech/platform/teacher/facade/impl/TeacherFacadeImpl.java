@@ -143,7 +143,8 @@ public class TeacherFacadeImpl implements TeacherFacade {
                 profile.getLocationAddress(),
                 profile.getIntroductionVideoUrl(),
                 profile.getProvinceCode(),
-                profile.getWardCode()
+                profile.getWardCode(),
+                profile.getBio()
         );
     }
 
