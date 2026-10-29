@@ -20,13 +20,15 @@ describe('SubjectPickerClient', () => {
     (useRouter as jest.Mock).mockReturnValue({ push, refresh });
   });
 
-  it('continues to filtered tutor results only after a subject is selected', () => {
+  it('continues to all tutors or filters results by selected subject', () => {
     render(<SubjectPickerClient subjects={[subject]} keyword="" educationLevel="" currentPage={1} totalPages={1} hasError={false} />);
     const continueButton = screen.getByRole('button', { name: 'Tìm gia sư' });
-    expect(continueButton).toBeDisabled();
+    expect(continueButton).toBeEnabled();
+    fireEvent.click(continueButton);
+    expect(push).toHaveBeenLastCalledWith('/teachers');
 
-    fireEvent.click(screen.getByRole('radio', { name: /Toán/ }));
-    fireEvent.click(screen.getByRole('button', { name: /Tìm gia sư môn Toán/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Toán/ }));
+    fireEvent.click(continueButton);
 
     expect(push).toHaveBeenLastCalledWith('/teachers?subjectId=subject-uuid');
   });
@@ -47,7 +49,8 @@ describe('SubjectPickerClient', () => {
     fireEvent.change(screen.getByRole('combobox', { name: 'Lọc theo cấp học' }), { target: { value: 'UNIVERSITY' } });
 
     expect(push).toHaveBeenCalledWith('/subjects?educationLevel=UNIVERSITY');
-    expect(screen.getByRole('button', { name: 'Tìm gia sư' })).toBeDisabled();
+    expect(screen.getByText('Chưa chọn môn học')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tìm gia sư' })).toBeEnabled();
   });
 
   it('opens the compact mobile subject search and level filters on demand', () => {
@@ -77,7 +80,7 @@ describe('SubjectPickerClient', () => {
 
     expect(screen.getByText('Môn học này hiện không còn trong danh mục.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Chưa tìm thấy môn học phù hợp' })).toBeInTheDocument();
-    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });
 
   it('offers a clear-filter action when the result set is empty', () => {

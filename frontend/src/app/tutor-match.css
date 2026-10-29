@@ -80,11 +80,20 @@ a{text-underline-offset:3px}
 .tm-inline-link:hover{text-decoration-color:#d9ad09}
 
 /* Brighter Tutor Match palette and homepage composition. */
-.tm-button,.tm-action-link-primary{background:#FFD43B;color:#171714!important;border-color:#FFD43B;box-shadow:0 8px 20px rgba(116,83,0,.12)}
-.tm-button:hover,.tm-action-link-primary:hover{background:#F1BE18;color:#171714!important;border-color:#F1BE18}
-.tm-button-secondary,.tm-cta .tm-button-secondary{background:#fff;color:#171714!important;border-color:var(--color-border-strong)}
-.ant-btn-primary{background:#FFD43B!important;color:#171714!important;border-color:#FFD43B!important;box-shadow:0 6px 16px rgba(116,83,0,.12)!important}
-.ant-btn-primary:hover{background:#F1BE18!important;color:#171714!important;border-color:#F1BE18!important}
+.tm-button,.tm-action-link-primary{background:#FFD43B;color:#171714!important;border:1.5px solid #171714!important;border-radius:8px;font-weight:700;box-shadow:0 2px 0 #171714}
+.tm-button:hover,.tm-action-link-primary:hover{background:#ffdf68;transform:translateY(-1px);box-shadow:0 3px 0 #171714}
+.tm-button:active,.tm-action-link-primary:active{transform:translateY(1px);box-shadow:none}
+.tm-button-secondary,.tm-cta .tm-button-secondary{background:#fff;color:#171714!important;border:1.5px solid #171714;border-radius:8px;font-weight:650}
+.tm-button-secondary:hover,.tm-cta .tm-button-secondary:hover{background:#f7f6f0;box-shadow:0 2px 0 #171714;transform:translateY(-1px)}
+.ant-btn-primary{background:#FFD43B!important;color:#171714!important;border:1.5px solid #171714!important;border-radius:8px!important;font-weight:700!important;box-shadow:0 2px 0 #171714!important}
+.ant-btn-primary:hover{background:#ffdf68!important;color:#171714!important;border-color:#171714!important;transform:translateY(-1px);box-shadow:0 3px 0 #171714!important}
+.ant-btn-primary:active{transform:translateY(1px);box-shadow:none!important}
+.tm-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;background:#FFD43B;color:#171714!important;border:1.5px solid #171714;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;transition:background-color .12s ease,border-color .12s ease,transform .12s ease,box-shadow .12s ease}
+.tm-btn-primary:hover{background:#ffdf68;transform:translateY(-1px);box-shadow:0 2px 0 #171714}
+.tm-btn-primary:active{transform:translateY(1px);box-shadow:none}
+.tm-btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;background:#fff;color:#171714!important;border:1.5px solid #171714;border-radius:8px;font-size:14px;font-weight:650;text-decoration:none;cursor:pointer;transition:background-color .12s ease,border-color .12s ease,transform .12s ease,box-shadow .12s ease}
+.tm-btn-secondary:hover{background:#f7f6f0;transform:translateY(-1px);box-shadow:0 2px 0 #171714}
+.tm-btn-secondary:active{transform:translateY(1px);box-shadow:none}
 .tm-hero{background:#FFD43B;padding-block:48px 52px}
 .tm-hero-grid{grid-template-columns:minmax(0,1.06fr) minmax(340px,.94fr);gap:clamp(28px,5vw,72px)}
 .tm-hero h1{max-width:640px;font-size:clamp(38px,4.5vw,60px);line-height:1.08;letter-spacing:-.035em}
@@ -437,3 +446,18 @@ a{text-underline-offset:3px}
 .tm-forbidden-feedback .ant-btn{min-width:132px}
 @media(max-width:760px){.tm-forbidden-page{width:calc(100% - 32px);min-height:calc(100svh - 64px);padding-block:28px}.tm-forbidden-state{padding:20px 0}.tm-forbidden-heading h1{font-size:30px}.tm-forbidden-feedback{margin-top:8px}}
 
+
+.tm-subject-search .ant-input-search-button{color:#171714!important}
+
+
+/* Dual action stack for Tutor Cards */
+.tm-tutor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tm-btn-sm {
+  min-height: 36px !important;
+  padding: 0 12px !important;
+  font-size: 13px !important;
+}

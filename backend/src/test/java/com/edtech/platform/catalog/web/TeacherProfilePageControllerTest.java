@@ -188,6 +188,7 @@ class TeacherProfilePageControllerTest {
             mockMvc.perform(get("/teachers/{id}", teacherId))
                     .andExpect(status().isOk())
                     .andExpect(content().string(org.hamcrest.Matchers.containsString("action=\"/student/messages/open\"")))
+                    .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"button button--secondary\"")))
                     .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"teacherId\"")))
                     .andExpect(content().string(org.hamcrest.Matchers.containsString("action=\"/student/invoices\"")))
                     .andExpect(content().string(org.hamcrest.Matchers.containsString(pricingPackage.id().toString())))

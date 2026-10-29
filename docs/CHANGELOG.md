@@ -1,5 +1,46 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-29 — Minh họa 2D Nét đen & Tái cấu trúc Header/Hero Trang chủ theo phong cách Preply (TDD & UI/UX Pro Max)
+- Bổ sung liên kết 'Trở thành gia sư' vào Header điều hướng chính (public-nav), gom toàn bộ cụm menu khám phá sang trái bám sát Logo tutormatch (margin-right: auto).
+- Áp dụng nền vàng full-bleed tràn viền (100vw) bao trùm cả Header và Hero trên trang chủ, xóa viền ngăn cách tạo khối thống nhất liền mạch.
+- Tối ưu Hero Section: Bổ sung pill badge 'Tiến bộ cùng gia sư 1-1', thanh search pill trắng nổi bật và nút CTA pill đen tuyền bo góc 9999px.
+- Minh họa 2D nét đen Concept 1: Dựng SVG khung cửa sổ lớp học 2D, đường nối tương tác đứt đoạn từ gia sư sang học viên và các sticker doodle sao lấp lánh/vòng cung tiến độ.
+- Kiểm thử TDD: Thêm 3 test case mới trong HomePageControllerTest, toàn bộ 6/6 tests của HomePageControllerTest và 4/4 tests của StudentHeaderAndNavLayoutTest PASS.
+
+## 2026-10-29 — Đồng bộ Logo Header trỏ về Trang chủ cho cả 3 Role (TDD)
+- Cập nhật liên kết thương hiệu: Cả 3 role Học viên, Gia sư và Quản trị viên đều thống nhất trỏ Logo Tutor Match về Homepage `/` kèm nhãn `aria-label="Tutor Match — Trang chủ"`.
+- Giữ vững luồng điều hướng: Người dùng có thể quay lại trang Dashboard cá nhân bất kỳ lúc nào thông qua tab 'Tổng quan' ở thanh điều hướng phụ.
+- Bổ sung kiểm thử TDD: 3 test cases trong `StudentHeaderAndNavLayoutTest`, `TeacherWorkspaceNavAndDashboardLayoutTest` và `AdminWorkspaceNavAndDashboardLayoutTest` xác nhận `href="/"`. Toàn bộ 19/19 tests layout PASS.
+
+## 2026-10-29 — Nâng cấp hệ thống Button Neubrutalism-lite & Cụm Action Thẻ Gia sư (TDD & UI/UX Pro Max)
+- Nâng cấp Token cơ sở: Cập nhật `--radius-control` từ 4px lên 8px cho các nút và control trong `tokens.css` và `tutor-match.css`.
+- Nâng cấp styling nút theo phong cách Neubrutalism-lite (Preply-inspired): Thêm viền mực 1.5px dứt khoát `border: 1.5px solid var(--ink)` và hiệu ứng tactile hard shadow 2px cho nút chính `.button--primary`, nút phụ `.button--secondary` có viền 1.5px.
+- Xây dựng cụm nút kép (Dual Action Stack) trên Thẻ Gia sư: Bổ sung cụm hành động gồm nút chính 'Xem hồ sơ' và nút phụ 'Nhắn tin' có khoảng cách gap 8px chuẩn touch ergonomics.
+- Đồng bộ Action Bar trên trang Chi tiết Gia sư: Chuẩn hóa nút Nhắn tin về `.button--secondary` và form gửi yêu cầu học thử về `.button--primary`.
+- Kiểm thử TDD toàn diện: Viết test mới `ButtonSystemLayoutTest.java`, bổ sung test trong `TeacherSearchPageControllerTest`, `TeacherProfilePageControllerTest` và `TeacherCard.test.tsx`. Toàn bộ 25 backend tests và 3 frontend tests PASS 100%.
+
+## 2026-10-29 — Tái cấu trúc Header & Hero Trang chủ theo phong cách Preply (TDD & UI/UX Pro Max)
+- Bổ sung liên kết 'Trở thành gia sư' vào Header điều hướng chính (public-nav), gom toàn bộ cụm menu khám phá sang trái bám sát Logo tutormatch (margin-right: auto).
+- Áp dụng nền vàng full-bleed tràn viền (100vw) bao trùm cả Header và Hero trên trang chủ, bỏ viền ngăn cách để tạo khối thống nhất liền mạch.
+- Tối ưu Hero Section: Bổ sung pill badge 'Tiến bộ cùng gia sư 1-1', thanh search pill trắng nổi bật và nút CTA pill đen tuyền.
+- Dựng cụm visual mockup mô phỏng buổi học video 1-1 (học viên, gia sư) và 2 thẻ thông số tiến độ (thời lượng thực hành 70/30 và đánh giá 4.9 sao).
+- Kiểm thử TDD: Thêm 2 test case mới trong HomePageControllerTest, toàn bộ 5/5 tests của HomePageControllerTest và 4/4 tests của StudentHeaderAndNavLayoutTest PASS.
+
+## 2026-10-29 — Đồng bộ Top Navigation Học viên theo chuẩn Gia sư (TDD & UI/UX Pro Max)
+- Chuyển đổi vị trí tag vai trò: Đưa badge Học viên từ cụm action bên phải sang đứng cạnh Logo Tutor Match bên trái (.student-brand-wrapper), áp dụng kiểu dáng pill capsule bo tròn 999px mềm mại (.student-role-badge) và chữ in hoa HỌC VIÊN đồng nhất tuyệt đối với badge GIA SƯ.
+- Bổ sung mục Tin nhắn: Thêm liên kết /student/messages có SVG icon tin nhắn 18x18px và nhãn 'Tin nhắn' vào bên phải trước mục Thông báo.
+- Hoàn thiện UI/UX và responsive: Class .student-header-action-item đồng bộ cho cả Tin nhắn và Thông báo, hover nền var(--surface-warm), focus ring 3px rõ nét, tự động ẩn nhãn chữ trên mobile (<= 640px) giữ touch target >= 44px.
+- Quy trình TDD backend: Thêm 2 test cases TDD (headerShouldPlaceStudentRoleBadgeNextToBrandOnTheLeft, headerShouldContainMessagesLinkWithIconAndLabel) trong StudentHeaderAndNavLayoutTest. Toàn bộ 24/24 tests liên quan PASS. Không thay đổi DB migration hay chạm Supabase.
+
+## 2026-10-29 — Tích hợp Spring Boot DevTools & Tắt Cache Template cho Hot Reload
+- Bổ sung spring-boot-devtools vào ackend/pom.xml (scope: runtime, optional: true) phục vụ dev workflow: tự động restart ứng dụng cực nhanh khi class thay đổi.
+- Cấu hình tắt cache Thymeleaf (spring.thymeleaf.cache: \) và static resources (period: \) trong ackend/src/main/resources/application.yml. Khi sửa HTML/CSS, chỉ cần lưu file và F5 trình duyệt để cập nhật ngay lập tức.
+- Chạy kiểm thử tự động xác minh: 9/9 tests của TeacherWorkspaceNavAndDashboardLayoutTest và TeacherDashboardPageControllerTest PASS. Không đổi DB migration hay kết nối Supabase.
+
+## 2026-10-29 — Bổ sung dữ liệu cho toàn bộ cặp gia sư–học sinh
+- Thêm fixture theo 120 cặp hiện có: gói, invoice/payment, 600 booking, báo cáo/review, bài tập/nộp bài, hội thoại và ledger khớp wallet; bổ sung profile phụ trợ còn thiếu cho các gia sư. Không thay đổi các user account.
+- Rà soát tĩnh theo migration V1–V41; chưa chạy SQL vì không có `psql` và Docker daemon không chạy. Không kết nối Supabase.
+
 ## 2026-10-29 — Đồng bộ viền thẻ Dashboard Học viên (Xóa viền vàng dạ quang)
 - Loại bỏ viền vàng dạ quang (`var(--brand-yellow)`) trên 2 thẻ "Buổi học tiếp theo" (`.overview-card--next`) và "Đang tìm gia sư?" (`.dashboard-next-step`) trong `student-dashboard.css`.
 - Đưa viền của cả 4 thẻ trên trang Tổng quan học viên (`/student`) về chuẩn mực thiết kế đồng bộ với hệ thống token `1px solid var(--border)`. Bổ sung hiệu ứng hover text-decoration cho link trong `.dashboard-next-step`.
@@ -1576,3 +1617,4 @@ efresh_tokens`, `teacher_documents`, `subject_proposals`, `subjects`, `pricing_p
 
 ## 2026-10-29 — Hoàn tác landing page editorial
 - Trả trang chủ về hero minh họa và cấu trúc trước thử nghiệm; bỏ menu mobile và truy vấn số đếm môn được thêm cho bản editorial. Route vẫn `Đang làm` vì bản khôi phục chưa được nghiệm thu lại; ảnh editorial còn lưu nhưng không còn là bằng chứng cho trang hiện tại.
+

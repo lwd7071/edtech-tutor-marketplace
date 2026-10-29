@@ -19,6 +19,7 @@ interface TeacherCardProps {
 }
 
 export default function TeacherCard({
+  id,
   name,
   avatarUrl,
   isVerified = false,
@@ -93,7 +94,10 @@ export default function TeacherCard({
             <small>Chưa mở gói học</small>
           )}
         </div>
-        <span className="tm-tutor-action">Xem hồ sơ</span>
+        <div className="tm-tutor-actions">
+          <a className="tm-btn-primary tm-btn-sm" href={`/teachers/${id}`}>Xem hồ sơ</a>
+          <a className="tm-btn-secondary tm-btn-sm" href={`/teachers/${id}#message`}>Nhắn tin</a>
+        </div>
       </div>
     </article>
   );

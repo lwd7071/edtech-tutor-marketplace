@@ -66,7 +66,7 @@
     <form method="post" action="/student/messages/open">
       <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
       <input type="hidden" name="teacherId" th:value="${messageTeacherId}">
-      <button type="submit">Nhắn tin với gia sư</button>
+      <button class="button button--secondary" type="submit">Nhắn tin với gia sư</button>
     </form>
     <p>Chỉ mở được cuộc trò chuyện khi bạn đã có quan hệ học tập hợp lệ với gia sư.</p>
   </div>
@@ -177,7 +177,7 @@
             <label for="trial-note">Mục tiêu hoặc lời nhắn <span>(không bắt buộc)</span></label>
             <textarea id="trial-note" name="note" rows="3" maxlength="1000" th:text="${trialFormNote}"></textarea>
           </div>
-          <button class="profile-trial-submit" type="submit">Gửi yêu cầu học thử</button>
+          <button class="button button--primary button--wide profile-trial-submit" type="submit">Gửi yêu cầu học thử</button>
           <p class="profile-trial-hint">Thời gian gửi là mong muốn ban đầu, chưa phải lịch học đã xác nhận.</p>
         </form>
         <p class="profile-trial-state" th:if="${studentCanRequestTrial and !trialSubjectsUnavailable and #lists.isEmpty(trialSubjects)}">Gia sư chưa có môn đang dạy để nhận yêu cầu học thử.</p>

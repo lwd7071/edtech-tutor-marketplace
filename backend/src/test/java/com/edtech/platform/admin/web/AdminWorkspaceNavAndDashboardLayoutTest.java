@@ -132,4 +132,20 @@ class AdminWorkspaceNavAndDashboardLayoutTest {
                 .andExpect(content().string(containsString("/admin/payouts")))
                 .andExpect(content().string(containsString("/admin/refunds")));
     }
+
+    @Test
+    @DisplayName("Logo Tutor Match ở Header admin phải dẫn về trang chủ /")
+    void brandLogoShouldLinkToHomepage() throws Exception {
+        String html = mockMvc.perform(get("/admin/dashboard"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        int brandStart = html.indexOf("admin-brand-wrapper");
+        org.junit.jupiter.api.Assertions.assertTrue(brandStart >= 0, "Phải tìm thấy thẻ admin-brand-wrapper");
+        int brandEnd = html.indexOf("</a>", brandStart);
+        String brandContent = html.substring(brandStart, brandEnd);
+
+        org.junit.jupiter.api.Assertions.assertTrue(brandContent.contains("href=\"/\""),
+                "Logo admin phải có href=\"/\"");
+    }
 }

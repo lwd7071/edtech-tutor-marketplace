@@ -113,6 +113,24 @@ class TeacherSearchPageControllerTest {
     }
 
     @Test
+    void teacherCardShouldRenderDualActionButtonStack() throws Exception {
+        TeacherCard teacher = new TeacherCard(
+                UUID.randomUUID(), "Nguyễn Minh An", null, "Dạy Toán theo mục tiêu của học viên.",
+                5, true, true, false, List.of(), 350000, 4.8, 4.7, 12, 3, "Đà Nẵng", "Hải Châu");
+        when(teacherMarketplaceService.searchTeachers(any())).thenReturn(new PageImpl<>(List.of(teacher)));
+        when(subjectFacade.getActiveSubjects()).thenReturn(List.of());
+        when(locationService.getProvinces()).thenReturn(List.of());
+
+        mockMvc.perform(get("/teachers"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("teacher-card__actions")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("button button--primary")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Xem hồ sơ")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("button button--secondary")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Nhắn tin")));
+    }
+
+    @Test
     void showsPendingPriceWhenTeacherHasNoActivePackage() throws Exception {
         TeacherCard teacher = new TeacherCard(
                 UUID.randomUUID(), "Nguyễn Minh An", null, "Dạy Toán theo mục tiêu của học viên.",

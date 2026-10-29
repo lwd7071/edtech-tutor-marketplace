@@ -154,4 +154,20 @@ class TeacherWorkspaceNavAndDashboardLayoutTest {
                 .andExpect(content().string(containsString("teacher-overview-side-row")))
                 .andExpect(content().string(matchesPattern("(?s).*teacher-overview-side-row.*Bài tập có bài nộp.*Thu nhập.*")));
     }
+
+    @Test
+    @DisplayName("Logo Tutor Match ở Header gia sư phải dẫn về trang chủ /")
+    void brandLogoShouldLinkToHomepage() throws Exception {
+        String html = mockMvc.perform(get("/teacher"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        int brandStart = html.indexOf("teacher-brand-wrapper");
+        org.junit.jupiter.api.Assertions.assertTrue(brandStart >= 0, "Phải tìm thấy thẻ teacher-brand-wrapper");
+        int brandEnd = html.indexOf("</a>", brandStart);
+        String brandContent = html.substring(brandStart, brandEnd);
+
+        org.junit.jupiter.api.Assertions.assertTrue(brandContent.contains("href=\"/\""),
+                "Logo gia sư phải có href=\"/\"");
+    }
 }

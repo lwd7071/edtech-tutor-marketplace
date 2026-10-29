@@ -1,5 +1,84 @@
 # Trạng thái dự án
 
+## Minh họa 2D Nét đen & Tái cấu trúc Header/Hero Trang chủ (TDD & UI/UX Pro Max) — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:**
+  - Tái cấu trúc toàn diện khu vực Header & Hero trang chủ (`/`) theo phong cách Neo-Brutalist & Editorial Preply:
+    - **Header điều hướng gom trái:** Bổ sung liên kết `/become-a-tutor` ("Trở thành gia sư") vào `public-nav` trong `fragments/public-header.html`, gom cụm menu khám phá (`Tìm gia sư`, `Trở thành gia sư`, `Môn học`, `Cách hoạt động`) bám sát Logo `tutormatch` bên trái thông qua `margin-right: auto;` trong `public.css`. Cụm hành động người dùng (`Đăng nhập`, `Tạo tài khoản`) đẩy sang góc phải tinh tế.
+    - **Nền vàng Full-Bleed tràn viền:** Áp dụng màu nền `--brand-yellow` (#ffd43b) cho cả Header và Hero banner trên trang chủ (`.home-body .site-header`, `.home-hero`), xóa viền chia cắt để hai phần hòa làm một khối duy nhất 100vw không hở mép.
+    - **Hero Copy & Search Pill:** Bổ sung pill badge `★ Tiến bộ cùng gia sư 1-1`, tiêu đề đậm nét tương phản cao (~12:1 WCAG AAA), thanh tìm kiếm dạng pill màu trắng tinh tế viền đen và nút CTA pill đen tuyền bo góc `9999px`.
+    - **Minh họa 2D nét đen Concept 1 (Cửa sổ lớp học 1-1 & Doodle):**
+      - Bổ sung SVG khung cửa sổ lớp học 2D (`.home-hero__window-frame`) viền đen mực 2.5px với 3 nút điều khiển retro và thanh tiêu đề làm bệ đỡ cho cụm thẻ học viên.
+      - Đường nối tương tác uốn cong nét đứt (`.home-hero__doodle-connector`) từ gia sư sang học viên kèm nhãn viết tay bo góc pill `.home-hero__connector-tag` (*"Trao đổi 1-1"*).
+      - Các chi tiết vẽ tay doodle nét đen: Sao lấp lánh 4 cánh (`.home-hero__doodle-sparkle`) cạnh thẻ đánh giá 4.9/5 và vòng cung tiến độ (`.home-hero__doodle-growth`) cạnh thẻ thời lượng thực hành.
+      - Responsive: Tự động co giãn theo viewBox trên desktop/tablet và ẩn mượt mà các nét trang trí trên mobile <= 640px để tránh chật chội.
+- **Bằng chứng kiểm thử backend:**
+  - Bổ sung 3 test cases TDD mới trong `HomePageControllerTest`: `rendersHeaderNavigationWithBecomeATutorAndExploreLinks`, `rendersPreplyStyleHeroWithBadgeAndLearningProgressVisual`, và `rendersHeroWith2DWindowFrameAndConnectingDoodles` theo chu trình RED -> GREEN.
+  - Chạy full suite `HomePageControllerTest` PASS **6/6**; regression test `StudentHeaderAndNavLayoutTest` PASS **4/4**.
+- **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không đụng vào `.env.cloud`, Supabase hay port 8080.
+
+## Đồng bộ Logo Header trỏ về Trang chủ cho cả 3 Role (TDD) — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:**
+  - Đồng bộ liên kết của Logo thương hiệu (Tutor Match / tutormatch) ở thanh Header trên cùng của cả 3 phân hệ Học viên, Gia sư và Quản trị viên sang trỏ về trang chủ **`href="/"`** kèm thuộc tính trợ năng **`aria-label="Tutor Match — Trang chủ"`**:
+    - Học viên (`fragments/student-header.html`): `<a class="brand" href="/" aria-label="Tutor Match — Trang chủ">`.
+    - Gia sư (`fragments/teacher-messages-header.html`): `<a class="teacher-messages-brand" href="/" aria-label="Tutor Match — Trang chủ">`.
+    - Quản trị viên (`fragments/admin-workspace-header.html`): `<a class="admin-workspace-brand" href="/" aria-label="Tutor Match — Trang chủ">`.
+  - Người dùng ở bất kỳ vai trò nào khi bấm vào Logo thương hiệu đều sẽ quay về trang chủ homepage (marketplace), và khi cần quay lại dashboard làm việc cá nhân có thể bấm tab 'Tổng quan' ở thanh điều hướng phụ bên dưới.
+- **Bằng chứng kiểm thử backend:**
+  - Bổ sung 3 test cases TDD mới `brandLogoShouldLinkToHomepage` trong `StudentHeaderAndNavLayoutTest`, `TeacherWorkspaceNavAndDashboardLayoutTest` và `AdminWorkspaceNavAndDashboardLayoutTest` xác minh cả 3 logo đều có liên kết `href="/"`.
+  - Chạy full suites layout cho cả 3 role PASS **19/19**.
+- **Ranh giới an toàn:** Không đổi DB schema, migration diff rỗng. Không đụng vào `.env.cloud`, Supabase hay port 8080.
+
+## Nâng cấp hệ thống Button Neubrutalism-lite & Cụm Action Thẻ Gia sư (TDD & UI/UX Pro Max) — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:**
+  - Nâng cấp bộ nút trong toàn hệ thống Tutor Match theo phong cách Neubrutalism-lite lấy cảm hứng từ Preply:
+    - **Nâng cấp Token cơ sở (`tokens.css`, `tutor-match.css`):** Chuyển `--radius-control` từ 4px cũ sang `8px` hiện đại, giúp bo góc các nút và input có độ đầm, mềm mại và chắc chắn.
+    - **Định hình viền sắc nét & Tactile Shadow (`public.css`, `tutor-match.css`):** Áp dụng viền mực dứt khoát `border: 1.5px solid var(--ink)` cho nút chính `.button--primary` (vàng `#FFD43B` viền đen mực `#171714`), bổ sung hiệu ứng tactile hard shadow `box-shadow: 0 2px 0 var(--ink)` khi hover và nhấc nhẹ `transform: translateY(-1px)`. Nút phụ `.button--secondary` mang nền trắng hoặc surface với viền `1.5px solid var(--border)` / `var(--ink)`.
+    - **Cụm nút kép (Dual Action Stack) trên Thẻ Gia sư (`search.html`, `TeacherCard.tsx`, `teachers.css`):** Bổ sung cụm hành động kép `.teacher-card__actions` (gap 8px chuẩn touch) gồm nút chính "Xem hồ sơ" (`.button--primary`) và nút phụ "Nhắn tin" (`.button--secondary`) giúp học sinh dễ dàng chuyển đổi nhanh ngay tại trang tìm kiếm.
+    - **Đồng bộ Action Bar trên Trang Chi tiết Gia sư (`profile.html`, `teachers-profile.css`):** Chuẩn hóa nút "Nhắn tin với gia sư" về class `.button .button--secondary` và nút "Gửi yêu cầu học thử" về class `.button .button--primary .button--wide` đạt chuẩn chiều cao touch `44px` và phân cấp thị giác rõ ràng với nút "Chọn gói học".
+- **Bằng chứng kiểm thử backend & frontend:**
+  - Tạo mới test suite TDD `ButtonSystemLayoutTest.java` (3 tests) xác minh tokens và quy tắc CSS viền/shadow.
+  - Bổ sung test case TDD `teacherCardShouldRenderDualActionButtonStack` trong `TeacherSearchPageControllerTest.java` và kiểm thử class nút phụ trong `TeacherProfilePageControllerTest.java`.
+  - Frontend: Bổ sung test kiểm tra cụm Dual CTA trong `TeacherCard.test.tsx`, chạy Jest PASS **3/3**, `typecheck` PASS **0 lỗi**.
+  - Backend: Chạy regression suite `ButtonSystemLayoutTest`, `HomePageControllerTest`, `TeacherSearchPageControllerTest`, `TeacherProfilePageControllerTest` PASS **25/25**.
+- **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không đụng vào `.env.cloud`, Supabase hay port 8080.
+
+## Tái cấu trúc Header & Hero Trang chủ theo phong cách Preply (TDD & UI/UX Pro Max) — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:**
+  - Tái cấu trúc khu vực trên cùng của trang chủ (`/`):
+    - **Header điều hướng gom trái:** Bổ sung liên kết `/become-a-tutor` ("Trở thành gia sư") vào `public-nav` trong `fragments/public-header.html`, neo cụm menu khám phá (`Tìm gia sư`, `Trở thành gia sư`, `Môn học`, `Cách hoạt động`) bám sát Logo `tutormatch` bên trái thông qua `margin-right: auto;` trong `public.css`. Cụm hành động người dùng (`Đăng nhập`, `Tạo tài khoản`) đẩy sang góc phải tinh tế.
+    - **Nền vàng Full-Bleed tràn viền:** Áp dụng màu nền `--brand-yellow` (#ffd43b) cho cả Header và Hero banner trên trang chủ (`.home-body .site-header`, `.home-hero`), xóa viền chia cắt để hai phần hòa làm một khối duy nhất 100vw không hở mép. Giữ nguyên nền sáng kem thanh lịch ở các trang con (`/teachers`, `/subjects`) để bảo toàn tính độc lập.
+    - **Hero Copy & Search Pill:** Bổ sung pill badge `★ Tiến bộ cùng gia sư 1-1`, tiêu đề đậm nét độ tương phản cao (~12:1 WCAG AAA), thanh tìm kiếm dạng pill màu trắng tinh tế viền đen và nút CTA pill đen tuyền bo góc `9999px`.
+    - **Cụm Visual Mockup buổi học 1-1:** Thay thế SVG tĩnh bằng cụm thẻ mô phỏng cuộc gọi video học trực tuyến 1 kèm 1 (ảnh học viên + gia sư) cùng 2 floating stat cards (Thời lượng thực hành: Học viên 70% vs Gia sư 30%, Đánh giá ★ 4.9/5 với hơn 1.200 đánh giá).
+    - **Responsive:** Co giãn linh hoạt 2 cột trên desktop (>900px), 1 cột cân đối trên tablet và mobile, form tìm kiếm tự động chuyển thành hàng dọc mượt mà.
+- **Bằng chứng kiểm thử backend:**
+  - Viết 2 test case TDD mới trong `HomePageControllerTest`: `rendersHeaderNavigationWithBecomeATutorAndExploreLinks` và `rendersPreplyStyleHeroWithBadgeAndLearningProgressVisual` theo chu trình RED -> GREEN.
+  - Chạy full suite `HomePageControllerTest` PASS **5/5**; regression test `StudentHeaderAndNavLayoutTest` PASS **4/4**.
+- **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không đụng vào `.env.cloud`, Supabase hay port 8080.
+
+## Đồng bộ Top Navigation Học viên theo chuẩn Gia sư (TDD & UI/UX Pro Max) — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:**
+  - Đồng bộ thanh Top Header của Học viên (fragments/student-header.html) theo đúng chuẩn thiết kế của Gia sư:
+    - **Chuyển tag vai trò sang trái:** Đưa badge Học viên sang đứng cạnh Logo thương hiệu ở bên trái trong container flex .student-brand-wrapper. Áp dụng kiểu dáng pill badge bo tròn 999px mềm mại (.student-role-badge), nền ấm nhẹ var(--surface-warm), viền mỏng 1px solid var(--border) và chữ in hoa HỌC VIÊN (font-size: 0.75rem, font-weight: 700, letter-spacing: 0.04em), đồng nhất 100% với badge GIA SƯ. Gỡ bỏ chữ thô ở cụm hành động bên phải.
+    - **Bổ sung mục Tin nhắn:** Thêm liên kết /student/messages có SVG icon tin nhắn 18x18px và nhãn 'Tin nhắn' vào bên phải trước 'Thông báo' (thứ tự: Tin nhắn -> Thông báo -> Đăng xuất).
+    - **Tối ưu Mobile (<= 640px) & A11y:** Tự động ẩn nhãn chữ trên màn hình hẹp (span { display: none; }), giữ kích thước touch target đạt >= 44px, không vỡ hoặc tràn ngang layout; bàn phím có outline :focus-visible 3px rõ nét.
+- **Bằng chứng kiểm thử backend:**
+  - Viết 2 test case TDD mới trong StudentHeaderAndNavLayoutTest: headerShouldPlaceStudentRoleBadgeNextToBrandOnTheLeft và headerShouldContainMessagesLinkWithIconAndLabel theo đúng chu trình RED -> GREEN.
+  - Chạy full suites StudentHeaderAndNavLayoutTest, StudentDashboardPageControllerTest, StudentMessagesPageControllerTest, NotificationPageControllerTest, TeacherWorkspaceNavAndDashboardLayoutTest: PASS 24/24.
+- **Ranh giới an toàn:** Không đổi DB schema, migration diff rỗng. Không đụng vào .env.cloud, Supabase hay port 8080.
+
+## Tích hợp Spring Boot DevTools & Tắt Cache Template cho Hot Reload — 2026-10-29
+- **Cấu hình môi trường phát triển nhanh:**
+  - Thêm dependency spring-boot-devtools (optional: true, scope: runtime) vào ackend/pom.xml. Tự động phát hiện class thay đổi và restart context nhanh trong 1-2 giây mà không cần tắt/chạy lại mvn spring-boot:run.
+  - Cấu hình tắt cache Thymeleaf (spring.thymeleaf.cache: \) và tài nguyên tĩnh (spring.web.resources.cache.period: \) trong ackend/src/main/resources/application.yml. Giúp mọi chỉnh sửa HTML và CSS phản ánh ngay lập tức khi F5 trình duyệt.
+- **Bằng chứng kiểm thử backend:** Biên dịch và chạy test suites TeacherWorkspaceNavAndDashboardLayoutTest, TeacherDashboardPageControllerTest với DevTools trên classpath: PASS **9/9**.
+- **Ranh giới an toàn:** Không đổi DB schema, migration diff rỗng. Không đụng vào .env.cloud, Supabase hay port 8080.
+
+## Mở rộng seed theo mọi cặp học sinh–gia sư — 2026-10-29
+- Bổ sung dữ liệu theo đủ **120 cặp** (20 gia sư × 6 học sinh): mỗi cặp có gói 8 buổi, 3 buổi hoàn tất và 2 buổi sắp tới, báo cáo, review, bài tập/nộp bài, hội thoại và giao dịch thanh toán. Tổng phần tạo theo lô gồm 120 gói/invoice, 600 booking, 360 report/review, 120 assignment/submission và 240 message; bổ sung token, giấy tờ, tài khoản ngân hàng và lịch rảnh còn thiếu cho gia sư.
+- Cân lại wallet/ledger cho tiền gói, buổi đã release, payout đang giữ và settlement escrow; lịch generated được xếp ở ngày khác nhau để không chồng giữa các cặp. Các user account (ID, email, hash, role, status) giữ nguyên; profile gia sư được duyệt/hiển thị để các cặp có thể mua gói.
+- Đã rà cột, enum, uniqueness và invariant theo migration V1–V41 cùng service settlement/payment hiện tại; không sửa migration. Chưa chạy seed trên PostgreSQL: không có `psql` và Docker daemon không chạy trong phiên này. Không kết nối hoặc mutate Supabase; SQL runtime constraint chưa được xác nhận.
+- Chỉ dùng dữ liệu thanh toán/giấy tờ demo và URL `example.invalid`. Seed vẫn xóa dữ liệu nghiệp vụ hiện hữu, nên chỉ chạy trên database test.
+
 ## Đồng bộ viền thẻ Dashboard Học viên (Xóa viền vàng dạ quang) — 2026-10-29
 - **Trục nghiệm thu giao diện & TDD:**
   - Khắc phục hiện tượng 2 thẻ "Buổi học tiếp theo" (`.overview-card--next`) và "Đang tìm gia sư?" (`.dashboard-next-step`) trên trang Tổng quan học viên (`/student`) bị áp viền vàng dạ quang (`border-color: var(--brand-yellow);` / `border: 1px solid var(--brand-yellow);`), gây chói mắt và mất đồng bộ với các thẻ còn lại trong Bento Grid.

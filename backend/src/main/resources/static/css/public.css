@@ -138,7 +138,8 @@ a:hover {
 
 .public-nav {
   align-self: stretch;
-  gap: 30px;
+  gap: 28px;
+  margin-right: auto;
 }
 
 .public-nav__link {
@@ -213,7 +214,7 @@ details[open] > summary .summary-chevron {
   justify-content: center;
   min-height: 44px;
   padding: 10px 18px;
-  border: 1px solid transparent;
+  border: 1.5px solid transparent;
   border-radius: var(--radius-control);
   font-size: 14px;
   font-weight: 700;
@@ -221,32 +222,39 @@ details[open] > summary .summary-chevron {
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 140ms ease, border-color 140ms ease, transform 140ms ease;
+  transition: background-color 140ms ease, border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
 }
 
 .button:hover {
   transform: translateY(-1px);
 }
 
+.button:active {
+  transform: translateY(1px);
+  box-shadow: none !important;
+}
+
 .button--primary {
   color: var(--ink);
   background: var(--brand-yellow);
-  border-color: var(--ink);
+  border: 1.5px solid var(--ink);
 }
 
 .button--primary:hover {
   background: #ffdf68;
+  box-shadow: 0 2px 0 var(--ink);
 }
 
 .button--secondary {
   color: var(--ink);
   background: var(--surface);
-  border-color: var(--border);
+  border: 1.5px solid var(--border);
 }
 
 .button--secondary:hover {
   background: var(--surface-warm);
   border-color: var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
 }
 
 .button--small {

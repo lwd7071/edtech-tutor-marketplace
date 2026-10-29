@@ -245,6 +245,10 @@
                 </span>
                 <span class="teacher-card__price" th:unless="${teacher.startingPriceVnd > 0}">Học phí đang cập nhật</span>
               </div>
+              <div class="teacher-card__actions">
+                <a class="button button--primary button--small" th:href="@{/teachers/{id}(id=${teacher.id})}">Xem hồ sơ</a>
+                <a class="button button--secondary button--small" th:href="@{/teachers/{id}#message}">Nhắn tin</a>
+              </div>
             </article>
           </div>
 

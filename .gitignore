@@ -71,3 +71,11 @@ chay-backend.bat
 /backups/*
 !/backups/.gitkeep
 frontend/.next-*/
+
+# Local test artifacts, playbooks and previews
+.playwright-cli/
+frontend/.playwright-cli/
+previews/
+acceptance-*/
+.impeccable/
+

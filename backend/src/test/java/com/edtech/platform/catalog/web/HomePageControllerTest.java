@@ -56,6 +56,65 @@ class HomePageControllerTest {
     }
 
     @Test
+    void rendersHeaderNavigationWithBecomeATutorAndExploreLinks() throws Exception {
+        when(subjectFacade.getActiveSubjects()).thenReturn(List.of());
+        when(teacherMarketplaceService.searchTeachers(any())).thenReturn(new PageImpl<>(List.of()));
+
+        String html = mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        int navStart = html.indexOf("<nav class=\"public-nav\"");
+        org.junit.jupiter.api.Assertions.assertTrue(navStart >= 0, "Phải tìm thấy thẻ <nav class=\"public-nav\"");
+        int navEnd = html.indexOf("</nav>", navStart);
+        org.junit.jupiter.api.Assertions.assertTrue(navEnd > navStart, "Phải tìm thấy thẻ đóng </nav>");
+        String navContent = html.substring(navStart, navEnd);
+
+        org.junit.jupiter.api.Assertions.assertTrue(navContent.contains("href=\"/become-a-tutor\""),
+                "Thanh public-nav phải chứa liên kết /become-a-tutor");
+        org.junit.jupiter.api.Assertions.assertTrue(navContent.contains("Trở thành gia sư"),
+                "Thanh public-nav phải chứa nhãn Trở thành gia sư");
+        org.junit.jupiter.api.Assertions.assertTrue(navContent.contains("href=\"/teachers\""),
+                "Thanh public-nav phải chứa liên kết /teachers");
+        org.junit.jupiter.api.Assertions.assertTrue(navContent.contains("Tìm gia sư"),
+                "Thanh public-nav phải chứa nhãn Tìm gia sư");
+    }
+
+    @Test
+    void rendersPreplyStyleHeroWithBadgeAndLearningProgressVisual() throws Exception {
+        when(subjectFacade.getActiveSubjects()).thenReturn(List.of());
+        when(teacherMarketplaceService.searchTeachers(any())).thenReturn(new PageImpl<>(List.of()));
+
+        String html = mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        org.junit.jupiter.api.Assertions.assertTrue(html.contains("home-hero__badge"),
+                "Hero phải chứa pill badge định vị giá trị 1-1");
+        org.junit.jupiter.api.Assertions.assertTrue(html.contains("home-hero__mockup"),
+                "Hero phải chứa mockup visual mô phỏng buổi học 1-1");
+        org.junit.jupiter.api.Assertions.assertTrue(html.contains("home-hero__stat-card"),
+                "Hero phải chứa thẻ thông số tiến độ học tập");
+    }
+
+    @Test
+    void rendersHeroWith2DWindowFrameAndConnectingDoodles() throws Exception {
+        when(subjectFacade.getActiveSubjects()).thenReturn(List.of());
+        when(teacherMarketplaceService.searchTeachers(any())).thenReturn(new PageImpl<>(List.of()));
+
+        String html = mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        org.junit.jupiter.api.Assertions.assertTrue(html.contains("home-hero__window-frame"),
+                "Hero mockup phải chứa khung cửa sổ 2D SVG");
+        org.junit.jupiter.api.Assertions.assertTrue(html.contains("home-hero__doodle-connector"),
+                "Hero mockup phải chứa đường nối tương tác 2D");
+        org.junit.jupiter.api.Assertions.assertTrue(html.contains("home-hero__doodle-sparkle"),
+                "Hero mockup phải chứa doodle sao lấp lánh");
+    }
+
+    @Test
     void showsPendingPriceWhenFeaturedTeacherHasNoActivePackage() throws Exception {
         TeacherCard teacher = new TeacherCard(UUID.randomUUID(), "Nguyễn Minh An", null,
                 "Dạy Toán theo mục tiêu của học viên.", 5, true, true, false,

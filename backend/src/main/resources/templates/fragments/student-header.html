@@ -1,24 +1,30 @@
 <header class="site-header student-site-header" th:fragment="header">
   <a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
   <div class="site-header__inner">
-    <a class="brand" href="/student" aria-label="Tutor Match — Tổng quan học viên">
-      <span class="brand__mark" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M4 8.5c4.7-1.2 8.6-.3 12 2.4 3.4-2.7 7.3-3.6 12-2.4v15c-4.7-1.2-8.6-.3-12 2.4-3.4-2.7-7.3-3.6-12-2.4z"/><path d="M16 11v14"/></svg></span>
-      <span class="brand__name">tutor<span>match</span></span>
-    </a>
+    <div class="student-brand-wrapper">
+      <a class="brand" href="/" aria-label="Tutor Match — Trang chủ">
+        <span class="brand__mark" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M4 8.5c4.7-1.2 8.6-.3 12 2.4 3.4-2.7 7.3-3.6 12-2.4v15c-4.7-1.2-8.6-.3-12 2.4-3.4-2.7-7.3-3.6-12-2.4z"/><path d="M16 11v14"/></svg></span>
+        <span class="brand__name">tutor<span>match</span></span>
+      </a>
+      <span class="student-role-badge">Học viên</span>
+    </div>
     <nav class="public-nav" aria-label="Điều hướng chính">
       <a class="public-nav__link" href="/teachers">Tìm gia sư</a>
       <a class="public-nav__link" href="/subjects">Môn học</a>
       <a class="public-nav__link" href="/support">Hỗ trợ</a>
     </nav>
     <div class="student-site-header__actions">
-      <a class="student-header-notification-link" href="/student/notifications" title="Thông báo" aria-label="Thông báo">
+      <a class="student-header-action-item" href="/student/messages" title="Tin nhắn" aria-label="Tin nhắn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Tin nhắn</span>
+      </a>
+      <a class="student-header-action-item student-header-notification-link" href="/student/notifications" title="Thông báo" aria-label="Thông báo">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
         <span>Thông báo</span>
       </a>
-      <span class="student-role-label">Học viên</span>
       <form method="post" action="/auth/logout">
         <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <button type="submit">Đăng xuất</button>

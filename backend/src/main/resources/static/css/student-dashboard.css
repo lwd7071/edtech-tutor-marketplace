@@ -4,12 +4,14 @@
 .student-site-header__actions form { margin: 0; }
 .student-site-header__actions button { min-height: 42px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-control); background: transparent; color: var(--ink); font-weight: 600; cursor: pointer; }
 .student-site-header__actions button:hover { background: var(--surface-warm); }
-.student-header-notification-link { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 10px; border-radius: var(--radius-control); color: var(--ink); font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: background 150ms ease, color 150ms ease; }
-.student-header-notification-link:hover { background: var(--surface-warm); }
-.student-header-notification-link svg { flex-shrink: 0; color: var(--muted-strong); }
-.student-header-notification-link:hover svg { color: var(--ink); }
-.student-header-notification-link:focus-visible { outline: 3px solid var(--focus, #155eef); outline-offset: 3px; }
+.student-header-action-item, .student-header-notification-link { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 10px; border-radius: var(--radius-control); color: var(--ink); font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: background 150ms ease, color 150ms ease; }
+.student-header-action-item:hover, .student-header-notification-link:hover { background: var(--surface-warm); }
+.student-header-action-item svg, .student-header-notification-link svg { flex-shrink: 0; color: var(--muted-strong); }
+.student-header-action-item:hover svg, .student-header-notification-link:hover svg { color: var(--ink); }
+.student-header-action-item:focus-visible, .student-header-notification-link:focus-visible { outline: 3px solid var(--focus, #155eef); outline-offset: 3px; }
 .student-role-label { color: var(--muted-strong); font-size: 14px; font-weight: 600; }
+.student-brand-wrapper { display: flex; align-items: center; gap: 10px; }
+.student-role-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; background: var(--surface-warm, #f7f3e8); border: 1px solid var(--border); color: var(--muted-strong); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
 .workspace-nav { display: flex; gap: 8px; overflow-x: auto; border-bottom: 1px solid var(--border); scrollbar-width: thin; }
 .workspace-nav a { flex: 0 0 auto; padding: 13px 16px; color: var(--muted-strong); text-decoration: none; border-bottom: 3px solid transparent; }
 .workspace-nav a:hover { color: var(--ink); }
@@ -54,8 +56,8 @@
   .student-site-header__actions { margin-left: auto; gap: 8px; }
   .student-site-header__actions button { min-height: 44px; }
   .student-role-label { display: none; }
-  .student-header-notification-link span { display: none; }
-  .student-header-notification-link { padding: 0 8px; min-height: 44px; }
+  .student-header-action-item span, .student-header-notification-link span { display: none; }
+  .student-header-action-item, .student-header-notification-link { padding: 0 8px; min-height: 44px; }
   .workspace-nav { margin-inline: -16px; padding-inline: 16px; }
   .workspace-nav a { padding-inline: 12px; }
   .dashboard-heading { align-items: stretch; flex-direction: column; padding: 34px 0 22px; gap: 18px; }

@@ -68,6 +68,52 @@ class StudentHeaderAndNavLayoutTest {
     }
 
     @Test
+    @DisplayName("Tag vai trò Học viên phải nằm ở bên trái cạnh Brand logo và không còn ở cụm hành động bên phải")
+    void headerShouldPlaceStudentRoleBadgeNextToBrandOnTheLeft() throws Exception {
+        String html = mockMvc.perform(get("/student"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("student-brand-wrapper")))
+                .andExpect(content().string(containsString("student-role-badge")))
+                .andExpect(content().string(containsString("Học viên")))
+                .andReturn().getResponse().getContentAsString();
+
+        int actionsStart = html.indexOf("student-site-header__actions");
+        org.junit.jupiter.api.Assertions.assertTrue(actionsStart >= 0, "Phải tìm thấy thẻ student-site-header__actions");
+        int actionsEnd = html.indexOf("</header>", actionsStart);
+        String actionsContent = html.substring(actionsStart, actionsEnd);
+
+        org.junit.jupiter.api.Assertions.assertFalse(actionsContent.contains("student-role-label"),
+                "Cụm action bên phải không được còn class student-role-label");
+    }
+
+    @Test
+    @DisplayName("Header của học viên phải có liên kết Tin nhắn dẫn tới /student/messages kèm SVG icon và nhãn")
+    void headerShouldContainMessagesLinkWithIconAndLabel() throws Exception {
+        mockMvc.perform(get("/student"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("href=\"/student/messages\"")))
+                .andExpect(content().string(containsString("Tin nhắn")))
+                .andExpect(content().string(containsString("student-header-action-item")))
+                .andExpect(content().string(containsString("M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z")));
+    }
+
+    @Test
+    @DisplayName("Logo Tutor Match ở Header học viên phải dẫn về trang chủ /")
+    void brandLogoShouldLinkToHomepage() throws Exception {
+        String html = mockMvc.perform(get("/student"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        int brandStart = html.indexOf("student-brand-wrapper");
+        org.junit.jupiter.api.Assertions.assertTrue(brandStart >= 0, "Phải tìm thấy thẻ student-brand-wrapper");
+        int brandEnd = html.indexOf("</a>", brandStart);
+        String brandContent = html.substring(brandStart, brandEnd);
+
+        org.junit.jupiter.api.Assertions.assertTrue(brandContent.contains("href=\"/\""),
+                "Logo học viên phải có href=\"/\"");
+    }
+
+    @Test
     @DisplayName("Thanh workspace-nav bên dưới chỉ chứa 7 tab học tập thuần túy và không còn tab Thông báo")
     void workspaceNavShouldContainOnlySevenLearningTabs() throws Exception {
         String html = mockMvc.perform(get("/student"))

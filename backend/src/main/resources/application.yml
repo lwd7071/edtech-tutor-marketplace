@@ -46,6 +46,14 @@ spring:
     baseline-on-migrate: false
     locations: classpath:db/migration
 
+  # --- UI & Template Hot Reload ---
+  thymeleaf:
+    cache: ${SPRING_THYMELEAF_CACHE:false}
+  web:
+    resources:
+      cache:
+        period: ${SPRING_WEB_RESOURCES_CACHE_PERIOD:0}
+
 server:
   port: ${PORT:8080}
   address: ${SERVER_ADDRESS:0.0.0.0}

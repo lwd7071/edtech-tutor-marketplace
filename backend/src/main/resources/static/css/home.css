@@ -1,33 +1,451 @@
 .home-page { overflow: hidden; }
-.home-hero { position: relative; isolation: isolate; background: var(--surface-warm); }
-.home-hero__inner { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr); gap: 48px; align-items: center; width: min(var(--content-width), calc(100% - 48px)); min-height: 510px; margin: auto; padding: 72px 0 84px; }
-.home-hero__copy { position: relative; z-index: 1; max-width: 630px; }
-.home-hero h1 { margin: 0; font: 700 clamp(42px, 4.6vw, 60px)/1.08 var(--font-heading); letter-spacing: -.035em; }
-.home-hero h1 span { display: inline; padding: 0 5px; background: var(--brand-yellow); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-@media (min-width: 641px) { .home-hero h1 span { white-space: nowrap; } }
-.home-hero__lead { max-width: 510px; margin: 24px 0 28px; color: var(--muted-strong); font-size: 18px; line-height: 1.65; }
-.home-search { max-width: 560px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-panel); }
-.home-search label { display: block; margin-bottom: 9px; font-size: 13px; font-weight: 700; }
-.home-search__row { display: flex; gap: 10px; }
-.home-search input { flex: 1 1 auto; min-width: 0; min-height: 54px; padding: 12px 15px; color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-control); }
-.home-search input::placeholder { color: var(--muted-strong); opacity: 1; }
-.home-button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 54px; padding: 12px 20px; color: var(--ink); background: var(--brand-yellow); border: 1px solid var(--ink); border-radius: var(--radius-control); font: 700 15px/1.2 var(--font-body); text-decoration: none; cursor: pointer; }
-.home-button:hover { background: #ffdf68; }
-.home-hero__browse { margin: 16px 0 0; color: var(--muted-strong); font-size: 14px; }
-.home-hero__browse a { color: var(--ink); font-weight: 700; text-underline-offset: 3px; }
-.home-hero__art { position: relative; display: grid; min-height: 390px; place-items: center; }
-.home-hero__sun { position: absolute; width: min(80%, 365px); aspect-ratio: 1; background: var(--brand-yellow); border: 1px solid var(--ink); border-radius: 50% 45% 48% 52%; transform: rotate(-7deg); }
-.home-hero__book { position: relative; z-index: 1; width: min(100%, 430px); overflow: visible; transform: rotate(-4deg); }
-.book-shadow { fill: var(--ink); }
-.book-page { fill: var(--surface); stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }
-.book-line { fill: none; stroke: #eee7d7; stroke-width: 8; stroke-linecap: round; }
-.book-spine { fill: none; stroke: var(--ink); stroke-width: 3; }
-.home-hero__note { position: absolute; z-index: 2; padding: 12px 16px; color: var(--ink); background: var(--surface); border: 1px solid var(--ink); border-radius: 5px; font-size: 14px; font-weight: 700; }
-.home-hero__note--top { top: 34px; right: 0; transform: rotate(4deg); }
-.home-hero__note--bottom { bottom: 45px; left: 0; transform: rotate(-4deg); }
-.home-hero__pencil { position: absolute; z-index: 2; right: 6%; bottom: 90px; width: 12px; height: 145px; background: #d58a53; border: 2px solid var(--ink); border-radius: 8px; transform: rotate(38deg); }
-.home-hero__plus { position: absolute; color: var(--ink); font-size: 30px; font-weight: 400; }
-.home-hero__plus--one { top: 90px; left: 0; }.home-hero__plus--two { right: 4px; bottom: 75px; }
+
+/* Theming Header liền mạch với nền vàng của Hero trên trang chủ */
+.home-body .site-header {
+  background: var(--brand-yellow);
+  border-bottom: 1px solid rgba(23, 23, 20, 0.08);
+}
+
+.home-body .site-header .public-nav__link {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.home-body .site-header .public-nav__link:hover,
+.home-body .site-header .public-nav__link--active {
+  color: #000000;
+}
+
+.home-body .site-header .public-nav__link--active::after {
+  background: var(--ink);
+}
+
+.home-body .site-header .button--primary {
+  color: var(--surface);
+  background: var(--ink);
+  border-color: var(--ink);
+  border-radius: 9999px;
+  font-weight: 700;
+}
+
+.home-body .site-header .button--primary:hover {
+  background: #2b2b27;
+  color: #ffffff;
+}
+
+/* Khối Hero Section tràn viền vàng full-bleed */
+.home-hero {
+  position: relative;
+  isolation: isolate;
+  background: var(--brand-yellow);
+  color: var(--ink);
+  border-bottom: 1px solid rgba(23, 23, 20, 0.08);
+}
+
+.home-hero__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+  gap: 48px;
+  align-items: center;
+  width: min(var(--content-width), calc(100% - 48px));
+  min-height: 520px;
+  margin: auto;
+  padding: 40px 0 76px;
+}
+
+.home-hero__copy {
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
+}
+
+/* Badge định vị phong cách Preply */
+.home-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 6px 14px;
+  color: var(--ink);
+  background: rgba(23, 23, 20, 0.06);
+  border: 1px solid rgba(23, 23, 20, 0.18);
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.home-hero__badge-mark {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.home-hero h1 {
+  margin: 0;
+  color: var(--ink);
+  font: 800 clamp(40px, 4.4vw, 58px)/1.08 var(--font-heading);
+  letter-spacing: -0.04em;
+}
+
+.home-hero h1 span {
+  display: inline;
+  color: var(--ink);
+}
+
+@media (min-width: 641px) {
+  .home-hero h1 span {
+    white-space: nowrap;
+  }
+}
+
+.home-hero__lead {
+  max-width: 520px;
+  margin: 20px 0 28px;
+  color: rgba(23, 23, 20, 0.85);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+/* Thanh tìm kiếm dạng Pill trắng nổi bật trên nền vàng */
+.home-search {
+  max-width: 540px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 9999px;
+  box-shadow: 0 10px 28px rgba(23, 23, 20, 0.08);
+}
+
+.home-search__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-search__icon {
+  display: grid;
+  place-items: center;
+  padding-left: 14px;
+  color: var(--muted-strong);
+}
+
+.home-search input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px 8px;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  font-size: 15px;
+  outline: none;
+}
+
+.home-search input::placeholder {
+  color: var(--muted-strong);
+  opacity: 1;
+}
+
+/* Nút CTA đen tuyền bo góc Pill */
+.home-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 24px;
+  color: var(--surface);
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 9999px;
+  font: 700 15px/1.2 var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 150ms ease, background 150ms ease;
+}
+
+.home-button:hover {
+  background: #2b2b27;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.home-hero__browse {
+  margin: 16px 0 0;
+  color: rgba(23, 23, 20, 0.75);
+  font-size: 14px;
+}
+
+.home-hero__browse a {
+  color: var(--ink);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+/* Visual Mockup mô phỏng buổi học 1-1 phong cách Preply */
+.home-hero__mockup {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+}
+
+/* Khung cửa sổ 2D (Window Frame SVG) */
+.home-hero__window-frame {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 500px;
+  height: 410px;
+  z-index: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 16px 36px rgba(23, 23, 20, 0.1));
+}
+
+/* Nét vẽ tay connector uốn cong */
+.home-hero__doodle-connector {
+  position: absolute;
+  top: 42px;
+  right: 52px;
+  width: 140px;
+  height: 95px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.home-hero__connector-tag {
+  position: absolute;
+  top: 50px;
+  right: 125px;
+  padding: 3px 10px;
+  background: var(--brand-yellow);
+  border: 1.5px solid var(--ink);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  transform: rotate(-6deg);
+  z-index: 4;
+  box-shadow: 0 2px 6px rgba(23, 23, 20, 0.08);
+}
+
+/* Doodle sao lấp lánh */
+.home-hero__doodle-sparkle {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.home-hero__doodle-sparkle--rating {
+  bottom: 84px;
+  right: -24px;
+  width: 28px;
+  height: 28px;
+  transform: rotate(12deg);
+}
+
+.home-hero__doodle-sparkle--top {
+  top: -24px;
+  left: 20px;
+  width: 20px;
+  height: 20px;
+  transform: rotate(-8deg);
+}
+
+/* Doodle vòng cung tiến độ */
+.home-hero__doodle-growth {
+  position: absolute;
+  bottom: 42px;
+  left: -28px;
+  width: 44px;
+  height: 36px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.home-hero__card {
+  position: absolute;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  box-shadow: 0 16px 36px rgba(23, 23, 20, 0.12);
+}
+
+.home-hero__card--learner {
+  position: relative;
+  width: min(100%, 350px);
+  padding: 20px;
+  border-radius: 26px;
+  z-index: 2;
+}
+
+.home-hero__card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.home-hero__live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+}
+
+.home-hero__card-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-strong);
+}
+
+.home-hero__avatar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  background: var(--surface-warm);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+}
+
+.home-hero__learner-face {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: #ffd43b;
+  border: 1.5px solid var(--ink);
+  font-size: 30px;
+  flex-shrink: 0;
+}
+
+.home-hero__learner-info strong {
+  display: block;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.home-hero__learner-info span {
+  display: block;
+  font-size: 13px;
+  color: var(--muted-strong);
+  margin-top: 3px;
+}
+
+/* Floating Tutor Card */
+.home-hero__card--tutor {
+  top: -8px;
+  right: -8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 18px;
+  z-index: 3;
+}
+
+.home-hero__tutor-face {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  border: 1px solid var(--ink);
+  font-size: 20px;
+}
+
+.home-hero__tutor-info strong {
+  display: block;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.home-hero__tutor-info span {
+  display: block;
+  font-size: 11px;
+  color: var(--muted-strong);
+}
+
+/* Floating Stat Cards */
+.home-hero__stat-card {
+  position: absolute;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(23, 23, 20, 0.1);
+  z-index: 3;
+}
+
+.home-hero__stat-card--practice {
+  bottom: -20px;
+  left: -16px;
+  min-width: 240px;
+}
+
+.home-hero__stat-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted-strong);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.home-hero__progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--surface-deep);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.home-hero__progress-fill {
+  height: 100%;
+  background: var(--ink);
+  border-radius: 9999px;
+}
+
+.home-hero__stat-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.home-hero__stat-pill {
+  color: var(--ink);
+}
+
+.home-hero__stat-card--rating {
+  bottom: 24px;
+  right: -20px;
+  text-align: center;
+}
+
+.home-hero__rating-badge {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.home-hero__rating-desc {
+  font-size: 11px;
+  color: var(--muted-strong);
+  margin-top: 2px;
+}
 .home-content { width: min(var(--content-width), calc(100% - 48px)); margin: auto; }
 .home-section { padding-block: 72px; border-bottom: 1px solid var(--border); }
 .home-section__heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
@@ -63,6 +481,45 @@
 .home-join > div { max-width: 600px; }.home-join__eyebrow { margin: 0 0 12px; color: var(--muted-strong); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
 .home-join h2 { margin: 0; font: 700 clamp(28px, 3.4vw, 40px)/1.12 var(--font-heading); letter-spacing: -.03em; }.home-join > div > p:not(.home-join__eyebrow) { margin: 14px 0 22px; color: var(--muted-strong); line-height: 1.6; }
 .home-join__mark { color: var(--brand-yellow); font: 700 clamp(70px, 12vw, 150px)/.8 var(--font-heading); letter-spacing: -.1em; -webkit-text-stroke: 2px var(--ink); }
-@media (max-width: 900px) { .home-hero__inner { grid-template-columns: 1fr 0.85fr; gap: 24px; }.home-hero__art { min-height: 320px; }.home-subjects { grid-template-columns: repeat(2, minmax(0, 1fr)); }.home-teachers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 640px) { .home-hero__inner,.home-content { width: calc(100% - 36px); }.home-hero__inner { grid-template-columns: 1fr; gap: 12px; padding: 42px 0 30px; }.home-hero h1 { font-size: clamp(36px, 10vw, 50px); }.home-hero__lead { margin: 17px 0 20px; font-size: 16px; }.home-search { padding: 13px; }.home-search__row { display: grid; grid-template-columns: 1fr; }.home-search input,.home-button { width: 100%; }.home-hero__art { min-height: 280px; max-width: 430px; width: 100%; margin: 0 auto; }.home-hero__sun { width: 68%; }.home-hero__book { width: 96%; }.home-hero__note { padding: 9px 11px; font-size: 12px; }.home-hero__note--top { top: 14px; }.home-hero__note--bottom { bottom: 25px; }.home-hero__pencil { bottom: 62px; height: 110px; }.home-section { padding-block: 42px; }.home-section__heading { align-items: flex-start; flex-direction: column; gap: 12px; margin-bottom: 20px; }.home-section__heading h2 { font-size: 29px; }.home-subjects,.home-teachers,.home-steps { grid-template-columns: 1fr; }.home-subjects { gap: 9px; }.home-how { margin-inline: -18px; padding-inline: 18px; }.home-steps { gap: 23px; }.home-steps li > span { font-size: 44px; }.home-steps h3 { margin-top: 12px; }.home-join { align-items: flex-start; margin-block: 38px; padding: 24px; }.home-join__mark { display: none; } }
+@media (max-width: 900px) {
+  .home-hero__inner { grid-template-columns: 1fr; gap: 40px; padding: 32px 0 56px; }
+  .home-hero__mockup { min-height: 380px; max-width: 440px; width: 100%; margin: 0 auto; }
+  .home-hero__window-frame { max-width: 440px; height: 380px; }
+  .home-hero__doodle-connector { right: 28px; }
+  .home-hero__connector-tag { right: 80px; }
+  .home-subjects { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-teachers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .home-hero__inner, .home-content { width: calc(100% - 36px); }
+  .home-hero__inner { gap: 28px; padding: 24px 0 36px; }
+  .home-hero h1 { font-size: clamp(34px, 9vw, 44px); }
+  .home-hero__lead { margin: 14px 0 20px; font-size: 15px; }
+  .home-search { padding: 10px; border-radius: 20px; }
+  .home-search__row { flex-direction: column; align-items: stretch; gap: 10px; }
+  .home-search__icon { display: none; }
+  .home-search input { min-height: 44px; padding: 8px 12px; }
+  .home-button { width: 100%; min-height: 46px; }
+  .home-hero__mockup { min-height: 340px; max-width: 100%; }
+  .home-hero__window-frame { display: none; }
+  .home-hero__doodle-connector { display: none; }
+  .home-hero__connector-tag { display: none; }
+  .home-hero__doodle-sparkle { display: none; }
+  .home-hero__doodle-growth { display: none; }
+  .home-hero__card--learner { width: 100%; padding: 16px; border-radius: 20px; }
+  .home-hero__card--tutor { top: -16px; right: 0; padding: 8px 12px; }
+  .home-hero__stat-card--practice { left: 0; bottom: -18px; min-width: 200px; padding: 10px 14px; }
+  .home-hero__stat-card--rating { right: 0; bottom: 16px; padding: 10px 14px; }
+  .home-section { padding-block: 42px; }
+  .home-section__heading { align-items: flex-start; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+  .home-section__heading h2 { font-size: 29px; }
+  .home-subjects, .home-teachers, .home-steps { grid-template-columns: 1fr; }
+  .home-subjects { gap: 9px; }
+  .home-how { margin-inline: -18px; padding-inline: 18px; }
+  .home-steps { gap: 23px; }
+  .home-steps li > span { font-size: 44px; }
+  .home-steps h3 { margin-top: 12px; }
+  .home-join { align-items: flex-start; margin-block: 38px; padding: 24px; }
+  .home-join__mark { display: none; }
+}
 @media (prefers-reduced-motion: reduce) { .home-subject,.teacher-card { transition: none; } }
