@@ -1,17 +1,37 @@
 # Trạng thái dự án
 
+## Khắc phục viền kép Header Quản trị viên & Tích hợp Thông báo Admin (TDD & UI/UX Pro Max) — 2026-10-29
+- **Trục nghiệm thu giao diện & UI/UX Pro Max:**
+  - Khắc phục lỗi hiển thị 2 đường viền đáy trên thanh Top Navigation của Admin: Loại bỏ `border-bottom` trên `.admin-workspace-header` và thu gọn `margin: 0` trên `.admin-workspace-nav`, chỉ giữ lại duy nhất 1 đường viền ở đáy thanh điều hướng chính (`.admin-workspace-nav__main`) đồng bộ với không gian Gia sư và Học viên.
+  - Bổ sung cụm hành động `.admin-header-actions` trên Header Quản trị viên gồm:
+    - Nút Thông báo (`/admin/notifications`) chứa icon chuông SVG 18x18px và nhãn 'Thông báo' với hiệu ứng hover nền `var(--surface-warm)`, mobile co gọn ẩn nhãn chữ giữ touch target >= 44px.
+    - Cụm Đăng xuất dạng form POST có CSRF token.
+  - Đồng bộ trang Thông báo (`workspace/notifications.html`): Nhúng header và navigation của Admin khi người dùng mang vai trò `ADMIN`, hiển thị phụ đề phù hợp ("Theo dõi cập nhật xét duyệt, yêu cầu hỗ trợ và sự kiện hệ thống").
+- **Backend & Quy trình TDD:**
+  - Mở rộng `NotificationPageController.java` hỗ trợ role `ADMIN` với 3 endpoints: `GET /admin/notifications`, `POST /admin/notifications/{id}/read`, `POST /admin/notifications/read-all`.
+  - TDD suites:
+    - Bổ sung 3 tests trong `NotificationPageControllerTest.java` kiểm tra render header/nav admin và các hành động đánh dấu đã đọc.
+    - Bổ sung 2 tests trong `AdminWorkspaceNavAndDashboardLayoutTest.java` kiểm tra liên kết thông báo và không còn viền kép đáy header.
+  - Chạy toàn bộ 6 test suites liên quan: `AdminDashboardPageControllerTest` (3/3), `AdminWorkspaceNavAndDashboardLayoutTest` (9/9), `ButtonSystemLayoutTest` (9/9), `NotificationPageControllerTest` (7/7), `StudentHeaderAndNavLayoutTest` (5/5), `TeacherWorkspaceNavAndDashboardLayoutTest` (7/7) -> PASS **40/40 tests**.
+- **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không đụng vào `.env.cloud`, Supabase hay port 8080.
+
+
 ## Đồng bộ toàn diện hệ thống nút Button (TDD & UI/UX Pro Max) — 2026-10-29
 - **Trục nghiệm thu giao diện & TDD:**
-  - Chuẩn hóa toàn bộ hệ thống CTA theo quy tắc: Nút chính thống nhất mang nền vàng chữ đen viền mực (`background: #FFD43B; color: #171714; border: 1.5px solid var(--ink); border-radius: 8px`).
+  - Chuẩn hóa toàn bộ hệ thống CTA theo quy tắc: Nút chính thống nhất mang nền vàng chữ đen viền mực (`background: #FFD43B; color: #171714; border: 1.5px solid var(--ink); border-radius: 8px; box-shadow: 0 2px 0 var(--ink)`).
   - **Ngoại lệ duy nhất:** Chỉ riêng các khu vực có nền vàng tự thân (như Hero banner và Header trên trang chủ mang `--brand-yellow`), nút chuyển sang nền đen chữ trắng (`#171714` background, `#FFFFFF` text) để bảo đảm độ tương phản và tránh chìm màu ("vàng đè vàng").
-  - **Rà soát & đồng bộ các điểm bị lệch:**
-    - Cụm Call-To-Action chân trang chủ (`.home-join` trên nền kem `--surface-warm`): Chuyển từ nút đen cũ sang nút vàng chữ đen `.button .button--primary`.
-    - Thẻ gia sư trang chủ (`home/index.html`): Chuyển từ link đơn sang cụm Dual Action Stack `.teacher-card__actions` (Xem hồ sơ vàng chữ đen + Nhắn tin phụ) đồng bộ với trang tìm kiếm và React `TeacherCard.tsx`.
-    - Biểu mẫu xác thực (`auth.css`): Nâng cấp `.auth-submit` sang bo góc `8px`, viền mực 1.5px và hover tactile shadow `0 2px 0 var(--ink)`.
-    - Quick preview bên React frontend (`tutor-match.css`): Đổi `.tm-preview-link` từ nút đen sang nền vàng `#FFD43B`, chữ đen `#171714`, viền 1.5px.
+  - **Rà soát & triệt để xóa bỏ phân mảnh nút trong Không gian Học viên (Student Workspace):**
+    - Trang Gói học (`/student/packages`): Nút lọc "Áp dụng" (`.package-filter__submit`) chuyển từ nền đen (`var(--ink)`) sang nút chính vàng viền mực 1.5px và bo góc 8px.
+    - Trang Lịch học (`/student/bookings`): Nút lọc "Lọc lịch" và "Xác nhận buổi học" (`.bookings-filter button`, `.booking-confirm button`) được nâng cấp viền mực 1.5px và tactile shadow `0 2px 0 var(--ink)`.
+    - Trang Bài tập (`/student/assignments`): Nút lọc "Lọc bài tập" chuyển từ nút trắng phụ (`learning-button--secondary`) sang nút chính vàng viền mực 1.5px (`learning-button--primary`).
+    - Trang Yêu cầu (`/student/requests`): Nút `.requests-button` (hoàn tiền, gia hạn) nâng cấp viền mực 1.5px và bo góc 8px.
+    - Trang Hồ sơ (`/student/profile`): Nút "Lưu thông tin" (`.profile-form__actions button`) nâng cấp viền mực 1.5px và tactile shadow.
+    - Trang Thanh toán (`/student/checkout`, `/student/payment-result`): Nút `.payment-button--primary` chuyển từ pill 999px sang bo góc chuẩn 8px viền mực 1.5px.
+    - Tin nhắn (`/student/messages`): Nút gửi tin nhắn `.message-composer__send-btn` đồng bộ viền mực 1.5px và tactile shadow.
+    - Marketplace & Trang chủ: Nút `.home-join` vàng chữ đen, thẻ gia sư cụm Dual Action Stack, auth submit và React preview link `.tm-preview-link`.
 - **Bằng chứng kiểm thử backend & frontend:**
-  - Tạo mới và mở rộng `ButtonSystemLayoutTest.java` (6 tests) xác minh tokens, viền mực, nút vàng trên `.home-join`, thẻ gia sư trang chủ và `.auth-submit`.
-  - Backend: `ButtonSystemLayoutTest`, `HomePageControllerTest`, `TeacherSearchPageControllerTest`, `TeacherProfilePageControllerTest` PASS **29/29**.
+  - Mở rộng `ButtonSystemLayoutTest.java` (9/9 tests PASS) xác minh tokens, viền mực, nút vàng trên `.home-join`, thẻ gia sư trang chủ, `.auth-submit`, và 3 bộ lọc Gói học, Bài tập, Lịch học.
+  - Chạy regression suites controller học viên: `StudentPackagePageControllerTest`, `StudentBookingPageControllerTest`, `StudentAssignmentPageControllerTest`, `StudentRequestsPageControllerTest`, `StudentProfilePageControllerTest` PASS **29/29**.
   - Frontend: `TeacherCard.test.tsx` PASS **3/3**, `typecheck` PASS **0 lỗi**.
 - **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không đụng vào `.env.cloud`, Supabase hay port 8080.
 

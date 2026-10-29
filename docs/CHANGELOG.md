@@ -1,10 +1,17 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-29 — Khắc phục viền kép Header Quản trị viên & Tích hợp Thông báo Admin (TDD & UI/UX Pro Max)
+- Khắc phục lỗi hiển thị 2 viền đáy trên Top Navigation của Quản trị viên: Gỡ bỏ `border-bottom` của `.admin-workspace-header` và đặt `margin: 0` trên `.admin-workspace-nav`, gom khối header và nav liền mạch với duy nhất 1 đường viền ở đáy nav.
+- Bổ sung mục Thông báo trên Header Admin: Tích hợp nút `/admin/notifications` với icon chuông SVG 18x18px và nhãn 'Thông báo' trong cụm `.admin-header-actions` cạnh nút Đăng xuất, hỗ trợ responsive chuẩn mobile.
+- Mở rộng SSR controller cho Thông báo Quản trị viên: Bổ sung các endpoints `GET /admin/notifications`, `POST /admin/notifications/{id}/read`, và `POST /admin/notifications/read-all` trong `NotificationPageController.java` và tích hợp layout Admin trong `workspace/notifications.html`.
+- Kiểm thử TDD toàn diện: Bổ sung 5 tests TDD trong `NotificationPageControllerTest` và `AdminWorkspaceNavAndDashboardLayoutTest`. Chạy regression 6 test suites đạt 40/40 tests PASS 100%. Không thay đổi schema DB.
+
+
 ## 2026-10-29 — Đồng bộ toàn diện hệ thống nút Button (TDD & UI/UX Pro Max)
 - Thống nhất quy tắc nút chính: Nền vàng chữ đen viền mực 1.5px và bo góc 8px trên toàn bộ các trang và surface thông thường.
 - Giữ ngoại lệ tương phản: Chỉ khu vực nền vàng (Hero banner trang chủ) dùng nút đen chữ trắng để tránh chìm màu.
-- Đồng bộ các vị trí lệch: Đổi nút section `.home-join` sang nút vàng chữ đen, nâng cấp thẻ gia sư trang chủ thành cụm Dual Action Stack, chuẩn hóa form Auth `.auth-submit` và React preview link `.tm-preview-link`.
-- Kiểm thử TDD: Mở rộng `ButtonSystemLayoutTest.java` (6 tests). Toàn bộ 29 backend tests và 3 frontend tests PASS 100%, TypeScript 0 lỗi.
+- Xóa bỏ phân mảnh nút trong Không gian Học viên: Đồng bộ nút lọc Gói học (`.package-filter__submit` từ nền đen sang vàng), nút lọc Bài tập (từ phụ trắng sang chính vàng), nút Lọc lịch & Xác nhận buổi học (viền mực 1.5px + tactile shadow), cùng các nút Yêu cầu, Hồ sơ, Thanh toán và Tin nhắn.
+- Kiểm thử TDD: Mở rộng `ButtonSystemLayoutTest.java` (9/9 tests PASS). Toàn bộ 29 tests controller học viên PASS 100%, TypeScript 0 lỗi.
 
 
 ## 2026-10-29 — Sửa seed snapshot thời lượng gói học V42

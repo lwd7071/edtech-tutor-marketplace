@@ -57,6 +57,14 @@ public class NotificationPageController {
         return render(user, "TEACHER", filter, page, model);
     }
 
+    @GetMapping("/admin/notifications")
+    public String adminList(@AuthenticationPrincipal AuthenticatedUser user,
+                            @RequestParam(defaultValue = "ALL") String filter,
+                            @RequestParam(defaultValue = "0") int page, Model model) {
+        requireRole(user, "ADMIN");
+        return render(user, "ADMIN", filter, page, model);
+    }
+
     @PostMapping("/student/notifications/{id}/read")
     public String markStudentRead(@AuthenticationPrincipal AuthenticatedUser user, @PathVariable UUID id,
                                   @RequestParam(defaultValue = "ALL") String filter,
@@ -73,6 +81,15 @@ public class NotificationPageController {
         requireRole(user, "TEACHER");
         markRead(id, user, redirect);
         return redirect("TEACHER", filter, page);
+    }
+
+    @PostMapping("/admin/notifications/{id}/read")
+    public String markAdminRead(@AuthenticationPrincipal AuthenticatedUser user, @PathVariable UUID id,
+                                @RequestParam(defaultValue = "ALL") String filter,
+                                @RequestParam(defaultValue = "0") int page, RedirectAttributes redirect) {
+        requireRole(user, "ADMIN");
+        markRead(id, user, redirect);
+        return redirect("ADMIN", filter, page);
     }
 
     @PostMapping("/student/notifications/read-all")
@@ -93,6 +110,15 @@ public class NotificationPageController {
         return redirect("TEACHER", filter, 0);
     }
 
+    @PostMapping("/admin/notifications/read-all")
+    public String markAdminAllRead(@AuthenticationPrincipal AuthenticatedUser user,
+                                   @RequestParam(defaultValue = "ALL") String filter,
+                                   RedirectAttributes redirect) {
+        requireRole(user, "ADMIN");
+        markAllRead(user, redirect);
+        return redirect("ADMIN", filter, 0);
+    }
+
     private String render(AuthenticatedUser user, String role, String rawFilter, int requestedPage, Model model) {
         String filter = normalizeFilter(rawFilter);
         int safePage = Math.max(0, Math.min(requestedPage, 100_000));
@@ -100,7 +126,7 @@ public class NotificationPageController {
         String referenceType = List.of("BOOKING", "ASSIGNMENT", "FINANCE", "SYSTEM").contains(filter) ? filter : null;
         String base = "/" + role.toLowerCase(Locale.ROOT) + "/notifications";
         model.addAttribute("role", role);
-        model.addAttribute("roleLabel", "STUDENT".equals(role) ? "Học viên" : "Gia sư");
+        model.addAttribute("roleLabel", "STUDENT".equals(role) ? "Học viên" : ("ADMIN".equals(role) ? "Quản trị viên" : "Gia sư"));
         model.addAttribute("basePath", base);
         model.addAttribute("activeWorkspaceNav", "notifications");
         model.addAttribute("filter", filter);

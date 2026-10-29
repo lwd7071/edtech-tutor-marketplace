@@ -148,4 +148,32 @@ class AdminWorkspaceNavAndDashboardLayoutTest {
         org.junit.jupiter.api.Assertions.assertTrue(brandContent.contains("href=\"/\""),
                 "Logo admin phải có href=\"/\"");
     }
+
+    @Test
+    @DisplayName("Header admin phải có biểu tượng chuông Thông báo dẫn tới /admin/notifications")
+    void headerShouldContainNotificationActionLink() throws Exception {
+        mockMvc.perform(get("/admin/dashboard"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("href=\"/admin/notifications\"")))
+                .andExpect(content().string(containsString("Thông báo")))
+                .andExpect(content().string(containsString("admin-header-action-item")))
+                .andExpect(content().string(containsString("M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9")));
+    }
+
+    @Test
+    @DisplayName("Header admin không được có viền dưới thừa tạo cảm giác 2 viền và nav phải dính liền không có margin-top thừa")
+    void headerShouldNotHaveDuplicateBottomBorder() throws Exception {
+        java.nio.file.Path cssPath = java.nio.file.Path.of("src/main/resources/static/css/admin-dashboard.css");
+        org.junit.jupiter.api.Assertions.assertTrue(java.nio.file.Files.exists(cssPath), "admin-dashboard.css must exist");
+        String css = java.nio.file.Files.readString(cssPath);
+
+        org.junit.jupiter.api.Assertions.assertTrue(
+                css.contains("border-bottom: none") || !css.matches("(?s).*\\.admin-workspace-header\\s*\\{[^}]*border-bottom\\s*:\\s*1px solid.*"),
+                "admin-workspace-header must not have border-bottom to avoid duplicate border with nav"
+        );
+        org.junit.jupiter.api.Assertions.assertTrue(
+                css.matches("(?s).*\\.admin-workspace-nav\\s*\\{[^}]*margin\\s*:\\s*0.*"),
+                "admin-workspace-nav must have margin: 0 to sit flush with header"
+        );
+    }
 }

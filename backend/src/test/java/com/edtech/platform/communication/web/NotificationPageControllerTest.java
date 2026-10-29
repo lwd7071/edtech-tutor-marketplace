@@ -111,6 +111,45 @@ class NotificationPageControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Điều hướng học viên"))));
     }
 
+    @Test
+    void rendersAdminNotificationsWithAdminHeaderAndNav() throws Exception {
+        UUID adminId = UUID.randomUUID();
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                new AuthenticatedUser(adminId, "admin@example.test", "ADMIN"), null, List.of()));
+        var pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id")));
+        when(notifications.getNotifications(eq(adminId), eq(null), eq(null), eq(pageable)))
+                .thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+        mockMvc.perform(get("/admin/notifications"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("workspace/notifications"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Quản trị viên")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/admin/notifications")));
+    }
+
+    @Test
+    void markAdminReadAndRedirect() throws Exception {
+        UUID adminId = UUID.randomUUID();
+        UUID notifId = UUID.randomUUID();
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                new AuthenticatedUser(adminId, "admin@example.test", "ADMIN"), null, List.of()));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/notifications/" + notifId + "/read"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl("/admin/notifications?filter=ALL&page=0"));
+    }
+
+    @Test
+    void markAdminAllReadAndRedirect() throws Exception {
+        UUID adminId = UUID.randomUUID();
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                new AuthenticatedUser(adminId, "admin@example.test", "ADMIN"), null, List.of()));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/notifications/read-all"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl("/admin/notifications?filter=ALL&page=0"));
+    }
+
     private NotificationView notification(String title, String content, String referenceType, boolean isRead) {
         UUID referenceId = UUID.randomUUID();
         return NotificationView.builder().id(UUID.randomUUID()).userId(studentId).type(referenceType)

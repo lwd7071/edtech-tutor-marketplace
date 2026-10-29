@@ -6,7 +6,7 @@
   gap: 16px;
   min-height: 64px;
   padding: 10px max(24px, calc((100% - 1200px) / 2));
-  border-bottom: 1px solid var(--border);
+  border-bottom: none;
   background: var(--surface);
 }
 
@@ -54,6 +54,43 @@
   text-decoration: none;
 }
 
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-header-action-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.admin-header-action-item:hover {
+  background: var(--surface-warm);
+}
+
+.admin-header-action-item svg {
+  flex-shrink: 0;
+  color: var(--muted-strong);
+}
+
+.admin-header-action-item:hover svg {
+  color: var(--ink);
+}
+
+.admin-header-logout {
+  margin: 0;
+}
+
 .admin-workspace-header form button {
   min-height: 38px;
   padding: 0 14px;
@@ -76,7 +113,7 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin: 16px 0 0;
+  margin: 0;
 }
 
 .admin-workspace-nav__main {
@@ -604,6 +641,13 @@
   }
   .admin-workspace-header {
     padding-inline: 16px;
+  }
+  .admin-header-action-item span {
+    display: none;
+  }
+  .admin-header-action-item {
+    padding: 0 8px;
+    min-height: 44px;
   }
   .admin-workspace-nav__main {
     margin-inline: -16px;

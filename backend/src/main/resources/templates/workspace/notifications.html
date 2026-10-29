@@ -7,9 +7,11 @@
   <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/public.css">
   <link rel="stylesheet" href="/css/student-dashboard.css"><link rel="stylesheet" href="/css/notifications.css">
+  <link rel="stylesheet" href="/css/admin-dashboard.css" th:if="${role == 'ADMIN'}">
 </head>
 <body>
 <th:block th:if="${role == 'STUDENT'}"><div th:replace="~{fragments/student-header :: header}"></div></th:block>
+<th:block th:if="${role == 'ADMIN'}"><div th:replace="~{fragments/admin-workspace-header :: header}"></div></th:block>
 <header class="notification-teacher-header" th:if="${role == 'TEACHER'}">
   <a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
   <div class="notification-teacher-header__inner">
@@ -24,9 +26,10 @@
 <main id="main-content" class="student-dashboard notification-page">
   <div class="student-dashboard__container">
     <th:block th:if="${role == 'STUDENT'}"><div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div></th:block>
+    <th:block th:if="${role == 'ADMIN'}"><div th:replace="~{fragments/admin-workspace-header :: nav}"></div></th:block>
     <nav class="notification-teacher-nav" aria-label="Điều hướng gia sư" th:if="${role == 'TEACHER'}"><a href="/teacher/notifications" aria-current="page">Thông báo</a></nav>
     <header class="notification-heading">
-      <div><h1>Thông báo</h1><p th:text="${role == 'TEACHER' ? 'Theo dõi lịch dạy, bài tập, thu nhập và trạng thái tài khoản.' : 'Theo dõi lịch học, bài tập, tài chính và trạng thái tài khoản.'}">Theo dõi thông tin mới nhất về việc học.</p></div>
+      <div><h1>Thông báo</h1><p th:text="${role == 'ADMIN' ? 'Theo dõi các hoạt động xét duyệt, tài chính và hệ thống.' : (role == 'TEACHER' ? 'Theo dõi lịch dạy, bài tập, thu nhập và trạng thái tài khoản.' : 'Theo dõi lịch học, bài tập, tài chính và trạng thái tài khoản.')}">Theo dõi thông tin mới nhất về việc học.</p></div>
       <form method="post" th:action="@{${basePath} + '/read-all'}">
         <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <input type="hidden" name="filter" th:value="${filter}">

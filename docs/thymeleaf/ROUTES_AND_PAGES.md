@@ -67,6 +67,7 @@ Registry hiện có 70 route legacy, route workflow bổ sung `/teacher/booking-
 | `/teacher/payouts` | Teacher | Yêu cầu rút tiền |
 | `/admin` | Admin | Trang dashboard mặc định |
 | `/admin/dashboard` | Admin | Dashboard |
+| `/admin/notifications` | Admin | Thông báo quản trị |
 | `/admin/teachers` | Admin | Duyệt hồ sơ gia sư |
 | `/admin/credentials` | Admin | Duyệt credentials |
 | `/admin/subjects` | Admin | Subject/proposal |
@@ -256,7 +257,7 @@ Các dòng dưới xác định page contract mức nhóm. Trước khi code m�
 | `/student/profile` | Account identity và liên hệ phụ huynh | Profile summary từ principal + identity facade; parent contact GET và POST+CSRF+PRG; lỗi field inline; không cần JS |
 | `/student/requests` | Trial request list, refund and extension history; refund/extension start from an owned package detail | GET tabs/pagination; finance POST+CSRF+PRG; trial list only; package context loaded with ownership; validation/error and empty states |
 | `/student/messages` | Conversations/messages | SSR inbox/detail, GET pagination, POST/CSRF send/read/open; reload fallback; no live updates yet; empty/unavailable |
-| `/student/notifications`, `/teacher/notifications` | Notifications list, filters, read actions | SSR list; GET filters/pagination; POST + CSRF mark-read actions; empty/unavailable; only link destinations that already have an SSR handler |
+| `/student/notifications`, `/teacher/notifications`, `/admin/notifications` | Notifications list, filters, read actions | SSR list; GET filters/pagination; POST + CSRF mark-read actions; empty/unavailable; only link destinations that already have an SSR handler |
 
 #### `/student/messages` — Tin nhắn
 
@@ -284,9 +285,9 @@ Các dòng dưới xác định page contract mức nhóm. Trước khi code m�
 - **Hành động/no-JS:** chọn thread bằng GET, gửi file/text và đánh dấu đã đọc bằng POST+CSRF+PRG. Reload lại history sau submit; không có STOMP live update trong SSR.
 - **States/a11y:** data, empty, unavailable, membership 404, send/read status, focus/labels, safe attachment URL, unread accessible label; không có skeleton/animation trong SSR. Browser/responsive/a11y thực tế cần xác minh trước khi hoàn tất.
 
-#### `/student/notifications` and `/teacher/notifications` — Thông báo
+#### `/student/notifications`, `/teacher/notifications` and `/admin/notifications` — Thông báo
 
-- **Role/session:** tương ứng Student hoặc Teacher; server derives owner ID from session principal. Role mismatch is denied by Spring Security and rechecked by the page controller.
+- **Role/session:** tương ứng Student, Teacher hoặc Admin; server derives owner ID from session principal. Role mismatch is denied by Spring Security and rechecked by the page controller.
 - **Nguồn dữ liệu:** `NotificationService`; không gọi REST loopback. Contract REST gốc nằm trong [API_CONTRACT.md](../architecture/API_CONTRACT.md), code nguồn tại `backend/src/main/java/com/edtech/platform/communication/service/NotificationService.java` và `backend/src/main/java/com/edtech/platform/communication/web/NotificationPageController.java`.
 - **Desktop:** workspace header, tiêu đề và mô tả theo role, nút đánh dấu tất cả, hàng lọc ngang, danh sách thông báo dạng dòng có nội dung/ngày/trạng thái và phân trang.
 - **Mobile:** header và hành động xếp dòng, filter cuộn ngang, nội dung thông báo xếp cột; không yêu cầu hover hoặc JavaScript.
