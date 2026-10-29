@@ -1,5 +1,21 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-29 — Tái thiết kế UI/UX Admin Workspace & Dashboard (`/admin/dashboard`)
+- Thêm huy hiệu vai trò `QUẢN TRỊ VIÊN` vào Header; thay thế 11 tab vàng chói dàn trải thành thanh Top Navigation 5 nhóm gọn gàng: Tổng quan, Xét duyệt, Tài chính, Người dùng, Hệ thống.
+- Bổ sung thanh Sub-pills ngữ cảnh cho các phân hệ con (Xét duyệt, Tài chính, Hệ thống), hoạt động bằng thẻ link HTML thuần thân thiện với chế độ tắt JavaScript (no-JS).
+- Tái cấu trúc Admin Dashboard theo hệ thống Bento Grid và UI/UX Pro Max:
+  - Bổ sung 4 thẻ KPI Stat Cards: GMV đã thanh toán, Hoa hồng ghi nhận, Yêu cầu rút tiền, Yêu cầu hoàn tiền (có viền cảnh báo alert màu hổ phách).
+  - Bento Grid 2 cột: Cột trái (Hàng đợi rút tiền/hoàn tiền có nút hành động trực tiếp + Quy mô người dùng); Cột phải (Trạng thái buổi học phân màu + Lối tắt quản trị 4 ô thao tác nhanh).
+- TDD suite `AdminWorkspaceNavAndDashboardLayoutTest` cùng 7 controller test suites liên quan PASS 49/49. Playwright verification xác nhận giao diện desktop/mobile và responsive 7 viewports (320px–1440px) không overflow. Không sửa DB schema hay kết nối Supabase.
+
+## 2026-10-29 — Tái thiết kế UI/UX Teacher Workspace & Dashboard (`/teacher`)
+- Rút gọn Header & thanh điều hướng Top Nav từ 18 tab dàn trải thành 5 nhóm logic: Tổng quan, Lịch & Yêu cầu, Lớp & Học tập, Thu nhập & Ví, Hồ sơ & Môn dạy. Các trang con hiển thị hàng sub-pills thuần HTML không phụ thuộc JavaScript.
+- Thiết kế lại Dashboard `/teacher` theo hệ thống Bento Grid 2 cột (60% Lịch trình / 40% Yêu cầu & Tài chính):
+  - Banner hồ sơ giảng dạy dịu mắt (Alert banner kem hổ phách).
+  - Bổ sung 4 thẻ KPI Stat Cards: Lịch hôm nay, Yêu cầu chờ, Bài tập cần chấm, Số dư khả dụng.
+  - Toàn bộ các section phần thân (Buổi học sắp tới, Lịch dạy sắp tới, Yêu cầu đặt buổi, Yêu cầu học thử, Bài tập có bài nộp, Thu nhập & Ví) được đóng gói thành các Bento Card nền trắng bo góc 12px viền mềm với empty state và typography phân cấp rõ ràng.
+- TDD backend test suite `TeacherWorkspaceNavAndDashboardLayoutTest` cùng 8 controller tests liên quan PASS 58/58. Playwright verification xác nhận giao diện desktop/mobile và responsive 7 viewports (320px–1440px) hoàn toàn không overflow. Không sửa DB schema hay kết nối Supabase.
+
 ## 2026-10-29 — Xác minh Supabase schema V42
 - Flyway read-only info xác nhận V42 ở trạng thái `Success`; validate toàn bộ 42 migrations thành công. Không áp migration trong lần xác minh này.
 - Backend Cloud chưa được khởi động lại sau khi xác minh schema; cảnh báo tương thích Flyway 9.22.3 với PostgreSQL 17.6 được ghi nhận trong `docs/STATUS.md`.

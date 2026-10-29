@@ -1,5 +1,17 @@
 # Trạng thái dự án
 
+## Tái thiết kế UI/UX Admin Workspace & Dashboard — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:** Áp dụng hệ thống thiết kế Bento Grid và Top Navigation 5 nhóm (`Tổng quan`, `Xét duyệt`, `Tài chính`, `Người dùng`, `Hệ thống`) cùng Sub-pills ngữ cảnh và 4 thẻ KPI Stat Cards đo lường nhanh trên `/admin/dashboard`.
+- **Bằng chứng kiểm thử backend:** `$env:SPRING_PROFILES_ACTIVE='test'; mvn -f backend/pom.xml test "-Dtest=AdminWorkspaceNavAndDashboardLayoutTest,AdminDashboardPageControllerTest,AdminTeacherApprovalsPageControllerTest,AdminCredentialsPageControllerTest,AdminSubjectsPageControllerTest,AdminUsersPageControllerTest,AdminSettingsPageControllerTest,AdminAuditLogsPageControllerTest"` PASS **49/49**.
+- **Bằng chứng kiểm thử browser Playwright:** Xác minh đăng nhập tài khoản admin, render SSR đầy đủ, không có script lạ, kiểm tra responsive 7 viewports (320, 390, 640, 768, 1024, 1280, 1440px) trên `/admin/dashboard` và `/admin/payouts` đều đạt `OK` (không tràn ngang). Ảnh bằng chứng lưu tại `acceptance-20261029/redesign-preview/admin-*`.
+- **Ranh giới an toàn:** Runtime Spring profile `test` trên cổng `127.0.0.1:18087`, PostgreSQL port 58499, Redis port 58500. Tuyệt đối không chạm `.env.cloud`, Supabase hay port 8080; migration diff rỗng.
+
+## Tái thiết kế UI/UX Teacher Workspace & Dashboard — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:** Rút gọn 18 tab dàn trải thành 5 nhóm logic (`Tổng quan`, `Lịch & Yêu cầu`, `Lớp & Học tập`, `Thu nhập & Ví`, `Hồ sơ & Môn dạy`), các trang con hiển thị Sub-pills ngữ cảnh thuần HTML. Dashboard `/teacher` được đóng gói thành các Bento Card nền trắng bo góc `12px` theo grid 2 cột cân xứng và 4 thẻ KPI Stat Cards.
+- **Bằng chứng kiểm thử backend:** Suite `TeacherWorkspaceNavAndDashboardLayoutTest` cùng 8 controller suites liên quan PASS **58/58**.
+- **Bằng chứng kiểm thử browser Playwright:** Xác minh tài khoản gia sư `teacher02@edtech.vn`, responsive 7 viewports (320px–1440px) đạt `OK` trên `/teacher` và `/teacher/bookings`. Ảnh bằng chứng lưu tại `acceptance-20261029/redesign-preview/teacher-*`.
+- **Ranh giới an toàn:** Runtime Spring `test` trên cổng `127.0.0.1:18087`. Không đổi database schema, migration diff rỗng.
+
 ## Supabase schema V42 — 2026-10-29
 - Sau khi lệnh apply bị cắt ở output ngay sau thông báo bắt đầu áp dụng, chạy lại quy trình guarded ở chế độ chỉ đọc để xác minh trạng thái thật. Flyway `info` báo V42 `Success`; Flyway `validate` thành công với 42 migrations. Không áp migration trong lần xác minh này.
 - PostgreSQL 17.6 phát cảnh báo phiên bản mới hơn mức Flyway 9.22.3 đã kiểm thử hỗ trợ (PostgreSQL 15); migration history vẫn validate thành công.
