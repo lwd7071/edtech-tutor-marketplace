@@ -230,8 +230,7 @@ details[open] > summary .summary-chevron {
 }
 
 .button:active {
-  transform: translateY(1px);
-  box-shadow: none !important;
+  transform: none;
 }
 
 .button--primary {
@@ -241,8 +240,7 @@ details[open] > summary .summary-chevron {
 }
 
 .button--primary:hover {
-  background: #ffdf68;
-  box-shadow: 0 2px 0 var(--ink);
+  background: #f4ca28;
 }
 
 .button--secondary {
@@ -254,7 +252,6 @@ details[open] > summary .summary-chevron {
 .button--secondary:hover {
   background: var(--surface-warm);
   border-color: var(--ink);
-  box-shadow: 0 2px 0 var(--ink);
 }
 
 .button--small {

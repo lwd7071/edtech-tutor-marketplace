@@ -1,5 +1,25 @@
 # Trạng thái dự án
 
+## Chuẩn hóa nút phẳng Flat UI (Không bóng đổ dưới) đồng bộ toàn bộ Public, Student, Teacher & Admin Workspace — 2026-10-29
+- **Trục nghiệm thu giao diện & UI/UX:**
+  - **Loại bỏ bóng đổ dưới (no bottom box-shadow):** Loại bỏ hoàn toàn viền bóng gồ ghề (`box-shadow: 0 2px 0 var(--ink)`) và hiệu ứng dập nổi `transform: translateY(1px)` trên toàn bộ hệ thống nút bấm từ trang Public/Auth, Không gian Học viên (Student), Gia sư (Teacher) đến Quản trị viên (Admin). Chuyển sang phong cách phẳng hiện đại (Flat UI): bo góc `8px` (`var(--radius-control)`), viền mực sắc nét `1.5px solid var(--ink)`, hiệu ứng hover chuyển màu nền êm ái sang vàng đậm `#f4ca28`.
+  - **Đồng bộ triệt để nút chính vàng chữ đen:**
+    - **Public & Auth:** `.button--primary`, `.auth-submit`, `.tm-btn-primary`, `.tm-preview-link` phẳng, viền 1.5px mực, nền vàng chữ đen.
+    - **Student Workspace:** Đồng bộ phẳng toàn bộ nút Lọc gói học (`.package-filter__submit`), Lọc lịch/Xác nhận (`.bookings-filter button`, `.booking-confirm button`), Lọc bài tập (`.learning-button--primary`), Yêu cầu (`.requests-button`), Hồ sơ (`.profile-form__actions button`), Thanh toán (`.payment-button--primary`), Tin nhắn (`.message-composer__send-btn`).
+    - **Teacher Workspace:** Chuẩn hóa toàn bộ nút chính sang viền mực 1.5px, phẳng: Lịch dạy (`.teacher-bookings-button--primary`), Bài tập (`.teacher-learning-button--primary`), Gói học & tạo gói (`.teacher-packages-primary`, form actions), Thu nhập (`.teacher-finance-button--primary`), Hồ sơ (`.teacher-profile-button--primary`), Lọc yêu cầu & học thử (`.booking-requests-filter button`, `.teacher-trial-button--primary`), Môn dạy & đề xuất (`.teacher-subjects-button`, `.teacher-proposals-button`).
+    - **Admin Workspace:** Xóa bỏ hoàn toàn tình trạng nút lọc dùng nền đen phân mảnh; chuyển toàn bộ các nút lọc và thao tác duyệt sang nền vàng chữ đen viền mực 1.5px phẳng: Người dùng (`.admin-users__filters button`), Nhật ký kiểm toán (`.admin-audit-logs__filters button`), Hồ sơ gia sư (`.admin-teachers__filters button`, `.admin-teachers__approve`), Đối soát (`.admin-settlements__filter button`), Bằng cấp (`.admin-credentials__approve`), Gia hạn (`.admin-extensions__filter button`, form approve), Rút tiền (`.admin-payouts__filter button`, form approve), Hoàn tiền (`.admin-refunds__filter button`, form approve), Môn học (`.admin-subjects__size-form button`, proposal actions), Cài đặt hệ thống (`.admin-settings__actions button`), Thao tác hàng đợi Dashboard (`.admin-queue-action-btn`).
+  - **Ngoại lệ duy nhất:** Giữ nguyên quy tắc — chỉ riêng các khu vực có nền vàng tự thân (như Hero banner và Header trên trang chủ mang `--brand-yellow`), nút chuyển sang nền đen chữ trắng (`#171714` background, `#FFFFFF` text) để bảo đảm độ tương phản và tránh chìm màu ("vàng đè vàng").
+- **Backend & Quy trình TDD:**
+  - Cập nhật test suite `ButtonSystemLayoutTest.java` (11/11 tests PASS) kiểm tra:
+    - Bo góc `--radius-control: 8px;`.
+    - Nút phẳng hoàn toàn (assert không chứa `box-shadow: 0 2px 0 var(--ink)`).
+    - Viền mực 1.5px và nền vàng chuẩn trên Public, Auth, Student, Teacher và Admin.
+    - Duy trì kiểm tra tương phản nút đen trên trang chủ và cụm Dual Action Stack.
+  - Regression tests: `AdminWorkspaceNavAndDashboardLayoutTest` (9/9 tests PASS), `HomePageControllerTest` (6/6 tests PASS).
+  - Frontend: `TeacherCard.test.tsx` (3/3 tests PASS), `npm run typecheck` (0 lỗi).
+- **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không đụng vào `.env.cloud`, Supabase hay port 8080.
+
+
 ## Khắc phục viền kép Header Quản trị viên & Tích hợp Thông báo Admin (TDD & UI/UX Pro Max) — 2026-10-29
 - **Trục nghiệm thu giao diện & UI/UX Pro Max:**
   - Khắc phục lỗi hiển thị 2 đường viền đáy trên thanh Top Navigation của Admin: Loại bỏ `border-bottom` trên `.admin-workspace-header` và thu gọn `margin: 0` trên `.admin-workspace-nav`, chỉ giữ lại duy nhất 1 đường viền ở đáy thanh điều hướng chính (`.admin-workspace-nav__main`) đồng bộ với không gian Gia sư và Học viên.

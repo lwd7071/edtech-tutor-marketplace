@@ -1,5 +1,13 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-29 — Chuẩn hóa nút phẳng Flat UI (Loại bỏ bóng đổ dưới) đồng bộ toàn bộ Public, Student, Teacher & Admin Workspace
+- Loại bỏ hoàn toàn bóng viền dưới (`box-shadow: 0 2px 0 var(--ink)`) và `transform: translateY(1px)` trên toàn bộ hệ thống nút bấm: Public, Auth, Student, Teacher và Admin.
+- Áp dụng phong cách phẳng hiện đại (Flat UI): bo góc 8px, viền mực sắc nét 1.5px solid mực (`#171714`), nền vàng thương hiệu (`var(--brand-yellow)`), hover êm ái sang `#f4ca28`.
+- Đồng bộ hóa toàn diện: Xóa bỏ các nút lọc gán cứng nền đen trong Admin Workspace (Users, Audit Logs, Teachers, Extensions, Payouts, Refunds, Subjects, Dashboard queue actions) và đưa toàn bộ về chuẩn nút chính vàng viền mực phẳng.
+- Giữ vững ngoại lệ tương phản cao: Nút trên Hero trang chủ (nền vàng) tiếp tục sử dụng nút đen chữ trắng để tránh chìm màu.
+- Kiểm thử TDD: Cập nhật `ButtonSystemLayoutTest.java` (11/11 tests PASS) xác nhận nút phẳng và viền mực cho cả 4 phân hệ. Frontend Jest tests PASS 3/3, Typecheck 0 lỗi. Không thay đổi schema DB.
+
+
 ## 2026-10-29 — Khắc phục viền kép Header Quản trị viên & Tích hợp Thông báo Admin (TDD & UI/UX Pro Max)
 - Khắc phục lỗi hiển thị 2 viền đáy trên Top Navigation của Quản trị viên: Gỡ bỏ `border-bottom` của `.admin-workspace-header` và đặt `margin: 0` trên `.admin-workspace-nav`, gom khối header và nav liền mạch với duy nhất 1 đường viền ở đáy nav.
 - Bổ sung mục Thông báo trên Header Admin: Tích hợp nút `/admin/notifications` với icon chuông SVG 18x18px và nhãn 'Thông báo' trong cụm `.admin-header-actions` cạnh nút Đăng xuất, hỗ trợ responsive chuẩn mobile.

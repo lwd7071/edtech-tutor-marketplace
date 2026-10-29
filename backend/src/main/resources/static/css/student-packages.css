@@ -4,8 +4,9 @@
 .package-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 22px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); }
 .package-filter label { font-size: 14px; font-weight: 700; }
 .package-filter select { min-width: 220px; min-height: 42px; padding: 8px 34px 8px 12px; border: 1px solid #aaa596; border-radius: var(--radius-control); color: var(--ink); background: var(--surface); }
-.package-filter__submit { min-height: 42px; padding: 0 18px; border: 0; border-radius: var(--radius-control); background: var(--ink); color: var(--surface); font-weight: 700; cursor: pointer; }
-.package-filter__submit:hover { background: #34342d; }
+.package-filter__submit { min-height: 44px; padding: 0 18px; border: 1.5px solid var(--ink); border-radius: var(--radius-control); background: var(--brand-yellow); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; transition: background-color .12s ease; }
+.package-filter__submit:hover { background: #f4ca28; }
+.package-filter__submit:active { background: #e5be20; }
 .package-filter > a { color: var(--muted-strong); font-weight: 600; }
 .package-filter-error { margin: -10px 0 18px; color: var(--danger); font-size: 14px; font-weight: 600; }
 .package-state { display: grid; justify-items: center; padding: 56px 24px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); text-align: center; }

@@ -455,18 +455,19 @@
   min-height: 32px;
   align-items: center;
   padding: 0 12px;
-  border-radius: 6px;
-  background: var(--ink);
-  color: #fffdf7 !important;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-control);
+  background: var(--brand-yellow);
+  color: var(--ink) !important;
   font-size: 0.82rem;
-  font-weight: 650;
+  font-weight: 700;
   text-decoration: none !important;
   white-space: nowrap;
-  transition: opacity 150ms ease;
+  transition: background-color 150ms ease;
 }
 
 .admin-queue-action-btn:hover {
-  opacity: 0.9;
+  background-color: #f4ca28;
 }
 
 /* Metrics Lists */

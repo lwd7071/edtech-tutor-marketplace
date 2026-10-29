@@ -29,7 +29,7 @@
       <select id="assignment-page-size" name="size">
         <option value="10" th:selected="${pageSize == 10}">10</option><option value="20" th:selected="${pageSize == 20}">20</option><option value="50" th:selected="${pageSize == 50}">50</option><option value="100" th:selected="${pageSize == 100}">100</option>
       </select>
-      <button class="learning-button learning-button--secondary" type="submit">Lọc bài tập</button>
+      <button class="learning-button learning-button--primary" type="submit">Lọc bài tập</button>
     </form>
     <p class="learning-alert" role="status" th:if="${submissionNotice != null}" th:text="${submissionNotice}">Đã lưu bài làm.</p>
     <p class="learning-alert learning-alert--error" role="alert" th:if="${progressInvalid}">Tiến độ lọc không hợp lệ. Đang hiển thị bài chưa làm.</p>
