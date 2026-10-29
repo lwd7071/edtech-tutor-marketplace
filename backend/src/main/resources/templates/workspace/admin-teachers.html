@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Duyệt hồ sơ gia sư | Tutor Match</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/admin-dashboard.css">
+  <link rel="stylesheet" href="/css/admin-teachers.css">
+</head>
+<body>
+<a class="admin-dashboard__skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<div th:replace="~{fragments/admin-workspace-header :: header}"></div>
+<main class="admin-dashboard admin-teachers" id="main-content">
+  <div class="admin-dashboard__container">
+    <div th:replace="~{fragments/admin-workspace-header :: nav}"></div>
+    <header class="admin-dashboard__heading admin-teachers__heading">
+      <h1>Duyệt hồ sơ gia sư</h1>
+      <p>Kiểm tra thông tin và giấy tờ trước khi gia sư được nhận học viên.</p>
+    </header>
+
+    <div class="admin-teachers__notice admin-teachers__notice--success" role="status" th:if="${actionSuccess}" th:text="${actionSuccess}"></div>
+    <div class="admin-teachers__notice admin-teachers__notice--error" role="alert" th:if="${actionError}" th:text="${actionError}"></div>
+
+    <section class="admin-teachers__panel" aria-labelledby="approval-list-title">
+      <div class="admin-teachers__toolbar">
+        <div>
+          <h2 id="approval-list-title" th:text="${pageTitle}">Chờ duyệt</h2>
+          <p th:if="${!pageUnavailable}" th:text="${totalElements + ' hồ sơ'}">0 hồ sơ</p>
+        </div>
+        <form class="admin-teachers__filters" method="get" action="/admin/teachers">
+          <label for="approval-status">Trạng thái</label>
+          <select id="approval-status" name="status">
+            <option th:each="option : ${statusOptions}" th:value="${option.value}" th:text="${option.label}" th:selected="${option.value == selectedStatus}">Chờ duyệt</option>
+          </select>
+          <label for="approval-page-size">Mỗi trang</label>
+          <select id="approval-page-size" name="size">
+            <option value="10" th:selected="${pageSize == 10}">10</option>
+            <option value="20" th:selected="${pageSize == 20}">20</option>
+            <option value="50" th:selected="${pageSize == 50}">50</option>
+          </select>
+          <button type="submit">Lọc</button>
+        </form>
+      </div>
+
+      <div class="admin-teachers__error" th:if="${pageUnavailable}" role="alert">
+        <p>Chưa tải được danh sách hồ sơ.</p>
+        <a th:href="@{/admin/teachers(status=${selectedStatus},page=${pageNumber},size=${pageSize})}">Thử tải lại</a>
+      </div>
+
+      <div class="admin-teachers__empty" th:if="${!pageUnavailable and #lists.isEmpty(approvals)}">
+        <h3>Không có hồ sơ ở trạng thái này</h3>
+        <p>Hồ sơ mới gửi sẽ xuất hiện trong danh sách chờ duyệt.</p>
+      </div>
+
+      <div class="admin-teachers__list" th:if="${!pageUnavailable and !#lists.isEmpty(approvals)}">
+        <article class="admin-teachers__card" th:each="teacher : ${approvals}">
+          <div class="admin-teachers__summary">
+            <div class="admin-teachers__identity">
+              <div class="admin-teachers__avatar" aria-hidden="true" th:text="${#strings.isEmpty(teacher.fullName) ? 'G' : #strings.substring(teacher.fullName, 0, 1)}">G</div>
+              <div class="admin-teachers__name-block">
+                <h3 th:text="${#strings.isEmpty(teacher.fullName) ? 'Chưa có tên' : teacher.fullName}">Tên gia sư</h3>
+                <p th:text="${teacher.email == null ? 'Chưa có email' : teacher.email}">email@example.com</p>
+              </div>
+            </div>
+            <span class="admin-teachers__status" th:classappend="${' admin-teachers__status--' + #strings.toLowerCase(teacher.status)}" th:text="${teacher.status == 'PENDING_APPROVAL' ? 'Chờ duyệt' : (teacher.status == 'APPROVED' ? 'Đã duyệt' : (teacher.status == 'REJECTED' ? 'Đã từ chối' : 'Bản nháp'))}">Chờ duyệt</span>
+          </div>
+
+          <dl class="admin-teachers__facts">
+            <div><dt>Kinh nghiệm</dt><dd th:text="${teacher.yearsOfExperience == null ? 'Chưa cập nhật' : teacher.yearsOfExperience + ' năm'}">Chưa cập nhật</dd></div>
+            <div><dt>Hình thức</dt><dd th:text="${teacher.supportsOnline and teacher.supportsOffline ? 'Trực tuyến · Trực tiếp' : (teacher.supportsOnline ? 'Trực tuyến' : (teacher.supportsOffline ? 'Trực tiếp' : 'Chưa cập nhật'))}">Trực tuyến</dd></div>
+            <div><dt>Giấy tờ</dt><dd th:text="${#lists.size(teacher.documents) + ' tệp'}">0 tệp</dd></div>
+          </dl>
+
+          <details class="admin-teachers__details">
+            <summary>Xem thông tin và giấy tờ</summary>
+            <div class="admin-teachers__detail-body">
+              <section aria-label="Thông tin hồ sơ">
+                <h4>Giới thiệu</h4>
+                <p class="admin-teachers__bio" th:text="${#strings.isEmpty(teacher.bio) ? 'Gia sư chưa thêm phần giới thiệu.' : teacher.bio}">Giới thiệu gia sư</p>
+                <p><strong>Nơi dạy:</strong> <span th:text="${#strings.isEmpty(teacher.locationAddress) ? 'Chưa cập nhật' : teacher.locationAddress}">Chưa cập nhật</span></p>
+                <p><strong>Ngôn ngữ:</strong> <span th:text="${#lists.isEmpty(teacher.languages) ? 'Chưa cập nhật' : #strings.listJoin(teacher.languages, ', ')}">Chưa cập nhật</span></p>
+                <p th:if="${teacher.status == 'REJECTED' and teacher.rejectionReason != null}"><strong>Lý do từ chối:</strong> <span th:text="${teacher.rejectionReason}">Lý do</span></p>
+                <p><strong>Video giới thiệu:</strong>
+                  <a th:if="${teacher.introductionVideoUrl != null and #strings.startsWith(teacher.introductionVideoUrl, 'https://')}" th:href="${teacher.introductionVideoUrl}" target="_blank" rel="noopener noreferrer">Mở liên kết bảo mật</a>
+                  <span th:unless="${teacher.introductionVideoUrl != null and #strings.startsWith(teacher.introductionVideoUrl, 'https://')}" th:text="${teacher.introductionVideoUrl == null ? 'Chưa có' : 'Liên kết không khả dụng'}">Chưa có</span>
+                </p>
+              </section>
+              <section aria-label="Giấy tờ xác minh">
+                <h4>Giấy tờ xác minh</h4>
+                <p class="admin-teachers__no-docs" th:if="${#lists.isEmpty(teacher.documents)}">Chưa có giấy tờ được tải lên.</p>
+                <ul class="admin-teachers__documents" th:unless="${#lists.isEmpty(teacher.documents)}">
+                  <li th:each="document : ${teacher.documents}">
+                    <div><strong th:text="${#strings.isEmpty(document.title) ? 'Tài liệu xác minh' : document.title}">Tài liệu</strong><span th:text="${document.type + ' · ' + document.verificationStatus}">IDENTITY · PENDING</span></div>
+                    <a th:href="@{/admin/teachers/documents/{id}/proof(id=${document.id})}">Tải tệp</a>
+                  </li>
+                </ul>
+              </section>
+            </div>
+          </details>
+
+          <div class="admin-teachers__actions" th:if="${teacher.status == 'PENDING_APPROVAL'}">
+            <form method="post" th:action="@{/admin/teachers/{id}/approve(id=${teacher.teacherProfileId})}">
+              <input type="hidden" name="status" th:value="${selectedStatus}">
+              <input type="hidden" name="page" th:value="${pageNumber}">
+              <input type="hidden" name="size" th:value="${pageSize}">
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <label class="admin-teachers__note-label" th:for="${'approve-note-' + teacher.teacherProfileId}">Ghi chú (không bắt buộc)</label>
+              <input class="admin-teachers__note" type="text" name="note" maxlength="1000" th:id="${'approve-note-' + teacher.teacherProfileId}" placeholder="Ghi chú nội bộ">
+              <button class="admin-teachers__approve" type="submit">Duyệt hồ sơ</button>
+            </form>
+            <details class="admin-teachers__reject">
+              <summary>Từ chối hồ sơ</summary>
+              <form method="post" th:action="@{/admin/teachers/{id}/reject(id=${teacher.teacherProfileId})}">
+                <input type="hidden" name="status" th:value="${selectedStatus}">
+                <input type="hidden" name="page" th:value="${pageNumber}">
+                <input type="hidden" name="size" th:value="${pageSize}">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <label th:for="${'reject-reason-' + teacher.teacherProfileId}">Lý do từ chối <span aria-hidden="true">*</span></label>
+                <textarea required maxlength="1000" rows="3" name="reason" th:id="${'reject-reason-' + teacher.teacherProfileId}" th:text="${rejectedTeacherId == teacher.teacherProfileId.toString() ? rejectedReason : ''}"></textarea>
+                <button type="submit">Xác nhận từ chối</button>
+              </form>
+            </details>
+          </div>
+        </article>
+      </div>
+
+      <nav class="admin-teachers__pagination" th:if="${!pageUnavailable and totalPages > 1}" aria-label="Phân trang hồ sơ gia sư">
+        <a th:if="${hasPrevious}" th:href="@{/admin/teachers(status=${selectedStatus},page=${pageNumber - 1},size=${pageSize})}">Trang trước</a>
+        <span th:text="${'Trang ' + (pageNumber + 1) + ' / ' + totalPages}">Trang 1 / 1</span>
+        <a th:if="${hasNext}" th:href="@{/admin/teachers(status=${selectedStatus},page=${pageNumber + 1},size=${pageSize})}">Trang sau</a>
+      </nav>
+    </section>
+  </div>
+</main>
+</body>
+</html>

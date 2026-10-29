@@ -152,6 +152,17 @@ public class RefundService {
         return page.map(views::toView);
     }
 
+    @Transactional(readOnly = true)
+    public String adminProofPublicId(UUID refundId) {
+        RefundRequest refund = refundRequestRepository.findById(refundId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.REFUND_NOT_FOUND));
+        if (refund.getStatus() != RefundStatus.REFUNDED
+                || refund.getProofPublicId() == null || refund.getProofPublicId().isBlank()) {
+            throw new BusinessException(ErrorCode.REFUND_PROOF_REQUIRED);
+        }
+        return refund.getProofPublicId();
+    }
+
     @Transactional
     public RefundRequestView approveRefund(UUID adminId, UUID refundId, ApproveRefundCommand request) {
         RefundRequest refund = refundRequestRepository.findByIdForUpdate(refundId)

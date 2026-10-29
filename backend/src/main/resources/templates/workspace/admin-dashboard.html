@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Tổng quan quản trị | Tutor Match</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/admin-dashboard.css">
+</head>
+<body>
+<a class="admin-dashboard__skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<div th:replace="~{fragments/admin-workspace-header :: header}"></div>
+<main class="admin-dashboard" id="main-content">
+  <div class="admin-dashboard__container">
+    <div th:replace="~{fragments/admin-workspace-header :: nav}"></div>
+    <header class="admin-dashboard__heading">
+      <h1>Tổng quan quản trị</h1>
+      <p>Các khoản cần xử lý và tình hình hoạt động của nền tảng.</p>
+    </header>
+
+    <div class="admin-dashboard__error" th:if="${dashboardUnavailable}" role="alert">
+      <p>Chưa tải được số liệu quản trị.</p>
+      <a href="/admin/dashboard">Thử tải lại</a>
+    </div>
+
+    <div th:if="${!dashboardUnavailable and dashboard != null}">
+      <section class="admin-dashboard__section admin-dashboard__priority" aria-labelledby="admin-priority-title">
+        <div class="admin-dashboard__section-heading">
+          <div>
+            <h2 id="admin-priority-title">Yêu cầu tài chính đang chờ</h2>
+            <p>Số lượng và tổng tiền theo dữ liệu hiện tại.</p>
+          </div>
+          <p class="admin-dashboard__clear" role="status" th:if="${dashboard.pendingPayoutsCount == 0 and dashboard.pendingRefundsCount == 0}">Không có yêu cầu đang chờ.</p>
+        </div>
+        <dl class="admin-dashboard__queue-list">
+          <div class="admin-dashboard__queue-row">
+            <dt>Yêu cầu rút tiền</dt>
+            <dd>
+              <strong th:text="${dashboard.pendingPayoutsCount}">0</strong>
+              <span th:text="${'yêu cầu · ' + pendingPayoutAmountLabel}">yêu cầu · 0 ₫</span>
+            </dd>
+          </div>
+          <div class="admin-dashboard__queue-row">
+            <dt>Yêu cầu hoàn tiền</dt>
+            <dd><strong th:text="${dashboard.pendingRefundsCount}">0</strong><span>yêu cầu</span></dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="admin-dashboard__section" aria-labelledby="admin-finance-title">
+        <div class="admin-dashboard__section-heading">
+          <div>
+            <h2 id="admin-finance-title">Tài chính</h2>
+            <p>Số liệu tổng hợp do hệ thống cung cấp.</p>
+          </div>
+        </div>
+        <dl class="admin-dashboard__metrics admin-dashboard__metrics--finance">
+          <div><dt>GMV đã thanh toán</dt><dd th:text="${totalGmvLabel}">0 ₫</dd></div>
+          <div><dt>Hoa hồng đã ghi nhận</dt><dd th:text="${totalCommissionLabel}">0 ₫</dd></div>
+        </dl>
+      </section>
+
+      <section class="admin-dashboard__section" aria-labelledby="admin-activity-title">
+        <div class="admin-dashboard__section-heading">
+          <div>
+            <h2 id="admin-activity-title">Người dùng và buổi học</h2>
+            <p>Quy mô hiện tại và trạng thái booking.</p>
+          </div>
+        </div>
+        <dl class="admin-dashboard__metrics admin-dashboard__metrics--activity">
+          <div><dt>Gia sư đã duyệt</dt><dd th:text="${totalTeachersLabel}">0</dd></div>
+          <div><dt>Học viên</dt><dd th:text="${totalStudentsLabel}">0</dd></div>
+          <div><dt>Tổng số buổi</dt><dd th:text="${totalBookingsLabel}">0</dd></div>
+          <div><dt>Đã hoàn thành</dt><dd th:text="${completedBookingsLabel}">0</dd></div>
+          <div><dt>Đã lên lịch</dt><dd th:text="${scheduledBookingsLabel}">0</dd></div>
+          <div><dt>Đã hủy</dt><dd th:text="${cancelledBookingsLabel}">0</dd></div>
+        </dl>
+      </section>
+    </div>
+  </div>
+</main>
+</body>
+</html>

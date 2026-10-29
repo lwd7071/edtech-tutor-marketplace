@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Nhật ký thao tác | Tutor Match</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/admin-dashboard.css">
+  <link rel="stylesheet" href="/css/admin-audit-logs.css">
+</head>
+<body>
+<a class="admin-dashboard__skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<div th:replace="~{fragments/admin-workspace-header :: header}"></div>
+<main class="admin-dashboard admin-audit-logs" id="main-content">
+  <div class="admin-dashboard__container">
+    <div th:replace="~{fragments/admin-workspace-header :: nav}"></div>
+    <header class="admin-dashboard__heading">
+      <h1>Nhật ký thao tác</h1>
+      <p>Tra cứu thay đổi quản trị theo người thực hiện, hành động hoặc đối tượng.</p>
+    </header>
+
+    <section class="admin-audit-logs__panel" aria-labelledby="audit-title">
+      <div class="admin-audit-logs__heading"><div><h2 id="audit-title">Lịch sử hệ thống</h2><p th:if="${!auditUnavailable}" th:text="${#numbers.formatInteger(totalElements, 1, 'POINT') + ' bản ghi'}">0 bản ghi</p></div></div>
+      <form class="admin-audit-logs__filters" method="get" action="/admin/audit-logs">
+        <label for="audit-action">Hành động</label>
+        <select id="audit-action" name="action"><option value="ALL" th:selected="${selectedAction == 'ALL'}">Tất cả hành động</option><option th:each="option : ${actionOptions}" th:value="${option.value}" th:text="${option.label}" th:selected="${selectedAction == option.value}">Hành động</option></select>
+        <label for="audit-actor">Mã người thực hiện</label>
+        <input id="audit-actor" name="actorId" inputmode="text" autocomplete="off" placeholder="UUID" th:value="${actorIdFilter}">
+        <label for="audit-target-type">Loại đối tượng</label>
+        <input id="audit-target-type" name="targetType" maxlength="50" placeholder="Ví dụ: USER" th:value="${targetTypeFilter}">
+        <label for="audit-target">Mã đối tượng</label>
+        <input id="audit-target" name="targetId" inputmode="text" autocomplete="off" placeholder="UUID" th:value="${targetIdFilter}">
+        <button type="submit">Tìm nhật ký</button><a href="/admin/audit-logs">Xóa bộ lọc</a>
+      </form>
+
+      <div class="admin-audit-logs__error" th:if="${auditUnavailable}" role="alert">
+        <p th:text="${auditError}">Chưa tải được nhật ký thao tác.</p>
+        <a th:href="@{/admin/audit-logs(action=${selectedAction == 'ALL' ? null : selectedAction},actorId=${actorIdFilter},targetType=${targetTypeFilter},targetId=${targetIdFilter},page=${pageNumber})}">Thử lại</a>
+      </div>
+      <div class="admin-audit-logs__empty" th:if="${!auditUnavailable and #lists.isEmpty(auditRows)}">
+        <h3>Chưa có bản ghi phù hợp</h3><p>Thử thay đổi hoặc xóa một số bộ lọc.</p>
+      </div>
+
+      <ol class="admin-audit-logs__list" th:if="${!auditUnavailable and !#lists.isEmpty(auditRows)}">
+        <li th:each="row : ${auditRows}">
+          <article class="admin-audit-logs__record">
+            <header><div><h3 th:text="${row.actionLabel}">Hành động</h3><p th:text="${row.createdLabel}">Ngày giờ</p></div><span th:text="${row.data.targetType}">Loại</span></header>
+            <dl class="admin-audit-logs__details">
+              <div><dt>Người thực hiện</dt><dd th:text="${row.data.actorId == null ? 'Hệ thống' : row.data.actorId}">UUID</dd></div>
+              <div><dt>Đối tượng</dt><dd th:text="${row.data.targetId}">UUID</dd></div>
+              <div><dt>Địa chỉ IP</dt><dd th:text="${row.data.ipAddress == null ? 'Không có' : row.data.ipAddress}">IP</dd></div>
+              <div class="admin-audit-logs__agent"><dt>Trình duyệt gửi yêu cầu</dt><dd th:text="${row.data.userAgent == null ? 'Không có' : row.data.userAgent}">User agent</dd></div>
+            </dl>
+            <details class="admin-audit-logs__payload"><summary>Xem dữ liệu thay đổi</summary>
+              <div class="admin-audit-logs__payload-grid"><section><h4>Trước</h4><pre th:text="${row.beforeJson}">Không có dữ liệu</pre></section><section><h4>Sau</h4><pre th:text="${row.afterJson}">Không có dữ liệu</pre></section></div>
+            </details>
+          </article>
+        </li>
+      </ol>
+      <nav class="admin-audit-logs__pagination" th:if="${!auditUnavailable and totalPages > 1}" aria-label="Phân trang nhật ký">
+        <a th:if="${hasPrevious}" th:href="@{/admin/audit-logs(action=${selectedAction == 'ALL' ? null : selectedAction},actorId=${actorIdFilter},targetType=${targetTypeFilter},targetId=${targetIdFilter},page=${pageNumber - 1})}">Trang trước</a>
+        <span th:text="${'Trang ' + (pageNumber + 1) + ' / ' + totalPages}">Trang 1 / 1</span>
+        <a th:if="${hasNext}" th:href="@{/admin/audit-logs(action=${selectedAction == 'ALL' ? null : selectedAction},actorId=${actorIdFilter},targetType=${targetTypeFilter},targetId=${targetIdFilter},page=${pageNumber + 1})}">Trang sau</a>
+      </nav>
+    </section>
+  </div>
+</main>
+</body>
+</html>

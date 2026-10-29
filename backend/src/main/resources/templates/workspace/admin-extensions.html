@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Duyệt gia hạn | Tutor Match</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/admin-dashboard.css">
+  <link rel="stylesheet" href="/css/admin-extensions.css">
+</head>
+<body>
+<a class="admin-dashboard__skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<div th:replace="~{fragments/admin-workspace-header :: header}"></div>
+<main class="admin-dashboard admin-extensions" id="main-content">
+  <div class="admin-dashboard__container">
+    <div th:replace="~{fragments/admin-workspace-header :: nav}"></div>
+    <header class="admin-dashboard__heading">
+      <h1>Duyệt gia hạn gói học</h1>
+      <p>Xem yêu cầu của học viên và quyết định ngày hết hạn phù hợp.</p>
+    </header>
+
+    <div class="admin-extensions__notice admin-extensions__notice--success" role="status" th:if="${actionSuccess}" th:text="${actionSuccess}"></div>
+    <div class="admin-extensions__notice admin-extensions__notice--error" role="alert" th:if="${actionError}" th:text="${actionError}"></div>
+
+    <section class="admin-extensions__queue" aria-labelledby="extensions-title">
+      <div class="admin-extensions__queue-heading">
+        <div>
+          <h2 id="extensions-title">Yêu cầu gia hạn</h2>
+          <p th:if="${!extensionsUnavailable}" th:text="${#numbers.formatInteger(totalElements, 1, 'POINT') + ' yêu cầu'}">0 yêu cầu</p>
+        </div>
+        <form class="admin-extensions__filter" method="get" action="/admin/extensions">
+          <label for="extension-status">Trạng thái</label>
+          <select id="extension-status" name="status">
+            <option th:each="option : ${statusOptions}" th:value="${option.value}" th:text="${option.label}" th:selected="${selectedStatus == option.value}">Tất cả trạng thái</option>
+          </select>
+          <button type="submit">Lọc</button>
+        </form>
+      </div>
+
+      <div class="admin-extensions__error" th:if="${extensionsUnavailable}" role="alert">
+        <p>Chưa tải được danh sách yêu cầu gia hạn.</p>
+        <a th:href="@{/admin/extensions(status=${selectedStatus},page=${pageNumber})}">Thử tải lại</a>
+      </div>
+
+      <div class="admin-extensions__empty" th:if="${!extensionsUnavailable and #lists.isEmpty(extensionRows)}">
+        <h3>Không có yêu cầu ở trạng thái này</h3>
+        <p>Chọn trạng thái khác để xem các yêu cầu còn lại.</p>
+      </div>
+
+      <ul class="admin-extensions__list" th:if="${!extensionsUnavailable and !#lists.isEmpty(extensionRows)}">
+        <li th:each="row : ${extensionRows}">
+          <article class="admin-extensions__item">
+            <header class="admin-extensions__item-heading">
+              <div>
+                <h3>Yêu cầu <span th:text="${'#' + #strings.substring(row.data.id.toString(), 0, 8)}">#00000000</span></h3>
+                <p th:text="${row.createdLabel}">Ngày gửi</p>
+              </div>
+              <span class="admin-extensions__status" th:attr="data-status=${row.data.status.name()}" th:text="${row.statusLabel}">Chờ xử lý</span>
+            </header>
+
+            <dl class="admin-extensions__details">
+              <div><dt>Học viên</dt><dd th:text="${row.data.studentId}">UUID học viên</dd></div>
+              <div><dt>Gói học</dt><dd th:text="${row.data.studentPackageId}">UUID gói</dd></div>
+              <div><dt>Ngày hết hạn đề nghị</dt><dd th:text="${row.requestedExpiryLabel}">Ngày đề nghị</dd></div>
+              <div th:if="${row.approvedExpiryLabel != null}"><dt>Ngày hết hạn đã duyệt</dt><dd th:text="${row.approvedExpiryLabel}">Ngày duyệt</dd></div>
+              <div class="admin-extensions__reason"><dt>Lý do</dt><dd th:text="${row.data.reason}">Lý do gia hạn</dd></div>
+              <div th:if="${row.data.adminNote != null and !#strings.isEmpty(row.data.adminNote)}"><dt>Ghi chú xử lý</dt><dd th:text="${row.data.adminNote}">Ghi chú</dd></div>
+            </dl>
+
+            <div class="admin-extensions__actions">
+              <details th:if="${row.data.status.name() == 'PENDING'}" th:open="${openApproveId == row.data.id.toString()}">
+                <summary>Duyệt gia hạn</summary>
+                <form method="post" th:action="@{/admin/extensions/{id}/approve(id=${row.data.id})}">
+                  <input type="hidden" name="status" th:value="${selectedStatus}">
+                  <input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" name="idempotencyKey" th:value="${idempotencyKeys[row.data.id.toString()]}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'approve-expiry-' + row.data.id}">Ngày hết hạn mới (giờ Việt Nam)</label>
+                  <input required type="datetime-local" name="approvedExpiryDate" th:id="${'approve-expiry-' + row.data.id}" th:value="${openApproveId == row.data.id.toString() and approveExpiry != null ? approveExpiry : row.requestedExpiryInput}" th:autofocus="${openApproveId == row.data.id.toString()}">
+                  <label th:for="${'approve-note-' + row.data.id}">Ghi chú cho học viên (không bắt buộc)</label>
+                  <textarea rows="3" name="adminNote" th:id="${'approve-note-' + row.data.id}" th:text="${openApproveId == row.data.id.toString() ? approveNote : ''}"></textarea>
+                  <button type="submit">Xác nhận duyệt</button>
+                </form>
+              </details>
+
+              <details class="admin-extensions__reject" th:if="${row.data.status.name() == 'PENDING'}" th:open="${openRejectId == row.data.id.toString()}">
+                <summary>Từ chối yêu cầu</summary>
+                <form method="post" th:action="@{/admin/extensions/{id}/reject(id=${row.data.id})}">
+                  <input type="hidden" name="status" th:value="${selectedStatus}">
+                  <input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" name="idempotencyKey" th:value="${idempotencyKeys[row.data.id.toString()]}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'reject-reason-' + row.data.id}">Lý do từ chối</label>
+                  <textarea required rows="3" maxlength="1000" name="reason" th:id="${'reject-reason-' + row.data.id}" th:text="${openRejectId == row.data.id.toString() ? rejectReason : ''}" th:autofocus="${openRejectId == row.data.id.toString()}"></textarea>
+                  <button type="submit">Xác nhận từ chối</button>
+                </form>
+              </details>
+            </div>
+          </article>
+        </li>
+      </ul>
+
+      <nav class="admin-extensions__pagination" th:if="${!extensionsUnavailable and totalPages > 1}" aria-label="Phân trang yêu cầu gia hạn">
+        <a th:if="${hasPrevious}" th:href="@{/admin/extensions(status=${selectedStatus},page=${pageNumber - 1})}">Trang trước</a>
+        <span th:text="${'Trang ' + (pageNumber + 1) + ' / ' + totalPages}">Trang 1 / 1</span>
+        <a th:if="${hasNext}" th:href="@{/admin/extensions(status=${selectedStatus},page=${pageNumber + 1})}">Trang sau</a>
+      </nav>
+    </section>
+  </div>
+</main>
+</body>
+</html>

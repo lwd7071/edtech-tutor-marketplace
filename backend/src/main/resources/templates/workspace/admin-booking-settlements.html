@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Quyết toán buổi học | Tutor Match</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/admin-dashboard.css">
+  <link rel="stylesheet" href="/css/admin-booking-settlements.css">
+</head>
+<body>
+<a class="admin-dashboard__skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<div th:replace="~{fragments/admin-workspace-header :: header}"></div>
+<main class="admin-dashboard admin-settlements" id="main-content">
+  <div class="admin-dashboard__container">
+    <div th:replace="~{fragments/admin-workspace-header :: nav}"></div>
+    <header class="admin-dashboard__heading">
+      <h1>Quyết toán buổi học</h1>
+      <p>Xem xác nhận của hai bên và xử lý các khoản đang chờ quyết định.</p>
+    </header>
+
+    <div class="admin-settlements__notice admin-settlements__notice--success" role="status" th:if="${actionSuccess}" th:text="${actionSuccess}"></div>
+    <div class="admin-settlements__notice admin-settlements__notice--error" role="alert" th:if="${actionError}" th:text="${actionError}"></div>
+
+    <section class="admin-settlements__queue" aria-labelledby="settlements-title">
+      <div class="admin-settlements__queue-heading">
+        <div>
+          <h2 id="settlements-title">Khoản quyết toán</h2>
+          <p th:if="${!settlementsUnavailable}" th:text="${#numbers.formatInteger(totalElements, 1, 'POINT') + ' buổi'}">0 buổi</p>
+        </div>
+        <form class="admin-settlements__filter" method="get" action="/admin/booking-settlements">
+          <label for="settlement-status">Trạng thái</label>
+          <select id="settlement-status" name="status">
+            <option th:each="option : ${statusOptions}" th:value="${option.value}" th:text="${option.label}" th:selected="${selectedStatus == option.value}">Tất cả trạng thái</option>
+          </select>
+          <button type="submit">Lọc</button>
+        </form>
+      </div>
+
+      <div class="admin-settlements__error" th:if="${settlementsUnavailable}" role="alert">
+        <p>Chưa tải được danh sách quyết toán.</p>
+        <a th:href="@{/admin/booking-settlements(status=${selectedStatus},page=${pageNumber})}">Thử tải lại</a>
+      </div>
+
+      <div class="admin-settlements__empty" th:if="${!settlementsUnavailable and #lists.isEmpty(settlementRows)}">
+        <h3>Không có buổi học ở trạng thái này</h3>
+        <p>Chọn trạng thái khác để xem các khoản quyết toán.</p>
+      </div>
+
+      <ul class="admin-settlements__list" th:if="${!settlementsUnavailable and !#lists.isEmpty(settlementRows)}">
+        <li th:each="row : ${settlementRows}">
+          <article class="admin-settlements__item">
+            <header class="admin-settlements__item-heading">
+              <div>
+                <h3>Buổi học <span th:text="${'#' + #strings.substring(row.data.bookingId.toString(), 0, 8)}">#00000000</span></h3>
+                <p th:text="${row.startLabel + ' – ' + row.endLabel}">Thời gian buổi học</p>
+              </div>
+              <span class="admin-settlements__status" th:attr="data-status=${row.data.status.name()}" th:text="${row.statusLabel}">Chờ quyết định</span>
+            </header>
+
+            <dl class="admin-settlements__details">
+              <div><dt>Học viên</dt><dd><span th:text="${row.data.studentName}">Học viên</span><small th:text="${row.data.studentId}">Mã học viên</small></dd></div>
+              <div><dt>Gia sư</dt><dd><span th:text="${row.data.teacherName}">Gia sư</span><small th:text="${row.data.teacherId}">Mã gia sư</small></dd></div>
+              <div><dt>Khoản thuần</dt><dd th:text="${row.amountLabel}">Chưa phân bổ</dd></div>
+              <div><dt>Hạn xác nhận đầu tiên</dt><dd th:text="${row.confirmationDeadlineLabel}">Thời hạn</dd></div>
+              <div><dt>Xác nhận học viên</dt><dd th:text="${row.data.studentConfirmedAt == null ? 'Chưa xác nhận' : 'Đã xác nhận · ' + row.studentConfirmedLabel}">Trạng thái</dd></div>
+              <div><dt>Xác nhận gia sư</dt><dd th:text="${row.data.teacherConfirmedAt == null ? 'Chưa xác nhận' : 'Đã xác nhận · ' + row.teacherConfirmedLabel}">Trạng thái</dd></div>
+              <div class="admin-settlements__reason" th:if="${row.data.disputeReason != null and !#strings.isEmpty(row.data.disputeReason)}"><dt>Lý do khiếu nại</dt><dd th:text="${row.data.disputeReason}">Lý do</dd></div>
+              <div th:if="${row.data.disputedAt != null}"><dt>Khiếu nại lúc</dt><dd th:text="${row.disputedLabel}">Thời điểm</dd></div>
+              <div th:if="${row.data.status.name() == 'REOPENED'}"><dt>Hạn xác nhận lại</dt><dd th:text="${row.reopenDeadlineLabel}">Thời hạn</dd></div>
+            </dl>
+
+            <p class="admin-settlements__guidance" th:if="${row.data.status.name() == 'REOPENED' and !row.reopenedExpired}">
+              Đang chờ xác nhận lại của hai bên. Có thể quyết định sau hạn trên nếu chưa đủ xác nhận.
+            </p>
+
+            <div class="admin-settlements__actions">
+              <details th:if="${row.data.status.name() == 'DISPUTE_PENDING'}" th:open="${openActionId == row.data.bookingId.toString() and openAction == 'reopen'}">
+                <summary>Mở lại xác nhận</summary>
+                <form method="post" th:action="@{/admin/booking-settlements/{id}/reopen(id=${row.data.bookingId})}">
+                  <input type="hidden" name="version" th:value="${row.data.version}"><input type="hidden" name="status" th:value="${selectedStatus}"><input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'reopen-note-' + row.data.bookingId}">Ghi chú quyết định</label>
+                  <textarea required rows="3" name="note" th:id="${'reopen-note-' + row.data.bookingId}" th:text="${openActionId == row.data.bookingId.toString() and openAction == 'reopen' ? actionNote : ''}" th:autofocus="${openActionId == row.data.bookingId.toString() and openAction == 'reopen'}"></textarea>
+                  <button type="submit">Mở lại buổi học</button>
+                </form>
+              </details>
+
+              <details class="admin-settlements__retain" th:if="${row.data.status.name() == 'DISPUTE_PENDING' or row.data.status.name() == 'AWAITING_ADMIN_DECISION' or (row.data.status.name() == 'REOPENED' and row.reopenedExpired)}" th:open="${openActionId == row.data.bookingId.toString() and openAction == 'retain'}">
+                <summary>Giữ khoản tiền</summary>
+                <form method="post" th:action="@{/admin/booking-settlements/{id}/retain(id=${row.data.bookingId})}">
+                  <input type="hidden" name="version" th:value="${row.data.version}"><input type="hidden" name="status" th:value="${selectedStatus}"><input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'retain-note-' + row.data.bookingId}">Ghi chú quyết định</label>
+                  <textarea required rows="3" name="note" th:id="${'retain-note-' + row.data.bookingId}" th:text="${openActionId == row.data.bookingId.toString() and openAction == 'retain' ? actionNote : ''}" th:autofocus="${openActionId == row.data.bookingId.toString() and openAction == 'retain'}"></textarea>
+                  <button type="submit">Xác nhận giữ tiền</button>
+                </form>
+              </details>
+
+              <details th:if="${row.data.status.name() == 'AWAITING_ADMIN_DECISION' or (row.data.status.name() == 'REOPENED' and row.reopenedExpired)}" th:open="${openActionId == row.data.bookingId.toString() and openAction == 'release'}">
+                <summary>Giải ngân cho gia sư</summary>
+                <form method="post" th:action="@{/admin/booking-settlements/{id}/release(id=${row.data.bookingId})}">
+                  <input type="hidden" name="version" th:value="${row.data.version}"><input type="hidden" name="status" th:value="${selectedStatus}"><input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'release-note-' + row.data.bookingId}">Ghi chú quyết định</label>
+                  <textarea required rows="3" name="note" th:id="${'release-note-' + row.data.bookingId}" th:text="${openActionId == row.data.bookingId.toString() and openAction == 'release' ? actionNote : ''}" th:autofocus="${openActionId == row.data.bookingId.toString() and openAction == 'release'}"></textarea>
+                  <button type="submit">Xác nhận giải ngân</button>
+                </form>
+              </details>
+            </div>
+          </article>
+        </li>
+      </ul>
+
+      <nav class="admin-settlements__pagination" th:if="${!settlementsUnavailable and totalPages > 1}" aria-label="Phân trang quyết toán">
+        <a th:if="${hasPrevious}" th:href="@{/admin/booking-settlements(status=${selectedStatus},page=${pageNumber - 1})}">Trang trước</a>
+        <span th:text="${'Trang ' + (pageNumber + 1) + ' / ' + totalPages}">Trang 1 / 1</span>
+        <a th:if="${hasNext}" th:href="@{/admin/booking-settlements(status=${selectedStatus},page=${pageNumber + 1})}">Trang sau</a>
+      </nav>
+    </section>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<header class="admin-workspace-header" th:fragment="header">
+  <a class="admin-workspace-brand" href="/admin">Tutor Match</a>
+  <form method="post" action="/auth/logout">
+    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    <button type="submit">Đăng xuất</button>
+  </form>
+</header>
+<nav class="admin-workspace-nav" th:fragment="nav" aria-label="Điều hướng quản trị">
+  <a href="/admin/dashboard">Tổng quan</a>
+  <a href="/admin/teachers">Duyệt gia sư</a>
+  <a href="/admin/credentials">Duyệt minh chứng</a>
+  <a href="/admin/subjects">Duyệt môn học</a>
+  <a href="/admin/users">Người dùng</a>
+  <a href="/admin/refunds">Hoàn tiền</a>
+  <a href="/admin/extensions">Gia hạn</a>
+  <a href="/admin/payouts">Chi trả</a>
+  <a href="/admin/booking-settlements">Quyết toán buổi học</a>
+  <a href="/admin/settings">Cài đặt</a>
+  <a href="/admin/audit-logs">Nhật ký</a>
+</nav>
