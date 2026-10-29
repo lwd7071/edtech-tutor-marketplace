@@ -112,7 +112,7 @@ class BookingServiceTest {
         when(teacherFacade.getTeacherByUserId(teacherUserId)).thenReturn(mockTeacherSnapshot());
         BookingPackageSnapshot pkg = new BookingPackageSnapshot(
                 packageId, studentId, teacherId, subjectId, "ACTIVE",
-                10, 0, 0, 0, 10, 1000000L, new BigDecimal("5.00"),
+                10, 0, 0, 0, 10, 60, 1000000L, new BigDecimal("5.00"),
                 Instant.now().plusSeconds(86400 * 30), 0
         );
         when(enrollmentBookingFacade.inspect(packageId, null)).thenReturn(pkg);
@@ -130,9 +130,28 @@ class BookingServiceTest {
         assertThat(result.studentId()).isEqualTo(studentId);
         assertThat(result.status()).isEqualTo(BookingStatus.SCHEDULED);
         assertThat(result.outsideAvailabilityWarning()).isFalse();
+        assertThat(result.endTime()).isEqualTo(start.plusSeconds(60 * 60));
 
         verify(enrollmentBookingFacade).reserveSession(packageId);
         verify(communicationFacade).publishAfterCommit(any());
+    }
+
+    @Test
+    void create_shouldRejectEndTimeThatDoesNotMatchPurchasedDuration() {
+        Instant start = Instant.now().plusSeconds(3600);
+        CreateBookingRequest request = new CreateBookingRequest(
+                packageId, start, start.plusSeconds(2 * 3600), DeliveryMode.ONLINE, null, null);
+        when(teacherFacade.getTeacherByUserId(teacherUserId)).thenReturn(mockTeacherSnapshot());
+        when(enrollmentBookingFacade.inspect(packageId, null)).thenReturn(new BookingPackageSnapshot(
+                packageId, studentId, teacherId, subjectId, "ACTIVE",
+                10, 0, 0, 0, 10, 60, 1_000_000L, new BigDecimal("5.00"),
+                Instant.now().plusSeconds(86400 * 30), 0));
+        assertThatThrownBy(() -> bookingService.create(teacherUserId, request))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(error -> assertThat(((BusinessException) error).getErrorCode())
+                        .isEqualTo(ErrorCode.BOOKING_DURATION_MISMATCH));
+        verify(enrollmentBookingFacade, never()).reserveSession(any());
+        verify(bookingRepository, never()).save(any());
     }
 
     @Test
@@ -159,7 +178,7 @@ class BookingServiceTest {
         when(teacherFacade.getTeacherByUserId(teacherUserId)).thenReturn(mockTeacherSnapshot());
         BookingPackageSnapshot pkg = new BookingPackageSnapshot(
                 packageId, studentId, teacherId, subjectId, "ACTIVE",
-                10, 0, 0, 0, 10, 1000000L, new BigDecimal("5.00"),
+                10, 0, 0, 0, 10, 60, 1000000L, new BigDecimal("5.00"),
                 Instant.now().plusSeconds(86400 * 30), 0
         );
         when(enrollmentBookingFacade.inspect(packageId, null)).thenReturn(pkg);
@@ -189,7 +208,7 @@ class BookingServiceTest {
 
         BookingPackageSnapshot pkg = new BookingPackageSnapshot(
                 packageId, studentId, teacherId, subjectId, "ACTIVE",
-                9, 1, 0, 0, 10, 1000000L, new BigDecimal("5.00"),
+                9, 1, 0, 0, 10, 60, 1000000L, new BigDecimal("5.00"),
                 Instant.now().plusSeconds(86400 * 30), 0
         );
         when(enrollmentBookingFacade.inspect(packageId, studentId)).thenReturn(pkg);
@@ -229,7 +248,7 @@ class BookingServiceTest {
         when(settlementRepository.findByBookingId(bookingId)).thenReturn(Optional.of(settlement));
         when(enrollmentBookingFacade.inspect(packageId, studentId)).thenReturn(new BookingPackageSnapshot(
                 packageId, studentId, teacherId, subjectId, "ACTIVE",
-                9, 1, 0, 0, 10, 1L, BigDecimal.ZERO,
+                9, 1, 0, 0, 10, 60, 1L, BigDecimal.ZERO,
                 Instant.now().plusSeconds(86400), 0));
 
         bookingService.complete(teacherUserId, bookingId, new CompleteBookingRequest(
@@ -321,7 +340,7 @@ class BookingServiceTest {
                 .thenReturn(new SubjectSnapshot(subjectId, "MATH", "Toán", "HIGH_SCHOOL", true));
         when(identityFacade.getIdentity(studentId)).thenReturn(Optional.empty());
         when(sessionReportRepository.findByBookingId(booking.getId())).thenReturn(Optional.empty());
-        when(bookingRepository.findStudent(eq(studentId), isNull(), isNull(), isNull(), any()))
+        when(bookingRepository.findStudent(eq(studentId), eq(false), isNull(), eq(false), isNull(), eq(false), isNull(), any()))
                 .thenReturn(new PageImpl<>(List.of(booking)));
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
 

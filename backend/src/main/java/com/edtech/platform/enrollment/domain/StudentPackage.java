@@ -28,6 +28,7 @@ public class StudentPackage extends BaseEntity {
     @Column(name = "invoice_id", nullable = false, unique = true) private UUID invoiceId;
     @Column(name = "package_name_snapshot", nullable = false, length = 150) private String packageNameSnapshot;
     @Column(name = "total_sessions", nullable = false) private int totalSessions;
+    @Column(name = "session_duration_minutes_snapshot", nullable = false) private int sessionDurationMinutesSnapshot;
     @Column(name = "remaining_sessions", nullable = false) private int remainingSessions;
     @Column(name = "reserved_sessions", nullable = false) private int reservedSessions;
     @Column(name = "completed_sessions", nullable = false) private int completedSessions;
@@ -43,7 +44,8 @@ public class StudentPackage extends BaseEntity {
     /** New-flow factory. PENDING_PAYMENT is deliberately unavailable: Invoice owns the waiting phase. */
     public static StudentPackage activateAfterPayment(
             UUID studentId, UUID teacherId, UUID subjectId, UUID pricingPackageId, UUID invoiceId,
-            String packageName, int totalSessions, int durationDays, long purchasePriceVnd,
+            String packageName, int totalSessions, int durationDays, int sessionDurationMinutesSnapshot,
+            long purchasePriceVnd,
             BigDecimal commissionRate, Instant paidAt) {
         StudentPackage value = new StudentPackage();
         value.studentId = Objects.requireNonNull(studentId);
@@ -53,11 +55,14 @@ public class StudentPackage extends BaseEntity {
         value.invoiceId = Objects.requireNonNull(invoiceId);
         value.packageNameSnapshot = Objects.requireNonNull(packageName);
         value.totalSessions = totalSessions;
+        value.sessionDurationMinutesSnapshot = sessionDurationMinutesSnapshot;
         value.remainingSessions = totalSessions;
         value.purchasePriceVnd = purchasePriceVnd;
         value.commissionRate = Objects.requireNonNull(commissionRate);
         value.startsAt = Objects.requireNonNull(paidAt);
-        if (durationDays <= 0) throw new IllegalArgumentException("durationDays must be positive");
+        if (durationDays <= 0 || sessionDurationMinutesSnapshot <= 0) {
+            throw new IllegalArgumentException("package duration snapshots must be positive");
+        }
         value.expiresAt = paidAt.plus(durationDays, ChronoUnit.DAYS);
         value.status = StudentPackageStatus.ACTIVE;
         value.validateCounterTotal();
@@ -70,7 +75,7 @@ public class StudentPackage extends BaseEntity {
                 || totalSessions != remainingSessions + reservedSessions + completedSessions + refundedSessions) {
             throw new IllegalArgumentException("student package counters are invalid");
         }
-        if (purchasePriceVnd <= 0 || commissionRate.signum() < 0
+        if (sessionDurationMinutesSnapshot <= 0 || purchasePriceVnd <= 0 || commissionRate.signum() < 0
                 || commissionRate.compareTo(new BigDecimal("100")) > 0) {
             throw new IllegalArgumentException("student package financial snapshot is invalid");
         }

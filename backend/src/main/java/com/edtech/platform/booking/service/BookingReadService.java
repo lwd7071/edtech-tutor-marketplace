@@ -35,8 +35,67 @@ public class BookingReadService {
 
     @Transactional(readOnly=true)
     public Page<Map<String,Object>> list(UUID userId, boolean teacherRole, BookingStatus status, Instant from, Instant to, Pageable pageable) {
-        return (teacherRole ? bookings.findTeacher(teacherId(userId),status,from,to,pageable)
-                : bookings.findStudent(userId,status,from,to,pageable)).map(b -> view(b, teacherRole));
+        boolean filterStatus = status != null;
+        boolean filterFrom = from != null;
+        boolean filterTo = to != null;
+        return (teacherRole
+                ? bookings.findTeacher(teacherId(userId), filterStatus, status, filterFrom, from, filterTo, to, pageable)
+                : bookings.findStudent(userId, filterStatus, status, filterFrom, from, filterTo, to, pageable))
+                .map(b -> view(b, teacherRole));
+    }
+
+    /**
+     * Bounded read model for the server-rendered Teacher bookings list. The general
+     * REST list enriches each booking with its full detail; HTML only needs the
+     * learner and subject labels, so load those snapshots once per page.
+     */
+    @Transactional(readOnly = true)
+    public Page<Map<String, Object>> listTeacherWorkspace(UUID userId, BookingStatus status,
+                                                          Instant from, Instant to, Pageable pageable) {
+        Page<Booking> page = bookings.findTeacher(teacherId(userId), status != null, status,
+                from != null, from, to != null, to, pageable);
+        return teacherWorkspaceRows(page, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Map<String, Object>> findUpcomingTeacherWorkspace(UUID userId, Instant now, Pageable pageable) {
+        Page<Booking> page = bookings.findUpcomingTeacher(teacherId(userId), now, pageable);
+        return teacherWorkspaceRows(page, pageable);
+    }
+
+    private Page<Map<String, Object>> teacherWorkspaceRows(Page<Booking> page, Pageable pageable) {
+        if (page.isEmpty()) return Page.empty(pageable);
+
+        List<Booking> items = page.getContent();
+        Map<UUID, com.edtech.platform.auth.facade.dto.IdentitySnapshot> students = identities.getIdentities(
+                items.stream().map(Booking::getStudentId).distinct().toList());
+        Map<UUID, com.edtech.platform.subject.facade.dto.SubjectSnapshot> subjectSnapshots = subjects.getSubjects(
+                items.stream().map(Booking::getSubjectId).distinct().toList());
+
+        return page.map(booking -> {
+            var student = students.get(booking.getStudentId());
+            var subject = subjectSnapshots.get(booking.getSubjectId());
+            var result = new LinkedHashMap<String, Object>();
+            result.put("id", booking.getId());
+            result.put("studentId", booking.getStudentId());
+            result.put("subjectId", booking.getSubjectId());
+            result.put("studentPackageId", booking.getStudentPackageId());
+            result.put("startTime", booking.getStartTime());
+            result.put("endTime", booking.getEndTime());
+            result.put("deliveryMode", booking.getDeliveryMode());
+            result.put("status", booking.getStatus());
+            result.put("trial", booking.isTrial());
+            result.put("outsideAvailabilityWarning", booking.isOutsideAvailabilityWarning());
+            result.put("version", booking.getVersion());
+            result.put("cancelReason", booking.getCancelReason());
+            result.put("student", Map.of("id", booking.getStudentId(), "fullName",
+                    student == null || student.fullName() == null || student.fullName().isBlank()
+                            ? "Học viên" : student.fullName()));
+            result.put("subject", Map.of("id", booking.getSubjectId(), "name",
+                    subject == null || subject.name() == null || subject.name().isBlank()
+                            ? "Môn học" : subject.name()));
+            return result;
+        });
     }
 
     @Transactional(readOnly=true)

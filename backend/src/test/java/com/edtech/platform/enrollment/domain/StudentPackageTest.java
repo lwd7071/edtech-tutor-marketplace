@@ -15,7 +15,7 @@ class StudentPackageTest {
         Instant paidAt = Instant.parse("2026-08-27T00:00:00Z");
         StudentPackage value = StudentPackage.activateAfterPayment(
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                "Math 1-1", 10, 30, 1_000_000L, new BigDecimal("5.00"), paidAt);
+                "Math 1-1", 10, 30, 45, 1_000_000L, new BigDecimal("5.00"), paidAt);
 
         assertThat(value.getStatus()).isEqualTo(StudentPackageStatus.ACTIVE);
         assertThat(value.getRemainingSessions()).isEqualTo(10);
@@ -24,6 +24,7 @@ class StudentPackageTest {
         assertThat(value.getRefundedSessions()).isZero();
         assertThat(value.getStartsAt()).isEqualTo(paidAt);
         assertThat(value.getExpiresAt()).isEqualTo(paidAt.plusSeconds(30L * 86_400));
+        assertThat(value.getSessionDurationMinutesSnapshot()).isEqualTo(45);
         value.validateCounterTotal();
     }
 
@@ -32,7 +33,11 @@ class StudentPackageTest {
         assertThat(StudentPackage.class.getConstructors()).isEmpty();
         assertThatThrownBy(() -> StudentPackage.activateAfterPayment(
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                "Bad", 0, 30, 1, new BigDecimal("5.00"), Instant.now()))
+                "Bad", 0, 30, 45, 1, new BigDecimal("5.00"), Instant.now()))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> StudentPackage.activateAfterPayment(
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                "Bad duration", 2, 30, 0, 1_000L, new BigDecimal("5.00"), Instant.now()))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThat(StudentPackageStatus.PENDING_PAYMENT).isNotEqualTo(StudentPackageStatus.ACTIVE);
     }
@@ -42,7 +47,7 @@ class StudentPackageTest {
         Instant now = Instant.parse("2026-09-11T00:00:00Z");
         StudentPackage active = StudentPackage.activateAfterPayment(
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                "Math", 3, 30, 300_000L, new BigDecimal("5.00"), now);
+                "Math", 3, 30, 60, 300_000L, new BigDecimal("5.00"), now);
 
         assertThatThrownBy(() -> active.applyRefund(1, now))
                 .isInstanceOf(IllegalStateException.class);

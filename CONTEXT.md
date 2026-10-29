@@ -11,6 +11,11 @@ Tutor Match là marketplace kết nối học viên với gia sư cho các gói 
 - **Admin:** duyệt hồ sơ, xử lý refund/extension/payout, quản lý subject, moderation, settings và audit.
 - **Guest:** chỉ dùng marketplace và các endpoint công khai; thao tác cần quan hệ hoặc tài khoản phải chuyển sang đăng nhập.
 
+## Thuật ngữ nghiệp vụ
+
+- **Booking request:** đề nghị của Student muốn xếp một buổi trong gói đã mua; đây chưa phải lịch học xác nhận và không giữ lượt.
+- **Booking trả phí đã xác nhận:** buổi học được tạo khi Teacher chốt giờ và hình thức học cho booking request; lúc đó package mới reserve một lượt theo thời lượng đã mua.
+
 ## Module và seam
 
 Backend là modular monolith Spring Boot. Module sở hữu entity, repository và invariant của mình; module khác gọi qua facade, port, snapshot DTO hoặc event công khai. Controller không truy cập repository của module khác.
@@ -29,6 +34,8 @@ Frontend tổ chức theo route group và feature. Feature gọi API qua shared 
 - Mọi read/write theo student, teacher, conversation, assignment và file phải kiểm tra ownership.
 - Tiền là VND số nguyên; phân bổ dùng phép tính lũy kế và không tạo entry bằng 0.
 - Invoice giữ snapshot điều khoản mua; webhook không đọc lại giá hoặc commission hiện tại của package.
+- Thời lượng buổi học đã mua là snapshot của StudentPackage; thay đổi gói đang bán không đổi thời lượng của lượt còn lại.
+- Mỗi StudentPackage chỉ có một booking request ở trạng thái `PENDING`; Student có thể hủy yêu cầu đang chờ, Teacher có thể xác nhận với thời điểm cuối cùng hoặc từ chối kèm lý do.
 - Migration đã áp dụng là bất biến; không tự `repair()` hoặc sửa checksum lịch sử.
 - Side effect SMTP, realtime và notification chạy sau khi transaction nghiệp vụ commit.
 - Booking trả phí phải ghi nhận xác nhận độc lập của Student/Teacher; thiếu xác nhận sau 24 giờ vẫn tiêu thụ lượt nhưng tiền đi vào escrow nền tảng và chỉ release/retain qua settlement workflow.
@@ -36,3 +43,9 @@ Frontend tổ chức theo route group và feature. Feature gọi API qua shared 
 ## Quy ước ổn định
 
 Database lưu UTC, client hiển thị `Asia/Ho_Chi_Minh`; public ID là UUID; REST dùng response envelope năm field; secret chỉ nằm trong biến môi trường hoặc secret store.
+
+## Kênh xác thực giao diện
+
+- REST `/api/**` giữ JWT Bearer theo API contract.
+- UI Thymeleaf dùng server-side HTTP session cookie opaque theo [ADR 0016](docs/adr/0016-server-rendered-authentication.md); CSRF bật cho mọi mutation HTML. Token access/refresh không xuất hiện trong HTML, URL hay browser storage.
+- Session HTML có idle timeout 30 phút và absolute lifetime tối đa 7 ngày; production nhiều instance phải dùng shared session store hoặc topology đã được xác minh.
