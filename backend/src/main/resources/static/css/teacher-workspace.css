@@ -1,13 +1,238 @@
-.teacher-messages-header{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:64px;padding:10px max(24px,calc((100% - 1200px)/2));border-bottom:1px solid var(--border);background:var(--surface)}.teacher-messages-brand{color:var(--ink);font-family:var(--font-heading);font-size:1.15rem;font-weight:750;text-decoration:none}.teacher-messages-header form button{min-height:40px;padding:0 14px;border:1px solid var(--border);border-radius:var(--radius-control);background:var(--surface);color:var(--ink);font:inherit;font-weight:650;cursor:pointer}.teacher-messages-nav{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0}.teacher-messages-nav a{display:inline-flex;min-height:44px;align-items:center;padding:0 14px;border-radius:var(--radius-control);color:var(--ink);font-weight:650;text-decoration:none}.teacher-messages-nav a[aria-current=page]{background:var(--brand-yellow)}.teacher-messages-header button:focus-visible,.teacher-messages-nav a:focus-visible{outline:3px solid var(--focus);outline-offset:3px}.teacher-message-footer{display:flex;justify-content:space-between;gap:16px;width:min(1200px,calc(100% - 48px));margin:0 auto;padding:24px 0;color:var(--muted-strong)}.teacher-message-footer>div{display:flex;flex-direction:column;gap:6px}.teacher-message-footer a{color:var(--ink);font-weight:650;text-underline-offset:3px}@media(max-width:640px){.teacher-messages-header{padding-inline:16px}.teacher-message-footer{width:calc(100% - 32px);flex-wrap:wrap}}
+/* Teacher Workspace Core Styles - Minimalist & Swiss Style */
+.teacher-messages-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 60px;
+  padding: 8px max(24px, calc((100% - 1200px)/2));
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
 
-.teacher-messages-nav__desktop{display:flex;flex-wrap:wrap;gap:8px}
-.teacher-messages-nav__mobile{display:none}
-.teacher-messages-nav__more{min-width:0}
-.teacher-messages-nav__more summary{display:inline-flex;min-height:44px;align-items:center;padding:0 14px;border:1px solid var(--border);border-radius:var(--radius-control);background:var(--surface);color:var(--ink);font:inherit;font-weight:650;cursor:pointer;list-style:none}
-.teacher-messages-nav__more summary::-webkit-details-marker{display:none}
-.teacher-messages-nav__more-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:min(100%,520px);margin-top:8px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-card);background:var(--surface)}
-.teacher-messages-nav__more-links a{min-width:0;overflow-wrap:anywhere}
-.teacher-messages-nav__more summary:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
-@media(max-width:640px){.teacher-messages-nav{display:block;margin:12px 0 0;overflow:visible}.teacher-messages-nav__desktop{display:none}.teacher-messages-nav__mobile{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px}.teacher-messages-nav__mobile>a,.teacher-messages-nav__more summary{flex:0 0 auto}.teacher-messages-nav__mobile>a[aria-current=page],.teacher-messages-nav__more-links a[aria-current=page]{background:var(--brand-yellow)}.teacher-messages-nav__more{flex:0 0 auto}.teacher-messages-nav__more[open]{flex-basis:100%}.teacher-messages-nav__more-links{grid-template-columns:repeat(2,minmax(0,1fr));width:100%}}
-@media(max-width:360px){.teacher-messages-nav__more-links{grid-template-columns:1fr}}
-.teacher-messages-nav__more-links a{width:100%;justify-content:flex-start;white-space:normal;text-align:left;line-height:1.35}
+.teacher-brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.teacher-messages-brand {
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 750;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.teacher-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-warm, #f7f3e8);
+  border: 1px solid var(--border);
+  color: var(--muted-strong);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.teacher-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.teacher-header-action-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 150ms ease;
+}
+
+.teacher-header-action-item:hover {
+  background: var(--surface-warm);
+}
+
+.teacher-header-action-item svg {
+  flex-shrink: 0;
+  color: var(--muted-strong);
+}
+
+.teacher-header-logout {
+  margin: 0;
+}
+
+.teacher-header-logout button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.teacher-header-logout button:hover {
+  background: #fff0ed;
+  border-color: #fca5a5;
+  color: #b91c1c;
+}
+
+/* Grouped Navigation (5 Main Groups) */
+.teacher-messages-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 18px 0 0;
+}
+
+.teacher-messages-nav__main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 2px;
+}
+
+.teacher-messages-nav__main a {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  padding: 0 16px;
+  border-radius: 8px;
+  color: var(--ink);
+  font-weight: 650;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.teacher-messages-nav__main a:hover {
+  background: var(--surface-warm);
+}
+
+.teacher-messages-nav__main a[aria-current="page"] {
+  background: var(--brand-yellow);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #171714;
+  font-weight: 700;
+}
+
+/* Sub-pills (Contextual Secondary Navigation) */
+.teacher-messages-nav__sub {
+  display: flex;
+  align-items: center;
+  padding: 6px 0 10px;
+}
+
+.teacher-sub-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px;
+  background: var(--surface-warm);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.teacher-sub-pills a {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: var(--muted-strong);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 150ms ease;
+}
+
+.teacher-sub-pills a:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.teacher-sub-pills a.is-active {
+  background: #ffffff;
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.teacher-messages-header button:focus-visible,
+.teacher-messages-nav a:focus-visible,
+.teacher-header-action-item:focus-visible {
+  outline: 3px solid var(--focus, #155eef);
+  outline-offset: 3px;
+}
+
+/* Footer */
+.teacher-message-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(1200px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 24px 0;
+  color: var(--muted-strong);
+}
+
+.teacher-message-footer > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.teacher-message-footer a {
+  color: var(--ink);
+  font-weight: 650;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .teacher-messages-header {
+    padding-inline: 16px;
+    flex-wrap: wrap;
+  }
+  .teacher-header-action-item span {
+    display: none;
+  }
+  .teacher-messages-nav__main {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+  }
+  .teacher-messages-nav__main a {
+    white-space: nowrap;
+    padding: 0 12px;
+  }
+  .teacher-sub-pills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+  .teacher-sub-pills a {
+    white-space: nowrap;
+  }
+  .teacher-message-footer {
+    width: calc(100% - 32px);
+    flex-wrap: wrap;
+  }
+}
