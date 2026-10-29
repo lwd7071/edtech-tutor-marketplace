@@ -65,6 +65,7 @@ apache-maven-*.zip
 
 # Local scripts
 chay-backend.bat
+.m2/repository/
 
 # Local container state and database exports
 /data/postgres/

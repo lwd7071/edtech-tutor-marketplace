@@ -24,8 +24,8 @@ services:
       APP_FRONTEND_URL: https://tutormatch.id.vn
       APP_CORS_ALLOWED_ORIGINS: https://tutormatch.id.vn
       APP_OAUTH2_FRONTEND_CALLBACK_URI: https://tutormatch.id.vn/oauth2/callback
-      GOOGLE_OAUTH_REDIRECT_URI: https://api.tutormatch.id.vn/login/oauth2/code/google
-      APP_INTERNAL_REVALIDATE_SECRET: ${APP_INTERNAL_REVALIDATE_SECRET:?Set APP_INTERNAL_REVALIDATE_SECRET in .env.cloud}
+      GOOGLE_OAUTH_REDIRECT_URI: https://tutormatch.id.vn/login/oauth2/code/google
+      APP_CACHE_REVALIDATION_ENABLED: "false"
     ports:
       - "127.0.0.1:18080:8080"
     depends_on:
@@ -39,30 +39,6 @@ services:
       start_period: 60s
     restart: unless-stopped
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: https://api.tutormatch.id.vn
-        NEXT_PUBLIC_WS_URL: wss://api.tutormatch.id.vn/ws
-    environment:
-      NODE_ENV: production
-      BACKEND_API_URL: http://backend:8080
-      APP_INTERNAL_REVALIDATE_SECRET: ${APP_INTERNAL_REVALIDATE_SECRET:?Set APP_INTERNAL_REVALIDATE_SECRET in .env.cloud}
-    ports:
-      - "127.0.0.1:3000:3000"
-    depends_on:
-      backend:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    restart: unless-stopped
-
   cloudflared:
     image: cloudflare/cloudflared:latest
     command: ["tunnel", "--no-autoupdate", "run"]
@@ -70,8 +46,6 @@ services:
       TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN:?Set CF_TUNNEL_TOKEN in .env.tunnel}
     depends_on:
       backend:
-        condition: service_healthy
-      frontend:
         condition: service_healthy
     restart: unless-stopped
 
