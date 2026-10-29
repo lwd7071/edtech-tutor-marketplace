@@ -1,0 +1,55 @@
+<header class="teacher-messages-header" th:fragment="header">
+  <a class="skip-link" href="#main-content">Bỏ qua nội dung</a>
+  <a class="teacher-messages-brand" href="/teacher">Tutor Match</a>
+  <form method="post" action="/auth/logout">
+    <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    <button type="submit">Đăng xuất</button>
+  </form>
+</header>
+<nav class="teacher-messages-nav" th:fragment="nav(active)" aria-label="Điều hướng gia sư">
+  <div class="teacher-messages-nav__desktop">
+    <a href="/teacher" th:attr="aria-current=${active == 'overview' ? 'page' : null}">Tổng quan</a>
+    <a href="/teacher/profile" th:attr="aria-current=${active == 'profile' ? 'page' : null}">Hồ sơ</a>
+    <a href="/teacher/documents" th:attr="aria-current=${active == 'documents' ? 'page' : null}">Xác minh danh tính</a>
+    <a href="/teacher/credentials" th:attr="aria-current=${active == 'credentials' ? 'page' : null}">Minh chứng năng lực</a>
+    <a href="/teacher/subjects" th:attr="aria-current=${active == 'subjects' ? 'page' : null}">Môn dạy</a>
+    <a href="/teacher/subject-proposals" th:attr="aria-current=${active == 'subject-proposals' ? 'page' : null}">Đề xuất môn</a>
+    <a href="/teacher/packages" th:attr="aria-current=${active == 'packages' ? 'page' : null}">Gói học</a>
+    <a href="/teacher/availability" th:attr="aria-current=${active == 'availability' ? 'page' : null}">Lịch rảnh</a>
+    <a href="/teacher/bookings" th:attr="aria-current=${active == 'bookings' ? 'page' : null}">Lịch dạy</a>
+    <a href="/teacher/booking-requests" th:attr="aria-current=${active == 'booking-requests' ? 'page' : null}">Yêu cầu đặt buổi</a>
+    <a href="/teacher/trial-requests" th:attr="aria-current=${active == 'trial-requests' ? 'page' : null}">Học thử</a>
+    <a href="/teacher/students" th:attr="aria-current=${active == 'students' ? 'page' : null}">Học viên</a>
+    <a href="/teacher/stats" th:attr="aria-current=${active == 'stats' ? 'page' : null}">Thống kê</a>
+    <a href="/teacher/wallet" th:attr="aria-current=${active == 'wallet' ? 'page' : null}">Ví</a>
+    <a href="/teacher/bank-accounts" th:attr="aria-current=${active == 'bank-accounts' ? 'page' : null}">Tài khoản nhận tiền</a>
+    <a href="/teacher/payouts" th:attr="aria-current=${active == 'payouts' ? 'page' : null}">Rút tiền</a>
+    <a href="/teacher/messages" th:attr="aria-current=${active == 'messages' ? 'page' : null}">Tin nhắn</a>
+    <a href="/teacher/notifications" th:attr="aria-current=${active == 'notifications' ? 'page' : null}">Thông báo</a>
+  </div>
+  <div class="teacher-messages-nav__mobile">
+    <a href="/teacher" th:attr="aria-current=${active == 'overview' ? 'page' : null}">Tổng quan</a>
+    <a href="/teacher/bookings" th:attr="aria-current=${active == 'bookings' ? 'page' : null}">Lịch dạy</a>
+    <a href="/teacher/booking-requests" th:attr="aria-current=${active == 'booking-requests' ? 'page' : null}">Yêu cầu</a>
+    <a href="/teacher/trial-requests" th:attr="aria-current=${active == 'trial-requests' ? 'page' : null}">Học thử</a>
+    <a href="/teacher/messages" th:attr="aria-current=${active == 'messages' ? 'page' : null}">Tin nhắn</a>
+    <details class="teacher-messages-nav__more">
+      <summary>Thêm</summary>
+      <div class="teacher-messages-nav__more-links">
+        <a href="/teacher/profile" th:attr="aria-current=${active == 'profile' ? 'page' : null}">Hồ sơ</a>
+        <a href="/teacher/documents" th:attr="aria-current=${active == 'documents' ? 'page' : null}">Xác minh danh tính</a>
+        <a href="/teacher/credentials" th:attr="aria-current=${active == 'credentials' ? 'page' : null}">Minh chứng năng lực</a>
+        <a href="/teacher/subjects" th:attr="aria-current=${active == 'subjects' ? 'page' : null}">Môn dạy</a>
+        <a href="/teacher/subject-proposals" th:attr="aria-current=${active == 'subject-proposals' ? 'page' : null}">Đề xuất môn</a>
+        <a href="/teacher/packages" th:attr="aria-current=${active == 'packages' ? 'page' : null}">Gói học</a>
+        <a href="/teacher/availability" th:attr="aria-current=${active == 'availability' ? 'page' : null}">Lịch rảnh</a>
+        <a href="/teacher/students" th:attr="aria-current=${active == 'students' ? 'page' : null}">Học viên</a>
+        <a href="/teacher/stats" th:attr="aria-current=${active == 'stats' ? 'page' : null}">Thống kê</a>
+        <a href="/teacher/wallet" th:attr="aria-current=${active == 'wallet' ? 'page' : null}">Ví</a>
+        <a href="/teacher/bank-accounts" th:attr="aria-current=${active == 'bank-accounts' ? 'page' : null}">Tài khoản nhận tiền</a>
+        <a href="/teacher/payouts" th:attr="aria-current=${active == 'payouts' ? 'page' : null}">Rút tiền</a>
+        <a href="/teacher/notifications" th:attr="aria-current=${active == 'notifications' ? 'page' : null}">Thông báo</a>
+      </div>
+    </details>
+  </div>
+</nav>

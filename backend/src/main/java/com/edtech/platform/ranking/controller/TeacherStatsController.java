@@ -6,6 +6,7 @@ import com.edtech.platform.common.response.PageMeta;
 import com.edtech.platform.ranking.dto.response.TeacherRankingItem;
 import com.edtech.platform.ranking.dto.response.TeacherStatsView;
 import com.edtech.platform.ranking.service.TeacherStatsService;
+import com.edtech.platform.teacher.facade.TeacherFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,10 +26,12 @@ import java.util.UUID;
 public class TeacherStatsController {
 
     private final TeacherStatsService teacherStatsService;
+    private final TeacherFacade teachers;
 
     @GetMapping("/api/teacher/stats")
     public ApiResponse<TeacherStatsView> getTeacherStats(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        return ApiResponse.ok(teacherStatsService.getTeacherStats(authenticatedUser.id()));
+        UUID teacherId = teachers.getTeacherByUserId(authenticatedUser.id()).id();
+        return ApiResponse.ok(teacherStatsService.getTeacherStats(teacherId));
     }
 
     @GetMapping("/api/public/teachers/ranking")

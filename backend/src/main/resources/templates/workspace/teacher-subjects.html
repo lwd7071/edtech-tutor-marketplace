@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Môn dạy | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/teacher-workspace.css">
+  <link rel="stylesheet" href="/css/teacher-subjects.css">
+</head>
+<body>
+<div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-subjects-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+    <header class="teacher-subjects-heading"><h1>Môn dạy</h1>
+      <p>Quản lý các môn xuất hiện trong hồ sơ gia sư của bạn.</p>
+    </header>
+
+    <div class="teacher-subjects-notice" role="status" th:if="${subjectNotice != null}" th:text="${subjectNotice}">Đã cập nhật môn dạy.</div>
+    <div class="teacher-subjects-notice teacher-subjects-notice--error" role="alert" th:if="${subjectError != null}" th:text="${subjectError}">Chưa thực hiện được thao tác.</div>
+    <div class="teacher-subjects-notice teacher-subjects-notice--error" role="alert" tabindex="-1" th:if="${subjectFormError != null}" th:text="${subjectFormError}">Kiểm tra lại lựa chọn.</div>
+
+    <div class="teacher-subjects-layout">
+      <section class="teacher-subjects-list" aria-labelledby="teacher-subject-list-title">
+        <header class="teacher-subjects-list__heading"><div><h2 id="teacher-subject-list-title">Môn đang có trong hồ sơ</h2><p>Thông tin này giúp học viên hiểu bạn đang dạy nội dung nào.</p></div>
+          <span class="teacher-subjects-count" th:if="${!subjectsUnavailable}" th:text="${#lists.size(teacherSubjects)} + ' môn'">0 môn</span></header>
+        <div class="teacher-subjects-state teacher-subjects-state--error" role="alert" th:if="${subjectsUnavailable}">
+          <h3>Chưa tải được danh sách môn</h3><p>Thử tải lại trước khi thêm hoặc gỡ môn.</p><a href="/teacher/subjects">Tải lại danh sách</a>
+        </div>
+        <div class="teacher-subjects-empty" th:if="${!subjectsUnavailable and #lists.isEmpty(teacherSubjects)}">
+          <span class="teacher-subjects-empty__shape" aria-hidden="true"></span><h3>Chưa có môn dạy</h3><p>Thêm môn học bạn có thể hướng dẫn để hoàn thiện hồ sơ.</p>
+        </div>
+        <ul class="teacher-subjects-items" th:if="${!subjectsUnavailable and !#lists.isEmpty(teacherSubjects)}" aria-label="Môn dạy đã chọn">
+          <li class="teacher-subject-card" th:each="item : ${teacherSubjects}">
+            <div class="teacher-subject-card__top"><div><p class="teacher-subject-card__level" th:text="${item.educationLevelLabel}">Trung học phổ thông</p><h3 th:text="${item.name}">Toán học</h3></div>
+              <span class="teacher-subject-card__status" th:classappend="${item.active ? ' is-active' : ' is-inactive'}" th:text="${item.active ? 'Đang dạy' : 'Tạm ẩn'}">Đang dạy</span></div>
+            <dl class="teacher-subject-card__details">
+              <div th:if="${item.levelDescription != null and !#strings.isEmpty(item.levelDescription)}"><dt>Cấp độ</dt><dd th:text="${item.levelDescription}">Ôn thi THPT</dd></div>
+              <div th:if="${item.experienceDescription != null and !#strings.isEmpty(item.experienceDescription)}"><dt>Kinh nghiệm</dt><dd th:text="${item.experienceDescription}">5 năm</dd></div>
+            </dl>
+            <details class="teacher-subject-remove"><summary>Gỡ môn này</summary>
+              <form method="post" th:action="@{/teacher/subjects/{subjectId}/remove(subjectId=${item.subjectId})}">
+                <p>Môn này sẽ được gỡ khỏi hồ sơ gia sư của bạn.</p><button type="submit">Xác nhận gỡ</button>
+              </form>
+            </details>
+          </li>
+        </ul>
+      </section>
+
+      <aside class="teacher-subjects-editor" aria-labelledby="teacher-subject-editor-title">
+        <form method="post" th:action="@{/teacher/subjects/assign}" th:object="${assignForm}">
+          <header><h2 id="teacher-subject-editor-title">Thêm môn dạy</h2><p>Chọn môn đang hoạt động trong danh mục.</p></header>
+          <div class="teacher-subjects-state teacher-subjects-state--error" role="alert" th:if="${catalogUnavailable}"><h3>Chưa tải được danh mục môn</h3><p>Tải lại trang để thử lại. Bạn vẫn có thể xem danh sách môn hiện có.</p></div>
+          <div class="teacher-subjects-field" th:if="${!catalogUnavailable and !#lists.isEmpty(availableSubjects)}">
+            <label for="subjectId">Môn học</label><select id="subjectId" th:field="*{subjectId}" required th:attr="aria-invalid=${#fields.hasErrors('subjectId')},aria-describedby=${#fields.hasErrors('subjectId')} ? 'subjectId-error' : null,autofocus=${#fields.hasErrors('subjectId')} ? 'autofocus' : null">
+              <option value="">Chọn môn học</option><option th:each="subject : ${availableSubjects}" th:value="${subject.id}" th:text="${subject.name + ' · ' + subject.educationLevelLabel}">Toán · Trung học phổ thông</option>
+            </select>
+            <p id="subjectId-error" class="teacher-subjects-field__error" role="alert" th:if="${#fields.hasErrors('subjectId')}" th:errors="*{subjectId}">Chọn một môn học.</p>
+          </div>
+          <p class="teacher-subjects-no-options" th:if="${!catalogUnavailable and #lists.isEmpty(availableSubjects)}">Không còn môn nào để thêm từ danh mục hiện tại.</p>
+          <div class="teacher-subjects-field"><label for="levelDescription">Cấp độ có thể dạy <span>(không bắt buộc)</span></label><input id="levelDescription" type="text" th:field="*{levelDescription}" autocomplete="off" placeholder="Ví dụ: Lớp 6–12, luyện thi đại học"></div>
+          <div class="teacher-subjects-field"><label for="experienceDescription">Kinh nghiệm với môn này <span>(không bắt buộc)</span></label><textarea id="experienceDescription" rows="3" th:field="*{experienceDescription}" placeholder="Chia sẻ ngắn gọn kinh nghiệm liên quan"></textarea></div>
+          <button class="teacher-subjects-button" type="submit" th:disabled="${subjectsUnavailable or catalogUnavailable or #lists.isEmpty(availableSubjects)}">Thêm vào hồ sơ</button>
+        </form>
+      </aside>
+    </div>
+  </div>
+</main>
+<footer class="teacher-message-footer"><div><a href="/teacher/subjects">Tutor Match</a><span>Quản lý môn dạy.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

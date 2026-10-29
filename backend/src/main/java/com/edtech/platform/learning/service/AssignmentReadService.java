@@ -33,7 +33,15 @@ public class AssignmentReadService {
     @Transactional(readOnly=true)
     public Page<Map<String,Object>> teacherList(UUID userId, Pageable pageable) {
         UUID teacherId = teacherId(userId);
-        return assignments.findByTeacherId(teacherId,pageable).map(this::view);
+        Page<Assignment> page = assignments.findByTeacherId(teacherId, pageable);
+        var rows = page.getContent();
+        if (rows.isEmpty()) return page.map(this::view);
+        var studentNames = identities.getIdentities(rows.stream().map(Assignment::getStudentId).distinct().toList());
+        var subjectNames = subjects.getSubjects(rows.stream().map(Assignment::getSubjectId).distinct().toList());
+        var submissionsByAssignment = submissions.findByAssignmentIdIn(rows.stream().map(Assignment::getId).toList()).stream()
+                .collect(java.util.stream.Collectors.toMap(s -> s.getAssignment().getId(), this::submissionView, (first, ignored) -> first));
+        return page.map(assignment -> view(assignment, studentNames, subjectNames,
+                submissionsByAssignment.get(assignment.getId())));
     }
 
     @Transactional(readOnly=true)
@@ -60,16 +68,26 @@ public class AssignmentReadService {
     }
 
     private Map<String,Object> view(Assignment a) {
+        return view(a, identities.getIdentities(List.of(a.getStudentId())), subjects.getSubjects(List.of(a.getSubjectId())),
+                submissions.findByAssignmentIdAndStudentId(a.getId(), a.getStudentId()).map(this::submissionView).orElse(null));
+    }
+
+    private Map<String,Object> view(Assignment a,
+                                   Map<UUID, com.edtech.platform.auth.facade.dto.IdentitySnapshot> studentNames,
+                                   Map<UUID, com.edtech.platform.subject.facade.dto.SubjectSnapshot> subjectNames,
+                                   SubmissionDetail submitted) {
         var result = new LinkedHashMap<String,Object>();
         result.put("id",a.getId()); result.put("teacherId",a.getTeacherId()); result.put("studentId",a.getStudentId());
         result.put("subjectId",a.getSubjectId()); result.put("title",a.getTitle()); result.put("assignmentType",a.getAssignmentType());
         result.put("contentBlocks",a.getContentBlocks()); result.put("quizSchema",a.getQuizSchema());
         result.put("dueAt",a.getDueAt()); result.put("status",a.getStatus());
-        result.put("studentName",identities.getIdentity(a.getStudentId()).map(i -> i.fullName()).orElse("Học viên"));
-        result.put("subjectName",subjects.getSubject(a.getSubjectId()).name());
-        var submitted = submissions.findByAssignmentIdAndStudentId(a.getId(),a.getStudentId());
-        result.put("submissions",submitted.map(s -> List.of(submissionView(s))).orElse(List.of()));
-        result.put("submittedCount",submitted.filter(s -> s.getStatus()!=com.edtech.platform.learning.domain.SubmissionStatus.DRAFT).isPresent()?1:0);
+        result.put("version", a.getVersion());
+        var identity = studentNames.get(a.getStudentId());
+        var subject = subjectNames.get(a.getSubjectId());
+        result.put("studentName", identity == null ? "Học viên" : identity.fullName());
+        result.put("subjectName", subject == null ? "Môn học" : subject.name());
+        result.put("submissions", submitted == null ? List.of() : List.of(submitted));
+        result.put("submittedCount", submitted != null && submitted.getStatus()!=com.edtech.platform.learning.domain.SubmissionStatus.DRAFT ? 1 : 0);
         result.put("totalStudents",1);
         return result;
     }

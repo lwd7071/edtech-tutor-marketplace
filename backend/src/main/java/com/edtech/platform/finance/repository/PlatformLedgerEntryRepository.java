@@ -10,7 +10,7 @@ public interface PlatformLedgerEntryRepository extends JpaRepository<PlatformLed
     Optional<PlatformLedgerEntry> findByIdempotencyKey(String key);
 
     @Query(value = """
-            select coalesce(sum(case when p.direction = 'CREDIT' then p.amount_vnd else -p.amount_vnd end), 0)::bigint
+            select cast(coalesce(sum(case when p.direction = 'CREDIT' then p.amount_vnd else -p.amount_vnd end), 0) as bigint)
             from platform_ledger_entries p
             join bookings b on b.id = p.booking_id
             where b.teacher_id = :teacherId and p.bucket = 'ESCROW'

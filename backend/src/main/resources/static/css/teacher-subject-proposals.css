@@ -1,0 +1,50 @@
+.teacher-proposals-page { --proposal-ink: var(--ink, #171714); --proposal-muted: var(--muted, #625f56); --proposal-border: var(--border, #ded9cc); }
+.teacher-proposals-heading { margin: 1.5rem 0 1.25rem; }
+.teacher-proposals-heading h1 { margin: 0; color: var(--proposal-ink); font: 700 clamp(1.8rem, 3vw, 2.5rem)/1.15 "Be Vietnam Pro", sans-serif; letter-spacing: -.035em; }
+.teacher-proposals-heading p { max-width: 46rem; margin: .65rem 0 0; color: var(--proposal-muted); line-height: 1.6; }
+.teacher-proposals-layout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(18rem, .8fr); align-items: start; gap: 1.25rem; }
+.teacher-proposals-history, .teacher-proposals-form-panel { min-width: 0; padding: clamp(1rem, 2.3vw, 1.5rem); border: 1px solid var(--proposal-border); border-radius: 12px; background: var(--surface, #fffdf7); }
+.teacher-proposals-history__heading h2, .teacher-proposals-form-panel h2 { margin: 0; color: var(--proposal-ink); font: 650 1.35rem/1.35 "Be Vietnam Pro", sans-serif; }
+.teacher-proposals-history__heading p, .teacher-proposals-form-panel header p { margin: .35rem 0 0; color: var(--proposal-muted); line-height: 1.5; }
+.teacher-proposals-filter { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; margin: 1.1rem 0; }
+.teacher-proposals-filter label, .teacher-proposals-field label { color: var(--proposal-ink); font-size: .9rem; font-weight: 650; }
+.teacher-proposals-filter select, .teacher-proposals-field input, .teacher-proposals-field select, .teacher-proposals-field textarea { min-height: 2.75rem; box-sizing: border-box; padding: .62rem .72rem; border: 1px solid #aaa497; border-radius: 4px; background: #fff; color: var(--proposal-ink); font: inherit; }
+.teacher-proposals-filter select { min-width: 12rem; }
+.teacher-proposals-filter button { min-height: 2.75rem; padding: .55rem .8rem; border: 1px solid var(--proposal-border); border-radius: 4px; background: var(--surface-warm, #f7f3e8); color: var(--proposal-ink); font: inherit; font-weight: 650; cursor: pointer; }
+.teacher-proposals-filter__error { color: var(--danger, #b42318); }
+.teacher-proposals-list { display: grid; gap: .8rem; margin: 0; padding: 0; list-style: none; }
+.teacher-proposal-card { min-width: 0; padding: 1rem; border: 1px solid var(--proposal-border); border-radius: 8px; background: var(--surface-warm, #f7f3e8); }
+.teacher-proposal-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.teacher-proposal-card__level { margin: 0 0 .3rem; color: var(--proposal-muted); font-size: .75rem; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; }
+.teacher-proposal-card h3 { margin: 0; color: var(--proposal-ink); font: 650 1.05rem/1.4 "Be Vietnam Pro", sans-serif; overflow-wrap: anywhere; }
+.teacher-proposal-status { flex: 0 0 auto; padding: .25rem .55rem; border: 1px solid var(--proposal-border); border-radius: 999px; background: var(--surface, #fffdf7); color: var(--proposal-muted); font-size: .78rem; font-weight: 650; }
+.teacher-proposal-status.is-approved { color: var(--success, #176b45); }
+.teacher-proposal-status.is-rejected { color: var(--danger, #b42318); }
+.teacher-proposal-card__description, .teacher-proposal-card__review p { color: var(--proposal-ink); line-height: 1.55; overflow-wrap: anywhere; }
+.teacher-proposal-card__review { margin-top: .85rem; padding: .8rem; border: 1px solid var(--proposal-border); border-radius: 6px; background: var(--surface, #fffdf7); }
+.teacher-proposal-card__review h4 { margin: 0; color: var(--proposal-ink); font-size: .9rem; }
+.teacher-proposal-card__review p { margin: .3rem 0 0; }
+.teacher-proposal-card footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; margin-top: .85rem; color: var(--proposal-muted); font-size: .84rem; }
+.teacher-proposals-form-panel form > header { margin-bottom: 1.2rem; }
+.teacher-proposals-field { display: grid; gap: .4rem; margin-bottom: 1rem; }
+.teacher-proposals-field label span { color: var(--proposal-muted); font-size: .82rem; font-weight: 400; }
+.teacher-proposals-field input, .teacher-proposals-field select, .teacher-proposals-field textarea { width: 100%; }
+.teacher-proposals-field textarea { min-height: 7rem; resize: vertical; }
+.teacher-proposals-field__error { margin: 0; color: var(--danger, #b42318); font-size: .88rem; line-height: 1.45; }
+.teacher-proposals-filter :focus-visible, .teacher-proposals-field :focus-visible, .teacher-proposals-filter button:focus-visible, .teacher-proposals-button:focus-visible, .teacher-proposals-pagination a:focus-visible, .teacher-proposals-state a:focus-visible { outline: 3px solid var(--focus, #155eef); outline-offset: 2px; }
+.teacher-proposals-button { min-height: 2.9rem; width: 100%; padding: .7rem 1rem; border: 1px solid var(--ink, #171714); border-radius: 4px; background: var(--brand-yellow, #ffd43b); color: var(--ink, #171714); font: inherit; font-weight: 700; cursor: pointer; }
+.teacher-proposals-button:disabled { border-color: var(--proposal-border); background: #eee9dc; color: var(--proposal-muted); cursor: not-allowed; }
+.teacher-proposals-empty, .teacher-proposals-state { margin-top: 1.1rem; padding: 1.25rem; border: 1px dashed var(--proposal-border); border-radius: 8px; background: var(--surface-warm, #f7f3e8); }
+.teacher-proposals-empty h3, .teacher-proposals-state h3 { margin: 0; color: var(--proposal-ink); font: 650 1.05rem/1.4 "Be Vietnam Pro", sans-serif; }
+.teacher-proposals-empty p, .teacher-proposals-state p { margin: .35rem 0 0; color: var(--proposal-muted); line-height: 1.55; }
+.teacher-proposals-empty__shape { display: block; width: 2.25rem; height: .25rem; margin-bottom: .8rem; border-radius: 2px; background: var(--brand-yellow, #ffd43b); }
+.teacher-proposals-state a { display: inline-block; margin-top: .75rem; color: var(--proposal-ink); font-weight: 650; text-underline-offset: .18em; }
+.teacher-proposals-state--error { border-style: solid; border-color: var(--danger, #b42318); }
+.teacher-proposals-notice { margin: 0 0 1rem; padding: .85rem 1rem; border: 1px solid var(--success, #176b45); border-radius: 4px; background: #e6f3e9; color: var(--success, #176b45); }
+.teacher-proposals-notice--error { border-color: var(--danger, #b42318); background: #fff0ed; color: var(--danger, #b42318); }
+.teacher-proposals-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .7rem; margin-top: 1rem; color: var(--proposal-muted); }
+.teacher-proposals-pagination a { color: var(--proposal-ink); font-weight: 650; text-underline-offset: .18em; }
+.teacher-proposals-pagination span[aria-disabled="true"] { color: #8b877e; }
+@media (max-width: 900px) { .teacher-proposals-layout { grid-template-columns: minmax(0, 1fr); } .teacher-proposals-form-panel { grid-row: 1; } }
+@media (max-width: 560px) { .teacher-proposals-filter { align-items: stretch; } .teacher-proposals-filter label { flex-basis: 100%; } .teacher-proposals-filter select { flex: 1 1 auto; min-width: 0; } }
+@media (prefers-reduced-motion: reduce) { .teacher-proposals-page *, .teacher-proposals-page *::before, .teacher-proposals-page *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }

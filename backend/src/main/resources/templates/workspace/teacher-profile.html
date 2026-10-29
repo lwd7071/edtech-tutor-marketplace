@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Hồ sơ gia sư | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/teacher-workspace.css">
+  <link rel="stylesheet" href="/css/teacher-profile.css">
+</head>
+<body>
+<div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-profile-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+    <div id="teacher-profile-content">
+      <header class="teacher-profile-heading">
+        <p class="teacher-profile-eyebrow">Hồ sơ giảng dạy</p>
+        <h1>Hồ sơ gia sư</h1>
+        <p>Giới thiệu kinh nghiệm và cách bạn tổ chức buổi học.</p>
+      </header>
+
+      <div class="teacher-profile-notice" role="status" th:if="${profileNotice != null}" th:text="${profileNotice}">Đã lưu thay đổi.</div>
+      <div class="teacher-profile-notice teacher-profile-notice--error" role="alert" th:if="${profileError != null}" th:text="${profileError}">Chưa thể thực hiện thao tác.</div>
+      <section class="teacher-profile-state teacher-profile-state--error" role="alert" th:if="${profileUnavailable}">
+        <h2>Chưa tải được hồ sơ</h2><p>Thông tin chưa sẵn sàng. Tải lại trang để thử lại.</p><a href="/teacher/profile">Tải lại</a>
+      </section>
+
+      <div th:if="${!profileUnavailable}" class="teacher-profile-content">
+        <section class="teacher-profile-status" aria-labelledby="teacher-profile-status-title">
+          <div class="teacher-profile-status__mark" aria-hidden="true">TM</div>
+          <div class="teacher-profile-status__body">
+            <p class="teacher-profile-eyebrow">Trạng thái hồ sơ</p>
+            <h2 id="teacher-profile-status-title" th:text="${profileStatusLabel}">Bản nháp</h2>
+            <p th:if="${profile.rejectionReason != null and !#strings.isEmpty(profile.rejectionReason)}" th:text="${profile.rejectionReason}">Lý do cần bổ sung.</p>
+            <p th:unless="${profile.rejectionReason != null and !#strings.isEmpty(profile.rejectionReason)}" th:text="${profile.profileStatus.name() == 'APPROVED' ? 'Thay đổi nội dung giảng dạy sẽ đưa hồ sơ về bản nháp.' : profile.profileStatus.name() == 'PENDING_APPROVAL' ? 'Hồ sơ đang được xem xét.' : 'Hoàn thiện thông tin rồi gửi để xét duyệt.'}">Hoàn thiện thông tin rồi gửi để xét duyệt.</p>
+          </div>
+          <span class="teacher-profile-status__badge" th:text="${profile.isVisible ? 'Đang hiển thị' : 'Chưa hiển thị'}">Chưa hiển thị</span>
+        </section>
+
+        <div class="teacher-profile-form-error" role="alert" tabindex="-1" th:if="${formError != null or formHasErrors}">
+          <p th:if="${formError != null}" th:text="${formError}">Kiểm tra lại thông tin.</p>
+          <p th:if="${formHasErrors}">Một số trường chưa hợp lệ. Hãy sửa nội dung được đánh dấu.</p>
+        </div>
+
+        <section class="teacher-profile-panel" aria-labelledby="teacher-profile-teaching-title">
+          <header class="teacher-profile-panel__heading">
+            <div><p class="teacher-profile-eyebrow">Thông tin công khai</p><h2 id="teacher-profile-teaching-title">Cách bạn giảng dạy</h2></div>
+            <p>Thông tin này giúp học viên hiểu kinh nghiệm và hình thức học phù hợp.</p>
+          </header>
+          <form method="post" action="/teacher/profile/update" th:object="${profileForm}">
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <fieldset class="teacher-profile-fields" th:disabled="${!canEdit}">
+              <div class="teacher-profile-field teacher-profile-field--wide">
+                <label for="teacherBio">Giới thiệu và phương pháp giảng dạy</label>
+                <textarea id="teacherBio" rows="6" maxlength="5000" th:field="*{bio}" aria-describedby="teacherBio-hint"
+                          th:attr="aria-invalid=${#fields.hasErrors('bio')}"></textarea>
+                <p id="teacherBio-hint" class="teacher-profile-hint">Tối đa 5.000 ký tự. Không nhập mã HTML.</p>
+                <p class="teacher-profile-field__error" th:if="${#fields.hasErrors('bio')}" th:errors="*{bio}">Giới thiệu chưa hợp lệ.</p>
+              </div>
+              <div class="teacher-profile-field">
+                <label for="teacherExperience">Số năm kinh nghiệm</label>
+                <input id="teacherExperience" type="number" min="0" max="80" th:field="*{yearsOfExperience}" th:attr="aria-invalid=${#fields.hasErrors('yearsOfExperience')},aria-describedby=${#fields.hasErrors('yearsOfExperience')} ? 'teacherExperience-error' : null">
+                <p id="teacherExperience-error" class="teacher-profile-field__error" th:if="${#fields.hasErrors('yearsOfExperience')}" th:errors="*{yearsOfExperience}">Số năm chưa hợp lệ.</p>
+              </div>
+              <div class="teacher-profile-field">
+                <label for="teacherLanguages">Ngôn ngữ giảng dạy</label>
+                <input id="teacherLanguages" type="text" maxlength="509" th:field="*{languagesCsv}" aria-describedby="teacherLanguages-hint"
+                       th:attr="aria-invalid=${#fields.hasErrors('languagesCsv')}">
+                <p id="teacherLanguages-hint" class="teacher-profile-hint">Phân cách bằng dấu phẩy, tối đa 10 ngôn ngữ.</p>
+                <p class="teacher-profile-field__error" th:if="${#fields.hasErrors('languagesCsv')}" th:errors="*{languagesCsv}">Danh sách chưa hợp lệ.</p>
+              </div>
+              <fieldset class="teacher-profile-modes teacher-profile-field--wide">
+                <legend>Hình thức giảng dạy</legend>
+                <label class="teacher-profile-check" for="supportsOnline"><input id="supportsOnline" type="checkbox" th:field="*{supportsOnline}"> Dạy trực tuyến</label>
+                <label class="teacher-profile-check" for="supportsOffline"><input id="supportsOffline" type="checkbox" th:field="*{supportsOffline}"> Dạy trực tiếp</label>
+              </fieldset>
+              <div class="teacher-profile-field teacher-profile-field--wide">
+                <label for="teacherVideo">Link video giới thiệu <span>(không bắt buộc)</span></label>
+                <input id="teacherVideo" type="url" maxlength="500" th:field="*{introductionVideoUrl}" placeholder="https://..." th:attr="aria-invalid=${#fields.hasErrors('introductionVideoUrl')},aria-describedby=${#fields.hasErrors('introductionVideoUrl')} ? 'teacherVideo-error' : null">
+                <p class="teacher-profile-field__error" id="teacherVideo-error" th:if="${#fields.hasErrors('introductionVideoUrl')}" th:errors="*{introductionVideoUrl}">Link video chưa hợp lệ.</p>
+              </div>
+            </fieldset>
+            <div class="teacher-profile-actions" th:if="${canEdit}"><button class="teacher-profile-button teacher-profile-button--primary" type="submit">Lưu thông tin</button></div>
+            <p class="teacher-profile-hint" th:if="${!canEdit}">Bạn có thể chỉnh sửa lại khi hồ sơ hoàn tất xét duyệt.</p>
+          </form>
+        </section>
+
+        <section class="teacher-profile-panel" aria-labelledby="teacher-profile-residence-title">
+          <header class="teacher-profile-panel__heading">
+            <div><p class="teacher-profile-eyebrow">Khu vực</p><h2 id="teacher-profile-residence-title">Nơi ở</h2></div>
+            <p>Chọn khu vực tổng quát. Địa chỉ chi tiết không được chỉnh sửa ở trang này.</p>
+          </header>
+          <form class="teacher-profile-province-form" method="get" action="/teacher/profile">
+            <div class="teacher-profile-field">
+              <label for="provincePicker">Tỉnh/thành</label>
+              <select id="provincePicker" name="provinceCode" th:disabled="${locationsUnavailable}">
+                <option value="">Chọn tỉnh/thành</option>
+                <option th:each="province : ${provinces}" th:value="${province.code}" th:text="${province.name}" th:selected="${province.code == selectedProvince}">Hà Nội</option>
+              </select>
+            </div>
+            <button class="teacher-profile-button teacher-profile-button--secondary" type="submit">Chọn tỉnh/thành</button>
+          </form>
+          <form method="post" action="/teacher/profile/residence" th:object="${residenceForm}">
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" th:field="*{provinceCode}">
+            <div class="teacher-profile-fields teacher-profile-fields--residence">
+              <div class="teacher-profile-field">
+                <span class="teacher-profile-field__label">Tỉnh/thành đã chọn</span>
+                <p class="teacher-profile-selected-location" th:text="${selectedProvinceLabel}">Hà Nội</p>
+                <p class="teacher-profile-field__error" th:if="${#fields.hasErrors('provinceCode')}" th:errors="*{provinceCode}">Tỉnh/thành chưa hợp lệ.</p>
+              </div>
+              <div class="teacher-profile-field">
+                <label for="wardCode">Xã/phường</label>
+                <select id="wardCode" th:field="*{wardCode}" th:disabled="${selectedProvince == null or locationsUnavailable}">
+                  <option value="">Chọn xã/phường</option>
+                  <option th:each="ward : ${wards}" th:value="${ward.code}" th:text="${ward.name}">Phường mẫu</option>
+                </select>
+                <p class="teacher-profile-field__error" th:if="${#fields.hasErrors('wardCode')}" th:errors="*{wardCode}">Xã/phường chưa hợp lệ.</p>
+              </div>
+            </div>
+            <p class="teacher-profile-field__error" th:if="${#fields.hasErrors('provincePresentWhenWardSelected')}" th:errors="*{provincePresentWhenWardSelected}">Chọn tỉnh/thành trước.</p>
+            <p class="teacher-profile-hint" th:if="${locationsUnavailable}" role="status">Chưa tải được danh sách địa phương. Thử tải lại trang để tiếp tục.</p>
+            <div class="teacher-profile-actions"><button class="teacher-profile-button teacher-profile-button--primary" type="submit" th:disabled="${locationsUnavailable}">Lưu khu vực</button></div>
+          </form>
+        </section>
+
+        <section class="teacher-profile-submit" th:if="${canSubmit}" aria-labelledby="teacher-profile-submit-title">
+          <div><p class="teacher-profile-eyebrow">Bước tiếp theo</p><h2 id="teacher-profile-submit-title">Gửi hồ sơ xét duyệt</h2><p>Kiểm tra lại thông tin trước khi gửi.</p></div>
+          <form method="post" action="/teacher/profile/submit">
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="teacher-profile-button teacher-profile-button--primary" type="submit">Gửi xét duyệt</button>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+</main>
+<footer class="teacher-message-footer"><div><a href="/teacher/profile">Tutor Match</a><span>Hồ sơ giảng dạy.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

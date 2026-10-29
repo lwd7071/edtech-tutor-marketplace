@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#fffdf7">
+  <title>Yêu cầu học thử | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/public.css"><link rel="stylesheet" href="/css/student-dashboard.css"><link rel="stylesheet" href="/css/teacher-workspace.css"><link rel="stylesheet" href="/css/teacher-trial-requests.css">
+</head>
+<body>
+<div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-trial-requests-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+    <header class="teacher-trial-heading"><div><h1>Yêu cầu học thử</h1><p>Xem mong muốn của học viên và xác nhận thời gian phù hợp.</p></div><span th:if="${!trialRequestsUnavailable}" th:text="${totalRequests + ' yêu cầu'}">0 yêu cầu</span></header>
+    <div class="teacher-trial-notice" role="status" th:if="${trialNotice}" th:text="${trialNotice}">Đã phản hồi yêu cầu.</div>
+    <section id="trial-action-error" class="teacher-trial-notice teacher-trial-notice--error" role="alert" tabindex="-1" th:if="${trialActionError}" th:text="${trialActionError}">Chưa thực hiện được thao tác.</section>
+
+    <section class="teacher-trial-list" aria-label="Danh sách yêu cầu học thử" th:if="${!trialRequestsUnavailable and !#lists.isEmpty(trialRows)}">
+      <article class="teacher-trial-request" th:each="row : ${trialRows}" th:with="request=${row.request}">
+        <header class="teacher-trial-request__heading"><div><p>Học thử</p><h2 th:text="${row.studentName + ' · ' + row.subjectName}">Học viên · Môn học</h2></div><span class="teacher-trial-status" th:classappend="${' trial-status-' + #strings.toLowerCase(request.status)}" th:text="${request.status == T(com.edtech.platform.booking.domain.TrialRequestStatus).PENDING ? 'Chờ phản hồi' : request.status == T(com.edtech.platform.booking.domain.TrialRequestStatus).ACCEPTED ? 'Đã chấp nhận' : request.status == T(com.edtech.platform.booking.domain.TrialRequestStatus).REJECTED ? 'Đã từ chối' : 'Đã hủy'}">Chờ phản hồi</span></header>
+        <dl class="teacher-trial-facts"><div><dt>Thời gian mong muốn</dt><dd><time th:datetime="${request.preferredStartTime}" th:text="${#temporals.format(request.preferredStartTime, 'EEEE, dd/MM/yyyy · HH:mm', 'Asia/Ho_Chi_Minh')}">Thời gian</time></dd></div><div><dt>Ngày gửi</dt><dd><time th:datetime="${request.createdAt}" th:text="${#temporals.format(request.createdAt, 'dd/MM/yyyy HH:mm', 'Asia/Ho_Chi_Minh')}">Ngày gửi</time></dd></div></dl>
+        <section class="teacher-trial-note"><h3>Mục tiêu của học viên</h3><p th:text="${#strings.isEmpty(request.note) ? 'Học viên chưa gửi lời nhắn.' : request.note}">Nội dung yêu cầu</p></section>
+        <p class="teacher-trial-rejection" th:if="${request.status == T(com.edtech.platform.booking.domain.TrialRequestStatus).REJECTED and !#strings.isEmpty(request.rejectionReason)}"><strong>Lý do từ chối:</strong> <span th:text="${request.rejectionReason}">Lý do</span></p>
+        <div class="teacher-trial-actions" th:if="${request.status == T(com.edtech.platform.booking.domain.TrialRequestStatus).PENDING}">
+          <details class="teacher-trial-response" th:open="${trialResponseRequestId == request.id.toString() and trialResponseAction == 'accept'}">
+            <summary>Chọn giờ và chấp nhận</summary>
+            <form method="post" th:action="@{/teacher/trial-requests/{id}/accept(id=${request.id})}">
+              <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <input type="hidden" name="version" th:value="${trialActionForm != null and trialResponseRequestId == request.id.toString() ? trialActionForm.version : request.version}">
+              <input type="hidden" name="page" th:value="${currentPage}">
+              <h3>Xác nhận thời gian cuối cùng</h3><p>Thao tác này tạo buổi học thử theo giờ bạn chọn.</p>
+              <p class="teacher-trial-field__hint">Nhập giờ Việt Nam. Giờ kết thúc phải sau giờ bắt đầu.</p>
+              <div class="teacher-trial-field"><label th:for="${'trial-start-' + request.id}">Bắt đầu</label><input type="datetime-local" name="startTime" required th:id="${'trial-start-' + request.id}" th:min="${todayLocal}" th:value="${trialActionForm != null and trialResponseRequestId == request.id.toString() ? trialActionForm.startTime : ''}"></div>
+              <div class="teacher-trial-field"><label th:for="${'trial-end-' + request.id}">Kết thúc</label><input type="datetime-local" name="endTime" required th:id="${'trial-end-' + request.id}" th:min="${todayLocal}" th:value="${trialActionForm != null and trialResponseRequestId == request.id.toString() ? trialActionForm.endTime : ''}"></div>
+              <div class="teacher-trial-field"><label th:for="${'trial-mode-' + request.id}">Hình thức</label><select name="deliveryMode" required th:id="${'trial-mode-' + request.id}"><option value="">Chọn hình thức</option><option value="ONLINE" th:selected="${trialActionForm != null and trialResponseRequestId == request.id.toString() and trialActionForm.deliveryMode == T(com.edtech.platform.booking.domain.DeliveryMode).ONLINE}">Trực tuyến</option><option value="OFFLINE" th:selected="${trialActionForm != null and trialResponseRequestId == request.id.toString() and trialActionForm.deliveryMode == T(com.edtech.platform.booking.domain.DeliveryMode).OFFLINE}">Trực tiếp</option></select></div>
+              <div class="teacher-trial-field"><label th:for="${'trial-link-' + request.id}">Link buổi học trực tuyến</label><input type="url" name="meetingLink" th:id="${'trial-link-' + request.id}" th:value="${trialActionForm != null and trialResponseRequestId == request.id.toString() ? trialActionForm.meetingLink : ''}"><span class="teacher-trial-field__hint">Chỉ điền khi chọn hình thức trực tuyến.</span></div>
+              <div class="teacher-trial-field"><label th:for="${'trial-address-' + request.id}">Địa điểm học trực tiếp</label><input type="text" name="locationAddress" maxlength="1000" th:id="${'trial-address-' + request.id}" th:value="${trialActionForm != null and trialResponseRequestId == request.id.toString() ? trialActionForm.locationAddress : ''}"><span class="teacher-trial-field__hint">Chỉ điền khi chọn hình thức trực tiếp.</span></div>
+              <button class="teacher-trial-button teacher-trial-button--primary" type="submit">Tạo buổi học thử</button>
+            </form>
+          </details>
+          <details class="teacher-trial-response" th:open="${trialResponseRequestId == request.id.toString() and trialResponseAction == 'reject'}">
+            <summary>Từ chối và gửi lý do</summary>
+            <form method="post" th:action="@{/teacher/trial-requests/{id}/reject(id=${request.id})}">
+              <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <input type="hidden" name="version" th:value="${trialActionForm != null and trialResponseRequestId == request.id.toString() ? trialActionForm.version : request.version}">
+              <input type="hidden" name="page" th:value="${currentPage}">
+              <h3>Lý do từ chối</h3><p>Nhập lý do để học viên biết vì sao chưa thể sắp xếp buổi học.</p>
+              <div class="teacher-trial-field"><label th:for="${'trial-reason-' + request.id}">Lý do từ chối</label><textarea name="reason" rows="4" required maxlength="1000" th:id="${'trial-reason-' + request.id}" th:text="${trialActionForm != null and trialResponseRequestId == request.id.toString() ? trialActionForm.reason : ''}"></textarea></div>
+              <button class="teacher-trial-button teacher-trial-button--secondary" type="submit">Từ chối yêu cầu</button>
+            </form>
+          </details>
+        </div>
+      </article>
+    </section>
+
+    <section class="teacher-trial-state teacher-trial-state--error" role="alert" th:if="${trialRequestsUnavailable}"><h2>Chưa tải được yêu cầu học thử</h2><p>Danh sách chưa được cập nhật. Hãy thử tải lại.</p><a th:href="@{/teacher/trial-requests(page=${currentPage})}">Thử tải lại</a></section>
+    <section class="teacher-trial-state" th:if="${!trialRequestsUnavailable and #lists.isEmpty(trialRows)}"><h2>Chưa có yêu cầu học thử</h2><p>Các yêu cầu mới sẽ xuất hiện tại đây để bạn xem mục tiêu và phản hồi.</p><a href="/teacher/availability">Kiểm tra lịch rảnh</a></section>
+    <nav class="teacher-trial-pagination" aria-label="Phân trang yêu cầu học thử" th:if="${!trialRequestsUnavailable and totalPages > 1}"><a th:if="${hasPrevious}" th:href="@{/teacher/trial-requests(page=${currentPage - 1})}">Trang trước</a><span th:text="${'Trang ' + (currentPage + 1) + ' / ' + totalPages}">Trang 1 / 2</span><a th:if="${hasNext}" th:href="@{/teacher/trial-requests(page=${currentPage + 1})}">Trang sau</a></nav>
+  </div>
+</main>
+<footer class="teacher-message-footer"><div><a href="/teacher/trial-requests">Tutor Match</a><span>Yêu cầu học thử.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

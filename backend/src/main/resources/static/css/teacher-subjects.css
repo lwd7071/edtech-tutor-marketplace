@@ -1,0 +1,47 @@
+.teacher-subjects-page { --teacher-subject-ink: var(--ink, #171714); --teacher-subject-muted: var(--muted, #625f56); --teacher-subject-border: var(--border, #ded9cc); }
+.teacher-subjects-heading { margin: 1.5rem 0 1.25rem; }
+.teacher-subjects-heading h1 { margin: 0; color: var(--teacher-subject-ink); font: 700 clamp(1.8rem, 3vw, 2.5rem)/1.15 "Be Vietnam Pro", sans-serif; letter-spacing: -.035em; }
+.teacher-subjects-heading p { max-width: 46rem; margin: .65rem 0 0; color: var(--teacher-subject-muted); line-height: 1.6; }
+.teacher-subjects-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(18rem, .8fr); align-items: start; gap: 1.25rem; }
+.teacher-subjects-list, .teacher-subjects-editor { min-width: 0; padding: clamp(1rem, 2.3vw, 1.5rem); border: 1px solid var(--teacher-subject-border); border-radius: 12px; background: var(--surface, #fffdf7); }
+.teacher-subjects-list__heading, .teacher-subject-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.teacher-subjects-list__heading h2, .teacher-subjects-editor h2 { margin: 0; color: var(--teacher-subject-ink); font: 650 1.35rem/1.35 "Be Vietnam Pro", sans-serif; }
+.teacher-subjects-list__heading p, .teacher-subjects-editor header p { margin: .35rem 0 0; color: var(--teacher-subject-muted); line-height: 1.5; }
+.teacher-subjects-count { flex: 0 0 auto; padding: .25rem .6rem; border: 1px solid var(--teacher-subject-border); border-radius: 999px; color: var(--teacher-subject-muted); font-size: .85rem; }
+.teacher-subjects-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; margin: 1.2rem 0 0; padding: 0; list-style: none; }
+.teacher-subject-card { min-width: 0; padding: 1rem; border: 1px solid var(--teacher-subject-border); border-radius: 8px; background: var(--surface-warm, #f7f3e8); }
+.teacher-subject-card__level { margin: 0 0 .3rem; color: var(--teacher-subject-muted); font-size: .75rem; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; overflow-wrap: anywhere; }
+.teacher-subject-card h3 { margin: 0; color: var(--teacher-subject-ink); font: 650 1.05rem/1.35 "Be Vietnam Pro", sans-serif; overflow-wrap: anywhere; }
+.teacher-subject-card__status { flex: 0 0 auto; padding: .25rem .55rem; border-radius: 999px; background: #eee9dc; color: var(--teacher-subject-muted); font-size: .78rem; font-weight: 600; }
+.teacher-subject-card__status.is-active { background: #e6f3e9; color: var(--success, #176b45); }
+.teacher-subject-card__details { display: grid; gap: .55rem; margin: 1rem 0; }
+.teacher-subject-card__details div { min-width: 0; }
+.teacher-subject-card__details dt { color: var(--teacher-subject-muted); font-size: .78rem; }
+.teacher-subject-card__details dd { margin: .1rem 0 0; color: var(--teacher-subject-ink); line-height: 1.5; overflow-wrap: anywhere; }
+.teacher-subject-remove { border-top: 1px solid var(--teacher-subject-border); padding-top: .65rem; }
+.teacher-subject-remove summary { width: fit-content; color: var(--danger, #b42318); cursor: pointer; font-weight: 600; }
+.teacher-subject-remove form { margin-top: .7rem; }
+.teacher-subject-remove p { margin: 0 0 .7rem; color: var(--teacher-subject-muted); line-height: 1.5; }
+.teacher-subject-remove button { min-height: 2.6rem; padding: .55rem .8rem; border: 1px solid var(--danger, #b42318); border-radius: 4px; background: var(--surface, #fffdf7); color: var(--danger, #b42318); font: inherit; font-weight: 650; cursor: pointer; }
+.teacher-subjects-editor form > header { margin-bottom: 1.2rem; }
+.teacher-subjects-field { display: grid; gap: .4rem; margin-bottom: 1rem; }
+.teacher-subjects-field label { color: var(--teacher-subject-ink); font-size: .9rem; font-weight: 650; }
+.teacher-subjects-field label span { color: var(--teacher-subject-muted); font-size: .82rem; font-weight: 400; }
+.teacher-subjects-field__error { margin: 0; color: var(--danger, #b42318); font-size: .88rem; line-height: 1.45; }
+.teacher-subjects-field input, .teacher-subjects-field select, .teacher-subjects-field textarea { width: 100%; min-height: 2.8rem; box-sizing: border-box; padding: .65rem .75rem; border: 1px solid #aaa497; border-radius: 4px; background: #fff; color: var(--teacher-subject-ink); font: inherit; }
+.teacher-subjects-field textarea { min-height: 6rem; resize: vertical; }
+.teacher-subjects-field input:focus-visible, .teacher-subjects-field select:focus-visible, .teacher-subjects-field textarea:focus-visible, .teacher-subject-remove summary:focus-visible, .teacher-subject-remove button:focus-visible, .teacher-subjects-button:focus-visible, .teacher-subjects-state a:focus-visible { outline: 3px solid var(--focus, #155eef); outline-offset: 2px; }
+.teacher-subjects-button { min-height: 2.9rem; width: 100%; padding: .7rem 1rem; border: 1px solid var(--ink, #171714); border-radius: 4px; background: var(--brand-yellow, #ffd43b); color: var(--ink, #171714); font: inherit; font-weight: 700; cursor: pointer; }
+.teacher-subjects-button:disabled { border-color: var(--teacher-subject-border); background: #eee9dc; color: var(--teacher-subject-muted); cursor: not-allowed; }
+.teacher-subjects-no-options { margin: 0 0 1rem; padding: .8rem; border: 1px solid var(--teacher-subject-border); border-radius: 6px; background: var(--surface-warm, #f7f3e8); color: var(--teacher-subject-muted); line-height: 1.5; }
+.teacher-subjects-empty, .teacher-subjects-state { margin-top: 1.1rem; padding: 1.25rem; border: 1px dashed var(--teacher-subject-border); border-radius: 8px; background: var(--surface-warm, #f7f3e8); }
+.teacher-subjects-empty h3, .teacher-subjects-state h3 { margin: 0; color: var(--teacher-subject-ink); font: 650 1.05rem/1.4 "Be Vietnam Pro", sans-serif; }
+.teacher-subjects-empty p, .teacher-subjects-state p { margin: .35rem 0 0; color: var(--teacher-subject-muted); line-height: 1.55; }
+.teacher-subjects-empty__shape { display: block; width: 2.25rem; height: .25rem; margin-bottom: .8rem; border-radius: 2px; background: var(--brand-yellow, #ffd43b); }
+.teacher-subjects-state a { display: inline-block; margin-top: .75rem; color: var(--ink, #171714); font-weight: 650; text-underline-offset: .18em; }
+.teacher-subjects-state--error { border-style: solid; border-color: #e2b4ad; background: #fff5f2; }
+.teacher-subjects-notice { margin: 0 0 1rem; padding: .85rem 1rem; border: 1px solid var(--success, #176b45); border-radius: 4px; background: #e6f3e9; color: var(--success, #176b45); }
+.teacher-subjects-notice--error { border-color: var(--danger, #b42318); background: #fff0ed; color: var(--danger, #b42318); }
+@media (max-width: 900px) { .teacher-subjects-layout { grid-template-columns: minmax(0, 1fr); } .teacher-subjects-editor { grid-row: 1; } }
+@media (max-width: 560px) { .teacher-subjects-items { grid-template-columns: minmax(0, 1fr); } .teacher-subjects-list__heading { flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { .teacher-subjects-page *, .teacher-subjects-page *::before, .teacher-subjects-page *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }

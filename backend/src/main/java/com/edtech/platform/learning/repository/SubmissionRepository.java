@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -12,4 +14,5 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
     @org.springframework.data.jpa.repository.Query("select s.assignment.id from Submission s where s.id = :id")
     Optional<UUID> findAssignmentId(UUID id);
     Optional<Submission> findByAssignmentIdAndStudentId(UUID assignmentId, UUID studentId);
+    List<Submission> findByAssignmentIdIn(Collection<UUID> assignmentIds);
 }

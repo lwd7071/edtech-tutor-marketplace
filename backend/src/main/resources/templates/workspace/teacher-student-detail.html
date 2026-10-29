@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#fffdf7"><title th:text="${studentName + ' | Học viên | Tutor Match'}">Học viên | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/public.css"><link rel="stylesheet" href="/css/student-dashboard.css"><link rel="stylesheet" href="/css/teacher-workspace.css"><link rel="stylesheet" href="/css/teacher-students.css"></head>
+<body><div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-students-page"><div class="student-dashboard__container"><div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+  <nav class="teacher-students-breadcrumb" aria-label="Đường dẫn"><a href="/teacher/students">Học viên</a><span aria-hidden="true">/</span><span th:text="${studentName}">Học viên</span></nav>
+  <header class="teacher-students-heading"><div><h1 th:text="${studentNotFound ? 'Không tìm thấy học viên' : studentName}">Học viên</h1><p th:if="${studentNotFound}">Học viên này chưa có gói học thuộc danh sách của bạn, hoặc đường dẫn không còn hợp lệ.</p><p th:unless="${studentNotFound}">Các gói học đã mua từ bạn.</p></div></header>
+  <section class="teacher-students-panel" th:if="${studentNotFound}" aria-labelledby="student-not-found-title"><h2 id="student-not-found-title">Đường dẫn không còn khả dụng</h2><p>Quay lại danh sách để chọn một học viên hiện thuộc lớp của bạn.</p><a href="/teacher/students">Quay lại danh sách học viên</a></section>
+  <section class="teacher-students-panel" th:unless="${studentNotFound}" aria-labelledby="student-package-title">
+    <header class="teacher-students-panel__heading"><div><h2 id="student-package-title">Gói học</h2><p>Lượt học và thời hạn theo từng gói.</p></div><span th:if="${!studentUnavailable}" th:text="${totalPackages} + ' gói'">0 gói</span></header>
+    <div class="teacher-students-state teacher-students-state--error" role="alert" th:if="${studentUnavailable}"><h3>Chưa tải được thông tin gói</h3><p>Thử tải lại trang để xem các gói học của học viên này.</p><a th:href="@{/teacher/students/{id}(id=${studentId})}">Tải lại</a></div>
+    <div class="teacher-students-empty" th:if="${!studentUnavailable and #lists.isEmpty(packageRows)}"><h3>Không còn gói học để hiển thị</h3><p>Danh sách có thể đã thay đổi. Quay lại trang học viên để tải lại.</p><a href="/teacher/students">Quay lại học viên</a></div>
+    <ul class="teacher-student-package-list" th:if="${!studentUnavailable and !#lists.isEmpty(packageRows)}" aria-label="Các gói học của học viên">
+      <li class="teacher-student-package" th:each="pkg : ${packageRows}">
+        <header><div><p class="teacher-student-package__subject" th:text="${pkg.subjectName}">Môn học</p><h3 th:text="${pkg.packageName}">Gói học</h3></div><span class="teacher-student-package__status" th:classappend="${' status-' + #strings.toLowerCase(pkg.statusCode)}" th:text="${pkg.statusLabel}">Đang hoạt động</span></header>
+        <dl class="teacher-student-package__stats"><div><dt>Tổng số buổi</dt><dd th:text="${pkg.totalSessions}">10</dd></div><div><dt>Còn lại</dt><dd th:text="${pkg.remainingSessions}">8</dd></div><div><dt>Đã đặt</dt><dd th:text="${pkg.reservedSessions}">1</dd></div><div><dt>Đã tiêu thụ</dt><dd th:text="${pkg.completedSessions}">1</dd></div><div><dt>Đã hoàn</dt><dd th:text="${pkg.refundedSessions}">0</dd></div></dl>
+        <footer><span>Giá mua: <strong th:text="${pkg.purchasePriceLabel}">1.000.000 ₫</strong></span><span>Hạn dùng: <strong th:text="${pkg.expiryLabel}">31/12/2026</strong></span></footer>
+      </li>
+    </ul>
+    <nav class="teacher-students-pagination" aria-label="Phân trang gói học" th:if="${!studentUnavailable and totalPages > 1}"><a th:if="${hasPrevious}" th:href="@{/teacher/students/{id}(id=${studentId},page=${currentPage - 1})}">Trang trước</a><span th:text="${'Trang ' + (currentPage + 1) + ' / ' + totalPages}">Trang 1 / 2</span><a th:if="${hasNext}" th:href="@{/teacher/students/{id}(id=${studentId},page=${currentPage + 1})}">Trang sau</a></nav>
+    <a class="teacher-students-back" href="/teacher/students">Quay lại danh sách học viên</a>
+  </section>
+</div></main><footer class="teacher-message-footer"><div><a href="/teacher/students">Tutor Match</a><span>Quản lý học viên.</span></div><a href="/support">Trợ giúp</a></footer></body></html>
