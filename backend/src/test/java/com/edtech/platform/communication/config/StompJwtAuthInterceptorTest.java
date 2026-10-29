@@ -18,6 +18,8 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -50,6 +52,50 @@ class StompJwtAuthInterceptorTest {
         connect("s1");
         assertDoesNotThrow(() -> inbound(StompCommand.SEND, "s1", "/app/chat.send"));
         assertDoesNotThrow(() -> inbound(StompCommand.SUBSCRIBE, "s1", "/user/queue/messages"));
+    }
+
+    @Test void activeStudentCanConnectUsingHtmlSessionPrincipal() {
+        when(statuses.resolve(id)).thenReturn(Optional.of("ACTIVE"));
+        var headers = StompHeaderAccessor.create(StompCommand.CONNECT);
+        headers.setSessionId("html-session");
+        headers.setUser(new UsernamePasswordAuthenticationToken(
+                new AuthenticatedUser(id, "student@example.test", "STUDENT"), null,
+                List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_STUDENT"))));
+        headers.setSessionAttributes(Map.of(
+                com.edtech.platform.common.security.HtmlSessionWebSocketHandshakeInterceptor.ACCESS_EXPIRES_AT_ATTRIBUTE,
+                clock.instant().plusSeconds(900)));
+        headers.setLeaveMutable(true);
+
+        assertDoesNotThrow(() -> interceptor.preSend(message(headers), null));
+        assertDoesNotThrow(() -> inbound(StompCommand.SUBSCRIBE, "html-session", "/user/queue/messages"));
+    }
+
+    @Test void htmlSessionWithoutValidExpiryCannotConnect() {
+        when(statuses.resolve(id)).thenReturn(Optional.of("ACTIVE"));
+        var headers = StompHeaderAccessor.create(StompCommand.CONNECT);
+        headers.setSessionId("html-session");
+        headers.setUser(new UsernamePasswordAuthenticationToken(
+                new AuthenticatedUser(id, "student@example.test", "STUDENT"), null, List.of()));
+        headers.setSessionAttributes(Map.of(
+                com.edtech.platform.common.security.HtmlSessionWebSocketHandshakeInterceptor.ACCESS_EXPIRES_AT_ATTRIBUTE,
+                clock.instant().minusSeconds(1)));
+        headers.setLeaveMutable(true);
+
+        assertThrows(AccessDeniedException.class, () -> interceptor.preSend(message(headers), null));
+    }
+
+    @Test void adminCannotUseHtmlSessionForChatSocket() {
+        when(statuses.resolve(id)).thenReturn(Optional.of("ACTIVE"));
+        var headers = StompHeaderAccessor.create(StompCommand.CONNECT);
+        headers.setSessionId("html-session");
+        headers.setUser(new UsernamePasswordAuthenticationToken(
+                new AuthenticatedUser(id, "admin@example.test", "ADMIN"), null, List.of()));
+        headers.setSessionAttributes(Map.of(
+                com.edtech.platform.common.security.HtmlSessionWebSocketHandshakeInterceptor.ACCESS_EXPIRES_AT_ATTRIBUTE,
+                clock.instant().plusSeconds(900)));
+        headers.setLeaveMutable(true);
+
+        assertThrows(AccessDeniedException.class, () -> interceptor.preSend(message(headers), null));
     }
 
     @Test void expirationStopsExistingSessionEvenWhenAnotherSessionIsValid() {

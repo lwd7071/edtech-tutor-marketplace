@@ -19,7 +19,8 @@
     </form>
   </div>
 </header>
-<nav class="teacher-messages-nav" th:fragment="nav(active)" aria-label="Điều hướng gia sư">
+<th:block th:fragment="nav(active)">
+<nav class="teacher-messages-nav" aria-label="Điều hướng gia sư">
   <!-- 5 Nhóm điều hướng chính ở thanh top -->
   <div class="teacher-messages-nav__main">
     <a href="/teacher" th:attr="aria-current=${active == 'overview' ? 'page' : null}">Tổng quan</a>
@@ -64,3 +65,23 @@
     </div>
   </div>
 </nav>
+
+  <nav class="mobile-bottom-nav" aria-label="Điều hướng di động gia sư">
+    <a class="mobile-bottom-nav__item" th:classappend="${active == 'overview' ? ' mobile-bottom-nav__item--active' : ''}" href="/teacher" th:attr="aria-current=${active == 'overview' ? 'page' : null}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      <span class="mobile-bottom-nav__label">Tổng quan</span>
+    </a>
+    <a class="mobile-bottom-nav__item" th:classappend="${active == 'bookings' or active == 'availability' or active == 'booking-requests' or active == 'trial-requests' ? ' mobile-bottom-nav__item--active' : ''}" href="/teacher/bookings" th:attr="aria-current=${active == 'bookings' or active == 'availability' or active == 'booking-requests' or active == 'trial-requests' ? 'page' : null}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <span class="mobile-bottom-nav__label">Lịch dạy</span>
+    </a>
+    <a class="mobile-bottom-nav__item" th:classappend="${active == 'students' or active == 'packages' or active == 'assignments' ? ' mobile-bottom-nav__item--active' : ''}" href="/teacher/students" th:attr="aria-current=${active == 'students' or active == 'packages' or active == 'assignments' ? 'page' : null}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      <span class="mobile-bottom-nav__label">Học viên</span>
+    </a>
+    <a class="mobile-bottom-nav__item" th:classappend="${active == 'wallet' or active == 'stats' or active == 'bank-accounts' or active == 'payouts' ? ' mobile-bottom-nav__item--active' : ''}" href="/teacher/wallet" th:attr="aria-current=${active == 'wallet' or active == 'stats' or active == 'bank-accounts' or active == 'payouts' ? 'page' : null}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M6 10h12"></path><path d="M6 14h8"></path></svg>
+      <span class="mobile-bottom-nav__label">Ví tiền</span>
+    </a>
+  </nav>
+</th:block>

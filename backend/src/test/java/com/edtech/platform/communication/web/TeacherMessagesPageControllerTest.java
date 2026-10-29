@@ -101,7 +101,8 @@ class TeacherMessagesPageControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"message-composer\"")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("message-composer__attach-btn")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("message-composer__send-btn")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("placeholder=\"Nhập tin nhắn...\"")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("placeholder=\"Nhập tin nhắn...\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/js/chat-realtime.js")));
     }
 
     @Test

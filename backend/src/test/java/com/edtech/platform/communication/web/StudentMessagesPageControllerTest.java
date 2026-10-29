@@ -88,7 +88,8 @@ class StudentMessagesPageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Gia sư Thu Hà")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Chào bạn")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("multipart/form-data")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("multipart/form-data")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/js/chat-realtime.js")));
     }
 
     @Test

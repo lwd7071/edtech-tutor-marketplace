@@ -62,6 +62,7 @@ public class TeacherMessagesPageController {
         int safePage = Math.max(0, Math.min(page, 100_000));
         int safeMessagePage = Math.max(0, Math.min(messagePage, 100_000));
         model.addAttribute("activeWorkspaceNav", "messages");
+        model.addAttribute("currentUserId", user.id());
         model.addAttribute("conversationPage", safePage);
         model.addAttribute("messagePage", safeMessagePage);
         model.addAttribute("conversationUnavailable", false);

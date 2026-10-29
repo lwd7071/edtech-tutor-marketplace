@@ -60,7 +60,8 @@
         <section class="messages-welcome" th:if="${activeConversation == null and !selectedConversationUnavailable}">
           <h2 id="thread-title">Chọn một cuộc trò chuyện</h2><p>Tin nhắn với học viên sẽ xuất hiện tại đây.</p>
         </section>
-        <div class="messages-thread__active" th:if="${activeConversation != null and !selectedConversationUnavailable}">
+        <div class="messages-thread__active" th:if="${activeConversation != null and !selectedConversationUnavailable}"
+             th:attr="data-current-user-id=${currentUserId}">
           <header class="thread-heading">
             <div><a class="thread-back" th:href="@{/teacher/messages(page=${conversationPage})}">← Cuộc trò chuyện</a><h2 id="thread-title" th:text="${activeConversation.participantName != null ? activeConversation.participantName : 'Gia sư'}">Học viên</h2><p>Tin nhắn riêng</p></div>
             <form method="post" th:if="${activeConversation.unreadCount > 0}" th:action="@{/teacher/messages/{id}/read(id=${activeConversation.id})}">
@@ -77,8 +78,9 @@
             <nav class="message-history__older" aria-label="Tin nhắn cũ hơn" th:if="${hasOlderMessages}">
               <a th:href="@{/teacher/messages(id=${activeConversation.id},page=${conversationPage},messagePage=${messagePage + 1})}">Tải tin nhắn cũ hơn</a>
             </nav>
-            <ol class="message-list" aria-label="Nội dung cuộc trò chuyện" th:unless="${#lists.isEmpty(messageRows)}">
-              <li th:each="row : ${messageRows}">
+            <ol class="message-list" data-chat-message-list aria-label="Nội dung cuộc trò chuyện">
+              <li th:each="row : ${messageRows}"
+                  th:attr="data-message-id=${row.data.id},data-client-message-id=${row.data.clientMessageId}">
                 <article class="chat-message" th:classappend="${row.own ? ' chat-message--own' : ''}">
                   <div class="chat-message__bubble">
                     <a class="chat-message__attachment" th:if="${row.data.attachment != null and row.attachmentUrl != null}"
@@ -128,5 +130,7 @@
   </div>
 </main>
 <footer class="teacher-message-footer"><div><a href="/teacher/messages">Tutor Match</a><span>Trao đổi với học viên trên Tutor Match.</span></div><a href="/support">Trợ giúp</a></footer>
+<script th:if="${activeConversation != null and !selectedConversationUnavailable}" defer src="/js/vendor/stomp.umd.min.js"></script>
+<script th:if="${activeConversation != null and !selectedConversationUnavailable}" defer src="/js/chat-realtime.js"></script>
 </body>
 </html>
