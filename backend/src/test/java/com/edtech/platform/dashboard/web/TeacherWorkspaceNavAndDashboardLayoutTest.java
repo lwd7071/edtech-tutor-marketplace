@@ -91,11 +91,12 @@ class TeacherWorkspaceNavAndDashboardLayoutTest {
     }
 
     @Test
-    @DisplayName("Top navigation phải gom gọn vào 5 nhóm chính")
+    @DisplayName("Top navigation phải gom gọn vào 5 nhóm chính và đánh dấu aria-current='page' trên nhóm Tổng quan")
     void navigationShouldContainOnlyFiveMainGroups() throws Exception {
         mockMvc.perform(get("/teacher"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Tổng quan")))
+                .andExpect(content().string(containsString("teacher-messages-nav__main")))
+                .andExpect(content().string(containsString("aria-current=\"page\">Tổng quan</a>")))
                 .andExpect(content().string(containsString("Lịch & Yêu cầu")))
                 .andExpect(content().string(containsString("Lớp & Học tập")))
                 .andExpect(content().string(containsString("Thu nhập & Ví")))
@@ -126,5 +127,22 @@ class TeacherWorkspaceNavAndDashboardLayoutTest {
                 .andExpect(content().string(containsString("Yêu cầu học thử đang chờ")))
                 .andExpect(content().string(containsString("Bài tập có bài nộp")))
                 .andExpect(content().string(containsString("Thu nhập")));
+    }
+
+    @Test
+    @DisplayName("Thẻ main của teacher dashboard phải kế thừa cấu trúc student-dashboard full-width và CSS không giới hạn max-width trên root class")
+    void teacherOverviewPageShouldMaintainFullWidthBackground() throws Exception {
+        mockMvc.perform(get("/teacher"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("<main id=\"main-content\" class=\"student-dashboard teacher-overview-page\">")))
+                .andExpect(content().string(containsString("<div class=\"student-dashboard__container\">")));
+
+        java.nio.file.Path cssPath = java.nio.file.Path.of("src/main/resources/static/css/teacher-dashboard.css");
+        org.junit.jupiter.api.Assertions.assertTrue(java.nio.file.Files.exists(cssPath), "CSS file must exist");
+        String cssContent = java.nio.file.Files.readString(cssPath);
+        org.junit.jupiter.api.Assertions.assertFalse(
+                cssContent.matches("(?s).*\\.teacher-overview-page\\s*\\{[^}]*max-width\\s*:\\s*1180px.*"),
+                "teacher-overview-page must not restrict max-width on main tag to avoid breaking full-width background"
+        );
     }
 }

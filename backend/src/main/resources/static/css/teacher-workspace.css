@@ -92,86 +92,93 @@
   color: #b91c1c;
 }
 
-/* Grouped Navigation (5 Main Groups) */
+/* Grouped Navigation (5 Main Groups - Minimalist Underline Style) */
 .teacher-messages-nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin: 18px 0 0;
+  gap: 0;
+  margin: 16px 0 0;
 }
 
 .teacher-messages-nav__main {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding-bottom: 2px;
+  gap: 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: thin;
 }
 
 .teacher-messages-nav__main a {
+  flex: 0 0 auto;
   display: inline-flex;
-  min-height: 42px;
   align-items: center;
-  padding: 0 16px;
-  border-radius: 8px;
-  color: var(--ink);
-  font-weight: 650;
+  padding: 13px 16px;
+  color: var(--muted-strong);
+  font-weight: 600;
   font-size: 0.95rem;
   text-decoration: none;
-  border: 1px solid transparent;
-  transition: background 150ms ease, border-color 150ms ease;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  transition: color 150ms ease, border-color 150ms ease;
+  white-space: nowrap;
 }
 
 .teacher-messages-nav__main a:hover {
-  background: var(--surface-warm);
+  color: var(--ink);
+  background: transparent;
 }
 
 .teacher-messages-nav__main a[aria-current="page"] {
-  background: var(--brand-yellow);
-  border-color: rgba(0, 0, 0, 0.08);
-  color: #171714;
+  color: var(--ink);
   font-weight: 700;
+  border-bottom-color: var(--brand-yellow);
+  background: transparent;
 }
 
-/* Sub-pills (Contextual Secondary Navigation) */
+/* Sub-pills (Contextual Secondary Navigation - Minimal Soft Pills) */
 .teacher-messages-nav__sub {
   display: flex;
   align-items: center;
-  padding: 6px 0 10px;
+  padding: 12px 0 4px;
 }
 
 .teacher-sub-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 4px;
-  background: var(--surface-warm);
-  border-radius: 8px;
-  border: 1px solid var(--border);
+  padding: 0;
+  background: transparent;
+  border: none;
 }
 
 .teacher-sub-pills a {
   display: inline-flex;
-  min-height: 34px;
+  min-height: 32px;
   align-items: center;
-  padding: 0 12px;
-  border-radius: 6px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--surface-warm);
   color: var(--muted-strong);
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
+  border: 1px solid var(--border);
   transition: all 150ms ease;
+  white-space: nowrap;
 }
 
 .teacher-sub-pills a:hover {
+  background: #ffffff;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.6);
+  border-color: #beb8ab;
 }
 
 .teacher-sub-pills a.is-active {
-  background: #ffffff;
-  color: var(--ink);
-  font-weight: 700;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  background: var(--ink);
+  color: #ffffff;
+  border-color: var(--ink);
+  font-weight: 650;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .teacher-messages-header button:focus-visible,
@@ -213,20 +220,27 @@
     display: none;
   }
   .teacher-messages-nav__main {
+    margin-inline: -16px;
+    padding-inline: 16px;
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 6px;
   }
   .teacher-messages-nav__main a {
     white-space: nowrap;
-    padding: 0 12px;
+    padding: 11px 12px;
+  }
+  .teacher-messages-nav__sub {
+    margin-inline: -16px;
+    padding-inline: 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .teacher-sub-pills {
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
-    width: 100%;
+    width: max-content;
   }
   .teacher-sub-pills a {
     white-space: nowrap;

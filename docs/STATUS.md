@@ -1,5 +1,25 @@
 # Trạng thái dự án
 
+## Đồng bộ màu nền Full-Width cho Teacher Dashboard — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:** Khắc phục lỗi trang Tổng quan gia sư (`/teacher`) bị thu hẹp nền màu be vào khoảng giữa $1180\text{px}$ và lộ nền trắng hai bên mép màn hình khi chuyển đổi giữa các tab.
+  - Gỡ bỏ `max-width: 1180px;` và `margin-inline: auto;` khỏi class `.teacher-overview-page` trong `teacher-dashboard.css`, giúp thẻ `<main class="student-dashboard teacher-overview-page">` trải rộng full-width 100% viewport và phủ kín màu nền `--surface-warm` (#f7f3e8) đồng nhất với tất cả các trang con (`/teacher/bookings`, `/teacher/availability`, v.v.).
+  - Độ rộng và căn giữa nội dung bên trong vẫn được bảo đảm chuẩn mực bởi container con `.student-dashboard__container` (`max-width: var(--content-width) = 1200px`).
+  - Kiểm tra xác nhận cả Student (`/student`) và Admin (`/admin`) đều đã sử dụng layout full-width chuẩn và không bị lỗi lộ viền trắng này.
+- **Bằng chứng kiểm thử backend:** Chạy MockMvc TDD suite `TeacherWorkspaceNavAndDashboardLayoutTest` (5 tests, bao gồm test case mới xác minh full-width layout và CSS không giới hạn max-width) và regression tests `TeacherDashboardPageControllerTest`, `TeacherBookingPageControllerTest` PASS **18/18**.
+- **Ranh giới an toàn:** Không thay đổi DB schema, migration diff rỗng. Không động vào `.env.cloud`, Supabase hay port 8080.
+
+
+## Tối giản Top Navigation Teacher & Admin theo chuẩn Student (Phương án 1) — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:**
+  - Chuyển đổi thanh điều hướng Top Navigation ở Teacher (`teacher-workspace.css`) và Admin (`admin-dashboard.css`) từ dạng nút khối vàng dày sang dạng **Underline Tab tối giản** đồng bộ hoàn toàn với Student:
+    - Nền trong suốt phẳng, gạch chân phân cách `border-bottom: 1px solid var(--border)`.
+    - Tab active: chữ màu `var(--ink)` đậm kèm chỉ báo viền dưới `border-bottom: 3px solid var(--brand-yellow)`. Tab thường mang sắc thái `var(--muted-strong)`, hover êm dịu, không còn mảng màu vàng gây áp đảo thị giác.
+    - Thanh Sub-pills (trang con) bên dưới được tinh gọn thành các **Soft Pill Chips** bo tròn 999px (nền `var(--surface-warm)`, active nền `var(--ink)` chữ trắng) giúp phân tách rõ rệt giữa Tầng 1 (Điều hướng chính) và Tầng 2 (Phân hệ con).
+    - Hỗ trợ cuộn ngang mượt mà trên mobile (`overflow-x: auto`, touch scrolling, không tràn màn hình).
+- **Bằng chứng kiểm thử backend:** MockMvc test suites `TeacherWorkspaceNavAndDashboardLayoutTest`, `AdminWorkspaceNavAndDashboardLayoutTest`, `StudentHeaderAndNavLayoutTest` PASS **13/13**.
+- **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không dùng port 8080 cho test ngầm.
+
+
 ## Hiển thị đầy đủ phần Giới thiệu Gia sư — 2026-10-29
 - **Trục nghiệm thu & TDD:** Sửa lỗi bio bị cắt ở 100 ký tự (do facade trước đó chỉ map `bioExcerpt`). Cập nhật `TeacherSnapshot`, `TeacherFacadeImpl` và `TeacherMarketplaceService` truyền toàn bộ chuỗi `bio` cho trang chi tiết `/teachers/{id}`.
 - **Bằng chứng kiểm thử backend:** Các test suites `TeacherMarketplacePublicProfileTest`, `TeacherProfilePageControllerTest`, `TeacherFacadeImplTest` PASS **22/22**.

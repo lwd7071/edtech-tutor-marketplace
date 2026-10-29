@@ -71,72 +71,79 @@
   background: var(--surface-deep);
 }
 
+/* Grouped Navigation (5 Main Groups - Minimalist Underline Style) */
 .admin-workspace-nav {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin: 20px 0 0;
+  gap: 0;
+  margin: 16px 0 0;
 }
 
 .admin-workspace-nav__main {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: thin;
 }
 
 .admin-workspace-nav__main a {
+  flex: 0 0 auto;
   display: inline-flex;
-  min-height: 40px;
   align-items: center;
-  padding: 0 16px;
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--ink);
-  border: 1px solid var(--border);
-  font-weight: 650;
-  font-size: 0.92rem;
+  padding: 13px 16px;
+  color: var(--muted-strong);
+  font-weight: 600;
+  font-size: 0.95rem;
   text-decoration: none;
-  transition: all 150ms ease;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  transition: color 150ms ease, border-color 150ms ease;
+  white-space: nowrap;
 }
 
 .admin-workspace-nav__main a:hover {
-  background: var(--surface-deep);
-  border-color: #c8c2b5;
+  color: var(--ink);
+  background: transparent;
 }
 
 .admin-workspace-nav__main a[aria-current="page"] {
-  background: var(--brand-yellow);
   color: var(--ink);
-  border-color: #e5bc2c;
-  font-weight: 750;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-weight: 700;
+  border-bottom-color: var(--brand-yellow);
+  background: transparent;
+  box-shadow: none;
 }
 
+/* Sub-pills (Contextual Secondary Navigation - Minimal Soft Pills) */
 .admin-workspace-nav__sub {
   display: flex;
-  margin-top: 2px;
+  align-items: center;
+  padding: 12px 0 4px;
 }
 
 .admin-sub-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 4px 0;
+  padding: 0;
 }
 
 .admin-sub-pills a {
   display: inline-flex;
   min-height: 32px;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 14px;
   border-radius: 999px;
-  background: var(--surface);
+  background: var(--surface-warm);
   color: var(--muted-strong);
   font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
   border: 1px solid var(--border);
   transition: all 150ms ease;
+  white-space: nowrap;
 }
 
 .admin-sub-pills a:hover {
@@ -149,14 +156,8 @@
   background: var(--ink);
   color: #fffdf7 !important;
   border-color: var(--ink);
-  font-weight: 700;
-}
-
-.admin-workspace-nav a {
-  display: inline-flex;
-  min-height: 36px;
-  align-items: center;
-  text-decoration: none;
+  font-weight: 650;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .admin-workspace-header a:focus-visible,
@@ -603,6 +604,31 @@
   }
   .admin-workspace-header {
     padding-inline: 16px;
+  }
+  .admin-workspace-nav__main {
+    margin-inline: -16px;
+    padding-inline: 16px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-workspace-nav__main a {
+    white-space: nowrap;
+    padding: 11px 12px;
+  }
+  .admin-workspace-nav__sub {
+    margin-inline: -16px;
+    padding-inline: 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-sub-pills {
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    width: max-content;
+  }
+  .admin-sub-pills a {
+    white-space: nowrap;
   }
   .admin-dashboard__heading h1 {
     font-size: 1.75rem;

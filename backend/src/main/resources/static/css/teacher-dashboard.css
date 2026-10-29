@@ -5,9 +5,6 @@
   --teacher-overview-border: var(--border, #ded9cc);
   --teacher-overview-surface: var(--surface, #fffdf7);
   --teacher-overview-yellow: var(--brand-yellow, #ffd43b);
-  width: 100%;
-  max-width: 1180px;
-  margin-inline: auto;
   padding-bottom: 36px;
   color: var(--teacher-overview-ink);
   accent-color: var(--brand-yellow, #ffd43b);

@@ -1,5 +1,22 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-29 — Đồng bộ màu nền Full-Width cho Teacher Dashboard (`/teacher`)
+- Xử lý triệt để hiện tượng lệch màu nền giữa trang Tổng quan gia sư (`/teacher`) và các phân hệ khác (`/teacher/bookings`, `/teacher/wallet`, v.v.):
+  - Loại bỏ các thuộc tính `max-width: 1180px;` và `margin-inline: auto;` trên `.teacher-overview-page` trong `teacher-dashboard.css`.
+  - Thẻ `<main>` kế thừa trọn vẹn đặc tính full-width của `.student-dashboard` với màu nền ấm `--surface-warm` (`#f7f3e8`) phủ kín toàn bộ viewport ngang, loại bỏ hoàn toàn viền trắng lộ ra từ thẻ `<body>` ở 2 mép màn hình.
+  - Nội dung dashboard bên trong vẫn được giữ cố định an toàn và căn giữa hài hòa bởi `.student-dashboard__container` (`max-width: 1200px`).
+  - Rà soát xác minh giao diện Student và Admin: cả 2 phân hệ đều đã tuân thủ layout full-width chuẩn và không gặp lỗi này.
+- Quy trình TDD: Bổ sung test assertion trong `TeacherWorkspaceNavAndDashboardLayoutTest` kiểm chứng tính toàn vẹn của thẻ `<main>` và CSS không chứa rule thu hẹp; toàn bộ 18/18 tests liên quan PASS. Không chạm vào DB migration hay Supabase.
+
+
+## 2026-10-29 — Tối giản Top Navigation Teacher & Admin theo chuẩn Student (Phương án 1)
+- Tinh chỉnh CSS điều hướng Top Navigation ở Teacher (`teacher-workspace.css`) và Admin (`admin-dashboard.css`) từ dạng nút khối vàng dày (pill button group) sang dạng **Underline Tab phẳng tối giản** theo đúng ngôn ngữ thiết kế của Student:
+  - Tầng 1 (Primary Navigation): `display: flex`, đường kẻ dưới `1px solid var(--border)`. Trạng thái active dùng `border-bottom: 3px solid var(--brand-yellow)` và chữ đen đậm `var(--ink)`, các tab thường dùng chữ `var(--muted-strong)` thanh lịch, loại bỏ hoàn toàn mảng nền vàng gây nặng mắt.
+  - Tầng 2 (Contextual Sub-pills): Chuyển thành các **Soft Pill Chips** bo tròn 999px nhẹ nhàng (cao 32px, nền `var(--surface-warm)`, active nền `var(--ink)` chữ trắng) giúp phân định tầng thị giác rõ ràng giữa danh mục chính và trang con.
+  - Tối ưu responsive trên màn hình nhỏ `<= 640px`: cuộn ngang tự nhiên `overflow-x: auto` với `-webkit-overflow-scrolling: touch`, lề âm bù padding container để vuốt mượt mà không bị ngắt dòng.
+- Quy trình TDD backend: Cập nhật và bổ sung các assertions trong `TeacherWorkspaceNavAndDashboardLayoutTest` và `AdminWorkspaceNavAndDashboardLayoutTest` xác nhận `aria-current="page"` trên nhóm active và class `is-active` trên sub-pills; chạy suite liên quan PASS 13/13. Không sửa DB schema hay kết nối Supabase.
+
+
 ## 2026-10-29 — Sửa lỗi hiển thị đầy đủ phần Giới thiệu Gia sư (`/teachers/{id}`)
 - Phát hiện và khắc phục nguyên nhân phần Giới thiệu (`bio`) trên trang hồ sơ gia sư bị cắt cụt ở ký tự thứ 100 thành 'Phươ...': `TeacherMarketplaceService` truyền `TeacherSnapshot.bioExcerpt()` thay vì toàn bộ `bio`.
 - Bổ sung trường `bio` vào `TeacherSnapshot`, cập nhật `TeacherFacadeImpl` truyền đầy đủ `profile.getBio()`, và `TeacherMarketplaceService` ưu tiên `bio` đầy đủ cho trang hồ sơ chi tiết.

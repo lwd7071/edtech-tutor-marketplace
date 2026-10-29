@@ -83,7 +83,7 @@ class AdminWorkspaceNavAndDashboardLayoutTest {
         mockMvc.perform(get("/admin/dashboard"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("admin-workspace-nav__main")))
-                .andExpect(content().string(containsString("Tổng quan")))
+                .andExpect(content().string(containsString("aria-current=\"page\">Tổng quan</a>")))
                 .andExpect(content().string(containsString("Xét duyệt")))
                 .andExpect(content().string(containsString("Tài chính")))
                 .andExpect(content().string(containsString("Người dùng")))
@@ -105,7 +105,8 @@ class AdminWorkspaceNavAndDashboardLayoutTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("admin-workspace-nav__sub")))
                 .andExpect(content().string(containsString("admin-sub-pills")))
-                .andExpect(content().string(containsString("Cài đặt")))
+                .andExpect(content().string(containsString("aria-current=\"page\">Hệ thống</a>")))
+                .andExpect(content().string(containsString("is-active\">Cài đặt</a>")))
                 .andExpect(content().string(containsString("Nhật ký")));
     }
 
