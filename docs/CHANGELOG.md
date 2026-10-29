@@ -1,5 +1,8 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-29 — Sửa seed snapshot thời lượng gói học V42
+- Điền snapshot thời lượng 60 phút cho mọi `student_packages` trong seed, khớp invoice và constraint V42.
+
 ## 2026-10-29 — Minh họa 2D Nét đen & Tái cấu trúc Header/Hero Trang chủ theo phong cách Preply (TDD & UI/UX Pro Max)
 - Bổ sung liên kết 'Trở thành gia sư' vào Header điều hướng chính (public-nav), gom toàn bộ cụm menu khám phá sang trái bám sát Logo tutormatch (margin-right: auto).
 - Áp dụng nền vàng full-bleed tràn viền (100vw) bao trùm cả Header và Hero trên trang chủ, xóa viền ngăn cách tạo khối thống nhất liền mạch.

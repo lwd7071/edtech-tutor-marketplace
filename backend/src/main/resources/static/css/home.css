@@ -475,7 +475,8 @@
 .teacher-card__experience { margin: 16px 0; color: var(--muted-strong); font-size: 14px; }
 .teacher-card__meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding-block: 13px; border-top: 1px solid var(--border); font-size: 13px; }
 .teacher-card__meta strong { font-size: 13px; }
-.teacher-card__link { display: flex; justify-content: space-between; padding-top: 12px; color: var(--ink); border-top: 1px solid var(--border); font-size: 14px; font-weight: 700; text-decoration: none; }
+.home-teachers .teacher-card__actions { display: flex; align-items: center; gap: var(--space-2, 8px); padding-top: 14px; border-top: 1px solid var(--border); }
+.home-teachers .teacher-card__actions .button { flex: 1 1 0; font-size: 13px; min-height: 40px; }
 .home-state { padding: 24px 0; color: var(--muted-strong); }.home-state p { margin: 0 0 8px; }.home-state a { color: var(--ink); font-weight: 650; }
 .home-join { display: flex; align-items: center; justify-content: space-between; gap: 32px; margin-block: 64px; padding: clamp(28px, 5vw, 56px); background: var(--surface-warm); border: 1px solid var(--border); border-radius: var(--radius-panel); }
 .home-join > div { max-width: 600px; }.home-join__eyebrow { margin: 0 0 12px; color: var(--muted-strong); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }

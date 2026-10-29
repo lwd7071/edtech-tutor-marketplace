@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * TDD Slice 1: Kiểm tra các tokens và CSS rules cho hệ thống Button Neubrutalism-lite (Preply style).
+ * TDD: Kiểm tra toàn bộ hệ thống button, tokens và quy tắc đồng bộ nút vàng chữ đen (trừ các chỗ đặc biệt có nền vàng).
  */
 class ButtonSystemLayoutTest {
 
@@ -38,13 +38,10 @@ class ButtonSystemLayoutTest {
         assertTrue(Files.exists(publicCssPath), "public.css must exist");
         String css = Files.readString(publicCssPath);
 
-        // Nút chính phải có viền 1.5px dứt khoát
         assertTrue(
                 css.contains("border: 1.5px solid var(--ink)") || css.contains("border: 1.5px solid #171714"),
                 ".button--primary must have crisp 1.5px ink border"
         );
-
-        // Khi hover phải có hiệu ứng bóng cứng tactile 2px
         assertTrue(
                 css.contains("box-shadow: 0 2px 0 var(--ink)") || css.contains("box-shadow: 0 2px 0 #171714"),
                 ".button--primary:hover must have tactile 2px hard shadow"
@@ -61,6 +58,57 @@ class ButtonSystemLayoutTest {
         assertTrue(
                 css.contains(".button--secondary") && (css.contains("border: 1.5px solid") || css.contains("border-width: 1.5px")),
                 ".button--secondary must have a crisp 1.5px border"
+        );
+    }
+
+    @Test
+    @DisplayName("home/index.html: section home-join phải đồng bộ dùng nút vàng chữ đen button--primary thay vì nút đen")
+    void homePageJoinSectionShouldUsePrimaryYellowButton() throws Exception {
+        Path homeHtmlPath = Path.of("src/main/resources/templates/home/index.html");
+        assertTrue(Files.exists(homeHtmlPath), "home/index.html must exist");
+        String html = Files.readString(homeHtmlPath);
+
+        assertTrue(
+                html.contains("class=\"button button--primary\" href=\"/become-a-tutor\""),
+                "home-join CTA must use standardized button button--primary (yellow with black text)"
+        );
+        assertFalse(
+                html.contains("class=\"home-button\" href=\"/become-a-tutor\""),
+                "home-join must not use black home-button since its background is surface-warm, not yellow"
+        );
+    }
+
+    @Test
+    @DisplayName("home/index.html: thẻ gia sư phải có cụm nút kép Xem hồ sơ và Nhắn tin đồng bộ với search.html")
+    void homePageTeacherCardShouldRenderDualActionButtonStack() throws Exception {
+        Path homeHtmlPath = Path.of("src/main/resources/templates/home/index.html");
+        assertTrue(Files.exists(homeHtmlPath), "home/index.html must exist");
+        String html = Files.readString(homeHtmlPath);
+
+        assertTrue(
+                html.contains("class=\"teacher-card__actions\""),
+                "Home page teacher card must render teacher-card__actions container"
+        );
+        assertFalse(
+                html.contains("class=\"teacher-card__link\""),
+                "Home page teacher card must not use outdated plain text teacher-card__link"
+        );
+    }
+
+    @Test
+    @DisplayName("auth.css: nút submit form auth phải đồng bộ viền 1.5px ink và bóng nổi tactile")
+    void authSubmitButtonShouldUseCrispInkBorder() throws Exception {
+        Path authCssPath = Path.of("src/main/resources/static/css/auth.css");
+        assertTrue(Files.exists(authCssPath), "auth.css must exist");
+        String css = Files.readString(authCssPath);
+
+        assertTrue(
+                css.contains("border: 1.5px solid var(--ink)") || css.contains("border: 1.5px solid #171714"),
+                ".auth-submit must have crisp 1.5px ink border"
+        );
+        assertTrue(
+                css.contains("box-shadow: 0 2px 0 var(--ink)") || css.contains("box-shadow: 0 2px 0 #171714"),
+                ".auth-submit:hover must have tactile 2px shadow"
         );
     }
 }

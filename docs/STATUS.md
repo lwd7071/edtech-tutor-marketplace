@@ -1,5 +1,9 @@
 # Trạng thái dự án
 
+## Sửa seed snapshot thời lượng gói học V42 — 2026-10-29
+- Bổ sung `session_duration_minutes_snapshot` vào mọi câu lệnh tạo `student_packages`, gồm ba gói ban đầu, các trạng thái demo và 120 gói tạo theo cặp. Giá trị 60 phút khớp snapshot invoice tương ứng và constraint V42 (`> 0`); không thay đổi tài khoản hay migration.
+- Rà soát tĩnh các insert gói học và đối chiếu V42. Chưa chạy lại trên PostgreSQL; môi trường hiện không có `psql` và Docker daemon không chạy. Cần chạy lại toàn bộ seed trên database test để xác nhận SQL runtime.
+
 ## Minh họa 2D Nét đen & Tái cấu trúc Header/Hero Trang chủ (TDD & UI/UX Pro Max) — 2026-10-29
 - **Trục nghiệm thu giao diện & TDD:**
   - Tái cấu trúc toàn diện khu vực Header & Hero trang chủ (`/`) theo phong cách Neo-Brutalist & Editorial Preply:

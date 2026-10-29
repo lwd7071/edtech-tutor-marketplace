@@ -142,13 +142,16 @@
           </a>
           <p class="teacher-card__experience" th:text="${teacher.yearsOfExperience > 0 ? teacher.yearsOfExperience + ' năm kinh nghiệm' : 'Kinh nghiệm đang cập nhật'}">Kinh nghiệm</p>
           <div class="teacher-card__meta"><span th:if="${teacher.reviewCount > 0}" th:text="|★ ${#numbers.formatDecimal(teacher.averageRating, 1, 1)} (${teacher.reviewCount} đánh giá)|">★ 4.8 (12 đánh giá)</span><span th:unless="${teacher.reviewCount > 0}">Chưa có đánh giá</span><strong th:if="${teacher.startingPriceVnd > 0}" th:text="|Từ ${#numbers.formatInteger(teacher.startingPriceVnd, 1, 'POINT')} đ/buổi|">Từ 300.000 đ/buổi</strong><strong th:unless="${teacher.startingPriceVnd > 0}">Học phí đang cập nhật</strong></div>
-          <a class="teacher-card__link" th:href="@{/teachers/{id}(id=${teacher.id})}">Xem hồ sơ <span aria-hidden="true">↗</span></a>
+          <div class="teacher-card__actions">
+            <a class="button button--primary button--small" th:href="@{/teachers/{id}(id=${teacher.id})}">Xem hồ sơ</a>
+            <a class="button button--secondary button--small" th:href="@{/teachers/{id}#message}">Nhắn tin</a>
+          </div>
         </article>
       </div>
       <div class="home-state" th:if="${#lists.isEmpty(featuredTeachers)}"><p th:if="${teachersUnavailable}">Danh sách gia sư chưa tải được.</p><p th:unless="${teachersUnavailable}">Chưa có gia sư phù hợp để giới thiệu.</p></div>
     </section>
 
-    <section class="home-join" aria-labelledby="join-title"><div><p class="home-join__eyebrow">Dành cho gia sư</p><h2 id="join-title">Chia sẻ cách bạn giúp học viên tiến bộ.</h2><p>Tạo hồ sơ, giới thiệu môn dạy và nhận yêu cầu học phù hợp.</p><a class="home-button" href="/become-a-tutor">Trở thành gia sư <span aria-hidden="true">→</span></a></div><span class="home-join__mark" aria-hidden="true">TM</span></section>
+    <section class="home-join" aria-labelledby="join-title"><div><p class="home-join__eyebrow">Dành cho gia sư</p><h2 id="join-title">Chia sẻ cách bạn giúp học viên tiến bộ.</h2><p>Tạo hồ sơ, giới thiệu môn dạy và nhận yêu cầu học phù hợp.</p><a class="button button--primary" href="/become-a-tutor">Trở thành gia sư <span aria-hidden="true">→</span></a></div><span class="home-join__mark" aria-hidden="true">TM</span></section>
   </div>
 </main>
 <div th:replace="~{fragments/public-header :: footer}"></div>

@@ -321,18 +321,18 @@ INSERT INTO invoices (
 -- Đảm bảo invariant: remaining + reserved + completed + refunded = total_sessions
 -- ---------------------------------------------------------------------
 INSERT INTO student_packages (
-    id, pricing_package_id, student_id, teacher_id, subject_id, invoice_id,
-    package_name_snapshot, total_sessions, remaining_sessions, reserved_sessions, completed_sessions, refunded_sessions,
-    purchase_price_vnd, commission_rate, starts_at, expires_at, status
+    id, pricing_package_id, student_id, teacher_id, subject_id, invoice_id, package_name_snapshot,
+    total_sessions, remaining_sessions, reserved_sessions, completed_sessions, refunded_sessions, purchase_price_vnd,
+    commission_rate, starts_at, expires_at, status, session_duration_minutes_snapshot
 ) VALUES
     ('40000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000001',
-     'Toán Nền Tảng 10 Buổi', 10, 8, 1, 1, 0, 2000000, 10.00, now() - interval '10 days', now() + interval '50 days', 'ACTIVE'),
+     'Toán Nền Tảng 10 Buổi', 10, 8, 1, 1, 0, 2000000, 10.00, now() - interval '10 days', now() + interval '50 days', 'ACTIVE', 60),
 
     ('40000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000002', '50000000-0000-0000-0000-000000000002',
-     'IELTS Speaking 1-1 (10 Buổi)', 10, 9, 0, 1, 0, 3000000, 10.00, now() - interval '8 days', now() + interval '37 days', 'ACTIVE'),
+     'IELTS Speaking 1-1 (10 Buổi)', 10, 9, 0, 1, 0, 3000000, 10.00, now() - interval '8 days', now() + interval '37 days', 'ACTIVE', 60),
 
     ('40000000-0000-0000-0000-000000000003', 'f0000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000007', 'd0000000-0000-0000-0000-000000000008', '50000000-0000-0000-0000-000000000003',
-     'Python Cơ Bản & Thuật Toán 12 Buổi', 12, 12, 0, 0, 0, 3600000, 10.00, now() - interval '18 days', now() + interval '42 days', 'ACTIVE');
+     'Python Cơ Bản & Thuật Toán 12 Buổi', 12, 12, 0, 0, 0, 3600000, 10.00, now() - interval '18 days', now() + interval '42 days', 'ACTIVE', 60);
 
 -- ---------------------------------------------------------------------
 -- PHẦN 16: LỊCH HỌC (BOOKINGS)
@@ -543,12 +543,12 @@ INSERT INTO invoices (id, invoice_number, student_id, teacher_id, pricing_packag
     ('50000000-0000-0000-0000-000000000008', 'INV-2026-000008', '10000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', 2000000, 'PAID', 100008, '50000000-0000-0000-0000-000000000008', 'fp_inv_008', now() - interval '20 days', 'd0000000-0000-0000-0000-000000000001', 'Toán Nền Tảng 10 Buổi', 10, 60, 60, 10.00, 1, 0),
     ('50000000-0000-0000-0000-000000000009', 'INV-2026-000009', '10000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', 2000000, 'PAID', 100009, '50000000-0000-0000-0000-000000000009', 'fp_inv_009', now() - interval '100 days', 'd0000000-0000-0000-0000-000000000001', 'Toán Nền Tảng 10 Buổi', 10, 60, 60, 10.00, 1, 0),
     ('50000000-0000-0000-0000-000000000010', 'INV-2026-000010', '10000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', 2000000, 'PAID', 100010, '50000000-0000-0000-0000-000000000010', 'fp_inv_010', now() - interval '100 days', 'd0000000-0000-0000-0000-000000000001', 'Toán Nền Tảng 10 Buổi', 10, 60, 60, 10.00, 1, 0);
-INSERT INTO student_packages (id, pricing_package_id, student_id, teacher_id, subject_id, invoice_id, package_name_snapshot, total_sessions, remaining_sessions, reserved_sessions, completed_sessions, refunded_sessions, purchase_price_vnd, commission_rate, starts_at, expires_at, status, locked_reason) VALUES
-    ('40000000-0000-0000-0000-000000000004', 'f0000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000003', 'd0000000-0000-0000-0000-000000000003', '50000000-0000-0000-0000-000000000004', 'Vật Lý Cấp Tốc 10 Buổi', 10, 10, 0, 0, 0, 2200000, 10.00, now(), now() + interval '60 days', 'PENDING_PAYMENT', null),
-    ('40000000-0000-0000-0000-000000000005', 'f0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000007', 'Toán Nền Tảng 10 Buổi', 10, 0, 0, 10, 0, 2000000, 10.00, now() - interval '20 days', now() + interval '40 days', 'COMPLETED', null),
-    ('40000000-0000-0000-0000-000000000006', 'f0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000008', 'Toán Nền Tảng 10 Buổi', 10, 7, 0, 2, 1, 2000000, 10.00, now() - interval '20 days', now() + interval '40 days', 'REFUND_PENDING', null),
-    ('40000000-0000-0000-0000-000000000007', 'f0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000009', 'Toán Nền Tảng 10 Buổi', 10, 0, 0, 7, 3, 2000000, 10.00, now() - interval '100 days', now() - interval '40 days', 'REFUNDED', null),
-    ('40000000-0000-0000-0000-000000000008', 'f0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000010', 'Toán Nền Tảng 10 Buổi', 10, 6, 0, 4, 0, 2000000, 10.00, now() - interval '100 days', now() - interval '40 days', 'LOCKED_EXPIRED', 'Gói đã hết hạn');
+INSERT INTO student_packages (id, pricing_package_id, student_id, teacher_id, subject_id, invoice_id, package_name_snapshot, total_sessions, remaining_sessions, reserved_sessions, completed_sessions, refunded_sessions, purchase_price_vnd, commission_rate, starts_at, expires_at, status, locked_reason, session_duration_minutes_snapshot) VALUES
+    ('40000000-0000-0000-0000-000000000004', 'f0000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000003', 'd0000000-0000-0000-0000-000000000003', '50000000-0000-0000-0000-000000000004', 'Vật Lý Cấp Tốc 10 Buổi', 10, 10, 0, 0, 0, 2200000, 10.00, now(), now() + interval '60 days', 'PENDING_PAYMENT', null, 60),
+    ('40000000-0000-0000-0000-000000000005', 'f0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000007', 'Toán Nền Tảng 10 Buổi', 10, 0, 0, 10, 0, 2000000, 10.00, now() - interval '20 days', now() + interval '40 days', 'COMPLETED', null, 60),
+    ('40000000-0000-0000-0000-000000000006', 'f0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000008', 'Toán Nền Tảng 10 Buổi', 10, 7, 0, 2, 1, 2000000, 10.00, now() - interval '20 days', now() + interval '40 days', 'REFUND_PENDING', null, 60),
+    ('40000000-0000-0000-0000-000000000007', 'f0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000009', 'Toán Nền Tảng 10 Buổi', 10, 0, 0, 7, 3, 2000000, 10.00, now() - interval '100 days', now() - interval '40 days', 'REFUNDED', null, 60),
+    ('40000000-0000-0000-0000-000000000008', 'f0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', '50000000-0000-0000-0000-000000000010', 'Toán Nền Tảng 10 Buổi', 10, 6, 0, 4, 0, 2000000, 10.00, now() - interval '100 days', now() - interval '40 days', 'LOCKED_EXPIRED', 'Gói đã hết hạn', 60);
 
 -- Learning: các loại bài, trạng thái draft/submitted/graded và attachment.
 INSERT INTO assignments (id, teacher_id, student_id, subject_id, title, assignment_type, content_blocks, quiz_schema, due_at, status, version) VALUES
@@ -732,10 +732,10 @@ BEGIN
             VALUES (gen_random_uuid(), v_invoice_id, 'PAYOS', 'seed-payment-' || v_pair_no::text, 900000000 + v_pair_no, 1600000,
                     v_purchase_at + interval '1 day', jsonb_build_object('demo', true, 'pair', v_pair_no), true,
                     v_purchase_at + interval '1 day', v_purchase_at + interval '1 day');
-            INSERT INTO student_packages (id, pricing_package_id, student_id, teacher_id, subject_id, invoice_id, package_name_snapshot, total_sessions, remaining_sessions, reserved_sessions, completed_sessions, refunded_sessions, purchase_price_vnd, commission_rate, starts_at, expires_at, status, created_at)
+            INSERT INTO student_packages (id, pricing_package_id, student_id, teacher_id, subject_id, invoice_id, package_name_snapshot, total_sessions, remaining_sessions, reserved_sessions, completed_sessions, refunded_sessions, purchase_price_vnd, commission_rate, starts_at, expires_at, status, created_at, session_duration_minutes_snapshot)
             VALUES (v_student_package_id, v_pricing_package_id, s.student_id, t.teacher_id, v_subject_id, v_invoice_id,
                     'Gói đồng hành 8 buổi', 8, 3, 2, 3, 0, 1600000, 10.00, v_purchase_at + interval '2 days',
-                    v_purchase_at + interval '802 days', 'ACTIVE', v_purchase_at + interval '1 day');
+                    v_purchase_at + interval '802 days', 'ACTIVE', v_purchase_at + interval '1 day', 60);
 
             -- Mirror the paid package and every released session in the wallet ledger.
             UPDATE wallets SET pending_balance_vnd = pending_balance_vnd + v_teacher_net, version = version + 1 WHERE teacher_id = t.teacher_id;
