@@ -1,5 +1,11 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-29 — Tối ưu Header & Workspace Navigation Học viên (`/student`)
+- Đưa mục "Thông báo" từ thanh tab bên dưới lên Header trên cùng (`student-header.html`) dạng icon chuông (tương đồng với giao diện Teacher và Admin), hiển thị text và SVG chuông trên desktop và tự động rút gọn thành icon tròn ở màn hình di động `<= 640px`.
+- Rút gọn thanh điều hướng `workspace-nav` của Học viên (`student-workspace-nav.html`) chỉ còn thuần 7 tab học tập: `Tổng quan`, `Gói học`, `Lịch học`, `Bài tập`, `Báo cáo buổi học`, `Yêu cầu`, `Hồ sơ`.
+- Bổ sung CSS cho `.student-header-notification-link` trong `student-dashboard.css` đảm bảo chiều cao tối thiểu 38px (touch target 44px trên mobile), hover nhẹ, và focus ring `3px` chuẩn accessibility theo tiêu chuẩn UI/UX Pro Max.
+- TDD suite `StudentHeaderAndNavLayoutTest` cùng regression tests `StudentDashboardPageControllerTest`, `NotificationPageControllerTest` PASS 9/9. Không thay đổi DB migration hay đụng vào Supabase.
+
 ## 2026-10-29 — Tái thiết kế UI/UX Admin Workspace & Dashboard (`/admin/dashboard`)
 - Thêm huy hiệu vai trò `QUẢN TRỊ VIÊN` vào Header; thay thế 11 tab vàng chói dàn trải thành thanh Top Navigation 5 nhóm gọn gàng: Tổng quan, Xét duyệt, Tài chính, Người dùng, Hệ thống.
 - Bổ sung thanh Sub-pills ngữ cảnh cho các phân hệ con (Xét duyệt, Tài chính, Hệ thống), hoạt động bằng thẻ link HTML thuần thân thiện với chế độ tắt JavaScript (no-JS).

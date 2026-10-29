@@ -1,5 +1,11 @@
 # Trạng thái dự án
 
+## Tối ưu Header & Workspace Navigation Học viên — 2026-10-29
+- **Trục nghiệm thu giao diện & TDD:** Chuyển mục "Thông báo" lên thanh Header trên cùng (`student-header.html`) với icon chuông SVG và nhãn "Thông báo" (thu gọn thành icon trên mobile `<= 640px`). Rút gọn thanh điều hướng `workspace-nav` chỉ còn thuần 7 tab học tập (`Tổng quan`, `Gói học`, `Lịch học`, `Bài tập`, `Báo cáo buổi học`, `Yêu cầu`, `Hồ sơ`).
+- **Bằng chứng kiểm thử backend:** Chạy MockMvc TDD suite `StudentHeaderAndNavLayoutTest` (2 tests) và regression tests `StudentDashboardPageControllerTest`, `NotificationPageControllerTest` (7 tests) PASS **9/9**.
+- **Ranh giới an toàn:** Không thay đổi DB schema, migration diff rỗng. Không động vào `.env.cloud` hay Supabase.
+
+
 ## Tái thiết kế UI/UX Admin Workspace & Dashboard — 2026-10-29
 - **Trục nghiệm thu giao diện & TDD:** Áp dụng hệ thống thiết kế Bento Grid và Top Navigation 5 nhóm (`Tổng quan`, `Xét duyệt`, `Tài chính`, `Người dùng`, `Hệ thống`) cùng Sub-pills ngữ cảnh và 4 thẻ KPI Stat Cards đo lường nhanh trên `/admin/dashboard`.
 - **Bằng chứng kiểm thử backend:** `$env:SPRING_PROFILES_ACTIVE='test'; mvn -f backend/pom.xml test "-Dtest=AdminWorkspaceNavAndDashboardLayoutTest,AdminDashboardPageControllerTest,AdminTeacherApprovalsPageControllerTest,AdminCredentialsPageControllerTest,AdminSubjectsPageControllerTest,AdminUsersPageControllerTest,AdminSettingsPageControllerTest,AdminAuditLogsPageControllerTest"` PASS **49/49**.
