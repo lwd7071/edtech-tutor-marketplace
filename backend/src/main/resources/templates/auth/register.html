@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Tạo tài khoản | Tutor Match</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+<a class="auth-skip" href="#main-content">Bỏ qua đến biểu mẫu</a>
+<main id="main-content" class="auth-page">
+  <a class="auth-brand" href="/" aria-label="Tutor Match — Trang chủ">tutor<span>match</span></a>
+  <section class="auth-card auth-card--wide" aria-labelledby="register-title">
+    <h1 id="register-title">Tạo tài khoản</h1>
+    <p class="auth-intro">Chọn vai trò và điền thông tin. Sau khi gửi, bạn cần xác minh email để kích hoạt tài khoản.</p>
+
+    <div th:if="${registerError}" class="auth-notice auth-notice--error" role="alert" tabindex="-1" th:text="${registerError}"></div>
+
+    <form class="auth-form" method="post" action="/auth/register" th:object="${registerForm}">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <div th:if="${#fields.hasErrors('*')}" id="register-error-summary" class="auth-notice auth-notice--error" role="alert" tabindex="-1">
+        Có thông tin chưa hợp lệ. Hãy kiểm tra các mục được đánh dấu bên dưới.
+      </div>
+
+      <fieldset class="auth-role">
+        <legend>Bạn muốn dùng Tutor Match với vai trò nào?</legend>
+        <label class="auth-role-option"><input type="radio" value="STUDENT" th:field="*{role}" required
+                                                th:attr="autofocus=${#fields.hasErrors('role') ? 'autofocus' : null}"> Học viên</label>
+        <label class="auth-role-option"><input type="radio" value="TEACHER" th:field="*{role}" required> Gia sư</label>
+        <p class="auth-field-error" th:if="${#fields.hasErrors('role')}" th:errors="*{role}"></p>
+      </fieldset>
+
+      <div class="auth-field">
+        <label for="fullName">Họ và tên</label>
+        <input id="fullName" type="text" autocomplete="name" maxlength="120" required th:field="*{fullName}"
+               th:attr="aria-invalid=${#fields.hasErrors('fullName')},aria-describedby=${#fields.hasErrors('fullName')} ? 'full-name-error' : null,autofocus=${#fields.hasErrors('fullName') and not #fields.hasErrors('role') ? 'autofocus' : null}">
+        <p id="full-name-error" class="auth-field-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></p>
+      </div>
+
+      <div class="auth-field">
+        <label for="register-email">Email</label>
+        <input id="register-email" type="email" autocomplete="email" inputmode="email" maxlength="254" required th:field="*{email}"
+               th:attr="aria-invalid=${#fields.hasErrors('email')},aria-describedby=${#fields.hasErrors('email')} ? 'register-email-error' : null,autofocus=${registerError != null or (#fields.hasErrors('email') and not #fields.hasErrors('role') and not #fields.hasErrors('fullName')) ? 'autofocus' : null}">
+        <p id="register-email-error" class="auth-field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+      </div>
+
+      <div class="auth-field">
+        <label for="register-password">Mật khẩu</label>
+        <input id="register-password" type="password" autocomplete="new-password" maxlength="128" required th:field="*{password}"
+               th:attr="aria-invalid=${#fields.hasErrors('password')},aria-describedby=${#fields.hasErrors('password')} ? 'password-help register-password-error' : 'password-help',autofocus=${#fields.hasErrors('password') and not #fields.hasErrors('role') and not #fields.hasErrors('fullName') and not #fields.hasErrors('email') ? 'autofocus' : null}">
+        <p id="password-help" class="auth-field-hint">Ít nhất 8 ký tự, gồm chữ cái, chữ số và ký tự đặc biệt.</p>
+        <p id="register-password-error" class="auth-field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+      </div>
+
+      <details class="auth-parent">
+        <summary>Thông tin phụ huynh <span>(chỉ dành cho học viên)</span></summary>
+        <p class="auth-field-hint">Gia sư vui lòng bỏ qua mục này. Xem <a href="/privacy">chính sách quyền riêng tư</a> để biết cách thông tin được sử dụng.</p>
+        <div class="auth-parent-grid">
+          <div class="auth-field"><label for="parentFullName">Họ tên phụ huynh</label><input id="parentFullName" type="text" autocomplete="off" maxlength="120" th:field="*{parentFullName}"></div>
+          <div class="auth-field"><label for="parentPhone">Số điện thoại phụ huynh</label><input id="parentPhone" type="tel" autocomplete="off" inputmode="tel" maxlength="32" th:field="*{parentPhone}"></div>
+          <div class="auth-field auth-parent-email"><label for="parentEmail">Email phụ huynh</label><input id="parentEmail" type="email" autocomplete="off" inputmode="email" maxlength="254" th:field="*{parentEmail}"></div>
+        </div>
+      </details>
+
+      <button class="auth-submit" type="submit">Tạo tài khoản <span aria-hidden="true">→</span></button>
+    </form>
+    <div class="auth-divider"><span>hoặc</span></div>
+    <a class="auth-submit auth-submit--secondary auth-oauth" href="/auth/oauth/google">Tiếp tục với Google</a>
+    <p class="auth-register">Đã có tài khoản? <a href="/auth/login">Đăng nhập</a></p>
+  </section>
+  <p class="auth-back"><a href="/teachers">← Tìm gia sư</a></p>
+</main>
+</body>
+</html>

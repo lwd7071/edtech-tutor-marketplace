@@ -25,7 +25,7 @@ public class IdentityDirectoryFacadeImpl implements IdentityDirectoryFacade {
         Role parsedRole = role == null ? null : Role.valueOf(role);
         UserStatus parsedStatus = status == null ? null : UserStatus.valueOf(status);
         return users.findDirectory(List.of(Role.STUDENT, Role.TEACHER), List.of(UserStatus.ACTIVE, UserStatus.LOCKED),
-                        parsedRole, parsedStatus, keyword, pageable)
+                        parsedRole, parsedStatus, keyword == null ? "" : keyword, pageable)
                 .map(IdentityDirectoryFacadeImpl::snapshot);
     }
 

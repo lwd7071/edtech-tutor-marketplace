@@ -2,6 +2,11 @@ spring:
   application:
     name: edtech-api
 
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 100MB
+
   profiles:
     default: cloud
 
@@ -49,6 +54,12 @@ server:
       charset: UTF-8
       force: true
       enabled: true
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        secure: ${SESSION_COOKIE_SECURE:true}
+        same-site: lax
 
 # --- Custom App Configuration ---
 app:
@@ -80,6 +91,8 @@ app:
     base-url: ${PAYOS_BASE_URL:https://api-merchant.payos.vn}
     connect-timeout: ${PAYOS_CONNECT_TIMEOUT:3s}
     read-timeout: ${PAYOS_READ_TIMEOUT:10s}
+    default-return-url: ${APP_PAYMENT_DEFAULT_RETURN_URL:${APP_FRONTEND_URL:http://localhost:3000}/student/payments/callback}
+    default-cancel-url: ${APP_PAYMENT_DEFAULT_CANCEL_URL:${APP_FRONTEND_URL:http://localhost:3000}/student/payments/callback}
   cache:
     revalidation:
       enabled: ${APP_CACHE_REVALIDATION_ENABLED:true}

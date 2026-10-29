@@ -24,6 +24,8 @@ spring:
     scheduling:
       enabled: false
 app:
+  payment:
+    provider: fake
   email:
     provider: logging
   cache:
