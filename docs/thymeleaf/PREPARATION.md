@@ -21,9 +21,12 @@ Phương án nằm trong [ADR 0016](../adr/0016-server-rendered-authentication.m
 
 ## Cutover local/staging
 
-- Đã có seam local cụ thể: `docker-compose.yml` chạy Nginx; [`nginx/default.conf`](../../nginx/default.conf) chuyển `/api/`, `/ws` và `/health` tới backend, còn `/` tới Next. Khi cutover local, đổi upstream `/` sang Spring và giữ các location API/WebSocket/health; route UI chưa sẵn sàng phải được Spring bắt bằng trang tạm an toàn. Không đổi routing trước khi có shell/route handler để tránh UI trả 404.
-- `docs/thymeleaf/ROUTES_AND_PAGES.md` là inventory tài liệu, chưa phải runtime route registry hoặc cơ chế kiểm tra parity. Cần thêm registry/test trong Spring để xác nhận route nào render thật, route tạm và role guard trước cutover.
-- Repo không có staging Nginx/Compose override. `render.yaml` chỉ định nghĩa backend web service; `docs/DEPLOYMENT_LOCAL.md` ghi tunnel chưa cấu hình. Do đó local cutover có đường triển khai, còn staging cần xác định host/topology và nơi đặt Nginx override trước khi thực hiện phase 4.
+- Local Compose và tunnel Compose hiện không chạy service Next.js; [`nginx/default.conf`](../../nginx/default.conf) proxy `/` cùng `/api/`, `/ws` và `/health` tới backend. Nginx chuyển `Host`, `X-Forwarded-Host`, `X-Forwarded-For` và `X-Forwarded-Proto`. Rollback cần khôi phục cấu hình Nginx/tunnel trước đó; chưa thực hiện deploy.
+- Runtime route registry và parity test đã có; registry là inventory, không thay thế authorization hoặc browser acceptance. Một số route vẫn đang được nghiệm thu từng lát cắt; chưa có kết quả Guest/Student/Teacher/Admin E2E đầy đủ qua Nginx.
+- Spring Session Redis được bật với namespace `edtech:session`; `AuthenticatedUser` và HTML session state hỗ trợ Java serialization. Unit serialization test pass, nhưng chưa kiểm tra Redis persistence qua restart hoặc nhiều backend instance. Compose/Docker E2E chưa chạy do Docker Engine không khả dụng.
+- Callback OAuth cloud mặc định dùng website canonical `https://tutormatch.id.vn/login/oauth2/code/google`; staging phải đặt `GOOGLE_OAUTH_REDIRECT_URI` theo canonical staging host và cấu hình Google test client tương ứng. Google Console, PayOS sandbox và Cloudflare tunnel/dashboard không được cấu hình từ repository này và chưa được xác minh.
+- Compose local đặt `APP_FRONTEND_URL=http://localhost:8081`; tunnel Compose đặt URL website canonical. CORS local chỉ giữ origin Nginx 8081; API host/origin staging-production cần giữ allowlist riêng phù hợp môi trường.
+- `frontend/` và workflow CI Next.js được giữ để rollback; bỏ chúng khỏi CI bắt buộc/deploy chỉ sau khi staging acceptance pass. `APP_CACHE_REVALIDATION_ENABLED` mặc định tắt vì revalidation phục vụ Next Data Cache.
 
 ## Trạng thái
 

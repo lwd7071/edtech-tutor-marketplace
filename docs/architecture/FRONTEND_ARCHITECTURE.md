@@ -1,5 +1,7 @@
 # Frontend Architecture
 
+> **Trạng thái hiện hành (2026-10-29):** website UI đang chuyển sang Spring MVC/Thymeleaf qua Nginx; Next.js bên dưới là kiến trúc client cũ được giữ trong `frontend/` để rollback. Local/tunnel Compose đã bỏ service Next.js. Chưa xóa workflow frontend CI hoặc thư mục nguồn vì staging E2E chưa pass. Spring Session Redis được bật (`edtech:session`), nhưng persistence/multi-instance chưa runtime-verified. Phần còn lại của tài liệu mô tả kiến trúc Next.js legacy và không phải thiết kế UI đang phục vụ.
+
 ## Ranh giới chính
 
 - `app` định nghĩa route groups và compose màn hình. `(public)`, `(auth)` và `(workspace)` không làm thay đổi URL.

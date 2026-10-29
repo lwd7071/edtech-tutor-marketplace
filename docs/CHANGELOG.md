@@ -1,5 +1,81 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-30 — Chuẩn hóa Giao diện Mobile Toàn diện: App-like Bottom Nav, Filter Bottom Sheet & Sticky Booking Dock (TDD & UI/UX Pro Max)
+- Chuẩn hóa Mobile Design Tokens & Base Shell (`tokens.css`, `public.css`): Bổ sung `--mobile-nav-height: 64px`, `--touch-target-min: 48px`, `--radius-sheet: 16px`. Hỗ trợ vùng an toàn `env(safe-area-inset-bottom)` cho iPhone Home Bar.
+- Triệt tiêu lỗi auto-zoom trên iOS: Áp dụng `font-size: 16px !important` cho `input`, `select`, `textarea` trên mobile (`<= 768px`) và chuẩn hóa kích thước bấm tối thiểu 48px cho toàn bộ nút/control.
+- Mobile Bottom Navigation Bar cho Học viên (`student-workspace-nav.html`, `student-dashboard.css`): Thanh điều hướng cố định chân màn hình gồm 4 tab cốt lõi (`Tổng quan`, `Gói học`, `Lịch học`, `Tin nhắn`) có icon SVG trực quan, active state rõ ràng, kèm bù trừ padding đáy tránh che khuất nội dung.
+- Mobile Filter Bottom Sheet & Sticky Booking Dock (`teachers/search.html`, `teachers/profile.html`, `teachers.css`, `teachers-profile.css`): Nút "Bộ lọc" trên mobile mở Slide-up Bottom Sheet bo góc 16px viền mực 1.5px; Trang hồ sơ trang bị thanh Booking Dock cố định ở đáy tối ưu vùng ngón tay cái (Thumb Zone).
+- Mobile Bottom Navigation Bar cho Gia sư (`teacher-messages-header.html`, `teacher-workspace.css`): Thanh điều hướng cố định chân màn hình 4 tab (`Tổng quan`, `Lịch dạy`, `Học viên`, `Ví tiền`) với padding an toàn.
+- Kiểm thử TDD 5 Vertical Slices: Thêm mới `MobileSystemLayoutTest`, `StudentMobileNavLayoutTest`, `TeacherSearchMobileLayoutTest`, `TeacherMobileNavLayoutTest`. Toàn bộ 48/48 tests layout và hồi quy đều PASS 100%. Không đổi schema DB Supabase.
+
+
+## 2026-10-30 — Kích hoạt Cổng thanh toán PayOS, Tự sinh Mã VietQR SVG Vector & Polling Đối chiếu Tự động trên Trang Checkout
+- Kích hoạt cổng thanh toán PayOS an toàn: Đồng bộ `APP_PAYMENT_PROVIDER=payos` trong `.env.cloud`, bổ sung `OnPayOsProviderCondition` hỗ trợ tương thích đa cấu hình (`payos` và `enabled`), cập nhật `PaymentProviderProperties` và `scripts/check-backend-config.ps1` kiểm tra tính hợp lệ của các khóa PayOS.
+- Sinh mã VietQR vector dạng SVG siêu nhẹ (`QrCodeSvgService`): Tích hợp thư viện `com.google.zxing:core:3.5.3`, tự động chuyển đổi chuỗi VietQR EMVCo sang SVG Data URI vector sắc nét với màu viền mực `#171714` (`--ink`), không cần mạng ngoài, không phụ thuộc CDN hay dịch vụ bên thứ ba.
+- Nâng cấp giao diện Checkout học viên (`checkout.html`, `student-payment.css`): Hiển thị thẻ QR VietQR chuẩn Neubrutalism-lite viền mực 1.5px bo góc 12px, kèm badge hướng dẫn quét qua App ngân hàng và thanh trạng thái polling mượt mà.
+- Cơ chế đối chiếu thanh toán tự động (Auto-polling): Script client tự động kiểm tra trạng thái hóa đơn qua API `/api/student/invoices/{id}` mỗi 3 giây; chuyển hướng tự động sang `/student/payment-result/{id}` ngay khi trạng thái chuyển sang `PAID` mà không cần học viên thao tác tải lại trang.
+- Kiểm thử TDD toàn diện: Bổ sung `QrCodeSvgServiceTest`, cập nhật `PaymentProviderPropertiesTest`, `PayOsPaymentGatewayConfigurationTest` và `StudentPaymentPageControllerTest` đạt PASS **16/16 tests (100%)**. Regression kiểm thử layout 22/22 tests PASS 100%. Không đổi schema DB Supabase.
+
+## 2026-10-30 — Tối ưu hóa Luồng Đăng ký & Xóa Dead-End Xác minh Email (TDD & UI/UX Pro Max)
+- Xóa bỏ Dead-End trong Xác minh Email (`verify-email.html`): Bổ sung nút CTA vàng căn giữa `Đăng nhập ngay →` khi kích hoạt tài khoản thành công, loại bỏ cảm giác cụt luồng; thêm `text-decoration: none` cho `.auth-submit`.
+- Đồng bộ mô tả vai trò (`register.html`): Thêm nhãn mô tả chi tiết ("— tìm gia sư và theo dõi buổi học", "— tạo hồ sơ và quản lý lớp học") tạo đối xứng cân bằng trực quan với màn hình OAuth.
+- Kiểm thử TDD 2 Slices: Bổ sung test trong `HtmlAccountAccessControllerTest` và `HtmlRegistrationControllerTest` (RED -> GREEN). Regression 44/44 tests PASS 100%. Không đổi schema DB.
+
+## 2026-10-30 — Chuẩn hóa Căn giữa chữ & Icon cho Hệ thống Nút Auth (TDD & UI/UX Pro Max)
+- Căn giữa Nút Submit chính (`.auth-submit`): Nâng cấp thuộc tính căn chỉnh từ `justify-content: space-between` sang `justify-content: center`, bổ sung `gap: 8px` và `text-align: center`. Căn giữa cân đối cả văn bản ("Đăng nhập", "Tạo tài khoản") và icon mũi tên `→`.
+- Sửa lỗi lệch trái Nút Google (`.auth-oauth` / `.auth-submit--secondary`): Khắc phục việc bị ghi đè CSS, đồng bộ căn giữa `justify-content: center; text-align: center;` cho nhãn "Tiếp tục với Google".
+- Hoàn tất căn giữa đồng bộ cho 4 nút trên trang Đăng nhập và Tạo tài khoản, cùng các form xác thực khác trong phân hệ Auth.
+- Kiểm thử TDD: Bổ sung test `authButtonsShouldCenterAlignContent` trong `ButtonSystemLayoutTest.java` (chu trình RED -> GREEN). Toàn bộ 17/17 tests trong `ButtonSystemLayoutTest` và 11/11 tests trong `HtmlLoginControllerTest` & `HtmlRegistrationControllerTest` đều PASS 100%. Không đổi DB schema Supabase.
+
+## 2026-10-29 — Chuẩn hóa Box chữ nhật bo góc 8px/12px & Lan tỏa Viền mực 1.5px toàn hệ thống (TDD & UI/UX Pro Max)
+- Chuẩn hóa Bo góc hình học (Loại bỏ Pill 9999px): Xóa bỏ hoàn toàn hình dạng con nhộng trên Hero và Header (`.home-body .site-header .button--primary`, `.home-search`, `.home-button`, `.home-hero__badge`, `.home-hero__connector-tag`). Chuyển về chuẩn box chữ nhật bo góc 8px (`var(--radius-control)`) cho nút/badge và 12px (`var(--radius-card)`) cho thanh tìm kiếm, đạt sự đồng bộ hình học 100% với toàn bộ hệ thống nút.
+- Lan tỏa Viền mực 1.5px (`border: 1.5px solid var(--ink)`) cho Public & Auth:
+  - Auth: `.auth-card`, `.auth-role`, `.auth-parent` chuyển từ viền xám mờ sang viền mực 1.5px sắc nét.
+  - Tìm gia sư (`teachers.css`): `.teacher-card` đồng bộ viền mực 1.5px.
+  - Chi tiết gia sư (`teachers-profile.css`): `.profile-hero`, `.profile-section` đồng bộ viền mực 1.5px.
+  - Môn học (`subjects.css`): `.subjects-filters` đồng bộ viền mực 1.5px.
+- Lan tỏa Viền mực 1.5px cho Không gian Dashboard (Student/Teacher/Admin):
+  - Student: `.overview-card`, `.dashboard-panel`, `.dashboard-next-step`, `.package-filter`, `.package-card`, `.package-detail` nâng lên viền mực 1.5px.
+  - Teacher: `.teacher-card-section` nâng lên viền mực 1.5px.
+- Kiểm thử TDD toàn diện: Bổ sung 3 test cases trong `ButtonSystemLayoutTest.java` (`homeHeroAndHeaderShouldUseStandardRectangularRoundedBordersInsteadOfPills`, `publicAndAuthCardsShouldHaveCrispInkBorder`, `workspaceCardsShouldHaveCrispInkBorder`) đạt 16/16 tests PASS. Regression 37 layout tests toàn hệ thống PASS 100%. Không thay đổi schema DB.
+
+## 2026-10-29 — Đồng bộ biến môi trường `.env.cloud` sang Canonical Website Domain cho Thymeleaf Cutover
+- Cập nhật `APP_FRONTEND_URL` và `APP_OAUTH2_FRONTEND_CALLBACK_URI` sang website canonical `https://tutormatch.id.vn`.
+- Mở rộng `APP_CORS_ALLOWED_ORIGINS` bao gồm `https://tutormatch.id.vn` song song với các domain cũ để hỗ trợ rollback.
+- Thêm cờ `APP_CACHE_REVALIDATION_ENABLED=false` tắt revalidation Next.js.
+- Chạy `check-backend-config.ps1 -Profile cloud` đạt pass toàn diện; bảo đảm an toàn secret không lộ ra ngoài.
+
+
+## 2026-10-29 — Nghiệm thu cutover cụm Compose / Nginx E2E, Redis session persistence & Multi-instance
+- Build Docker image `edtech-backend:latest` thành công với multi-stage JRE 21.
+- Khởi chạy cụm Compose (PostgreSQL 16, Redis 7, backend Spring Boot, Nginx 1.30.5) đạt 100% trạng thái Healthy; Flyway tự động migrate v1-v42 trên local database.
+- Nghiệm thu Nginx E2E qua cổng 8081: `/health` 200 UP, `/` SSR Thymeleaf 200 OK, static CSS tokens/public 200 OK, `/api/**` proxy API envelope, `/ws` chuyển tiếp WebSocket protocol.
+- Xác minh Redis Session: session cookie `SESSION` lưu trong namespace `edtech:session`, tồn tại và tự phục hồi sau khi restart container backend, hỗ trợ chia sẻ session giữa 2 instances backend song song (`--scale backend=2`, 10/10 requests 200 OK).
+- Giữ nguyên `frontend/` và workflow CI Next.js làm phương án rollback chờ staging nghiệm thu với Google OAuth / PayOS sandbox thật; migration diff rỗng, không mutate Supabase.
+
+
+## 2026-10-29 — Tái cấu trúc Trang Tìm gia sư: Loại bỏ Hero Banner & Chuyển sang Horizontal Top Filter Bar (TDD & UI/UX Pro Max)
+- Loại bỏ Hero Banner cồng kềnh: Xóa bỏ khối `.marketplace-intro` (hình vẽ và tiêu đề "Tìm người đồng hành cho chặng học tiếp theo"), giải phóng 45% diện tích màn hình trên nếp gấp ("above the fold").
+- Tích hợp Compact Header: Thay bằng tiêu đề gọn `.teachers-page-header` với số lượng gia sư sẵn sàng.
+- Thiết kế Horizontal Top Filter Bar (chuẩn Preply): Gom toàn bộ bộ lọc lên thanh ngang 2 tầng (Hàng 1: Từ khóa, Môn học, Hình thức, Học phí từ-đến, Nút tìm gia sư; Hàng 2: Đánh giá sao, Khu vực, Lịch rảnh, Sắp xếp, Xóa lọc).
+- Mở rộng Full-Width Layout: Loại bỏ Sidebar 256px bên trái, mở rộng danh sách kết quả gia sư ra toàn bộ chiều ngang, thẻ gia sư hiển thị thoáng đãng và trực quan.
+- Kiểm thử TDD: Bổ sung 3 tests trong `TeacherSearchPageControllerTest.java` (8/8 tests PASS), kiểm tra regression `HomePageControllerTest` (6/6 tests PASS) và `ButtonSystemLayoutTest` (13/13 tests PASS). Không thay đổi schema DB.
+
+
+## 2026-10-29 — Nâng cấp viền đậm 1.5px mực cho Card & Button Homepage theo chuẩn Neubrutalism-lite (TDD & UI/UX Pro Max)
+- Nâng cấp viền Card thẻ gia sư (`.teacher-card`): Chuyển từ viền xám mờ `1px solid var(--border)` sang viền đen mực sắc nét `border: 1.5px solid var(--ink)` (`#171714`), giúp khối thẻ nổi bật dứt khoát trên nền trắng kem.
+- Nâng cấp viền Thẻ môn học (`.home-subject`): Áp dụng `border: 1.5px solid var(--ink)` đồng bộ, tạo cấu trúc wireframe rõ ràng.
+- Nâng cấp viền Khối gia sư (`.home-join`): Chuyển từ viền xám sang `border: 1.5px solid var(--ink)`, tăng độ tương phản và phân tách không gian.
+- Chuẩn hóa nút phụ (`.button--secondary`): Nâng cấp viền từ `1.5px solid var(--border)` sang `border: 1.5px solid var(--ink)` (chuẩn nút viền đen chữ đen nền sáng như nút "Sửa", "Tắt" tham chiếu), tương thích hoàn hảo cụm Dual Action Stack trên Thẻ gia sư ("Xem hồ sơ" vàng viền mực 1.5px + "Nhắn tin" trắng viền mực 1.5px).
+- Kiểm thử TDD: Mở rộng `ButtonSystemLayoutTest.java` (13/13 tests PASS) với `secondaryButtonShouldHaveCrispBorder` và `homeCardsShouldHaveCrispInkBorder`. Regression kiểm tra 34 layout tests toàn hệ thống PASS 100%. Không thay đổi schema DB.
+
+## 2026-10-29 — Chuẩn hóa màu sắc trang Đăng nhập & Đăng ký (TDD & UI/UX Pro Max)
+- Đồng bộ nhận diện thương hiệu Logo: Chuyển `.auth-brand` về chuẩn toàn đen đồng bộ 100% với landing page (`public.css`), chữ `tutor` đậm (`font-weight: 700`), chữ `match` (`font-weight: 400`, `color: inherit`), xóa bỏ màu cam warning.
+- Chuẩn hóa Text Links: Toàn bộ liên kết biểu mẫu xác thực (*"Quên mật khẩu?"*, *"Tạo tài khoản"*, *"Đăng nhập"*, *"← Tìm gia sư"*, *"chính sách quyền riêng tư"*, v.v.) chuyển từ màu cam (`var(--warning)`) sang màu mực đen (`var(--ink)`) có gạch chân (`underline`, offset 3px), hover chuyển `#000`, đạt tỉ lệ tương phản 16.5:1 (vượt chuẩn WCAG AAA).
+- Đồng bộ Radio Controls: Ký hiệu chọn vai trò Học viên / Gia sư (`.auth-role-option input`) chuyển `accent-color` từ cam sang `var(--ink)`, tạo điểm nhấn tròn sắc nét khi được chọn.
+- Tinh giản điểm nhấn thị giác (Focal Point): Loại bỏ các chi tiết màu cam gây nhiễu, toàn trang tập trung vào điểm nhấn hành động duy nhất là nút nộp form màu vàng (`var(--brand-yellow)`).
+- Kiểm thử TDD: Mở rộng `ButtonSystemLayoutTest.java` (12/12 tests PASS) với test case `authPagesShouldUseInkColorForBrandLinksAndRadioInsteadOfWarning`. Regression kiểm tra 33 layout tests toàn hệ thống PASS 100%. Không thay đổi schema DB.
+
 ## 2026-10-29 — Chuẩn hóa nút phẳng Flat UI (Loại bỏ bóng đổ dưới) đồng bộ toàn bộ Public, Student, Teacher & Admin Workspace
 - Loại bỏ hoàn toàn bóng viền dưới (`box-shadow: 0 2px 0 var(--ink)`) và `transform: translateY(1px)` trên toàn bộ hệ thống nút bấm: Public, Auth, Student, Teacher và Admin.
 - Áp dụng phong cách phẳng hiện đại (Flat UI): bo góc 8px, viền mực sắc nét 1.5px solid mực (`#171714`), nền vàng thương hiệu (`var(--brand-yellow)`), hover êm ái sang `#f4ca28`.
@@ -1643,3 +1719,6 @@ efresh_tokens`, `teacher_documents`, `subject_proposals`, `subjects`, `pricing_p
 ## 2026-10-29 — Hoàn tác landing page editorial
 - Trả trang chủ về hero minh họa và cấu trúc trước thử nghiệm; bỏ menu mobile và truy vấn số đếm môn được thêm cho bản editorial. Route vẫn `Đang làm` vì bản khôi phục chưa được nghiệm thu lại; ảnh editorial còn lưu nhưng không còn là bằng chứng cho trang hiện tại.
 
+## 2026-10-29 — Thymeleaf cutover implementation (staging gates pending)
+- Routed Nginx `/` to Spring Boot, removed Next.js from local/tunnel Compose, enabled Redis-backed HTTP sessions, disabled Next-only cache revalidation, and added session-authenticated chat WebSocket clients with HTML form fallback. Kept `frontend/` and its CI workflow for rollback until staging acceptance.
+- Focused regression: 94/94 backend tests pass; JS syntax check passes. Docker runtime, Redis restart/multi-instance, Nginx E2E, staging Google OAuth/PayOS and external Cloudflare routing remain unverified; production cutover was not performed. Migration diff is empty; Supabase was not contacted.

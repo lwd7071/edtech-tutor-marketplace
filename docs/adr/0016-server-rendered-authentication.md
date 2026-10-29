@@ -1,6 +1,6 @@
 # ADR 0016: Xác thực cho giao diện render phía server
 
-**Status: Accepted — 2026-10-28.** Quyết định cho UI Thymeleaf và các lần triển khai local/staging; production cutover vẫn có gate topology/session-store riêng.
+**Status: Accepted — 2026-10-28; triển khai Redis session store cập nhật 2026-10-29.** Quyết định cho UI Thymeleaf; production cutover còn gate staging và external routing/provider.
 
 ## Bối cảnh
 
@@ -13,7 +13,7 @@ REST API hiện dùng JWT Bearer; browser Next giữ access/refresh token và đ
 - Đăng nhập HTML gọi cùng domain service `SessionService`; logout là POST có CSRF, hủy HTTP session và revoke refresh token đã cấp. Regenerate session ID sau đăng nhập, áp dụng role/ownership checks phía server và validate redirect theo allowlist role của ADR 0014.
 - OAuth cho Thymeleaf hoàn tất exchange trong server, sau đó tạo session. Không chuyển exchange code hoặc registration token qua query string; token chờ chọn role được giữ tạm trong server session. OAuth flow hiện dành cho Next tiếp tục hoạt động cho tới cutover.
 - Session hết hạn hoặc refresh phải dùng cơ chế rotation/revocation sẵn có trong `SessionService`; các request đồng thời trong cùng session không được dùng lại refresh token đã rotate. Multi-tab dùng chung session cookie; logout làm session đó mất hiệu lực ở request kế tiếp. Không thêm multi-account switch.
-- Local/staging có thể bắt đầu với một backend instance và session store tương ứng môi trường riêng. Trước production/multi-instance phải chọn shared session store hoặc chứng minh topology giữ session ổn định; không dựa vào in-memory session khi scale ngang.
+- Spring Session Redis là session store dùng cho UI; cấu hình bật `spring.session.store-type=redis` với namespace `edtech:session`. `AuthenticatedUser` và `HtmlSessionState` serializable. Đây mới là cấu hình/code evidence: cần xác minh Redis persistence sau restart, chia sẻ session giữa nhiều backend instance, cookie/domain/TTL thực tế trên staging trước production. Không dựa vào in-memory session khi scale ngang.
 
 ## Lý do và phương án khác
 
@@ -21,4 +21,4 @@ Session same-origin tránh đưa JWT vào giao diện SSR, giữ CSRF protection
 
 ## Gate trước production cutover
 
-Trước production cutover cần test cấu hình thời hạn idle/absolute của HTTP session, session fixation protection, refresh synchronization và OAuth callback/role-selection; phải chọn shared session store hoặc topology tương đương khi chạy nhiều instance. Các chi tiết đó chưa được triển khai/xác minh trong code hiện tại. Điều này không chặn bắt đầu local/staging protected routes theo quyết định đã chốt.
+Trước production cutover cần nghiệm thu Redis session qua restart/multi-instance, idle/absolute expiry, session fixation, refresh synchronization, Google OAuth callback/role-selection và cookie qua Nginx. Code cấu hình Redis có nhưng topology/runtime test và provider staging smoke chưa chạy. Cloudflare website origin/callback phải được cập nhật ngoài repo; production cutover chưa được thực hiện.
