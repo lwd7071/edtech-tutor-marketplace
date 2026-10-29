@@ -134,6 +134,7 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | `BOOKING_NOT_FOUND` | 404 | Booking không tồn tại hoặc không thuộc người gọi |
 | `BOOKING_TIME_CONFLICT` | 409 | Overlap lịch Teacher hoặc Student theo `[start,end)` |
 | `BOOKING_INVALID_TIME_RANGE` | 400 | `startTime >= endTime` |
+| `BOOKING_DURATION_MISMATCH` | 422 | `endTime` không khớp thời lượng snapshot của gói đã mua |
 | `BOOKING_IN_PAST` | 422 | Tạo Booking trong quá khứ |
 | `BOOKING_INVALID_STATE` | 400 | Action không hợp lệ với trạng thái hiện tại |
 | `BOOKING_REPORT_REQUIRED` | 400 | Complete thiếu SessionReport bắt buộc |
@@ -147,6 +148,10 @@ Không dùng `200` với `success=false`, ngoại trừ response webhook phải 
 | `BOOKING_SETTLEMENT_INVALID_STATE` | 400 | Settlement không cho phép chuyển trạng thái |
 | `BOOKING_DISPUTE_INVALID_STATE` | 400 | Booking chưa ở trạng thái có thể khiếu nại |
 | `BOOKING_DISPUTE_REASON_REQUIRED` | 400 | Khiếu nại phải có lý do |
+| `BOOKING_REQUEST_NOT_FOUND` | 404 | Booking request không tồn tại hoặc không thuộc Teacher/Student hiện tại |
+| `BOOKING_REQUEST_ALREADY_PENDING` | 409 | Package đã có booking request PENDING |
+| `BOOKING_REQUEST_INVALID_STATE` | 409 | Request không còn PENDING nên không thể cancel/accept/reject |
+| `BOOKING_REQUEST_REASON_REQUIRED` | 400 | Teacher từ chối nhưng chưa nhập lý do |
 | `BOOKING_REOPEN_INVALID_STATE` | 409 | Settlement chưa ở trạng thái được mở lại |
 | `TRIAL_ALREADY_USED` | 422 | Cặp Student–Teacher đã có Trial SCHEDULED/COMPLETED |
 | `TRIAL_REQUEST_ALREADY_PENDING` | 409 | Cặp Student–Teacher đã có yêu cầu học thử PENDING |
