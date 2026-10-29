@@ -56,6 +56,7 @@ public class AdminSubjectsPageController {
         int safeSize = PAGE_SIZES.contains(size) ? size : 10;
         model.addAttribute("pageNumber", safePage);
         model.addAttribute("pageSize", safeSize);
+        model.addAttribute("activeWorkspaceNav", "subjects");
         model.addAttribute("proposalsUnavailable", false);
         model.addAttribute("subjectsUnavailable", false);
         model.addAttribute("educationLevels", educationLevels());

@@ -70,6 +70,7 @@ public class AdminUsersPageController {
         SortSelection selection = sortSelection(sortField, sortDirection, sort);
 
         model.addAttribute("keyword", cleanKeyword);
+        model.addAttribute("activeWorkspaceNav", "users");
         model.addAttribute("role", cleanRole);
         model.addAttribute("status", cleanStatus);
         model.addAttribute("pageNumber", safePage);

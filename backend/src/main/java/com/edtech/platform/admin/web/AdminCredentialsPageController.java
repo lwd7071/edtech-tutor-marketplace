@@ -45,6 +45,7 @@ public class AdminCredentialsPageController {
                        Model model) {
         requireAdmin(user);
         CredentialStatus selected = parseStatus(status);
+        model.addAttribute("activeWorkspaceNav", "credentials");
         model.addAttribute("selectedStatus", selected.name());
         model.addAttribute("statusLabel", statusLabel(selected));
         model.addAttribute("credentialsUnavailable", false);

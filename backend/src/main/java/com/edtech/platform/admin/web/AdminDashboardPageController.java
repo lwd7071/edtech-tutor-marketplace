@@ -32,6 +32,7 @@ public class AdminDashboardPageController {
     @GetMapping({"/admin", "/admin/dashboard"})
     public String dashboard(@AuthenticationPrincipal AuthenticatedUser user, Model model) {
         requireAdmin(user);
+        model.addAttribute("activeWorkspaceNav", "dashboard");
         model.addAttribute("dashboardUnavailable", false);
         try {
             AdminDashboardView dashboard = dashboardService.getDashboard();

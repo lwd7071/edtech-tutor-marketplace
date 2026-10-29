@@ -1,20 +1,44 @@
 <header class="admin-workspace-header" th:fragment="header">
-  <a class="admin-workspace-brand" href="/admin">Tutor Match</a>
+  <div class="admin-brand-wrapper">
+    <a class="admin-workspace-brand" href="/admin">Tutor Match</a>
+    <span class="admin-role-badge">Quản trị viên</span>
+  </div>
   <form method="post" action="/auth/logout">
     <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
     <button type="submit">Đăng xuất</button>
   </form>
 </header>
 <nav class="admin-workspace-nav" th:fragment="nav" aria-label="Điều hướng quản trị">
-  <a href="/admin/dashboard">Tổng quan</a>
-  <a href="/admin/teachers">Duyệt gia sư</a>
-  <a href="/admin/credentials">Duyệt minh chứng</a>
-  <a href="/admin/subjects">Duyệt môn học</a>
-  <a href="/admin/users">Người dùng</a>
-  <a href="/admin/refunds">Hoàn tiền</a>
-  <a href="/admin/extensions">Gia hạn</a>
-  <a href="/admin/payouts">Chi trả</a>
-  <a href="/admin/booking-settlements">Quyết toán buổi học</a>
-  <a href="/admin/settings">Cài đặt</a>
-  <a href="/admin/audit-logs">Nhật ký</a>
+  <!-- 5 Nhóm điều hướng chính ở thanh top -->
+  <div class="admin-workspace-nav__main">
+    <a href="/admin/dashboard" th:attr="aria-current=${activeWorkspaceNav == 'dashboard' or activeWorkspaceNav == null or activeWorkspaceNav == 'overview' ? 'page' : null}">Tổng quan</a>
+    <a href="/admin/teachers" th:attr="aria-current=${activeWorkspaceNav == 'teachers' or activeWorkspaceNav == 'credentials' or activeWorkspaceNav == 'subjects' ? 'page' : null}">Xét duyệt</a>
+    <a href="/admin/payouts" th:attr="aria-current=${activeWorkspaceNav == 'payouts' or activeWorkspaceNav == 'refunds' or activeWorkspaceNav == 'extensions' or activeWorkspaceNav == 'settlements' ? 'page' : null}">Tài chính</a>
+    <a href="/admin/users" th:attr="aria-current=${activeWorkspaceNav == 'users' ? 'page' : null}">Người dùng</a>
+    <a href="/admin/settings" th:attr="aria-current=${activeWorkspaceNav == 'settings' or activeWorkspaceNav == 'audit-logs' ? 'page' : null}">Hệ thống</a>
+  </div>
+
+  <!-- Thanh Sub-pills ngữ cảnh cho từng phân hệ (Không hiển thị ở trang Tổng quan hoặc Người dùng) -->
+  <div class="admin-workspace-nav__sub" th:if="${activeWorkspaceNav != 'dashboard' and activeWorkspaceNav != null and activeWorkspaceNav != 'overview' and activeWorkspaceNav != 'users'}">
+    <!-- Phân hệ Xét duyệt -->
+    <div class="admin-sub-pills" th:if="${activeWorkspaceNav == 'teachers' or activeWorkspaceNav == 'credentials' or activeWorkspaceNav == 'subjects'}">
+      <a href="/admin/teachers" th:classappend="${activeWorkspaceNav == 'teachers' ? 'is-active' : ''}">Duyệt gia sư</a>
+      <a href="/admin/credentials" th:classappend="${activeWorkspaceNav == 'credentials' ? 'is-active' : ''}">Duyệt minh chứng</a>
+      <a href="/admin/subjects" th:classappend="${activeWorkspaceNav == 'subjects' ? 'is-active' : ''}">Duyệt môn học</a>
+    </div>
+
+    <!-- Phân hệ Tài chính -->
+    <div class="admin-sub-pills" th:if="${activeWorkspaceNav == 'payouts' or activeWorkspaceNav == 'refunds' or activeWorkspaceNav == 'extensions' or activeWorkspaceNav == 'settlements'}">
+      <a href="/admin/payouts" th:classappend="${activeWorkspaceNav == 'payouts' ? 'is-active' : ''}">Chi trả</a>
+      <a href="/admin/refunds" th:classappend="${activeWorkspaceNav == 'refunds' ? 'is-active' : ''}">Hoàn tiền</a>
+      <a href="/admin/extensions" th:classappend="${activeWorkspaceNav == 'extensions' ? 'is-active' : ''}">Gia hạn</a>
+      <a href="/admin/booking-settlements" th:classappend="${activeWorkspaceNav == 'settlements' ? 'is-active' : ''}">Quyết toán buổi học</a>
+    </div>
+
+    <!-- Phân hệ Hệ thống -->
+    <div class="admin-sub-pills" th:if="${activeWorkspaceNav == 'settings' or activeWorkspaceNav == 'audit-logs'}">
+      <a href="/admin/settings" th:classappend="${activeWorkspaceNav == 'settings' ? 'is-active' : ''}">Cài đặt</a>
+      <a href="/admin/audit-logs" th:classappend="${activeWorkspaceNav == 'audit-logs' ? 'is-active' : ''}">Nhật ký</a>
+    </div>
+  </div>
 </nav>

@@ -57,6 +57,7 @@ public class AdminTeacherApprovalsPageController {
         ProfileStatus selected = parseStatus(status);
         int safePage = Math.max(0, page);
         int safeSize = PAGE_SIZES.contains(size) ? size : 20;
+        model.addAttribute("activeWorkspaceNav", "teachers");
         model.addAttribute("selectedStatus", selected.name());
         model.addAttribute("statusOptions", Arrays.stream(ProfileStatus.values()).map(s -> new StatusOption(s.name(), statusLabel(s))).toList());
         model.addAttribute("pageSize", safeSize);

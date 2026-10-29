@@ -15,6 +15,7 @@
 <main class="admin-dashboard" id="main-content">
   <div class="admin-dashboard__container">
     <div th:replace="~{fragments/admin-workspace-header :: nav}"></div>
+    
     <header class="admin-dashboard__heading">
       <h1>Tổng quan quản trị</h1>
       <p>Các khoản cần xử lý và tình hình hoạt động của nền tảng.</p>
@@ -26,58 +27,164 @@
     </div>
 
     <div th:if="${!dashboardUnavailable and dashboard != null}">
-      <section class="admin-dashboard__section admin-dashboard__priority" aria-labelledby="admin-priority-title">
-        <div class="admin-dashboard__section-heading">
-          <div>
-            <h2 id="admin-priority-title">Yêu cầu tài chính đang chờ</h2>
-            <p>Số lượng và tổng tiền theo dữ liệu hiện tại.</p>
-          </div>
-          <p class="admin-dashboard__clear" role="status" th:if="${dashboard.pendingPayoutsCount == 0 and dashboard.pendingRefundsCount == 0}">Không có yêu cầu đang chờ.</p>
+      <!-- 4 KPI Stat Cards Đo lường nhanh -->
+      <div class="admin-stat-cards" aria-label="Chỉ số hoạt động nhanh">
+        <div class="admin-stat-card">
+          <span class="admin-stat-card__label">GMV đã thanh toán</span>
+          <strong class="admin-stat-card__value" th:text="${totalGmvLabel}">0 ₫</strong>
+          <span class="admin-stat-card__hint">Tổng giá trị giao dịch</span>
         </div>
-        <dl class="admin-dashboard__queue-list">
-          <div class="admin-dashboard__queue-row">
-            <dt>Yêu cầu rút tiền</dt>
-            <dd>
-              <strong th:text="${dashboard.pendingPayoutsCount}">0</strong>
-              <span th:text="${'yêu cầu · ' + pendingPayoutAmountLabel}">yêu cầu · 0 ₫</span>
-            </dd>
-          </div>
-          <div class="admin-dashboard__queue-row">
-            <dt>Yêu cầu hoàn tiền</dt>
-            <dd><strong th:text="${dashboard.pendingRefundsCount}">0</strong><span>yêu cầu</span></dd>
-          </div>
-        </dl>
-      </section>
+        <div class="admin-stat-card">
+          <span class="admin-stat-card__label">Hoa hồng ghi nhận</span>
+          <strong class="admin-stat-card__value" th:text="${totalCommissionLabel}">0 ₫</strong>
+          <span class="admin-stat-card__hint">Doanh thu nền tảng</span>
+        </div>
+        <div class="admin-stat-card" th:classappend="${dashboard.pendingPayoutsCount > 0 ? 'admin-stat-card--alert' : ''}">
+          <span class="admin-stat-card__label">Yêu cầu rút tiền</span>
+          <strong class="admin-stat-card__value" th:text="${dashboard.pendingPayoutsCount + ' yêu cầu'}">0 yêu cầu</strong>
+          <span class="admin-stat-card__hint" th:text="${'Chờ chi trả: ' + pendingPayoutAmountLabel}">Chờ chi trả: 0 ₫</span>
+        </div>
+        <div class="admin-stat-card" th:classappend="${dashboard.pendingRefundsCount > 0 ? 'admin-stat-card--alert' : ''}">
+          <span class="admin-stat-card__label">Yêu cầu hoàn tiền</span>
+          <strong class="admin-stat-card__value" th:text="${dashboard.pendingRefundsCount + ' yêu cầu'}">0 yêu cầu</strong>
+          <span class="admin-stat-card__hint">Chờ admin đối soát</span>
+        </div>
+      </div>
 
-      <section class="admin-dashboard__section" aria-labelledby="admin-finance-title">
-        <div class="admin-dashboard__section-heading">
-          <div>
-            <h2 id="admin-finance-title">Tài chính</h2>
-            <p>Số liệu tổng hợp do hệ thống cung cấp.</p>
-          </div>
-        </div>
-        <dl class="admin-dashboard__metrics admin-dashboard__metrics--finance">
-          <div><dt>GMV đã thanh toán</dt><dd th:text="${totalGmvLabel}">0 ₫</dd></div>
-          <div><dt>Hoa hồng đã ghi nhận</dt><dd th:text="${totalCommissionLabel}">0 ₫</dd></div>
-        </dl>
-      </section>
+      <!-- Main Bento Grid 2 Cột: Cột Trái 55% Hàng đợi / Cột Phải 45% Vận hành -->
+      <div class="admin-dashboard-bento-grid">
+        <!-- CỘT TRÁI: YÊU CẦU TÀI CHÍNH & NGƯỜI DÙNG -->
+        <div class="admin-dashboard-column admin-dashboard-column--main">
+          <!-- Card 1: Yêu cầu tài chính đang chờ -->
+          <section class="admin-card-section admin-priority-card" aria-labelledby="admin-priority-title">
+            <div class="admin-card-section__heading">
+              <div>
+                <h2 id="admin-priority-title">Yêu cầu tài chính đang chờ</h2>
+                <p>Số lượng và tổng tiền theo dữ liệu hiện tại.</p>
+              </div>
+              <div class="admin-card-actions">
+                <a class="admin-card-action-link" href="/admin/payouts">Chi trả →</a>
+                <span class="admin-action-divider" aria-hidden="true">·</span>
+                <a class="admin-card-action-link" href="/admin/refunds">Hoàn tiền →</a>
+              </div>
+            </div>
 
-      <section class="admin-dashboard__section" aria-labelledby="admin-activity-title">
-        <div class="admin-dashboard__section-heading">
-          <div>
-            <h2 id="admin-activity-title">Người dùng và buổi học</h2>
-            <p>Quy mô hiện tại và trạng thái booking.</p>
-          </div>
+            <p class="admin-dashboard__clear" role="status" th:if="${dashboard.pendingPayoutsCount == 0 and dashboard.pendingRefundsCount == 0}">
+              Không có yêu cầu đang chờ.
+            </p>
+
+            <dl class="admin-dashboard__queue-list" th:if="${dashboard.pendingPayoutsCount > 0 or dashboard.pendingRefundsCount > 0}">
+              <div class="admin-dashboard__queue-row">
+                <dt>
+                  <strong>Yêu cầu rút tiền</strong>
+                  <span class="admin-queue-subtext">Giáo viên yêu cầu rút số dư khả dụng</span>
+                </dt>
+                <dd>
+                  <div class="admin-queue-numbers">
+                    <strong th:text="${dashboard.pendingPayoutsCount}">0</strong>
+                    <span th:text="${'yêu cầu · ' + pendingPayoutAmountLabel}">yêu cầu · 0 ₫</span>
+                  </div>
+                  <a class="admin-queue-action-btn" href="/admin/payouts">Xử lý ngay</a>
+                </dd>
+              </div>
+              <div class="admin-dashboard__queue-row">
+                <dt>
+                  <strong>Yêu cầu hoàn tiền</strong>
+                  <span class="admin-queue-subtext">Học viên yêu cầu hoàn tiền học</span>
+                </dt>
+                <dd>
+                  <div class="admin-queue-numbers">
+                    <strong th:text="${dashboard.pendingRefundsCount}">0</strong>
+                    <span>yêu cầu</span>
+                  </div>
+                  <a class="admin-queue-action-btn" href="/admin/refunds">Xem xét</a>
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <!-- Card 2: Người dùng & Quy mô cộng đồng -->
+          <section class="admin-card-section" aria-labelledby="admin-users-scale-title">
+            <div class="admin-card-section__heading">
+              <div>
+                <h2 id="admin-users-scale-title">Người dùng & Cộng đồng</h2>
+                <p>Quy mô thành viên tham gia nền tảng.</p>
+              </div>
+              <a class="admin-card-action-link" href="/admin/users">Quản lý người dùng →</a>
+            </div>
+            <dl class="admin-dashboard__metrics admin-dashboard__metrics--users">
+              <div class="admin-metric-item">
+                <dt>Gia sư đã duyệt</dt>
+                <dd th:text="${totalTeachersLabel}">0</dd>
+              </div>
+              <div class="admin-metric-item">
+                <dt>Học viên đăng ký</dt>
+                <dd th:text="${totalStudentsLabel}">0</dd>
+              </div>
+            </dl>
+          </section>
         </div>
-        <dl class="admin-dashboard__metrics admin-dashboard__metrics--activity">
-          <div><dt>Gia sư đã duyệt</dt><dd th:text="${totalTeachersLabel}">0</dd></div>
-          <div><dt>Học viên</dt><dd th:text="${totalStudentsLabel}">0</dd></div>
-          <div><dt>Tổng số buổi</dt><dd th:text="${totalBookingsLabel}">0</dd></div>
-          <div><dt>Đã hoàn thành</dt><dd th:text="${completedBookingsLabel}">0</dd></div>
-          <div><dt>Đã lên lịch</dt><dd th:text="${scheduledBookingsLabel}">0</dd></div>
-          <div><dt>Đã hủy</dt><dd th:text="${cancelledBookingsLabel}">0</dd></div>
-        </dl>
-      </section>
+
+        <!-- CỘT PHẢI: BUỔI HỌC & TRUY CẬP NHANH -->
+        <div class="admin-dashboard-column admin-dashboard-column--side">
+          <!-- Card 3: Trạng thái buổi học -->
+          <section class="admin-card-section" aria-labelledby="admin-activity-title">
+            <div class="admin-card-section__heading">
+              <div>
+                <h2 id="admin-activity-title">Người dùng và buổi học</h2>
+                <p>Quy mô hiện tại và trạng thái booking.</p>
+              </div>
+              <a class="admin-card-action-link" href="/admin/booking-settlements">Quyết toán →</a>
+            </div>
+            <dl class="admin-dashboard__metrics admin-dashboard__metrics--activity">
+              <div class="admin-metric-item">
+                <dt>Tổng số buổi</dt>
+                <dd th:text="${totalBookingsLabel}">0</dd>
+              </div>
+              <div class="admin-metric-item">
+                <dt>Đã hoàn thành</dt>
+                <dd class="admin-metric-value--success" th:text="${completedBookingsLabel}">0</dd>
+              </div>
+              <div class="admin-metric-item">
+                <dt>Đã lên lịch</dt>
+                <dd class="admin-metric-value--info" th:text="${scheduledBookingsLabel}">0</dd>
+              </div>
+              <div class="admin-metric-item">
+                <dt>Đã hủy</dt>
+                <dd class="admin-metric-value--danger" th:text="${cancelledBookingsLabel}">0</dd>
+              </div>
+            </dl>
+          </section>
+
+          <!-- Card 4: Lối tắt quản trị (Quick Links) -->
+          <section class="admin-card-section admin-quick-links-section" aria-labelledby="admin-quick-links-title">
+            <div class="admin-card-section__heading">
+              <div>
+                <h2 id="admin-quick-links-title">Lối tắt quản trị</h2>
+                <p>Truy cập nhanh các nghiệp vụ trọng yếu.</p>
+              </div>
+            </div>
+            <div class="admin-quick-links-grid">
+              <a class="admin-quick-link-item" href="/admin/teachers">
+                <strong>Duyệt hồ sơ gia sư</strong>
+                <span>Xét duyệt thông tin và bằng cấp gia sư</span>
+              </a>
+              <a class="admin-quick-link-item" href="/admin/subjects">
+                <strong>Duyệt môn học</strong>
+                <span>Xác nhận danh mục môn giảng dạy</span>
+              </a>
+              <a class="admin-quick-link-item" href="/admin/settings">
+                <strong>Cài đặt hệ thống</strong>
+                <span>Điều chỉnh tỷ lệ hoa hồng và thời hạn</span>
+              </a>
+              <a class="admin-quick-link-item" href="/admin/audit-logs">
+                <strong>Nhật ký kiểm toán</strong>
+                <span>Theo dõi toàn bộ lịch sử thao tác hệ thống</span>
+              </a>
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
   </div>
 </main>
