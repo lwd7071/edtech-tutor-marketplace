@@ -117,6 +117,33 @@ class TeacherProfilePageControllerTest {
     }
 
     @Test
+    void publicProfilePackageShouldRenderTwoColumnHorizontalLayoutWithContentAndAction() throws Exception {
+        UUID teacherId = UUID.randomUUID();
+        TeacherPublicDetail teacher = new TeacherPublicDetail(
+                teacherId, "Thầy Nguyễn Văn Toán", null, "Chuyên luyện thi đại số và hình học.",
+                5, List.of("Tiếng Việt"), true, false, "Hà Nội", "Cầu Giấy", null,
+                List.of("Toán"), 4.9, 4.9, 1, 10, List.of(new PublicCredentialBadge(UUID.randomUUID(), "Đã xác minh bằng cấp")));
+        PricingPackageView pricingPackage = new PricingPackageView(
+                UUID.randomUUID(), UUID.randomUUID(), "Toán Học", "Toán Nền Tảng 10 Buổi",
+                "Lấy lại kiến thức cơ bản đại số & hình học lớp 12", 10, 60, 2000000, 60, PackageStatus.ACTIVE, 0);
+
+        when(teacherMarketplaceService.getTeacherDetail(teacherId)).thenReturn(teacher);
+        when(pricingPackageService.getTeacherPackages(org.mockito.ArgumentMatchers.eq(teacherId), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new PageImpl<>(List.of(pricingPackage)));
+        when(teacherFacade.getPublicAvailability(teacherId)).thenReturn(List.of());
+        when(reviewFacade.getPublicReviews(org.mockito.ArgumentMatchers.eq(teacherId), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new PageImpl<>(List.of()));
+
+        mockMvc.perform(get("/teachers/{id}", teacherId))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"profile-package\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"profile-package__content\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"profile-package__action\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Toán Nền Tảng 10 Buổi")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("2.000.000đ")));
+    }
+
+    @Test
     void rendersNotFoundPageForMissingTeacher() throws Exception {
         UUID teacherId = UUID.randomUUID();
         when(teacherMarketplaceService.getTeacherDetail(teacherId))

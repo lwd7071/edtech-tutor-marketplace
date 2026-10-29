@@ -102,16 +102,18 @@
         <p class="profile-empty" th:if="${!packagesUnavailable and #lists.isEmpty(packages)}">Gia sư chưa mở gói học nào.</p>
         <div class="package-list" th:if="${!packagesUnavailable and !#lists.isEmpty(packages)}">
           <article class="profile-package" th:each="package : ${packages}" th:id="|package-${package.id}|">
-            <div class="profile-package__main">
-              <p class="profile-package__subject" th:text="${package.subjectName}">Môn học</p>
-              <h3 th:text="${package.name}">Tên gói</h3>
-              <p class="profile-package__description" th:if="${package.description != null and !#strings.isEmpty(package.description)}" th:text="${package.description}">Mô tả</p>
+            <div class="profile-package__content">
+              <div class="profile-package__main">
+                <p class="profile-package__subject" th:text="${package.subjectName}">Môn học</p>
+                <h3 th:text="${package.name}">Tên gói</h3>
+                <p class="profile-package__description" th:if="${package.description != null and !#strings.isEmpty(package.description)}" th:text="${package.description}">Mô tả</p>
+              </div>
+              <dl class="profile-package__terms">
+                <div><dt>Số buổi</dt><dd th:text="${package.totalSessions}">0</dd></div>
+                <div><dt>Thời lượng</dt><dd th:text="|${package.sessionDurationMinutes} phút/buổi|">0 phút/buổi</dd></div>
+                <div><dt>Thời hạn</dt><dd th:text="|${package.durationDays} ngày|">0 ngày</dd></div>
+              </dl>
             </div>
-            <dl class="profile-package__terms">
-              <div><dt>Số buổi</dt><dd th:text="${package.totalSessions}">0</dd></div>
-              <div><dt>Thời lượng</dt><dd th:text="|${package.sessionDurationMinutes} phút/buổi|">0 phút/buổi</dd></div>
-              <div><dt>Thời hạn</dt><dd th:text="|${package.durationDays} ngày|">0 ngày</dd></div>
-            </dl>
             <div class="profile-package__action">
               <p>Giá trọn gói</p>
               <strong th:text="|${#numbers.formatInteger(package.priceVnd, 1, 'POINT')}đ|">0đ</strong>
