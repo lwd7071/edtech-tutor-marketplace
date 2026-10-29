@@ -479,6 +479,67 @@
   font-weight: 700;
 }
 
+/* Subgrid cho 2 thẻ nằm ngang: Bài tập có bài nộp & Thu nhập */
+.teacher-overview-side-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.teacher-overview-side-row > .teacher-card-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.teacher-overview-side-row .teacher-overview-section-heading {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+}
+
+.teacher-overview-side-row .teacher-card-section h2 {
+  font-size: 1.05rem;
+}
+
+.teacher-overview-side-row .teacher-overview-list li {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 8px 0;
+}
+
+.teacher-overview-side-row .teacher-overview-submission {
+  display: inline-flex;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.teacher-overview-side-row .teacher-overview-balances {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.teacher-overview-side-row .teacher-balance-item {
+  padding: 10px 12px;
+}
+
+.teacher-overview-side-row .teacher-balance-value {
+  font-size: 1.25rem;
+  margin-top: 2px;
+}
+
+.teacher-overview-side-row .teacher-overview-wallet-note {
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 0.8rem;
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 1023px) {
   .teacher-stat-cards {
@@ -487,6 +548,10 @@
   .teacher-dashboard-main-grid {
     grid-template-columns: 1fr;
     gap: 18px;
+  }
+  .teacher-overview-side-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
   }
   .teacher-overview-schedule-list li {
     grid-template-columns: minmax(130px, 1fr) minmax(80px, .6fr) minmax(100px, 1fr) auto;
@@ -513,6 +578,10 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
+  }
+  .teacher-overview-side-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
   .teacher-overview-schedule-list li {
     grid-template-columns: minmax(0, 1fr) auto;

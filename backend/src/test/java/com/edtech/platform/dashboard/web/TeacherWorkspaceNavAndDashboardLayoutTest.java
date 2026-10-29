@@ -145,4 +145,13 @@ class TeacherWorkspaceNavAndDashboardLayoutTest {
                 "teacher-overview-page must not restrict max-width on main tag to avoid breaking full-width background"
         );
     }
+
+    @Test
+    @DisplayName("Thẻ Thu nhập và Bài tập có bài nộp phải được nhóm nằm ngang trong teacher-overview-side-row")
+    void assignmentsAndWalletShouldBeRenderedSideBySide() throws Exception {
+        mockMvc.perform(get("/teacher"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("teacher-overview-side-row")))
+                .andExpect(content().string(matchesPattern("(?s).*teacher-overview-side-row.*Bài tập có bài nộp.*Thu nhập.*")));
+    }
 }

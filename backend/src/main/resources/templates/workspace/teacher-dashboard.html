@@ -170,52 +170,51 @@
           <a class="teacher-overview-list-link" th:if="${!trialsUnavailable and !#lists.isEmpty(trialRows)}" href="/teacher/trial-requests">Xem và phản hồi →</a>
         </section>
 
-        <!-- Card 4: Bài tập có bài nộp -->
-        <section class="teacher-overview-section teacher-card-section" aria-labelledby="teacher-overview-assignments-title">
-          <div class="teacher-overview-section-heading">
-            <h2 id="teacher-overview-assignments-title">Bài tập có bài nộp</h2>
-            <div class="teacher-section-actions">
-              <a class="teacher-card-action-link" href="/teacher/assignments">Tất cả bài tập</a>
-              <span class="teacher-action-divider" aria-hidden="true">·</span>
-              <a class="teacher-card-action-link" href="/teacher/assignments">Xem bài tập</a>
+        <!-- Hàng 2 thẻ nằm ngang: Bài tập có bài nộp & Thu nhập -->
+        <div class="teacher-overview-side-row">
+          <!-- Card: Bài tập có bài nộp -->
+          <section class="teacher-overview-section teacher-overview-assignments teacher-card-section" aria-labelledby="teacher-overview-assignments-title">
+            <div class="teacher-overview-section-heading">
+              <h2 id="teacher-overview-assignments-title">Bài tập có bài nộp</h2>
+              <a class="teacher-card-action-link" href="/teacher/assignments">Tất cả bài tập →</a>
             </div>
-          </div>
-          <div class="teacher-overview-error" role="alert" th:if="${assignmentsUnavailable}">
-            <p>Chưa tải được bài tập.</p><a href="/teacher/assignments">Mở bài tập để thử lại</a>
-          </div>
-          <div class="teacher-overview-empty" th:if="${!assignmentsUnavailable and #lists.isEmpty(assignmentRows)}">
-            <p>Chưa có bài nộp trong các bài tập gần đây.</p>
-          </div>
-          <ul class="teacher-overview-list" th:if="${!assignmentsUnavailable and !#lists.isEmpty(assignmentRows)}">
-            <li th:each="assignment : ${assignmentRows}">
-              <div><a th:href="@{/teacher/assignments/{id}(id=${assignment.id})}" th:text="${assignment.title}">Bài tập</a>
-                <span th:text="${assignment.studentName + ' · ' + assignment.subjectName}">Học viên · Môn học</span></div>
-              <span class="teacher-overview-submission" th:text="${assignment.submissionLabel}">Chờ chấm</span>
-            </li>
-          </ul>
-        </section>
+            <div class="teacher-overview-error" role="alert" th:if="${assignmentsUnavailable}">
+              <p>Chưa tải được bài tập.</p><a href="/teacher/assignments">Mở bài tập để thử lại</a>
+            </div>
+            <div class="teacher-overview-empty" th:if="${!assignmentsUnavailable and #lists.isEmpty(assignmentRows)}">
+              <p>Chưa có bài nộp trong các bài tập gần đây.</p>
+            </div>
+            <ul class="teacher-overview-list" th:if="${!assignmentsUnavailable and !#lists.isEmpty(assignmentRows)}">
+              <li th:each="assignment : ${assignmentRows}">
+                <div><a th:href="@{/teacher/assignments/{id}(id=${assignment.id})}" th:text="${assignment.title}">Bài tập</a>
+                  <span th:text="${assignment.studentName + ' · ' + assignment.subjectName}">Học viên · Môn học</span></div>
+                <span class="teacher-overview-submission" th:text="${assignment.submissionLabel}">Chờ chấm</span>
+              </li>
+            </ul>
+          </section>
 
-        <!-- Card 5: Thu nhập -->
-        <section class="teacher-overview-section teacher-overview-wallet teacher-card-section" aria-labelledby="teacher-overview-wallet-title">
-          <div class="teacher-overview-section-heading">
-            <h2 id="teacher-overview-wallet-title">Thu nhập</h2>
-            <a class="teacher-card-action-link" href="/teacher/wallet">Mở ví →</a>
-          </div>
-          <div class="teacher-overview-error" role="alert" th:if="${walletUnavailable}">
-            <p>Chưa tải được số dư.</p><a href="/teacher/wallet">Mở ví để thử lại</a>
-          </div>
-          <dl class="teacher-overview-balances" th:if="${!walletUnavailable}">
-            <div class="teacher-balance-item">
-              <dt>Số dư khả dụng</dt>
-              <dd class="teacher-balance-value" th:text="${availableBalanceLabel}">0 ₫</dd>
+          <!-- Card: Thu nhập -->
+          <section class="teacher-overview-section teacher-overview-wallet teacher-card-section" aria-labelledby="teacher-overview-wallet-title">
+            <div class="teacher-overview-section-heading">
+              <h2 id="teacher-overview-wallet-title">Thu nhập</h2>
+              <a class="teacher-card-action-link" href="/teacher/wallet">Mở ví →</a>
             </div>
-            <div class="teacher-balance-item">
-              <dt>Đang giữ theo lịch học</dt>
-              <dd class="teacher-balance-value teacher-balance-value--held" th:text="${heldBalanceLabel}">0 ₫</dd>
+            <div class="teacher-overview-error" role="alert" th:if="${walletUnavailable}">
+              <p>Chưa tải được số dư.</p><a href="/teacher/wallet">Mở ví để thử lại</a>
             </div>
-          </dl>
-          <p class="teacher-overview-wallet-note" th:if="${!walletUnavailable}">Số dư đang giữ chưa thể rút.</p>
-        </section>
+            <dl class="teacher-overview-balances" th:if="${!walletUnavailable}">
+              <div class="teacher-balance-item">
+                <dt>Số dư khả dụng</dt>
+                <dd class="teacher-balance-value" th:text="${availableBalanceLabel}">0 ₫</dd>
+              </div>
+              <div class="teacher-balance-item">
+                <dt>Đang giữ theo lịch học</dt>
+                <dd class="teacher-balance-value teacher-balance-value--held" th:text="${heldBalanceLabel}">0 ₫</dd>
+              </div>
+            </dl>
+            <p class="teacher-overview-wallet-note" th:if="${!walletUnavailable}">Số dư đang giữ chưa thể rút.</p>
+          </section>
+        </div>
       </div>
     </div>
   </div>
