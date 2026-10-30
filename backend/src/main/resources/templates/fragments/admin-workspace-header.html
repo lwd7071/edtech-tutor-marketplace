@@ -16,6 +16,7 @@
       <button type="submit">Đăng xuất</button>
     </form>
   </div>
+  <script defer src="/js/assistant-widget.js" th:attr="data-csrf=${_csrf != null ? _csrf.token : ''},data-role='ADMIN'"></script>
 </header>
 <nav class="admin-workspace-nav" th:fragment="nav" aria-label="Điều hướng quản trị">
   <!-- 5 Nhóm điều hướng chính ở thanh top -->

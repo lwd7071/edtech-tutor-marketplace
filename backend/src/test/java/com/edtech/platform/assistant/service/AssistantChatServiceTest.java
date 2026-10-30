@@ -1,79 +1,90 @@
 package com.edtech.platform.assistant.service;
 
 import com.edtech.platform.assistant.dto.AssistantChatRequest;
-import com.edtech.platform.assistant.dto.AssistantChatResponse;
+import com.edtech.platform.assistant.dto.AssistantHistoryMessage;
 import com.edtech.platform.assistant.dto.AssistantOutcome;
-import com.edtech.platform.assistant.dto.AssistantSource;
-import java.util.Optional;
+import com.edtech.platform.assistant.provider.GroqChatCompletionPort;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class AssistantChatServiceTest {
-    @Test
-    void unsupportedQuestionReturnsAdminContactWithoutCallingGroq() {
-        AtomicBoolean providerCalled = new AtomicBoolean();
-        AssistantChatService service = new AssistantChatService(
-                (system, history, message) -> {
-                    providerCalled.set(true);
-                    return "unexpected";
-                },
-                question -> Optional.empty());
-
-        AssistantChatResponse response = service.reply(new AssistantChatRequest("Thủ đô nước Pháp là gì?", List.of()));
-
-        assertEquals(AssistantOutcome.CONTACT_ADMIN, response.outcome());
-        assertEquals("Mình chưa có thông tin phù hợp để giải đáp câu hỏi này. Bạn có thể liên hệ admin qua luongvietvidong@gmail.com để được hỗ trợ nhé.", response.reply());
-        assertEquals(List.of(), response.sources());
-        org.junit.jupiter.api.Assertions.assertFalse(providerCalled.get());
+    private AssistantChatService service(String classification, AtomicReference<String> evidence, PublicTeacherSearch search) {
+        GroqChatCompletionPort groq = (system, history, message) -> {
+            if (system.startsWith("Classify")) return classification;
+            evidence.set(system);
+            return system.contains("OUT_OF_SCOPE") ? "Contact luongvietvidong@gmail.com" : "Grounded answer";
+        };
+        return new AssistantChatService(groq, search, new ObjectMapper());
     }
 
     @Test
-    void supportedQuestionReturnsAnswerAndGroundedSources() {
-        AssistantSource source = new AssistantSource("Cách hoạt động", "/how-it-works");
-        AssistantChatService service = new AssistantChatService(
-                (system, history, message) -> "Sau khi mua gói, bạn gửi yêu cầu đặt buổi và gia sư sẽ xác nhận giờ học.",
-                question -> Optional.of(new AssistantContext("Sau khi mua gói, học viên gửi yêu cầu đặt buổi.", List.of(source))));
-
-        AssistantChatResponse response = service.reply(new AssistantChatRequest("Mình muốn đặt lịch học", List.of()));
-
-        assertEquals(AssistantOutcome.ANSWERED, response.outcome());
-        assertEquals("Sau khi mua gói, bạn gửi yêu cầu đặt buổi và gia sư sẽ xác nhận giờ học.", response.reply());
-        assertEquals(List.of(source), response.sources());
+    void guidesAreSelectedByRoleAndUnauthorizedTopicNeverReachesGroq() {
+        var prompt = new AtomicReference<String>();
+        var assistant = service("{\"intent\":\"GUIDE\",\"topics\":[\"admin_refunds\",\"login\"],\"language\":\"en\"}", prompt, q -> List.of());
+        var response = assistant.reply(new AssistantChatRequest("How do I log in?", List.of()), "GUEST");
+        assertEquals("en", response.language());
+        assertEquals(List.of("/auth/login"), response.sources().stream().map(source -> source.url()).toList());
+        assertFalse(prompt.get().contains("Quản trị viên"));
+        assertFalse(prompt.get().contains("/admin/"));
     }
 
     @Test
-    void modelFallbackIsReturnedAsContactAdminOutcome() {
-        AssistantChatService service = new AssistantChatService(
-                (system, history, message) -> "Mình chưa có thông tin phù hợp để giải đáp câu hỏi này. Bạn có thể liên hệ admin qua luongvietvidong@gmail.com để được hỗ trợ nhé.",
-                question -> Optional.of(new AssistantContext("Hướng dẫn tìm gia sư.", List.of(new AssistantSource("Tìm gia sư", "/teachers")))));
-
-        AssistantChatResponse response = service.reply(new AssistantChatRequest("Câu hỏi khác", List.of()));
-
-        assertEquals(AssistantOutcome.CONTACT_ADMIN, response.outcome());
-        assertEquals(List.of(), response.sources());
+    void eachRoleReceivesOnlyItsOwnGuidance() {
+        for (String role : List.of("STUDENT", "TEACHER", "ADMIN")) {
+            String id = switch (role) { case "STUDENT" -> "student_booking"; case "TEACHER" -> "teacher_payout"; default -> "admin_approval"; };
+            var response = service("{\"intent\":\"GUIDE\",\"topics\":[\"" + id + "\"],\"language\":\"vi\"}", new AtomicReference<>(), q -> List.of())
+                    .reply(new AssistantChatRequest("Hướng dẫn giúp tôi", List.of()), role);
+            assertEquals(AssistantOutcome.ANSWERED, response.outcome());
+            assertTrue(response.sources().getFirst().url().startsWith("/" + role.toLowerCase()));
+        }
     }
 
     @Test
-    void publicTutorSearchWithNoMatchesReturnsMarketplaceGuidanceWithoutCallingGroq() {
-        AtomicBoolean providerCalled = new AtomicBoolean();
-        AssistantChatService service = new AssistantChatService(
-                (system, history, message) -> {
-                    providerCalled.set(true);
-                    return "unexpected";
-                },
-                question -> Optional.of(new AssistantContext("", List.of(
-                        new AssistantSource("Tìm gia sư", "/teachers")),
-                        "Mình chưa tìm thấy gia sư phù hợp trong danh sách công khai hiện tại.")));
-
-        AssistantChatResponse response = service.reply(new AssistantChatRequest("Tìm gia sư Toán", List.of()));
-
-        assertEquals(AssistantOutcome.ANSWERED, response.outcome());
-        assertEquals("Mình chưa tìm thấy gia sư phù hợp trong danh sách công khai hiện tại.", response.reply());
+    void tutorFiltersAreValidatedBeforeCatalogSearch() {
+        var query = new AtomicReference<String>();
+        var assistant = service("{\"intent\":\"TUTOR_SEARCH\",\"topics\":[],\"subject\":\"MATH\",\"level\":\"HIGH_SCHOOL\",\"language\":\"en\"}", new AtomicReference<>(), q -> { query.set(q); return List.of(); });
+        var response = assistant.reply(new AssistantChatRequest("Find a high school math tutor", List.of()), "GUEST");
+        assertEquals("tìm gia sư Toán THPT", query.get());
         assertEquals("/teachers", response.sources().getFirst().url());
-        org.junit.jupiter.api.Assertions.assertFalse(providerCalled.get());
+    }
+
+    @Test
+    void vagueAndUnrelatedQuestionsHaveDifferentOutcomes() {
+        var vague = service("{\"intent\":\"CLARIFY\",\"topics\":[],\"language\":\"vi\"}", new AtomicReference<>(), q -> List.of())
+                .reply(new AssistantChatRequest("Giúp mình", List.of()), "STUDENT");
+        var unrelated = service("{\"intent\":\"OUT_OF_SCOPE\",\"topics\":[],\"language\":\"en\"}", new AtomicReference<>(), q -> List.of())
+                .reply(new AssistantChatRequest("What is the capital of France?", List.of()), "GUEST");
+        assertEquals(AssistantOutcome.NEEDS_CLARIFICATION, vague.outcome());
+        assertEquals(AssistantOutcome.CONTACT_ADMIN, unrelated.outcome());
+        assertTrue(unrelated.reply().contains("luongvietvidong@gmail.com"));
+    }
+
+    @Test
+    void latestQuestionCanSwitchLanguageWhileHistoryIsPassedToGroq() {
+        var seenHistory = new AtomicReference<List<AssistantHistoryMessage>>();
+        GroqChatCompletionPort groq = (system, history, message) -> {
+            seenHistory.set(history);
+            return system.startsWith("Classify")
+                    ? "{\"intent\":\"GUIDE\",\"topics\":[\"student_booking\"],\"language\":\"en\"}"
+                    : "Send a booking request after buying a package.";
+        };
+        var history = List.of(new AssistantHistoryMessage(AssistantHistoryMessage.Role.USER, "Đặt lịch thế nào?"));
+        var response = new AssistantChatService(groq, q -> List.of(), new ObjectMapper())
+                .reply(new AssistantChatRequest("Explain in English", history), "STUDENT");
+        assertEquals("en", response.language());
+        assertEquals(history, seenHistory.get());
+    }
+
+    @Test
+    void playbookPathsAreLocalAndRoleScoped() {
+        for (var guide : AssistantPlaybook.GUIDES) {
+            assertTrue(guide.path().startsWith("/") && !guide.path().startsWith("//"));
+            assertFalse(guide.roles().isEmpty());
+        }
     }
 }

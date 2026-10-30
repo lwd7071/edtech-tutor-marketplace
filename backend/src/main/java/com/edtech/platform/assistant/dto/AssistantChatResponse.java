@@ -5,7 +5,8 @@ import java.util.List;
 public record AssistantChatResponse(
         AssistantOutcome outcome,
         String reply,
-        List<AssistantSource> sources
+        List<AssistantSource> sources,
+        String language
 ) {
     public AssistantChatResponse {
         sources = sources == null ? List.of() : List.copyOf(sources);

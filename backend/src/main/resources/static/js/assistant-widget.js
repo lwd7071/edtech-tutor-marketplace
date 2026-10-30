@@ -1,5 +1,15 @@
 (() => {
   if (document.getElementById('tm-assistant-root')) return;
+  const script = document.currentScript;
+  const csrf = script?.dataset.csrf || '';
+  const role = script?.dataset.role || 'GUEST';
+  const introductions = {
+    GUEST: ['Mình có thể giúp bạn tìm gia sư, tạo tài khoản và đăng nhập.', 'How do I create an account?', 'Find a math tutor', 'I forgot my password'],
+    STUDENT: ['Mình có thể hướng dẫn mua gói, đặt buổi, học thử và gửi yêu cầu hỗ trợ.', 'Mua gói học thế nào?', 'How do I book a lesson?', 'Yêu cầu hoàn tiền ở đâu?'],
+    TEACHER: ['Mình có thể hướng dẫn quản lý hồ sơ, lịch dạy, bài tập và rút tiền.', 'Làm sao để hồ sơ được duyệt?', 'How do I create a package?', 'Rút tiền thế nào?'],
+    ADMIN: ['Mình có thể hướng dẫn quy trình xét duyệt và xử lý các hàng đợi.', 'Duyệt hồ sơ gia sư ở đâu?', 'How do I review refunds?', 'Xem nhật ký ở đâu?']
+  };
+  const introduction = introductions[role] || introductions.GUEST;
 
   const stylesheet = document.createElement('link');
   stylesheet.rel = 'stylesheet';
@@ -19,12 +29,12 @@
         </header>
         <p class="tm-assistant__privacy">Nội dung bạn gửi sẽ được xử lý bởi Groq để tạo câu trả lời. Đừng nhập email, số điện thoại hoặc thông tin cá nhân.</p>
         <div class="tm-assistant__messages" role="log" aria-label="Tin nhắn với trợ lý" aria-live="polite" aria-relevant="additions text">
-          <div class="tm-assistant__message tm-assistant__message--assistant"><p>Chào bạn! Mình có thể hướng dẫn sử dụng Tutor Match và tìm gia sư từ danh sách công khai.</p></div>
+          <div class="tm-assistant__message tm-assistant__message--assistant"><p></p></div>
         </div>
         <div class="tm-assistant__suggestions" aria-label="Câu hỏi gợi ý">
-          <button type="button">Hướng dẫn sử dụng website Tutor Match?</button>
-          <button type="button">Có gia sư dạy Toán cấp 3 không?</button>
-          <button type="button">Học thử và đặt lịch thế nào?</button>
+          <button type="button"></button>
+          <button type="button"></button>
+          <button type="button"></button>
         </div>
         <form class="tm-assistant__form">
           <label class="tm-assistant__sr-only" for="tm-assistant-input">Nhập câu hỏi</label>
@@ -52,6 +62,9 @@
   const log = root.querySelector('.tm-assistant__messages');
   const suggestions = root.querySelector('.tm-assistant__suggestions');
   const history = [];
+  let lastLanguage = document.documentElement.lang || 'vi';
+  log.querySelector('p').textContent = introduction[0];
+  suggestions.querySelectorAll('button').forEach((button, index) => { button.textContent = introduction[index + 1]; });
 
   function setOpen(open) {
     panel.hidden = !open;
@@ -71,7 +84,7 @@
     if (pending) article.classList.add('tm-assistant__message--pending');
 
     const paragraph = document.createElement('p');
-    if (outcome === 'CONTACT_ADMIN') {
+    if (outcome === 'CONTACT_ADMIN' && text.includes('luongvietvidong@gmail.com')) {
       const email = 'luongvietvidong@gmail.com';
       const emailIndex = text.indexOf(email);
       paragraph.append(document.createTextNode(text.slice(0, emailIndex)));
@@ -117,9 +130,9 @@
     const pending = addMessage('assistant', 'Đang tìm thông tin phù hợp…', null, [], true);
 
     try {
-      const response = await fetch('/api/public/assistant/chat', {
+      const response = await fetch('/assistant/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
         body: JSON.stringify({ message: cleanMessage, history: history.slice(-12) })
       });
       const envelope = await response.json();
@@ -131,20 +144,22 @@
 
       pending.remove();
       addMessage('assistant', envelope.data.reply, envelope.data.outcome, envelope.data.sources);
+      lastLanguage = envelope.data.language || lastLanguage;
       history.push({ role: 'USER', content: cleanMessage }, { role: 'ASSISTANT', content: envelope.data.reply });
       if (history.length > 12) history.splice(0, history.length - 12);
     } catch (error) {
       pending.remove();
+      const english = lastLanguage.toLowerCase().startsWith('en');
       const copy = error.status === 429
-        ? 'Bạn gửi hơi nhanh. Vui lòng đợi một chút rồi thử lại.'
-        : 'Trợ lý đang tạm thời không khả dụng. Bạn có thể thử lại sau.';
+        ? (english ? 'You are sending messages too quickly. Please wait and try again.' : 'Bạn gửi hơi nhanh. Vui lòng đợi một chút rồi thử lại.')
+        : (english ? 'The assistant is temporarily unavailable. Please try again later.' : 'Trợ lý đang tạm thời không khả dụng. Bạn có thể thử lại sau.');
       const errorBubble = addMessage('assistant', copy);
       errorBubble.classList.add('tm-assistant__message--error');
       errorBubble.setAttribute('role', 'alert');
       const retry = document.createElement('button');
       retry.type = 'button';
       retry.className = 'tm-assistant__retry';
-      retry.textContent = 'Thử lại';
+      retry.textContent = english ? 'Try again' : 'Thử lại';
       retry.addEventListener('click', () => {
         errorBubble.remove();
         sendMessage(cleanMessage, false);

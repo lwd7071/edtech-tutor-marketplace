@@ -38,6 +38,6 @@ public class AssistantChatController {
         rateLimiter.checkRateLimit("assistant_chat", identifier == null ? "unknown" : identifier, 10, 300);
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
-                .body(ApiResponse.ok(assistant.reply(request)));
+                .body(ApiResponse.ok(assistant.reply(request, "GUEST")));
     }
 }

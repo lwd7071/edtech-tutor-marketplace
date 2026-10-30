@@ -18,7 +18,7 @@
       <button type="submit">Đăng xuất</button>
     </form>
   </div>
-  <script defer src="/js/assistant-widget.js"></script>
+  <script defer src="/js/assistant-widget.js" th:attr="data-csrf=${_csrf != null ? _csrf.token : ''},data-role='TEACHER'"></script>
 </header>
 <th:block th:fragment="nav(active)">
 <nav class="teacher-messages-nav" aria-label="Điều hướng gia sư">

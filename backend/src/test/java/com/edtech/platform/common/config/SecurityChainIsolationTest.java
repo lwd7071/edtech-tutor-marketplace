@@ -118,7 +118,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         TeacherDocumentsPageController.class, TeacherCredentialsPageController.class, TeacherSubjectsPageController.class,
         TeacherSubjectProposalsPageController.class, TeacherPackagesPageController.class, TeacherAvailabilityPageController.class,
         TeacherStudentsPageController.class, TeacherBookingPageController.class, TeacherTrialRequestsPageController.class,
-        TeacherAssignmentPageController.class, TeacherFinancePageController.class, TeacherDashboardPageController.class})
+        TeacherAssignmentPageController.class, TeacherFinancePageController.class, TeacherDashboardPageController.class,
+        com.edtech.platform.assistant.controller.HtmlAssistantChatController.class})
 @AutoConfigureMockMvc
 @Import({
         SecurityConfig.class,
@@ -147,6 +148,7 @@ class SecurityChainIsolationTest {
     @MockBean private BankAccountService bankAccounts;
     @MockBean private PayoutService payouts;
     @MockBean private RateLimiterService rateLimiter;
+    @MockBean private com.edtech.platform.assistant.service.AssistantChatService assistantChatService;
     @MockBean private WalletQueryService wallets;
     @MockBean private ParentContactService parentContacts;
     @MockBean private IdentityFacade identities;
@@ -196,7 +198,9 @@ class SecurityChainIsolationTest {
         org.mockito.Mockito.when(adminDashboardService.getDashboard()).thenReturn(
                 new AdminDashboardView(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
         mockMvc.perform(get("/admin/dashboard").session(sessionWithRole("ADMIN")))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("data-role=\"ADMIN\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("data-csrf=")));
     }
 
     @Test
@@ -796,6 +800,52 @@ class SecurityChainIsolationTest {
     void htmlMutationRequiresCsrfEvenOnPublicAuthPaths() throws Exception {
         mockMvc.perform(post("/auth/logout"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void htmlAssistantRequiresCsrfAndUsesSessionRole() throws Exception {
+        var answer = new com.edtech.platform.assistant.dto.AssistantChatResponse(
+                com.edtech.platform.assistant.dto.AssistantOutcome.ANSWERED, "OK", List.of(), "vi");
+        org.mockito.Mockito.when(assistantChatService.reply(
+                org.mockito.ArgumentMatchers.any(com.edtech.platform.assistant.dto.AssistantChatRequest.class),
+                org.mockito.ArgumentMatchers.anyString())).thenReturn(answer);
+        String body = "{\"message\":\"Hướng dẫn\",\"history\":[],\"role\":\"ADMIN\"}";
+        mockMvc.perform(post("/assistant/chat").contentType(org.springframework.http.MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/assistant/chat").contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content(body).with(csrf()))
+                .andExpect(status().isOk());
+        org.mockito.Mockito.verify(assistantChatService).reply(
+                org.mockito.ArgumentMatchers.any(com.edtech.platform.assistant.dto.AssistantChatRequest.class),
+                org.mockito.ArgumentMatchers.eq("GUEST"));
+        mockMvc.perform(post("/assistant/chat").session(sessionWithRole("TEACHER"))
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON).content(body).with(csrf()))
+                .andExpect(status().isOk());
+        org.mockito.Mockito.verify(assistantChatService).reply(
+                org.mockito.ArgumentMatchers.any(com.edtech.platform.assistant.dto.AssistantChatRequest.class),
+                org.mockito.ArgumentMatchers.eq("TEACHER"));
+    }
+
+    @Test
+    void expiredHtmlSessionCannotUseRoleGuidance() throws Exception {
+        org.mockito.Mockito.when(clock.instant()).thenReturn(java.time.Instant.parse("2026-10-30T00:00:00Z"));
+        var expired = sessionWithRole("ADMIN");
+        expired.setAttribute(HtmlSessionAuthenticationFilter.SESSION_STATE_ATTRIBUTE,
+                new com.edtech.platform.common.security.HtmlSessionState("expired-access", "expired-refresh",
+                        java.time.Instant.parse("2026-10-20T00:00:00Z")));
+        org.mockito.Mockito.when(assistantChatService.reply(
+                org.mockito.ArgumentMatchers.any(com.edtech.platform.assistant.dto.AssistantChatRequest.class),
+                org.mockito.ArgumentMatchers.eq("GUEST"))).thenReturn(
+                new com.edtech.platform.assistant.dto.AssistantChatResponse(
+                        com.edtech.platform.assistant.dto.AssistantOutcome.NEEDS_CLARIFICATION,
+                        "Bạn cần gì?", List.of(), "vi"));
+        mockMvc.perform(post("/assistant/chat").session(expired).with(csrf())
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{\"message\":\"Hướng dẫn\",\"history\":[]}"))
+                .andExpect(status().isOk());
+        org.mockito.Mockito.verify(assistantChatService).reply(
+                org.mockito.ArgumentMatchers.any(com.edtech.platform.assistant.dto.AssistantChatRequest.class),
+                org.mockito.ArgumentMatchers.eq("GUEST"));
     }
 
     private MockHttpSession sessionWithRole(String role) {

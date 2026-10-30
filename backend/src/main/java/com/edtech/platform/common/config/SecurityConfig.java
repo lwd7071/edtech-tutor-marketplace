@@ -121,7 +121,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/health", "/actuator/health").permitAll()
                 .requestMatchers("/actuator/prometheus").hasRole("ADMIN")
-                .requestMatchers("/", "/teachers", "/teachers/**", "/subjects", "/subjects/**", "/ranking", "/how-it-works", "/become-a-tutor", "/terms", "/privacy", "/support", "/forbidden", "/service-unavailable", "/css/**", "/js/**", "/images/**", "/fonts/**", "/favicon.ico", "/favicon.svg").permitAll()
+                .requestMatchers("/", "/assistant/chat", "/teachers", "/teachers/**", "/subjects", "/subjects/**", "/ranking", "/how-it-works", "/become-a-tutor", "/terms", "/privacy", "/support", "/forbidden", "/service-unavailable", "/css/**", "/js/**", "/images/**", "/fonts/**", "/favicon.ico", "/favicon.svg").permitAll()
                 .requestMatchers("/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/student/**").hasRole("STUDENT")

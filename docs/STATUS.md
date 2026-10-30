@@ -1,5 +1,11 @@
 # Trạng thái dự án
 
+## Trợ lý AI theo vai trò và ngôn ngữ — 2026-10-30
+- Đã triển khai playbook trong repo cho Guest/Student/Teacher/Admin; Groq phân loại chủ đề, bộ lọc gia sư và ngôn ngữ, sau đó tạo câu trả lời từ nguồn đã chọn. Link và quyền do backend quyết định. `/assistant/chat` dùng HTML session + CSRF; API public luôn ở phạm vi Guest. Widget có gợi ý theo role và hiện ở Admin workspace.
+- **PASS:** 56/56 test trong `AssistantChatServiceTest`, `AssistantChatControllerTest`, `AssistantWidgetLayoutTest`, `CatalogPublicTeacherSearchTest`, `GroqChatCompletionAdapterTest`, `SecurityChainIsolationTest`; gồm Guest/role, CSRF, session hết hạn, role giả, bộ lọc gia sư và ngôn ngữ. Test render riêng trang Admin với `data-role`/CSRF cũng PASS 1/1. `node --check`, `scripts/check-docs.ps1` (52 Markdown) và `git diff --check` PASS. Đây là test giả lập Groq, không chứng minh chất lượng model thật.
+- **Chưa chạy:** smoke test Groq thật và browser QA desktop/mobile/keyboard; môi trường process không có `GROQ_API_KEY` và không có server local đang lắng nghe. Bộ câu hỏi nghiệm thu tại [assistant-evaluation.md](assistant-evaluation.md). So sánh baseline mới chỉ dựa vào hành vi code cũ; chưa có kết quả chất lượng thực tế của model.
+- **Schema:** phần trợ lý không tạo hoặc sửa migration, không kết nối/mutate Supabase. V44 là phần thanh toán riêng trong working tree và không thuộc commit trợ lý này.
+
 ## Trợ lý AI Tutor Match dùng Groq — 2026-10-30
 - API public `POST /api/public/assistant/chat` giới hạn 10 request/5 phút; context chỉ gồm tối đa 3 bài hướng dẫn đã xuất bản và dữ liệu gia sư công khai đã duyệt/đang hiển thị. Hội thoại không lưu ở backend.
 - Migration V43 tạo bảng backend-owned `assistant_knowledge_articles` có RLS default-deny và seed 5 bài public. Tìm gia sư nhận diện môn/cấp học; context Groq dùng DTO allowlist gồm tên công khai, môn/cấp học, kinh nghiệm, giá khởi điểm, đánh giá và link hồ sơ.

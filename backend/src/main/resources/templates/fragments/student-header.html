@@ -31,5 +31,5 @@
       </form>
     </div>
   </div>
-  <script defer src="/js/assistant-widget.js"></script>
+  <script defer src="/js/assistant-widget.js" th:attr="data-csrf=${_csrf != null ? _csrf.token : ''},data-role='STUDENT'"></script>
 </header>

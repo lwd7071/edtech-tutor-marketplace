@@ -245,7 +245,7 @@ Page<T>     data: T[], meta: PageMeta
 | GET | `/api/public/teachers/ranking` | `subjectId?`, `page`, `size` | `TeacherRankingItem[]` |
 | POST | `/api/public/assistant/chat` | `AssistantChatRequest` | `AssistantChatResponse` |
 
-`POST /api/public/assistant/chat` là endpoint public, không yêu cầu JWT. Request có `message` tối đa 1000 ký tự và tối đa 12 history messages (`USER`/`ASSISTANT`, mỗi message tối đa 1000 ký tự), tương đương 6 lượt hội thoại trước đó. Không lưu history ở backend; response luôn có `Cache-Control: no-store`. Response `data` gồm `outcome=ANSWERED|CONTACT_ADMIN`, `reply` và `sources[]` (`label`, đường dẫn nội bộ). Hướng dẫn sử dụng được lấy từ bài đã xuất bản trong bảng backend-owned `assistant_knowledge_articles`; tìm gia sư chỉ dùng catalog công khai đã duyệt/đang hiển thị. Không tìm thấy gia sư thì trả `ANSWERED` với link `/teachers`; câu hỏi ngoài phạm vi hoặc không có nguồn hướng dẫn phù hợp trả `CONTACT_ADMIN` cùng email `luongvietvidong@gmail.com` và không gọi Groq. Provider thiếu key/lỗi mạng/HTTP lỗi trả `503 EXTERNAL_SERVICE_UNAVAILABLE`; vượt 10 request trong 300 giây trả `429 RATE_LIMIT_EXCEEDED`. Rate limit dùng user ID nếu request API có Bearer principal, nếu không dùng địa chỉ client; widget Thymeleaf gọi API public không gửi JWT nên được giới hạn theo địa chỉ client.
+`POST /api/public/assistant/chat` là endpoint REST public, luôn dùng phạm vi Guest kể cả khi có Bearer JWT. Widget Thymeleaf gọi `POST /assistant/chat` cùng origin dưới HTML security chain: role lấy từ session server, request phải có CSRF token; Guest không cần đăng nhập. Hai endpoint cùng nhận `message` tối đa 1000 ký tự và tối đa 12 history messages (`USER`/`ASSISTANT`, mỗi message tối đa 1000 ký tự). Role trong body bị bỏ qua. Không lưu history ở backend; response luôn có `Cache-Control: no-store`. Response `data` gồm `outcome=ANSWERED|NEEDS_CLARIFICATION|CONTACT_ADMIN`, `reply`, `sources[]` (`label`, đường dẫn nội bộ do server chọn) và `language` (BCP 47). Nguồn hướng dẫn nằm trong playbook có phiên bản trong repo và được lọc theo role; tìm gia sư chỉ dùng catalog công khai đã duyệt/đang hiển thị. Trợ lý không đọc dữ liệu cá nhân/hàng đợi hoặc thực hiện thao tác. Provider thiếu key/lỗi mạng/HTTP lỗi trả `503 EXTERNAL_SERVICE_UNAVAILABLE`; vượt 10 request trong 300 giây trả `429 RATE_LIMIT_EXCEEDED`. Rate limit dùng user ID nếu có principal hợp lệ, nếu không dùng địa chỉ client.
 
 Ví dụ request:
 
@@ -265,7 +265,8 @@ Ví dụ response:
   "data": {
     "outcome": "ANSWERED",
     "reply": "Bạn có thể xem các gia sư Toán phù hợp.",
-    "sources": [{ "label": "Tìm gia sư", "url": "/teachers" }]
+    "sources": [{ "label": "Tìm gia sư", "url": "/teachers" }],
+    "language": "vi"
   },
   "errors": null,
   "meta": null
