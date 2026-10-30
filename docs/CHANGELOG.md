@@ -1752,3 +1752,7 @@ efresh_tokens`, `teacher_documents`, `subject_proposals`, `subjects`, `pricing_p
 ## 2026-10-30 — Xóa ghi chú lặp dưới ảnh trong báo cáo
 - Xóa 71 đoạn giải thích QA lặp dưới ảnh giao diện trong DOCX hiện tại; giữ nguyên caption hình, các chỉnh sửa bìa/nội dung của nhóm và ghi chú phạm vi kiểm thử ở phần tổng kết.
 - Cập nhật trường Word, render lại 191 trang và rà contact sheet toàn bộ tài liệu.
+
+## 2026-10-30 — Thêm trợ lý AI Tutor Match dùng Groq
+- Thêm endpoint chat public có grounding bằng hướng dẫn nền tảng/catalog công khai, fallback email admin, giới hạn tần suất và adapter Groq; gắn widget responsive vào public, student và teacher Thymeleaf shells.
+- Assistant cùng kiến trúc API/guardrail tests PASS 25/25; chưa gọi Groq thật và chưa chạy browser visual QA. Không thêm migration, không kết nối Supabase.

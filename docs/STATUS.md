@@ -1,5 +1,12 @@
 # Trạng thái dự án
 
+## Trợ lý AI Tutor Match dùng Groq — 2026-10-30
+- Thêm API public `POST /api/public/assistant/chat`, giới hạn 10 request/5 phút; context chỉ gồm hướng dẫn nền tảng và kết quả tìm gia sư công khai qua catalog. Câu hỏi ngoài phạm vi trả hướng dẫn liên hệ `luongvietvidong@gmail.com`; lỗi Groq trả `503` để UI cho thử lại.
+- Thêm adapter Groq Chat Completions; cấu hình cloud lấy `GROQ_API_KEY` và model mặc định `openai/gpt-oss-20b`. Không lưu hội thoại; widget gửi tối đa 12 history messages và hiển thị nhắc không nhập dữ liệu cá nhân.
+- Thêm widget vào public/student/teacher shell Thymeleaf với link nguồn, trạng thái tải/lỗi, retry, focus bàn phím, aria-live, layout mobile và reduced motion.
+- Kiểm thử có mục tiêu: assistant/controller/catalog/adapter/widget cùng `ArchitectureTest`, `RestApiContractArchitectureTest`, `SolidGuardrailsArchitectureTest` PASS **25/25**. `node --check` cho widget JS PASS. Không gọi Groq thật; chưa có browser screenshot/visual runtime QA.
+- `scripts/check-docs.ps1`: PASS — quét 50 Markdown hiện hành. Migration diff rỗng; không kết nối hoặc mutate Supabase.
+
 ## Bổ sung liên kết Bảng xếp hạng trên Header & Tối ưu Cuộn ngang Mobile Nav (TDD & UI/UX Pro Max) — 2026-10-30
 - **Trục nghiệm thu giao diện & UI/UX Pro Max:**
   - **Tích hợp liên kết Bảng xếp hạng (`public-header.html`):**

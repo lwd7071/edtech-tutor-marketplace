@@ -32,6 +32,10 @@ spring:
     baseline-on-migrate: false
 
 app:
+  assistant:
+    groq:
+      api-key: ${GROQ_API_KEY:}
+      model: ${GROQ_CHAT_MODEL:openai/gpt-oss-20b}
   email:
     provider: ${APP_EMAIL_PROVIDER:brevo}
     from: ${BREVO_SENDER_EMAIL}

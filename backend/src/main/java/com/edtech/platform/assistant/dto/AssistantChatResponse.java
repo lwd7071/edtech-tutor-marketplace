@@ -1,0 +1,13 @@
+package com.edtech.platform.assistant.dto;
+
+import java.util.List;
+
+public record AssistantChatResponse(
+        AssistantOutcome outcome,
+        String reply,
+        List<AssistantSource> sources
+) {
+    public AssistantChatResponse {
+        sources = sources == null ? List.of() : List.copyOf(sources);
+    }
+}

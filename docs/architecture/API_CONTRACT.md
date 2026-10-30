@@ -243,6 +243,34 @@ Page<T>     data: T[], meta: PageMeta
 | GET | `/api/public/teachers/{id}/availability` | — | `AvailabilityView[]` |
 | GET | `/api/public/teachers/{id}/reviews` | `page`, `size`, `sort` | `ReviewView[]` |
 | GET | `/api/public/teachers/ranking` | `subjectId?`, `page`, `size` | `TeacherRankingItem[]` |
+| POST | `/api/public/assistant/chat` | `AssistantChatRequest` | `AssistantChatResponse` |
+
+`POST /api/public/assistant/chat` là endpoint public, không yêu cầu JWT. Request có `message` tối đa 1000 ký tự và tối đa 12 history messages (`USER`/`ASSISTANT`, mỗi message tối đa 1000 ký tự), tương đương 6 lượt hội thoại trước đó. Không lưu history ở backend; response luôn có `Cache-Control: no-store`. Response `data` gồm `outcome=ANSWERED|CONTACT_ADMIN`, `reply` và `sources[]` (`label`, đường dẫn nội bộ). Khi không khớp hướng dẫn hoặc dữ liệu công khai, backend trả `CONTACT_ADMIN` cùng email `luongvietvidong@gmail.com` và không gọi Groq. Provider thiếu key/lỗi mạng/HTTP lỗi trả `503 EXTERNAL_SERVICE_UNAVAILABLE`; vượt 10 request trong 300 giây trả `429 RATE_LIMIT_EXCEEDED`. Rate limit dùng user ID nếu request API có Bearer principal, nếu không dùng địa chỉ client; widget Thymeleaf gọi API public không gửi JWT nên được giới hạn theo địa chỉ client.
+
+Ví dụ request:
+
+```json
+{
+  "message": "Tìm gia sư Toán",
+  "history": []
+}
+```
+
+Ví dụ response:
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": {
+    "outcome": "ANSWERED",
+    "reply": "Bạn có thể xem các gia sư Toán phù hợp.",
+    "sources": [{ "label": "Tìm gia sư", "url": "/teachers" }]
+  },
+  "errors": null,
+  "meta": null
+}
+```
 
 `GET /api/public/teachers/{id}` chỉ công khai hồ sơ có `profileStatus=APPROVED` và `isVisible=true`; ID không tồn tại, hồ sơ chưa duyệt hoặc hồ sơ đang ẩn đều trả `404` để không tiết lộ hồ sơ chưa được công khai.
 
