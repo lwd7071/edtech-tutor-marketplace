@@ -56,4 +56,24 @@ class AssistantChatServiceTest {
         assertEquals(AssistantOutcome.CONTACT_ADMIN, response.outcome());
         assertEquals(List.of(), response.sources());
     }
+
+    @Test
+    void publicTutorSearchWithNoMatchesReturnsMarketplaceGuidanceWithoutCallingGroq() {
+        AtomicBoolean providerCalled = new AtomicBoolean();
+        AssistantChatService service = new AssistantChatService(
+                (system, history, message) -> {
+                    providerCalled.set(true);
+                    return "unexpected";
+                },
+                question -> Optional.of(new AssistantContext("", List.of(
+                        new AssistantSource("Tìm gia sư", "/teachers")),
+                        "Mình chưa tìm thấy gia sư phù hợp trong danh sách công khai hiện tại.")));
+
+        AssistantChatResponse response = service.reply(new AssistantChatRequest("Tìm gia sư Toán", List.of()));
+
+        assertEquals(AssistantOutcome.ANSWERED, response.outcome());
+        assertEquals("Mình chưa tìm thấy gia sư phù hợp trong danh sách công khai hiện tại.", response.reply());
+        assertEquals("/teachers", response.sources().getFirst().url());
+        org.junit.jupiter.api.Assertions.assertFalse(providerCalled.get());
+    }
 }

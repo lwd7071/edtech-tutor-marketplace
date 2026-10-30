@@ -26,6 +26,8 @@ class AssistantWidgetLayoutTest {
         assertTrue(script.contains("aria-live"));
         assertTrue(script.contains("mailto:luongvietvidong@gmail.com"));
         assertTrue(script.contains("Groq"));
+        assertTrue(script.contains("Hướng dẫn sử dụng website Tutor Match?"));
+        assertTrue(script.contains("Hướng dẫn dùng Tutor Match và tìm gia sư"));
         assertTrue(css.contains("@media (max-width: 640px)"));
         assertTrue(css.contains("prefers-reduced-motion"));
     }

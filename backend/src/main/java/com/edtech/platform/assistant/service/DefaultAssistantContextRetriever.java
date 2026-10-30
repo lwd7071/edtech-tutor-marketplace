@@ -1,7 +1,6 @@
 package com.edtech.platform.assistant.service;
 
 import com.edtech.platform.assistant.dto.AssistantSource;
-import com.edtech.platform.catalog.dto.TeacherCard;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
@@ -9,27 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class DefaultAssistantContextRetriever implements AssistantContextRetriever {
-    private static final String TEACHER_GUIDE = "Tìm gia sư tại /teachers. Học viên có thể lọc theo môn học, hình thức và mức giá; mở hồ sơ để xem kinh nghiệm, gói học và đánh giá.";
-    private static final List<Guide> GUIDES = List.of(
-            new Guide(List.of("tim gia su", "gia su", "tim thay", "tim co", "giao vien", "day kem"),
-                    "Tìm gia sư", TEACHER_GUIDE, "/teachers"),
-            new Guide(List.of("hoc thu", "dat lich", "goi hoc", "thanh toan", "buoi hoc", "yeu cau dat"),
-                    "Cách hoạt động", "Học viên có thể gửi yêu cầu học thử để gia sư phản hồi, hoặc mua gói học và thanh toán hóa đơn. Sau khi mua gói, học viên gửi yêu cầu đặt buổi; gia sư xác nhận giờ học cụ thể. Yêu cầu học thử chưa phải buổi học đã xác nhận.", "/how-it-works"),
-            new Guide(List.of("dang ky gia su", "tro thanh gia su", "ho so gia su", "duoc duyet", "tao goi", "lich ran"),
-                    "Trở thành gia sư", "Gia sư chuẩn bị hồ sơ, giới thiệu môn giảng dạy và kinh nghiệm, gửi hồ sơ để xét duyệt. Sau khi được duyệt, gia sư có thể tạo gói học, cập nhật lịch rảnh và phản hồi yêu cầu học thử.", "/become-a-tutor"),
-            new Guide(List.of("hoan tien", "gia han", "tin nhan", "thong bao", "bai tap", "bao cao buoi hoc"),
-                    "Trung tâm hỗ trợ", "Học viên theo dõi yêu cầu học thử, hoàn tiền hoặc gia hạn tại không gian học viên; tin nhắn, bài tập và báo cáo buổi học có khu vực riêng sau khi đăng nhập.", "/support"),
-            new Guide(List.of("xin chao", "chao ban", "hello", "hi"),
-                    "Cách hoạt động", "Chào bạn! Mình có thể hướng dẫn tìm gia sư, học thử, đặt lịch hoặc đăng ký làm gia sư trên Tutor Match.", "/how-it-works")
-    );
+    private static final String NO_TUTOR_RESULTS = "Mình chưa tìm thấy gia sư phù hợp trong danh sách công khai hiện tại. Bạn có thể đổi môn hoặc cấp học tại trang Tìm gia sư.";
+    private static final Set<String> STOP_WORDS = Set.of("la", "gi", "cua", "cho", "the", "nao", "tren", "va", "toi", "minh", "ban", "hay", "ve", "nhu", "trong", "de", "tai", "sau", "co", "khong", "muon", "can", "duoc", "web", "website");
+    private static final List<String> TUTOR_SEARCH_TERMS = List.of(
+            "tim gia su", "tim giao vien", "tim nguoi day", "gia su nao", "giao vien nao",
+            "co gia su", "co giao vien", "gia su day", "giao vien day", "day kem", "tim thay", "ai day");
 
     private final PublicTeacherSearch teacherSearch;
+    private final AssistantKnowledgeSearch knowledgeSearch;
 
-    public DefaultAssistantContextRetriever(PublicTeacherSearch teacherSearch) {
+    public DefaultAssistantContextRetriever(PublicTeacherSearch teacherSearch, AssistantKnowledgeSearch knowledgeSearch) {
         this.teacherSearch = teacherSearch;
+        this.knowledgeSearch = knowledgeSearch;
     }
 
     @Override
@@ -37,22 +31,30 @@ public class DefaultAssistantContextRetriever implements AssistantContextRetriev
         String normalizedQuestion = normalize(question);
         List<String> evidence = new ArrayList<>();
         List<AssistantSource> sources = new ArrayList<>();
-        for (Guide guide : GUIDES) {
-            if (guide.keywords().stream().anyMatch(normalizedQuestion::contains)) {
-                evidence.add(guide.evidence());
-                addSource(sources, new AssistantSource(guide.label(), guide.url()));
-            }
+        List<String> questionTokens = meaningfulTokens(normalizedQuestion);
+        List<AssistantKnowledgeArticle> articles = knowledgeSearch.findPublished().stream()
+                .filter(article -> matchesArticle(article, normalizedQuestion, questionTokens))
+                .limit(3)
+                .toList();
+        for (AssistantKnowledgeArticle article : articles) {
+            evidence.add(article.title() + ": " + article.content());
+            addSource(sources, new AssistantSource(article.title(), article.sourcePath()));
         }
 
-        if (isTutorQuestion(normalizedQuestion)) {
-            List<TeacherCard> teachers = teacherSearch.findForQuestion(question);
-            for (TeacherCard teacher : teachers) {
-                String subjects = teacher.subjects() == null ? "" : teacher.subjects().stream()
-                        .map(subject -> subject.name()).reduce((left, right) -> left + ", " + right).orElse("");
-                evidence.add("Gia sư công khai: " + teacher.fullName() + "; môn: " + subjects
+        if (isTutorSearchQuestion(normalizedQuestion)) {
+            List<PublicTeacherMatch> teachers = teacherSearch.findForQuestion(question);
+            if (teachers.isEmpty()) {
+                addSource(sources, new AssistantSource("Tìm gia sư", "/teachers"));
+                return Optional.of(new AssistantContext("", sources, NO_TUTOR_RESULTS));
+            }
+            for (PublicTeacherMatch teacher : teachers) {
+                String subjects = String.join(", ", teacher.subjects());
+                String levels = teacher.educationLevels().isEmpty() ? "" : "; cấp học: "
+                        + String.join(", ", teacher.educationLevels());
+                evidence.add("Gia sư công khai: " + teacher.fullName() + "; môn: " + subjects + levels
                         + "; kinh nghiệm: " + teacher.yearsOfExperience() + " năm; giá khởi điểm: "
                         + teacher.startingPriceVnd() + " VND; đánh giá trung bình: " + teacher.averageRating() + ".");
-                addSource(sources, new AssistantSource(teacher.fullName(), "/teachers/" + teacher.id()));
+                addSource(sources, new AssistantSource(teacher.fullName(), teacher.profilePath()));
             }
         }
 
@@ -60,9 +62,26 @@ public class DefaultAssistantContextRetriever implements AssistantContextRetriev
         return Optional.of(new AssistantContext(String.join("\n", evidence), sources));
     }
 
-    private static boolean isTutorQuestion(String question) {
-        return List.of("gia su", "giao vien", "tim thay", "tim co", "day kem", "tim nguoi day")
-                .stream().anyMatch(question::contains);
+    private static boolean matchesArticle(AssistantKnowledgeArticle article, String question, List<String> questionTokens) {
+        List<String> candidates = new ArrayList<>(article.aliases());
+        candidates.add(article.title());
+        return candidates.stream().map(DefaultAssistantContextRetriever::normalize).anyMatch(alias -> {
+            if (alias.isBlank()) return false;
+            if (question.contains(alias)) return true;
+            List<String> aliasTokens = meaningfulTokens(alias);
+            return aliasTokens.size() >= 2 && questionTokens.containsAll(aliasTokens);
+        });
+    }
+
+    private static boolean isTutorSearchQuestion(String question) {
+        return TUTOR_SEARCH_TERMS.stream().anyMatch(question::contains);
+    }
+
+    private static List<String> meaningfulTokens(String value) {
+        return List.of(value.split("\\s+" )).stream()
+                .filter(token -> token.length() >= 2 && !STOP_WORDS.contains(token))
+                .distinct()
+                .toList();
     }
 
     private static String normalize(String value) {
@@ -74,6 +93,4 @@ public class DefaultAssistantContextRetriever implements AssistantContextRetriev
         if (!sources.contains(source)) sources.add(source);
     }
 
-    private record Guide(List<String> keywords, String label, String evidence, String url) {
-    }
 }

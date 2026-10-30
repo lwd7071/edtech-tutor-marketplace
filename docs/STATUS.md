@@ -1,11 +1,11 @@
 # Trạng thái dự án
 
 ## Trợ lý AI Tutor Match dùng Groq — 2026-10-30
-- Thêm API public `POST /api/public/assistant/chat`, giới hạn 10 request/5 phút; context chỉ gồm hướng dẫn nền tảng và kết quả tìm gia sư công khai qua catalog. Câu hỏi ngoài phạm vi trả hướng dẫn liên hệ `luongvietvidong@gmail.com`; lỗi Groq trả `503` để UI cho thử lại.
-- Thêm adapter Groq Chat Completions; cấu hình cloud lấy `GROQ_API_KEY` và model mặc định `openai/gpt-oss-20b`. Không lưu hội thoại; widget gửi tối đa 12 history messages và hiển thị nhắc không nhập dữ liệu cá nhân.
-- Thêm widget vào public/student/teacher shell Thymeleaf với link nguồn, trạng thái tải/lỗi, retry, focus bàn phím, aria-live, layout mobile và reduced motion.
-- Kiểm thử có mục tiêu: assistant/controller/catalog/adapter/widget cùng `ArchitectureTest`, `RestApiContractArchitectureTest`, `SolidGuardrailsArchitectureTest` PASS **25/25**. `node --check` cho widget JS PASS. Không gọi Groq thật; chưa có browser screenshot/visual runtime QA.
-- `scripts/check-docs.ps1`: PASS — quét 50 Markdown hiện hành. Migration diff rỗng; không kết nối hoặc mutate Supabase.
+- API public `POST /api/public/assistant/chat` giới hạn 10 request/5 phút; context chỉ gồm tối đa 3 bài hướng dẫn đã xuất bản và dữ liệu gia sư công khai đã duyệt/đang hiển thị. Hội thoại không lưu ở backend.
+- Migration V43 tạo bảng backend-owned `assistant_knowledge_articles` có RLS default-deny và seed 5 bài public. Tìm gia sư nhận diện môn/cấp học; context Groq dùng DTO allowlist gồm tên công khai, môn/cấp học, kinh nghiệm, giá khởi điểm, đánh giá và link hồ sơ.
+- Widget giới thiệu đúng phạm vi hướng dẫn dùng Tutor Match và tìm gia sư; câu hỏi ngoài phạm vi liên hệ `luongvietvidong@gmail.com`; không có gia sư phù hợp thì dẫn tới `/teachers`.
+- Assistant/controller/catalog/adapter/widget cùng guard kiến trúc PASS **31/31**. `node --check` cho widget JS và `scripts/check-docs.ps1` được xác minh riêng. Chưa gọi Groq thật hoặc làm browser visual QA.
+- **Chưa áp dụng V43 lên Supabase:** read-only preflight bị chặn ở Flyway `info`; không in output kết nối. Flyway clean-schema/upgrade integration test cũng chưa chạy được do Docker Engine không hoạt động. Không tuyên bố schema đã deploy.
 
 ## Bổ sung liên kết Bảng xếp hạng trên Header & Tối ưu Cuộn ngang Mobile Nav (TDD & UI/UX Pro Max) — 2026-10-30
 - **Trục nghiệm thu giao diện & UI/UX Pro Max:**

@@ -1756,3 +1756,12 @@ efresh_tokens`, `teacher_documents`, `subject_proposals`, `subjects`, `pricing_p
 ## 2026-10-30 — Thêm trợ lý AI Tutor Match dùng Groq
 - Thêm endpoint chat public có grounding bằng hướng dẫn nền tảng/catalog công khai, fallback email admin, giới hạn tần suất và adapter Groq; gắn widget responsive vào public, student và teacher Thymeleaf shells.
 - Assistant cùng kiến trúc API/guardrail tests PASS 25/25; chưa gọi Groq thật và chưa chạy browser visual QA. Không thêm migration, không kết nối Supabase.
+
+## Biên tập báo cáo Tutor Match và bổ sung trợ lý AI — 2026-10-30
+- Biên tập văn phong báo cáo, lược các đoạn quyền/bằng chứng lặp ở 71 route, Việt hóa tiêu đề chức năng và bổ sung phần trợ lý AI cùng prompt PAI-21 tái dựng theo tài liệu/source.
+- Cập nhật mô tả kiến trúc và trạng thái trợ lý theo kho bài viết tri thức đã xuất bản cùng catalog công khai.
+- Migration V43 đang có trong working tree và chưa được xác minh/áp dụng; các thay đổi kho tri thức chưa được kiểm thử lại trong đợt biên tập tài liệu. Không kết nối hoặc thay đổi Supabase.
+
+## 2026-10-30 — Mở rộng trợ lý với hướng dẫn từ Supabase
+- Thêm migration V43 seed 5 bài hướng dẫn public có RLS default-deny; truy xuất gia sư theo môn/cấp học và ánh xạ context sang allowlist trường công khai.
+- Assistant/catalog/widget và guard kiến trúc PASS 31/31. V43 chưa apply: preflight bị chặn ở Flyway info; clean-schema/upgrade test chưa chạy do Docker Engine không hoạt động.

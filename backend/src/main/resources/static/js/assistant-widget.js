@@ -13,18 +13,18 @@
         <header class="tm-assistant__header">
           <div class="tm-assistant__identity">
             <span class="tm-assistant__mark" aria-hidden="true">T</span>
-            <div><h2 id="tm-assistant-title">Trợ lý Tutor Match</h2><p>Hướng dẫn học tập và tìm gia sư</p></div>
+            <div><h2 id="tm-assistant-title">Trợ lý Tutor Match</h2><p>Hướng dẫn dùng Tutor Match và tìm gia sư</p></div>
           </div>
           <button class="tm-assistant__close" type="button" aria-label="Đóng trợ lý">×</button>
         </header>
         <p class="tm-assistant__privacy">Nội dung bạn gửi sẽ được xử lý bởi Groq để tạo câu trả lời. Đừng nhập email, số điện thoại hoặc thông tin cá nhân.</p>
         <div class="tm-assistant__messages" role="log" aria-label="Tin nhắn với trợ lý" aria-live="polite" aria-relevant="additions text">
-          <div class="tm-assistant__message tm-assistant__message--assistant"><p>Chào bạn! Mình có thể hướng dẫn cách tìm gia sư, học thử, đặt lịch hoặc đăng ký làm gia sư.</p></div>
+          <div class="tm-assistant__message tm-assistant__message--assistant"><p>Chào bạn! Mình có thể hướng dẫn sử dụng Tutor Match và tìm gia sư từ danh sách công khai.</p></div>
         </div>
         <div class="tm-assistant__suggestions" aria-label="Câu hỏi gợi ý">
-          <button type="button">Tìm gia sư Toán</button>
+          <button type="button">Hướng dẫn sử dụng website Tutor Match?</button>
+          <button type="button">Có gia sư dạy Toán cấp 3 không?</button>
           <button type="button">Học thử và đặt lịch thế nào?</button>
-          <button type="button">Cách đăng ký làm gia sư?</button>
         </div>
         <form class="tm-assistant__form">
           <label class="tm-assistant__sr-only" for="tm-assistant-input">Nhập câu hỏi</label>

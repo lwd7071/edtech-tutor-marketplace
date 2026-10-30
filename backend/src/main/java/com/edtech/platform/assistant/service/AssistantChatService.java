@@ -33,6 +33,10 @@ public class AssistantChatService {
         if (context.isEmpty()) {
             return new AssistantChatResponse(AssistantOutcome.CONTACT_ADMIN, CONTACT_ADMIN_REPLY, List.of());
         }
+        if (context.get().directReply() != null) {
+            return new AssistantChatResponse(AssistantOutcome.ANSWERED,
+                    context.get().directReply(), context.get().sources());
+        }
 
         List<AssistantHistoryMessage> history = request.history() == null ? List.of() : request.history();
         String answer = groq.complete(SYSTEM_PROMPT + context.get().evidence(), history, request.message());

@@ -57,13 +57,13 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Tất cả 42 file migration V1-V42 phải được apply và validate thành công")
+    @DisplayName("Tất cả 43 file migration V1-V43 phải được apply và validate thành công")
     void flyway_shouldApplyAllMigrationsSuccessfully() {
         assertThat(flyway).isNotNull();
         MigrationInfo[] appliedMigrations = flyway.info().applied();
 
         assertThat(appliedMigrations)
-                .hasSize(42)
+                .hasSize(43)
                 .allSatisfy(info -> {
                     assertThat(info.getState().isApplied()).isTrue();
                     assertThat(info.getVersion()).isNotNull();
@@ -87,6 +87,23 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='teacher_profiles' AND column_name IN ('province_code','ward_code')", Integer.class)).isEqualTo(2);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='teacher_profiles' AND column_name IN ('province_code','ward_code') AND is_nullable='YES'", Integer.class)).isEqualTo(2);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM pg_constraint WHERE conrelid = 'public.teacher_profiles'::regclass AND conname IN ('fk_teacher_profiles_province','fk_teacher_profiles_ward','ck_teacher_profiles_residence_ward_requires_province')", Integer.class)).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("V43 chỉ seed bài hướng dẫn công khai và bật RLS default-deny")
+    void assistantKnowledgeShouldBePublicContentBehindBackendRls() {
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM assistant_knowledge_articles WHERE is_published = true", Integer.class))
+                .isEqualTo(5);
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT relrowsecurity FROM pg_class
+                WHERE oid = 'public.assistant_knowledge_articles'::regclass
+                """, Boolean.class)).isTrue();
+        assertThat(jdbcTemplate.queryForObject("""
+                SELECT count(*) FROM information_schema.role_table_grants
+                WHERE table_schema = 'public' AND table_name = 'assistant_knowledge_articles'
+                  AND grantee IN ('anon', 'authenticated') AND privilege_type = 'SELECT'
+                """, Integer.class)).isZero();
     }
 
     @Test
@@ -175,7 +192,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword())
                 .load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("42");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("43");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
@@ -204,7 +221,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v30.migrate().targetSchemaVersion.toString()).isEqualTo("30");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("42");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("43");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
@@ -221,7 +238,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v31.migrate().targetSchemaVersion.toString()).isEqualTo("31");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("42");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("43");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
@@ -238,7 +255,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v32.migrate().targetSchemaVersion.toString()).isEqualTo("32");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("42");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("43");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
@@ -255,7 +272,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v33.migrate().targetSchemaVersion.toString()).isEqualTo("33");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("42");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("43");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
@@ -272,7 +289,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v34.migrate().targetSchemaVersion.toString()).isEqualTo("34");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("42");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("43");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
@@ -289,7 +306,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v35.migrate().targetSchemaVersion.toString()).isEqualTo("35");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("42");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("43");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
@@ -306,7 +323,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v36.migrate().targetSchemaVersion.toString()).isEqualTo("36");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("42");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("43");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
@@ -323,7 +340,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v37.migrate().targetSchemaVersion.toString()).isEqualTo("37");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("42");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("43");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
@@ -348,7 +365,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v40.migrate().targetSchemaVersion.toString()).isEqualTo("40");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("42");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("43");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
@@ -406,8 +423,8 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Production V41 phải nâng cấp sạch lên V42")
-    void v41DatabaseShouldUpgradeToV42() {
+    @DisplayName("Production V41 phải nâng cấp sạch lên V43")
+    void v41DatabaseShouldUpgradeTo43() {
         String databaseName = "edtech_v41_upgrade_" + UUID.randomUUID().toString().replace("-", "");
         jdbcTemplate.execute("CREATE DATABASE " + databaseName);
         String upgradeUrl = POSTGRES_CONTAINER.getJdbcUrl().replace(
@@ -418,12 +435,29 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
         assertThat(v41.migrate().targetSchemaVersion.toString()).isEqualTo("41");
         Flyway latest = Flyway.configure()
                 .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
-        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("42");
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("43");
         assertThat(latest.validateWithResult().validationSuccessful).isTrue();
     }
 
     @Test
-    @DisplayName("RLS phải bật default-deny trên 35 bảng Backend-owned")
+    @DisplayName("Production V42 phải nâng cấp sạch lên V43")
+    void v42DatabaseShouldUpgradeToV43() {
+        String databaseName = "edtech_v42_upgrade_" + UUID.randomUUID().toString().replace("-", "");
+        jdbcTemplate.execute("CREATE DATABASE " + databaseName);
+        String upgradeUrl = POSTGRES_CONTAINER.getJdbcUrl().replace(
+                "/" + POSTGRES_CONTAINER.getDatabaseName(), "/" + databaseName);
+        Flyway v42 = Flyway.configure()
+                .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword())
+                .target("42").load();
+        assertThat(v42.migrate().targetSchemaVersion.toString()).isEqualTo("42");
+        Flyway latest = Flyway.configure()
+                .dataSource(upgradeUrl, POSTGRES_CONTAINER.getUsername(), POSTGRES_CONTAINER.getPassword()).load();
+        assertThat(latest.migrate().targetSchemaVersion.toString()).isEqualTo("43");
+        assertThat(latest.validateWithResult().validationSuccessful).isTrue();
+    }
+
+    @Test
+    @DisplayName("RLS phải bật default-deny trên 36 bảng Backend-owned")
     void rlsShouldBeEnabledOnBackendOwnedTables() {
         List<String> tables = jdbcTemplate.queryForList("""
                 SELECT tablename
@@ -437,7 +471,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
                     'payout_requests', 'refund_requests', 'teacher_bank_accounts', 'finance_command_receipts',
                     'student_packages', 'package_extension_requests', 'trial_requests',
                     'bookings', 'session_reports', 'reviews', 'teacher_stats',
-                    'assignments', 'submissions',
+                    'assignments', 'submissions', 'assistant_knowledge_articles',
                     'conversations', 'messages', 'attachments', 'notifications',
                     'platform_settings', 'audit_logs', 'email_outbox', 'booking_requests'
                   )
@@ -452,7 +486,7 @@ public class FlywayMigrationTest extends AbstractIntegrationTest {
                 "payout_requests", "refund_requests", "teacher_bank_accounts", "finance_command_receipts",
                 "student_packages", "package_extension_requests", "trial_requests",
                 "bookings", "session_reports", "reviews", "teacher_stats",
-                "assignments", "submissions",
+                "assignments", "submissions", "assistant_knowledge_articles",
                 "conversations", "messages", "attachments", "notifications",
                 "platform_settings", "audit_logs", "email_outbox", "booking_requests");
 
