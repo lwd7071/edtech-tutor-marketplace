@@ -60,6 +60,7 @@ services:
       APP_EMAIL_PROVIDER: logging
       BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL:-noreply@tutormatch.local}
       BREVO_SENDER_NAME: ${BREVO_SENDER_NAME:-Tutor Match Local}
+      JAVA_OPTS: "-Xms256m -Xmx1024m -XX:+UseSerialGC -XX:MaxMetaspaceSize=1024m -XX:ReservedCodeCacheSize=128m -Xss512k -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom"
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/actuator/health"]
       interval: 30s

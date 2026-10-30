@@ -26,6 +26,7 @@ services:
       APP_OAUTH2_FRONTEND_CALLBACK_URI: https://tutormatch.id.vn/oauth2/callback
       GOOGLE_OAUTH_REDIRECT_URI: https://tutormatch.id.vn/login/oauth2/code/google
       APP_CACHE_REVALIDATION_ENABLED: "false"
+      JAVA_OPTS: "-Xms256m -Xmx1024m -XX:+UseSerialGC -XX:MaxMetaspaceSize=1024m -XX:ReservedCodeCacheSize=128m -Xss512k -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom"
     ports:
       - "127.0.0.1:18080:8080"
     depends_on:

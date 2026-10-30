@@ -140,7 +140,9 @@ class TeacherProfilePageControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"profile-package__content\"")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"profile-package__action\"")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Toán Nền Tảng 10 Buổi")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("2.000.000đ")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("2.000.000đ")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "class=\"mobile-booking-dock__price\">2.000.000đ</strong>")));
     }
 
     @Test

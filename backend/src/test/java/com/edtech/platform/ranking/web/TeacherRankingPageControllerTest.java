@@ -85,4 +85,24 @@ class TeacherRankingPageControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Chưa tải được bảng xếp hạng")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("href=\"/ranking?page=0&amp;size=20\">Thử lại</a>")));
     }
+
+    @Test
+    void rendersPublicNavWithActiveRankingLinkAndAriaCurrent() throws Exception {
+        when(subjectFacade.getActiveSubjects()).thenReturn(List.of());
+        when(teacherStatsService.getGlobalRanking(isNull(), any())).thenReturn(new PageImpl<>(List.of()));
+
+        String html = mockMvc.perform(get("/ranking"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        int navStart = html.indexOf("<nav class=\"public-nav\"");
+        org.junit.jupiter.api.Assertions.assertTrue(navStart >= 0, "Phải tìm thấy thẻ <nav class=\"public-nav\"");
+        int navEnd = html.indexOf("</nav>", navStart);
+        org.junit.jupiter.api.Assertions.assertTrue(navEnd > navStart, "Phải tìm thấy thẻ đóng </nav>");
+        String navContent = html.substring(navStart, navEnd);
+
+        org.junit.jupiter.api.Assertions.assertTrue(
+                navContent.contains("href=\"/ranking\"") && navContent.contains("public-nav__link--active") && navContent.contains("aria-current=\"page\""),
+                "Thanh public-nav trên trang /ranking phải kích hoạt active state và aria-current cho liên kết /ranking");
+    }
 }

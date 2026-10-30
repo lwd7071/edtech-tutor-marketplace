@@ -12,6 +12,7 @@
     </a>
     <nav class="public-nav" aria-label="Điều hướng chính">
       <a class="public-nav__link" th:classappend="${activeNav == 'teachers' ? ' public-nav__link--active' : ''}" href="/teachers" th:attr="aria-current=${activeNav == 'teachers' ? 'page' : null}">Tìm gia sư</a>
+      <a class="public-nav__link" th:classappend="${activeNav == 'ranking' ? ' public-nav__link--active' : ''}" href="/ranking" th:attr="aria-current=${activeNav == 'ranking' ? 'page' : null}">Bảng xếp hạng</a>
       <a class="public-nav__link" th:classappend="${activeNav == 'become-a-tutor' ? ' public-nav__link--active' : ''}" href="/become-a-tutor" th:attr="aria-current=${activeNav == 'become-a-tutor' ? 'page' : null}">Trở thành gia sư</a>
       <a class="public-nav__link" th:classappend="${activeNav == 'subjects' ? ' public-nav__link--active' : ''}" href="/subjects" th:attr="aria-current=${activeNav == 'subjects' ? 'page' : null}">Môn học</a>
       <a class="public-nav__link" th:classappend="${activeNav == 'how-it-works' ? ' public-nav__link--active' : ''}" href="/how-it-works" th:attr="aria-current=${activeNav == 'how-it-works' ? 'page' : null}">Cách hoạt động</a>

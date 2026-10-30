@@ -328,7 +328,22 @@ details[open] > summary .summary-chevron {
     font-size: 18px;
   }
 
-  .public-nav { grid-column: 1 / -1; grid-row: 2; justify-content: space-between; min-height: 43px; margin-inline: -16px; padding-inline: 16px; border-top: 1px solid rgb(23 23 20 / 8%); }
+  .public-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-height: 44px;
+    margin-inline: -16px;
+    padding-inline: 16px;
+    border-top: 1px solid rgb(23 23 20 / 8%);
+  }
+  .public-nav::-webkit-scrollbar { display: none; }
+  .public-nav__link { flex-shrink: 0; white-space: nowrap; padding-block: 10px; font-size: 13px; }
   .public-nav__link--active::after { bottom: -1px; }
   .site-header__actions { grid-column: 2; grid-row: 1; }
   .header-login { font-size: 12px; }

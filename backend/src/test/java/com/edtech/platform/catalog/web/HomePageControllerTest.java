@@ -78,6 +78,10 @@ class HomePageControllerTest {
                 "Thanh public-nav phải chứa liên kết /teachers");
         org.junit.jupiter.api.Assertions.assertTrue(navContent.contains("Tìm gia sư"),
                 "Thanh public-nav phải chứa nhãn Tìm gia sư");
+        org.junit.jupiter.api.Assertions.assertTrue(navContent.contains("href=\"/ranking\""),
+                "Thanh public-nav phải chứa liên kết /ranking");
+        org.junit.jupiter.api.Assertions.assertTrue(navContent.contains("Bảng xếp hạng"),
+                "Thanh public-nav phải chứa nhãn Bảng xếp hạng");
     }
 
     @Test

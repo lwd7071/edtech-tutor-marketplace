@@ -90,4 +90,21 @@ class MobileSystemLayoutTest {
                 "public.css must enforce --touch-target-min for mobile controls"
         );
     }
+
+    @Test
+    @DisplayName("public.css: .public-nav trên mobile phải chống rớt dòng chữ (white-space: nowrap) và hỗ trợ cuộn ngang mượt mà")
+    void publicNavShouldSupportMobileScrollAndNoWrap() throws Exception {
+        Path publicCssPath = Path.of("src/main/resources/static/css/public.css");
+        assertTrue(Files.exists(publicCssPath), "public.css must exist");
+        String css = Files.readString(publicCssPath);
+
+        assertTrue(
+                css.contains("overflow-x: auto") && css.contains("scrollbar-width: none"),
+                "public.css must enable smooth horizontal scroll with hidden scrollbar for .public-nav on mobile"
+        );
+        assertTrue(
+                css.contains("white-space: nowrap"),
+                "public.css must prevent link label wrapping with white-space: nowrap on mobile public nav"
+        );
+    }
 }

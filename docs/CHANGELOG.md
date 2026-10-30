@@ -1,5 +1,15 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-30 — Bổ sung liên kết Bảng xếp hạng trên Header & Tối ưu Cuộn ngang Mobile Nav (TDD & UI/UX Pro Max)
+- Bổ sung liên kết Bảng xếp hạng (`public-header.html`): Thêm `<a class="public-nav__link" href="/ranking">Bảng xếp hạng</a>` vào thanh điều hướng chính `public-nav` ngay sau `Tìm gia sư`, tự động gắn `public-nav__link--active` và `aria-current="page"` khi duyệt `/ranking`.
+- Tối ưu Mobile Nav UI/UX Pro Max (`public.css`): Bổ sung `white-space: nowrap` chống rớt dòng chữ tiếng Việt, `overflow-x: auto` cuộn ngang êm ái với `scrollbar-width: none`, touch target đạt chuẩn >= 44px.
+- Kiểm thử TDD 3 Slices: Bổ sung test cases trong `HomePageControllerTest`, `TeacherRankingPageControllerTest`, `MobileSystemLayoutTest`. Chạy regression 37/37 tests PASS 100%. Không đổi schema DB Supabase.
+
+## 2026-10-30 — Cập nhật báo cáo Tutor Match theo giao diện và source hiện hành
+- Đối chiếu lại báo cáo với route inventory, trạng thái, architecture/API, ADR và code hiện tại; giữ hướng dẫn 71 route/use case cùng sơ đồ, diễn giải source và phạm vi bằng chứng.
+- Thay ảnh mới cho một số trang công khai/auth bằng ảnh QA local, bổ sung ảnh Teacher Dashboard nhóm cung cấp; các ảnh còn lại được đánh dấu tham khảo lịch sử. Bổ sung 3 prompt tái dựng về dashboard Teacher, PayOS/VietQR và responsive UI, nâng phụ lục lên 20 mục.
+- Cập nhật trường Word tự động cho mục lục/danh mục. Render kiểm tra 199 trang; không sửa ứng dụng hoặc schema, không truy cập production/Supabase.
+
 ## 2026-10-30 — Chuẩn hóa Giao diện Mobile Toàn diện: App-like Bottom Nav, Filter Bottom Sheet & Sticky Booking Dock (TDD & UI/UX Pro Max)
 - Chuẩn hóa Mobile Design Tokens & Base Shell (`tokens.css`, `public.css`): Bổ sung `--mobile-nav-height: 64px`, `--touch-target-min: 48px`, `--radius-sheet: 16px`. Hỗ trợ vùng an toàn `env(safe-area-inset-bottom)` cho iPhone Home Bar.
 - Triệt tiêu lỗi auto-zoom trên iOS: Áp dụng `font-size: 16px !important` cho `input`, `select`, `textarea` trên mobile (`<= 768px`) và chuẩn hóa kích thước bấm tối thiểu 48px cho toàn bộ nút/control.
@@ -1722,3 +1732,23 @@ efresh_tokens`, `teacher_documents`, `subject_proposals`, `subjects`, `pricing_p
 ## 2026-10-29 — Thymeleaf cutover implementation (staging gates pending)
 - Routed Nginx `/` to Spring Boot, removed Next.js from local/tunnel Compose, enabled Redis-backed HTTP sessions, disabled Next-only cache revalidation, and added session-authenticated chat WebSocket clients with HTML form fallback. Kept `frontend/` and its CI workflow for rollback until staging acceptance.
 - Focused regression: 94/94 backend tests pass; JS syntax check passes. Docker runtime, Redis restart/multi-instance, Nginx E2E, staging Google OAuth/PayOS and external Cloudflare routing remain unverified; production cutover was not performed. Migration diff is empty; Supabase was not contacted.
+
+## 2026-10-30 — Báo cáo hướng dẫn xây dựng Tutor Match
+- Tạo báo cáo DOCX tiếng Việt tại `docs/report/BAO_CAO_HUONG_DAN_XAY_DUNG_TUTORMATCH.docx`, định dạng A4, Times New Roman 13, bảng và sơ đồ đen trắng; ảnh giao diện giữ màu gốc.
+- Bổ sung kiến trúc, hướng dẫn cài đặt, hướng dẫn theo 71 route/use case, 145 hình, 7 bảng, danh mục tự động, giải thích luồng mã nguồn và phụ lục 17 prompt AI tái dựng theo commit/docs có ghi mức bằng chứng.
+- Render thành PDF 196 trang và rà contact sheet toàn bộ trang; chưa chạy test ứng dụng. Migration diff rỗng; không kết nối Supabase.
+
+## 2026-10-30 — Làm mới ảnh giao diện báo cáo bằng QA local
+- Chụp 70/71 route trên stack QA cô lập bằng dữ liệu mẫu từ seed; cập nhật báo cáo để chỉ dùng ảnh chụp mới. Không dùng domain, production hoặc Supabase.
+- `/teachers/{id}` không render do template tham chiếu `teacher.packages`, thuộc tính không tồn tại trên `TeacherPublicDetail`; ghi giới hạn này trong báo cáo, không sửa source.
+- Cập nhật mục lục/danh mục Word, render PDF 190 trang và rà contact sheet toàn bộ trang. Chưa chạy kiểm thử nghiệp vụ; migration diff rỗng.
+- Bản hoàn thiện được lưu tại `docs/report/BAO_CAO_HUONG_DAN_XAY_DUNG_TUTORMATCH_CAP_NHAT.docx` vì file báo cáo không có hậu tố đang bị tiến trình khác giữ mở.
+
+## 2026-10-30 — Sửa và chụp bổ sung hồ sơ gia sư công khai
+- Sửa `templates/teachers/profile.html` để booking dock đọc danh sách `packages` từ model thay vì thuộc tính không tồn tại `teacher.packages` trên `TeacherPublicDetail`; thêm assertion giá gói vào controller test.
+- `TeacherProfilePageControllerTest` (catalog và teacher): PASS 12/12. QA browser GET `/teachers/{id}`: HTTP 200, booking dock hiện giá gói mẫu, 0 lỗi trang.
+- Cập nhật DOCX với ảnh route thứ 71, 145 hình tổng cộng; render 191 trang và rà toàn bộ contact sheet. QA local đã dọn; migration diff rỗng, Supabase không kết nối.
+
+## 2026-10-30 — Xóa ghi chú lặp dưới ảnh trong báo cáo
+- Xóa 71 đoạn giải thích QA lặp dưới ảnh giao diện trong DOCX hiện tại; giữ nguyên caption hình, các chỉnh sửa bìa/nội dung của nhóm và ghi chú phạm vi kiểm thử ở phần tổng kết.
+- Cập nhật trường Word, render lại 191 trang và rà contact sheet toàn bộ tài liệu.

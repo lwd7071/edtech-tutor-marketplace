@@ -1,5 +1,33 @@
 # Trạng thái dự án
 
+## Bổ sung liên kết Bảng xếp hạng trên Header & Tối ưu Cuộn ngang Mobile Nav (TDD & UI/UX Pro Max) — 2026-10-30
+- **Trục nghiệm thu giao diện & UI/UX Pro Max:**
+  - **Tích hợp liên kết Bảng xếp hạng (`public-header.html`):**
+    - Bổ sung `<a class="public-nav__link" href="/ranking">Bảng xếp hạng</a>` vào thanh điều hướng chính (`.public-nav`) ngay sau mục `Tìm gia sư`.
+    - Tự động gắn class `public-nav__link--active` và thuộc tính trợ năng `aria-current="page"` khi truy cập trang `/ranking`.
+    - Đồng bộ hiệu ứng chỉ báo active viền vàng `--brand-yellow` dày 3px ở chân liên kết (`::after`), riêng trên Homepage nền vàng đổi sang viền mực `var(--ink)`.
+  - **Tối ưu trải nghiệm Mobile Nav (`public.css`):**
+    - Chống rớt dòng chữ trên màn hình nhỏ: Bổ sung `white-space: nowrap` và `flex-shrink: 0` cho `.public-nav__link`, giữ nguyên vẹn nhãn chữ tiếng Việt ("Bảng xếp hạng", "Trở thành gia sư", "Cách hoạt động").
+    - Hỗ trợ cuộn ngang mượt mà: Bổ sung `overflow-x: auto`, `-webkit-overflow-scrolling: touch`, `scrollbar-width: none` và ẩn scrollbar WebKit cho `.public-nav` trên mobile (`<= 640px`).
+    - Bảo đảm touch target tối thiểu 44px (`padding-block: 10px`, `min-height: 44px`) theo chuẩn công thái học di động.
+- **Backend & Quy trình TDD (3 Vertical Slices RED -> GREEN):**
+  - Slice 1: `HomePageControllerTest#rendersHeaderNavigationWithBecomeATutorAndExploreLinks` xác minh sự hiện diện của `href="/ranking"` và nhãn "Bảng xếp hạng" trên `public-nav`.
+  - Slice 2: `TeacherRankingPageControllerTest#rendersPublicNavWithActiveRankingLinkAndAriaCurrent` xác minh kích hoạt `public-nav__link--active` và `aria-current="page"` khi vào `/ranking`.
+  - Slice 3: `MobileSystemLayoutTest#publicNavShouldSupportMobileScrollAndNoWrap` kiểm tra CSS cuộn ngang và chống rớt dòng trên mobile.
+  - Regression suites: Chạy 5 test suites (`HomePageControllerTest`, `TeacherRankingPageControllerTest`, `MobileSystemLayoutTest`, `ButtonSystemLayoutTest`, `StudentHeaderAndNavLayoutTest`) -> PASS **37/37 tests 100%**.
+- **Ranh giới an toàn:** Không đổi DB schema Supabase, migration diff rỗng. Không đụng vào `.env.cloud`, Supabase hay credentials.
+
+## Báo cáo hướng dẫn xây dựng Tutor Match — cập nhật theo source hiện hành 2026-10-30
+- Bản DOCX hoàn thiện được lưu tại `docs/report/BAO_CAO_HUONG_DAN_XAY_DUNG_TUTORMATCH_CAP_NHAT.docx`. Báo cáo có 71 route/use case; từng route có hướng dẫn, sơ đồ hoạt động và giải thích đường đi mã nguồn. Đủ 71/71 route có ảnh mới từ QA local với dữ liệu mẫu.
+- Guest/Auth 16/16, Student 15/15, Teacher 28/28 và Admin 12/12 route chụp được. Lỗi route `/teachers/{id}` đã sửa: template dùng model attribute `packages` do controller cung cấp thay vì đọc `teacher.packages` từ DTO `TeacherPublicDetail`.
+- Phụ lục có 20 prompt AI tái dựng theo tài liệu/commit, phân biệt rõ prompt tái dựng với nguyên văn. Báo cáo A4, Times New Roman 13, bảng/sơ đồ đen trắng, ảnh giao diện giữ màu; mục lục, danh mục 145 hình và danh mục 7 bảng là trường Word tự động đã được cập nhật.
+- Kiểm tra tài liệu: render thành PDF 191 trang và rà contact sheet toàn bộ trang sau khi cập nhật trường Word; không thấy tràn bảng, cắt ảnh hoặc lỗi ngắt trang đáng kể. Thông tin bìa nhóm đã bổ sung được giữ nguyên.
+- Theo yêu cầu chỉnh sửa hiện tại, xóa 71 đoạn ghi chú giải thích lặp ngay dưới ảnh giao diện; giữ nguyên caption hình và hai ghi chú về phạm vi QA ở phần tổng kết.
+- Kiểm thử: `TeacherProfilePageControllerTest` của catalog và teacher chạy PASS 12/12; trước sửa, test catalog tái hiện lỗi Thymeleaf `packages` trên `TeacherPublicDetail`. QA browser xác nhận `/teachers/{id}` trả HTTP 200, booking dock hiện giá gói mẫu và không có lỗi trang. Các workflow mutation/acceptance khác chưa chạy.
+- QA dùng PostgreSQL ephemeral local và seed mẫu; lệnh seed báo một lỗi thứ tự FK trong dữ liệu payment transaction nhưng tiếp tục nạp phần còn lại, route hồ sơ có đủ dữ liệu và trả 200. Không truy cập `tutormatch.id.vn`, production hoặc Supabase.
+- `git diff -- backend/src/main/resources/db/migration` rỗng; không kết nối hoặc mutate Supabase.
+- `scripts/check-docs.ps1`: PASS — quét 50 Markdown hiện hành. `git diff --check` không báo lỗi whitespace; có cảnh báo LF/CRLF trên hai file compose đã tồn tại trong working tree.
+
 ## Chuẩn hóa Giao diện Mobile Toàn diện: App-like Bottom Nav, Filter Bottom Sheet & Sticky Booking Dock (TDD & UI/UX Pro Max) — 2026-10-30
 - **Trục nghiệm thu giao diện & UI/UX Pro Max:**
   - **Hệ thống Design Tokens cho Mobile (`tokens.css`):**
