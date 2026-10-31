@@ -2,6 +2,8 @@
 
 Frontend của nền tảng kết nối học viên với gia sư 1-1. Cấu trúc giao diện, danh sách trang và phân quyền nằm tại [`docs/architecture/FRONTEND_SPEC.md`](../docs/architecture/FRONTEND_SPEC.md).
 
+> **Legacy — không còn dùng để chạy website hiện hành.** Thư mục `frontend/` chứa ứng dụng Next.js cũ, được giữ lại để tham khảo và phục vụ nhu cầu rollback. Giao diện hiện tại chạy bằng Spring MVC + Thymeleaf trong [`backend/`](../backend/); xem [tài liệu chuyển UI sang Thymeleaf](../docs/thymeleaf/README.md) và [kiến trúc frontend hiện hành](../docs/architecture/FRONTEND_ARCHITECTURE.md).
+
 ## Công nghệ
 
 - Next.js 16 App Router, React 19 và TypeScript
@@ -10,7 +12,9 @@ Frontend của nền tảng kết nối học viên với gia sư 1-1. Cấu tr�
 - STOMP.js cho chat realtime
 - Jest và Testing Library
 
-## Chạy dự án
+## Chạy bản Next.js legacy
+
+Các lệnh bên dưới chỉ dùng khi cần chạy hoặc kiểm tra riêng mã Next.js cũ. Chúng không khởi chạy website Tutor Match hiện hành.
 
 ```bash
 npm install

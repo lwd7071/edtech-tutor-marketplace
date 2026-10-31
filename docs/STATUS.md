@@ -1,5 +1,9 @@
 # Trạng thái dự án
 
+## Ghi rõ Next.js trong `frontend/` là bản legacy — 2026-10-31
+- `frontend/README.md` ghi rõ ứng dụng Next.js trong thư mục này không còn dùng để chạy website hiện hành; UI đang dùng Spring MVC + Thymeleaf trong `backend/`.
+- Đây là cập nhật tài liệu, không đổi hành vi ứng dụng. `scripts/check-docs.ps1` PASS (52 Markdown); `git diff --check` không phát hiện lỗi whitespace. Không thêm migration và không kết nối hoặc mutate Supabase.
+
 ## Trợ lý AI theo vai trò và ngôn ngữ — 2026-10-30
 - Đã triển khai playbook trong repo cho Guest/Student/Teacher/Admin; Groq phân loại chủ đề, bộ lọc gia sư và ngôn ngữ, sau đó tạo câu trả lời từ nguồn đã chọn. Link và quyền do backend quyết định. `/assistant/chat` dùng HTML session + CSRF; API public luôn ở phạm vi Guest. Widget có gợi ý theo role và hiện ở Admin workspace.
 - **PASS:** 56/56 test trong `AssistantChatServiceTest`, `AssistantChatControllerTest`, `AssistantWidgetLayoutTest`, `CatalogPublicTeacherSearchTest`, `GroqChatCompletionAdapterTest`, `SecurityChainIsolationTest`; gồm Guest/role, CSRF, session hết hạn, role giả, bộ lọc gia sư và ngôn ngữ. Test render riêng trang Admin với `data-role`/CSRF cũng PASS 1/1. `node --check`, `scripts/check-docs.ps1` (52 Markdown) và `git diff --check` PASS. Đây là test giả lập Groq, không chứng minh chất lượng model thật.

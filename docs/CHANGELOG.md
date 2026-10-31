@@ -1,5 +1,9 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-31 — Ghi rõ Next.js trong `frontend/` là bản legacy
+- Cập nhật `frontend/README.md`: thư mục Next.js chỉ còn là mã cũ để tham khảo/rollback; UI hiện hành dùng Spring MVC + Thymeleaf trong `backend/`.
+- `scripts/check-docs.ps1` PASS (52 Markdown); `git diff --check` không phát hiện lỗi whitespace.
+
 ## 2026-10-30 — Trợ lý AI theo vai trò và ngôn ngữ
 - Thêm playbook hướng dẫn có phiên bản trong repo cho Guest, Student, Teacher và Admin; Groq chọn chủ đề, bộ lọc tìm gia sư và ngôn ngữ câu hỏi, backend giới hạn nguồn/link theo role. Giữ API public ở phạm vi Guest, thêm chat HTML session + CSRF và widget Admin. Không đọc dữ liệu cá nhân hoặc thực hiện thao tác.
 - Kiểm thử mục tiêu PASS 56/56; `node --check` PASS. Groq thật và browser QA chưa chạy do thiếu key trong môi trường và chưa có server local. Không có migration của trợ lý, không truy cập Supabase.
