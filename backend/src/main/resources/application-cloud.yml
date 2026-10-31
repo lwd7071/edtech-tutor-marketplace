@@ -18,7 +18,7 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
+            redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:https://tutormatch.id.vn/login/oauth2/code/google}
             scope: email,profile
 
   jpa:
@@ -32,6 +32,10 @@ spring:
     baseline-on-migrate: false
 
 app:
+  assistant:
+    groq:
+      api-key: ${GROQ_API_KEY:}
+      model: ${GROQ_CHAT_MODEL:openai/gpt-oss-20b}
   email:
     provider: ${APP_EMAIL_PROVIDER:brevo}
     from: ${BREVO_SENDER_EMAIL}

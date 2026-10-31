@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Chính sách riêng tư | Tutor Match</title>
+  <meta name="description" content="Thông tin về dữ liệu được dùng để cung cấp Tutor Match.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/public-legal.css">
+</head>
+<body>
+<div th:replace="~{fragments/public-header :: header}"></div>
+<main id="main-content" class="public-legal">
+  <div class="public-legal__shell">
+    <nav class="public-legal__breadcrumb" aria-label="Đường dẫn">
+      <a href="/">Trang chủ</a><span aria-hidden="true">/</span><span aria-current="page">Chính sách riêng tư</span>
+    </nav>
+    <header class="public-legal__heading"><h1 id="page-title">Chính sách riêng tư</h1></header>
+    <article class="public-legal__copy" aria-labelledby="page-title">
+      <section class="public-legal__section">
+        <h2>Thông tin tài khoản và học tập</h2>
+        <p>Tutor Match lưu thông tin tài khoản, hồ sơ, giao dịch và hoạt động học tập cần thiết để cung cấp dịch vụ.</p>
+      </section>
+      <section class="public-legal__section">
+        <h2>Thông tin liên hệ phụ huynh</h2>
+        <p>Thông tin liên hệ phụ huynh là tùy chọn và chỉ được dùng để gửi email khi học viên bật tính năng thông báo. Bạn có thể cập nhật hoặc xóa thông tin này trong hồ sơ.</p>
+      </section>
+      <section class="public-legal__section">
+        <h2>Dữ liệu xác thực và thanh toán</h2>
+        <p>Dữ liệu xác thực và thanh toán được giới hạn theo vai trò; thông tin nhạy cảm không được hiển thị trong hồ sơ công khai.</p>
+      </section>
+    </article>
+    <nav class="public-legal__related" aria-label="Tài liệu liên quan"><a href="/terms">Điều khoản sử dụng</a></nav>
+  </div>
+</main>
+<div th:replace="~{fragments/public-header :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<header class="teacher-messages-header" th:fragment="header">
+  <a class="skip-link" href="#main-content">Bỏ qua nội dung</a>
+  <div class="teacher-brand-wrapper">
+    <a class="teacher-messages-brand" href="/" aria-label="Tutor Match — Trang chủ">Tutor Match</a>
+    <span class="teacher-role-badge">Gia sư</span>
+  </div>
+  <div class="teacher-header-actions">
+    <a class="teacher-header-action-item" href="/teacher/messages" title="Tin nhắn" aria-label="Tin nhắn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Tin nhắn</span>
+    </a>
+    <a class="teacher-header-action-item" href="/teacher/notifications" title="Thông báo" aria-label="Thông báo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span>Thông báo</span>
+    </a>
+    <form class="teacher-header-logout" method="post" action="/auth/logout">
+      <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <button type="submit">Đăng xuất</button>
+    </form>
+  </div>
+  <script defer src="/js/assistant-widget.js" th:attr="data-csrf=${_csrf != null ? _csrf.token : ''},data-role='TEACHER'"></script>
+</header>
+<th:block th:fragment="nav(active)">
+<nav class="teacher-messages-nav" aria-label="Điều hướng gia sư">
+  <!-- 5 Nhóm điều hướng chính ở thanh top -->
+  <div class="teacher-messages-nav__main">
+    <a href="/teacher" th:attr="aria-current=${active == 'overview' ? 'page' : null}">Tổng quan</a>
+    <a href="/teacher/bookings" th:attr="aria-current=${active == 'bookings' or active == 'availability' or active == 'booking-requests' or active == 'trial-requests' ? 'page' : null}">Lịch & Yêu cầu</a>
+    <a href="/teacher/students" th:attr="aria-current=${active == 'students' or active == 'packages' or active == 'assignments' ? 'page' : null}">Lớp & Học tập</a>
+    <a href="/teacher/wallet" th:attr="aria-current=${active == 'wallet' or active == 'stats' or active == 'bank-accounts' or active == 'payouts' ? 'page' : null}">Thu nhập & Ví</a>
+    <a href="/teacher/profile" th:attr="aria-current=${active == 'profile' or active == 'documents' or active == 'credentials' or active == 'subjects' or active == 'subject-proposals' ? 'page' : null}">Hồ sơ & Môn dạy</a>
+  </div>
+
+  <!-- Thanh Sub-pills ngữ cảnh cho từng phân hệ (Không hiển thị ở trang Tổng quan) -->
+  <div class="teacher-messages-nav__sub" th:if="${active != 'overview'}">
+    <!-- Phân hệ Lịch & Yêu cầu -->
+    <div class="teacher-sub-pills" th:if="${active == 'bookings' or active == 'availability' or active == 'booking-requests' or active == 'trial-requests'}">
+      <a href="/teacher/bookings" th:classappend="${active == 'bookings' ? 'is-active' : ''}">Lịch dạy</a>
+      <a href="/teacher/availability" th:classappend="${active == 'availability' ? 'is-active' : ''}">Lịch rảnh</a>
+      <a href="/teacher/booking-requests" th:classappend="${active == 'booking-requests' ? 'is-active' : ''}">Yêu cầu đặt buổi</a>
+      <a href="/teacher/trial-requests" th:classappend="${active == 'trial-requests' ? 'is-active' : ''}">Học thử</a>
+    </div>
+
+    <!-- Phân hệ Lớp & Học tập -->
+    <div class="teacher-sub-pills" th:if="${active == 'students' or active == 'packages' or active == 'assignments'}">
+      <a href="/teacher/students" th:classappend="${active == 'students' ? 'is-active' : ''}">Học viên</a>
+      <a href="/teacher/packages" th:classappend="${active == 'packages' ? 'is-active' : ''}">Gói học</a>
+      <a href="/teacher/assignments" th:classappend="${active == 'assignments' ? 'is-active' : ''}">Bài tập</a>
+    </div>
+
+    <!-- Phân hệ Thu nhập & Ví -->
+    <div class="teacher-sub-pills" th:if="${active == 'wallet' or active == 'stats' or active == 'bank-accounts' or active == 'payouts'}">
+      <a href="/teacher/wallet" th:classappend="${active == 'wallet' ? 'is-active' : ''}">Ví tiền</a>
+      <a href="/teacher/stats" th:classappend="${active == 'stats' ? 'is-active' : ''}">Thống kê</a>
+      <a href="/teacher/bank-accounts" th:classappend="${active == 'bank-accounts' ? 'is-active' : ''}">Tài khoản nhận tiền</a>
+      <a href="/teacher/payouts" th:classappend="${active == 'payouts' ? 'is-active' : ''}">Rút tiền</a>
+    </div>
+
+    <!-- Phân hệ Hồ sơ & Chuyên môn -->
+    <div class="teacher-sub-pills" th:if="${active == 'profile' or active == 'documents' or active == 'credentials' or active == 'subjects' or active == 'subject-proposals'}">
+      <a href="/teacher/profile" th:classappend="${active == 'profile' ? 'is-active' : ''}">Hồ sơ</a>
+      <a href="/teacher/documents" th:classappend="${active == 'documents' ? 'is-active' : ''}">Xác minh danh tính</a>
+      <a href="/teacher/credentials" th:classappend="${active == 'credentials' ? 'is-active' : ''}">Minh chứng năng lực</a>
+      <a href="/teacher/subjects" th:classappend="${active == 'subjects' ? 'is-active' : ''}">Môn dạy</a>
+      <a href="/teacher/subject-proposals" th:classappend="${active == 'subject-proposals' ? 'is-active' : ''}">Đề xuất môn</a>
+    </div>
+  </div>
+</nav>
+
+  <nav class="mobile-bottom-nav" aria-label="Điều hướng di động gia sư">
+    <a class="mobile-bottom-nav__item" th:classappend="${active == 'overview' ? ' mobile-bottom-nav__item--active' : ''}" href="/teacher" th:attr="aria-current=${active == 'overview' ? 'page' : null}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      <span class="mobile-bottom-nav__label">Tổng quan</span>
+    </a>
+    <a class="mobile-bottom-nav__item" th:classappend="${active == 'bookings' or active == 'availability' or active == 'booking-requests' or active == 'trial-requests' ? ' mobile-bottom-nav__item--active' : ''}" href="/teacher/bookings" th:attr="aria-current=${active == 'bookings' or active == 'availability' or active == 'booking-requests' or active == 'trial-requests' ? 'page' : null}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <span class="mobile-bottom-nav__label">Lịch dạy</span>
+    </a>
+    <a class="mobile-bottom-nav__item" th:classappend="${active == 'students' or active == 'packages' or active == 'assignments' ? ' mobile-bottom-nav__item--active' : ''}" href="/teacher/students" th:attr="aria-current=${active == 'students' or active == 'packages' or active == 'assignments' ? 'page' : null}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      <span class="mobile-bottom-nav__label">Học viên</span>
+    </a>
+    <a class="mobile-bottom-nav__item" th:classappend="${active == 'wallet' or active == 'stats' or active == 'bank-accounts' or active == 'payouts' ? ' mobile-bottom-nav__item--active' : ''}" href="/teacher/wallet" th:attr="aria-current=${active == 'wallet' or active == 'stats' or active == 'bank-accounts' or active == 'payouts' ? 'page' : null}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M6 10h12"></path><path d="M6 14h8"></path></svg>
+      <span class="mobile-bottom-nav__label">Ví tiền</span>
+    </a>
+  </nav>
+</th:block>

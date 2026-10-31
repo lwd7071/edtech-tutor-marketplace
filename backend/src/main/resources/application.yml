@@ -2,6 +2,11 @@ spring:
   application:
     name: edtech-api
 
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 100MB
+
   profiles:
     default: cloud
 
@@ -35,20 +40,40 @@ spring:
       repositories:
         enabled: false
 
+  session:
+    store-type: redis
+    redis:
+      namespace: ${SPRING_SESSION_REDIS_NAMESPACE:edtech:session}
+
   # --- Database Migration ---
   flyway:
     enabled: true
     baseline-on-migrate: false
     locations: classpath:db/migration
 
+  # --- UI & Template Hot Reload ---
+  thymeleaf:
+    cache: ${SPRING_THYMELEAF_CACHE:false}
+  web:
+    resources:
+      cache:
+        period: ${SPRING_WEB_RESOURCES_CACHE_PERIOD:0}
+
 server:
   port: ${PORT:8080}
   address: ${SERVER_ADDRESS:0.0.0.0}
+  forward-headers-strategy: framework
   servlet:
     encoding:
       charset: UTF-8
       force: true
       enabled: true
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        secure: ${SESSION_COOKIE_SECURE:true}
+        same-site: lax
 
 # --- Custom App Configuration ---
 app:
@@ -69,7 +94,7 @@ app:
     access-expiration-ms: 900000
     refresh-expiration-ms: 604800000
   cors:
-    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:8081,http://127.0.0.1:8081}
   oauth2:
     frontend-redirect-uri: ${APP_OAUTH2_FRONTEND_CALLBACK_URI:${APP_OAUTH2_REDIRECT_URI:http://localhost:3000/oauth2/callback}}
   payment:
@@ -80,9 +105,11 @@ app:
     base-url: ${PAYOS_BASE_URL:https://api-merchant.payos.vn}
     connect-timeout: ${PAYOS_CONNECT_TIMEOUT:3s}
     read-timeout: ${PAYOS_READ_TIMEOUT:10s}
+    default-return-url: ${APP_PAYMENT_DEFAULT_RETURN_URL:${APP_FRONTEND_URL:http://localhost:3000}/student/payments/callback}
+    default-cancel-url: ${APP_PAYMENT_DEFAULT_CANCEL_URL:${APP_FRONTEND_URL:http://localhost:3000}/student/payments/callback}
   cache:
     revalidation:
-      enabled: ${APP_CACHE_REVALIDATION_ENABLED:true}
+      enabled: ${APP_CACHE_REVALIDATION_ENABLED:false}
       url: ${APP_CACHE_REVALIDATION_URL:${app.email.frontend-url:http://localhost:3000}/api/internal/revalidate-public}
       secret: ${APP_INTERNAL_REVALIDATE_SECRET:local-internal-revalidate-secret}
       timeout-ms: ${APP_CACHE_REVALIDATION_TIMEOUT_MS:2000}

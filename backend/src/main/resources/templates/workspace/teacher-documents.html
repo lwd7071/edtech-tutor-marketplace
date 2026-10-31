@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Xác minh danh tính | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/teacher-workspace.css">
+  <link rel="stylesheet" href="/css/teacher-documents.css">
+</head>
+<body>
+<div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-documents-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+    <header class="teacher-documents-heading">
+      <div class="teacher-documents-heading__icon" aria-hidden="true">ID</div>
+      <div><p class="teacher-documents-eyebrow">Tài khoản gia sư</p><h1>Xác minh danh tính</h1>
+        <p>Gửi giấy tờ để quản trị viên xác minh hồ sơ. Tệp riêng tư, không hiển thị trên hồ sơ công khai.</p></div>
+    </header>
+
+    <div class="teacher-documents-notice" role="status" th:if="${documentsNotice != null}" th:text="${documentsNotice}">Đã cập nhật tài liệu.</div>
+    <div class="teacher-documents-notice teacher-documents-notice--error" role="alert" th:if="${documentsError != null}" th:text="${documentsError}">Chưa thực hiện được thao tác.</div>
+
+    <section class="teacher-documents-panel" aria-labelledby="teacher-documents-list-title">
+      <header class="teacher-documents-panel__heading"><div><p class="teacher-documents-eyebrow">Hồ sơ xác minh</p><h2 id="teacher-documents-list-title">Tài liệu đã gửi</h2></div>
+        <span class="teacher-documents-count" th:if="${!documentsUnavailable}" th:text="${#lists.size(documents) + ' tài liệu'}">0 tài liệu</span></header>
+      <div class="teacher-documents-state teacher-documents-state--error" role="alert" th:if="${documentsUnavailable}">
+        <h3>Chưa tải được danh sách</h3><p>Tài liệu đã gửi không bị thay đổi. Thử tải lại trước khi tiếp tục.</p><a href="/teacher/documents">Tải lại</a>
+      </div>
+      <div class="teacher-documents-empty" th:if="${!documentsUnavailable and #lists.isEmpty(documents)}">
+        <span class="teacher-documents-empty__mark" aria-hidden="true">+</span><h3>Chưa có giấy tờ</h3><p>Tải lên một giấy tờ định danh để bắt đầu xác minh.</p>
+      </div>
+      <ul class="teacher-documents-list" th:if="${!documentsUnavailable and !#lists.isEmpty(documents)}" aria-label="Danh sách giấy tờ định danh">
+        <li class="teacher-documents-row" th:each="document : ${documents}">
+          <div class="teacher-documents-file-icon" aria-hidden="true">ID</div>
+          <div class="teacher-documents-row__body"><h3 th:text="${document.title}">Giấy tờ định danh</h3>
+            <div class="teacher-documents-row__meta"><span th:text="${document.fileSizeLabel}">1 MB</span>
+              <time th:if="${document.verifiedAtLabel != null}" th:text="${'Xác minh ' + document.verifiedAtLabel}">Xác minh ngày 01/01/2026</time>
+              <span class="teacher-documents-status" th:classappend="${' teacher-documents-status--' + #strings.toLowerCase(document.status.name())}" th:text="${document.statusLabel}">Đang chờ xác minh</span>
+            </div>
+          </div>
+          <form th:if="${document.deletable}" method="post" th:action="@{/teacher/documents/{id}/delete(id=${document.id})}">
+            <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="teacher-documents-delete" type="submit" th:attr="aria-label=${'Xóa ' + document.title}">Xóa</button>
+          </form>
+          <span class="teacher-documents-locked" th:unless="${document.deletable}">Đã khóa</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="teacher-documents-panel teacher-documents-upload-panel" aria-labelledby="teacher-documents-upload-title">
+      <header class="teacher-documents-panel__heading"><div><p class="teacher-documents-eyebrow">Tải lên an toàn</p><h2 id="teacher-documents-upload-title">Thêm giấy tờ định danh</h2></div></header>
+      <div class="teacher-documents-security-note"><span aria-hidden="true">i</span><p>Chỉ nhận PDF, PNG hoặc JPG/JPEG. Tối đa 10 MB mỗi tệp. Chỉ quản trị viên được xem nội dung.</p></div>
+      <form class="teacher-documents-upload-form" method="post" action="/teacher/documents/upload" enctype="multipart/form-data" th:object="${uploadForm}">
+        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <div class="teacher-documents-form-error" role="alert" tabindex="-1" th:if="${uploadError != null}" th:text="${uploadError}">Kiểm tra tệp tải lên.</div>
+        <div class="teacher-documents-fields">
+          <div class="teacher-documents-field"><label for="documentTitle">Tên giấy tờ <span>(không bắt buộc)</span></label>
+            <input id="documentTitle" type="text" maxlength="255" th:field="*{title}" placeholder="Ví dụ: Căn cước công dân">
+            <p class="teacher-documents-field__error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Tên giấy tờ quá dài.</p>
+          </div>
+          <div class="teacher-documents-field"><label for="documentFile">Chọn tệp</label>
+            <input id="documentFile" type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" required aria-describedby="documentFile-hint"
+                   th:attr="aria-invalid=${uploadHasErrors},aria-describedby=${#fields.hasErrors('file')} ? 'documentFile-hint documentFile-error' : 'documentFile-hint'">
+            <p id="documentFile-hint">PDF, PNG hoặc JPG/JPEG · tối đa 10 MB</p>
+            <p id="documentFile-error" class="teacher-documents-field__error" th:if="${#fields.hasErrors('file')}" th:errors="*{file}">Chọn tệp giấy tờ.</p>
+          </div>
+        </div>
+        <div class="teacher-documents-upload-form__actions"><button class="teacher-documents-button" type="submit">Tải giấy tờ lên</button></div>
+      </form>
+    </section>
+  </div>
+</main>
+<footer class="teacher-message-footer"><div><a href="/teacher/documents">Tutor Match</a><span>Xác minh danh tính gia sư.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

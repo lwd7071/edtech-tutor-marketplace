@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Yêu cầu của tôi | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css"><link rel="stylesheet" href="/css/student-requests.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-requests-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+    <header class="requests-heading"><div><h1>Yêu cầu của tôi</h1><p>Theo dõi học thử, hoàn tiền và gia hạn gói học.</p></div></header>
+    <p class="requests-flash" role="status" th:if="${trialRequestSuccess}" th:text="${trialRequestSuccess}">Đã gửi yêu cầu học thử.</p>
+    <p class="requests-flash" role="status" th:if="${notice != null}" th:text="${notice}">Yêu cầu đã được gửi.</p>
+    <p class="requests-flash requests-flash--error" role="alert" th:if="${actionError != null}" th:text="${actionError}">Chưa gửi được yêu cầu.</p>
+    <p class="requests-flash requests-flash--error" role="alert" th:if="${packageUnavailable}">Không tìm thấy gói học thuộc tài khoản này.</p>
+
+    <section class="request-compose" th:if="${packageRow != null}" aria-labelledby="request-compose-title">
+      <header><div><h2 id="request-compose-title" th:text="${packageRow.data.packageName}">Tên gói học</h2><p><span th:text="${packageRow.data.subject.name}">Môn học</span> · Gia sư <span th:text="${packageRow.data.teacher.fullName}">Tên gia sư</span></p></div>
+        <a th:href="@{/student/packages/{id}(id=${packageRow.data.id})}">Xem gói học</a></header>
+      <p class="request-package-note" th:if="${canRequestRefund}">Còn <strong th:text="${packageRow.data.remainingSessions}">0</strong> buổi có thể gửi yêu cầu hoàn tiền. Gửi yêu cầu sẽ tạm khóa việc đặt lịch mới trong lúc chờ xử lý.</p>
+      <p class="request-package-note" th:if="${canRequestExtension}">Hạn gói hiện tại: <strong th:text="${packageRow.expiryLabel}">01/01/2026</strong>. Gửi ngày mong muốn để quản trị viên xem xét.</p>
+      <div class="request-forms">
+        <form class="request-form" method="post" action="/student/requests/refund" th:if="${canRequestRefund}">
+          <h3>Yêu cầu hoàn tiền</h3>
+          <input type="hidden" name="_csrf" th:if="${_csrf != null}" th:value="${_csrf.token}" th:name="${_csrf.parameterName}">
+          <input type="hidden" name="studentPackageId" th:value="${packageRow.data.id}">
+          <input type="hidden" name="packageVersion" th:value="${packageRow.data.version}">
+          <input type="hidden" name="idempotencyKey" th:value="${refundIdempotencyKey}">
+          <label for="refund-sessions">Số buổi muốn hoàn</label>
+          <input id="refund-sessions" name="requestedSessions" type="number" min="1" th:attr="max=${packageRow.data.remainingSessions}" value="1" required>
+          <label for="refund-reason">Lý do</label>
+          <textarea id="refund-reason" name="reason" rows="3" minlength="10" maxlength="1000" required></textarea>
+          <fieldset><legend>Tài khoản nhận tiền hoàn</legend>
+            <label for="refund-bank-name">Ngân hàng</label><input id="refund-bank-name" name="bankName" maxlength="150" autocomplete="organization" required>
+            <label for="refund-bank-bin">Mã ngân hàng (BIN)</label><input id="refund-bank-bin" name="bankBin" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" required>
+            <label for="refund-account-number">Số tài khoản</label><input id="refund-account-number" name="accountNumber" pattern="[A-Za-z0-9]{6,25}" minlength="6" maxlength="25" autocomplete="off" required>
+            <label for="refund-account-holder">Tên chủ tài khoản</label><input id="refund-account-holder" name="accountHolderName" minlength="3" maxlength="150" autocomplete="name" required>
+          </fieldset>
+          <button class="requests-button" type="submit">Gửi yêu cầu hoàn tiền</button>
+        </form>
+        <form class="request-form" method="post" action="/student/requests/extension" th:if="${canRequestExtension}">
+          <h3>Yêu cầu gia hạn</h3>
+          <input type="hidden" name="_csrf" th:if="${_csrf != null}" th:value="${_csrf.token}" th:name="${_csrf.parameterName}">
+          <input type="hidden" name="studentPackageId" th:value="${packageRow.data.id}">
+          <input type="hidden" name="packageVersion" th:value="${packageRow.data.version}">
+          <input type="hidden" name="idempotencyKey" th:value="${extensionIdempotencyKey}">
+          <label for="extension-date">Ngày hết hạn mong muốn</label><input id="extension-date" name="requestedExpiryDate" type="date" th:attr="min=${minimumExpiryDate}" required>
+          <label for="extension-reason">Lý do</label><textarea id="extension-reason" name="reason" rows="3" minlength="10" maxlength="1000" required></textarea>
+          <button class="requests-button" type="submit">Gửi yêu cầu gia hạn</button>
+        </form>
+      </div>
+      <p class="request-package-note" th:if="${!canRequestRefund and !canRequestExtension}">Gói này hiện không có thao tác hoàn tiền hoặc gia hạn.</p>
+    </section>
+    <p class="request-compose-link" th:if="${packageId == null and selectedTab != 'trial'}"><a href="/student/packages">Chọn gói học</a> để gửi yêu cầu hoàn tiền hoặc gia hạn.</p>
+
+    <nav class="request-tabs" aria-label="Loại yêu cầu">
+      <a th:each="tab : ${tabs}" th:href="@{/student/requests(tab=${tab.value},page=0,packageId=${packageId})}"
+         th:classappend="${selectedTab == tab.value ? ' is-active' : ''}"
+         th:attr="aria-current=${selectedTab == tab.value ? 'page' : null}" th:text="${tab.label}">Yêu cầu</a>
+    </nav>
+    <section class="request-list-section" aria-label="Danh sách yêu cầu">
+      <div class="request-state request-state--error" role="alert" th:if="${listUnavailable}">
+        <h2>Chưa tải được danh sách yêu cầu</h2><p>Hãy kiểm tra kết nối rồi thử lại.</p>
+        <a th:href="@{/student/requests(tab=${selectedTab},page=${currentPage},packageId=${packageId})}">Thử tải lại</a>
+      </div>
+      <div class="request-state" th:if="${!listUnavailable and #lists.isEmpty(requestRows)}">
+        <h2 th:text="${selectedTab == 'trial' ? 'Chưa có yêu cầu học thử' : selectedTab == 'refund' ? 'Chưa có yêu cầu hoàn tiền' : 'Chưa có yêu cầu gia hạn'}">Chưa có yêu cầu</h2>
+        <p th:text="${selectedTab == 'trial' ? 'Các yêu cầu học thử đã gửi sẽ hiển thị ở đây.' : 'Các yêu cầu bạn đã gửi sẽ hiển thị ở đây.'}">Các yêu cầu đã gửi sẽ hiển thị ở đây.</p>
+        <a th:if="${selectedTab == 'trial'}" href="/teachers">Tìm gia sư</a>
+        <a th:if="${selectedTab != 'trial' and packageId == null}" href="/student/packages">Xem gói học</a>
+      </div>
+      <ol class="request-list" th:if="${!listUnavailable and !#lists.isEmpty(requestRows)}">
+        <li class="request-row" th:each="row : ${requestRows}">
+          <div class="request-row__main"><div class="request-row__heading"><h2 th:text="${row.title}">Yêu cầu</h2><span class="request-row__status" th:text="${row.status}">Chờ xử lý</span></div>
+            <p class="request-row__detail" th:text="${row.detail}">Nội dung yêu cầu</p><p class="request-row__meta"><span th:text="${row.shortId}">#12345678</span><span th:text="${row.dateLabel}">20:00, 01/01/2026</span></p></div>
+        </li>
+      </ol>
+      <nav class="request-pagination" aria-label="Phân trang" th:if="${!listUnavailable and totalPages > 1}">
+        <a th:if="${hasPrevious}" th:href="@{/student/requests(tab=${selectedTab},page=${currentPage - 1},packageId=${packageId})}">Trang trước</a>
+        <span th:text="|Trang ${currentPage + 1} / ${totalPages}|">Trang 1 / 2</span>
+        <a th:if="${hasNext}" th:href="@{/student/requests(tab=${selectedTab},page=${currentPage + 1},packageId=${packageId})}">Trang sau</a>
+      </nav>
+    </section>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

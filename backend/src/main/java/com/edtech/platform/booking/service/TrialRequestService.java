@@ -6,6 +6,7 @@ import com.edtech.platform.booking.dto.request.AcceptTrialRequest;
 import com.edtech.platform.booking.dto.request.CreateTrialRequest;
 import com.edtech.platform.booking.dto.response.BookingDetail;
 import com.edtech.platform.booking.dto.response.TrialRequestView;
+import com.edtech.platform.booking.web.TeacherTrialRequestRow;
 import com.edtech.platform.booking.facade.BookingEvent;
 import com.edtech.platform.booking.facade.CommunicationFacade;
 import com.edtech.platform.booking.repository.BookingRepository;
@@ -14,6 +15,7 @@ import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.teacher.facade.TeacherFacade;
 import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
+import com.edtech.platform.subject.facade.SubjectFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -36,6 +40,7 @@ public class TrialRequestService {
     private final TeacherFacade teacherFacade;
     private final IdentityFacade identityFacade;
     private final CommunicationFacade communicationFacade;
+    private final SubjectFacade subjectFacade;
 
     @Transactional
     public TrialRequestView create(UUID studentUserId, CreateTrialRequest request) {
@@ -94,6 +99,44 @@ public class TrialRequestService {
             return Page.empty();
         }
         return trialRequestRepository.findByTeacherId(teacherId, pageable).map(TrialRequestView::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TeacherTrialRequestRow> findTeacherWorkspace(UUID teacherUserId, Pageable pageable) {
+        TeacherSnapshot teacher = teacherFacade.getTeacherByUserId(teacherUserId);
+        UUID teacherId = teacher != null ? teacher.id() : null;
+        if (teacherId == null) return Page.empty(pageable);
+        Page<TrialRequest> page = trialRequestRepository.findByTeacherId(teacherId, pageable);
+        return teacherWorkspaceRows(page, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TeacherTrialRequestRow> findPendingTeacherWorkspace(UUID teacherUserId, Pageable pageable) {
+        TeacherSnapshot teacher = teacherFacade.getTeacherByUserId(teacherUserId);
+        UUID teacherId = teacher != null ? teacher.id() : null;
+        if (teacherId == null) return Page.empty(pageable);
+        Page<TrialRequest> page = trialRequestRepository.findByTeacherIdAndStatus(teacherId,
+                TrialRequestStatus.PENDING, pageable);
+        return teacherWorkspaceRows(page, pageable);
+    }
+
+    private Page<TeacherTrialRequestRow> teacherWorkspaceRows(Page<TrialRequest> page, Pageable pageable) {
+        if (page.isEmpty()) return Page.empty(pageable);
+
+        List<TrialRequest> requests = page.getContent();
+        Map<UUID, com.edtech.platform.auth.facade.dto.IdentitySnapshot> studentById = identityFacade.getIdentities(
+                requests.stream().map(TrialRequest::getStudentId).distinct().toList());
+        Map<UUID, com.edtech.platform.subject.facade.dto.SubjectSnapshot> subjectById = subjectFacade.getSubjects(
+                requests.stream().map(TrialRequest::getSubjectId).distinct().toList());
+        return page.map(request -> {
+            var student = studentById.get(request.getStudentId());
+            var subject = subjectById.get(request.getSubjectId());
+            String studentName = student == null || student.fullName() == null || student.fullName().isBlank()
+                    ? "Học viên" : student.fullName();
+            String subjectName = subject == null || subject.name() == null || subject.name().isBlank()
+                    ? "Môn học" : subject.name();
+            return new TeacherTrialRequestRow(TrialRequestView.from(request), studentName, subjectName);
+        });
     }
 
     @Transactional(readOnly = true)

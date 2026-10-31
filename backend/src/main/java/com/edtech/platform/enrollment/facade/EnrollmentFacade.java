@@ -32,6 +32,7 @@ public interface EnrollmentFacade {
             String packageName,
             int totalSessions,
             int durationDays,
+            int sessionDurationMinutesSnapshot,
             long purchasePriceVnd,
             java.math.BigDecimal commissionRate,
             java.time.Instant paidAt

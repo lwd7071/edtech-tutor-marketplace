@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title th:text="${teacher.fullName + ' — Hồ sơ gia sư | Tutor Match'}">Hồ sơ gia sư | Tutor Match</title>
+  <meta name="description" th:content="|Xem hồ sơ, gói học và lịch rảnh của gia sư ${teacher.fullName}.|">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/teachers-profile.css">
+  <link rel="stylesheet" href="/css/teachers-trial-request.css">
+</head>
+<body>
+<div th:replace="~{fragments/public-header :: header}"></div>
+
+<main id="main-content" class="teacher-profile-page">
+  <a class="profile-back-link" href="/teachers">
+    <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M16 10H4m0 0 5-5m-5 5 5 5"/></svg>
+    Danh sách gia sư
+  </a>
+
+  <div class="profile-message-notice" role="alert" th:if="${chatOpenError != null}" th:text="${chatOpenError}">Chưa mở được cuộc trò chuyện.</div>
+
+  <section class="profile-hero" aria-labelledby="teacher-name">
+    <div class="profile-portrait">
+      <img th:if="${teacher.avatarUrl != null and !#strings.isEmpty(teacher.avatarUrl)}"
+           th:src="${teacher.avatarUrl}" th:alt="|Ảnh đại diện của ${teacher.fullName}|">
+      <svg th:unless="${teacher.avatarUrl != null and !#strings.isEmpty(teacher.avatarUrl)}"
+           viewBox="0 0 120 120" role="img" th:aria-label="|Minh họa đại diện cho ${teacher.fullName}|" focusable="false">
+        <circle cx="60" cy="60" r="60" fill="#f1dc92" />
+        <path d="M22 116c4-26 18-39 38-39s34 13 38 39" fill="#171714" />
+        <path d="M38 48c0-18 9-29 22-29 15 0 23 11 23 29 0 15-10 27-23 27S38 63 38 48z" fill="#bd7753" />
+        <path d="M37 47c1-18 11-30 24-30 11 0 20 8 23 22-9 0-19-4-26-11-5 9-12 15-21 19z" fill="#32271f" />
+      </svg>
+    </div>
+    <div class="profile-identity">
+      <p class="profile-location" th:if="${teacher.wardName != null or teacher.provinceName != null}">
+        <span th:if="${teacher.wardName != null}" th:text="${teacher.wardName}">Phường</span>
+        <span th:if="${teacher.wardName != null and teacher.provinceName != null}" aria-hidden="true"> · </span>
+        <span th:if="${teacher.provinceName != null}" th:text="${teacher.provinceName}">Tỉnh</span>
+      </p>
+      <h1 id="teacher-name" th:text="${teacher.fullName}">Tên gia sư</h1>
+      <p class="profile-experience" th:text="${teacher.yearsOfExperience > 0 ? teacher.yearsOfExperience + ' năm kinh nghiệm' : 'Gia sư'}">Kinh nghiệm</p>
+      <div class="profile-rating" th:if="${teacher.reviewCount > 0}">
+        <svg class="rating-star" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m8 1.5 1.9 4 4.4.6-3.2 3.1.8 4.4L8 11.5l-3.9 2.1.8-4.4-3.2-3.1 4.4-.6z"/></svg>
+        <strong th:text="${#numbers.formatDecimal(teacher.averageRating, 1, 1)}">5,0</strong>
+        <span th:text="|${teacher.reviewCount} đánh giá|">Đánh giá</span>
+      </div>
+      <p class="profile-no-rating" th:if="${teacher.reviewCount == 0}">Chưa có đánh giá</p>
+      <ul class="profile-badges" aria-label="Thông tin đã xác minh" th:if="${!teacher.credentials.isEmpty()}">
+        <li th:each="credential : ${teacher.credentials}">
+          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m3 8 3 3 7-7"/></svg>
+          <span th:text="${credential.label}">Minh chứng</span>
+        </li>
+      </ul>
+    </div>
+    <div class="profile-modes" aria-label="Hình thức giảng dạy">
+      <span th:if="${teacher.supportsOnline}">Trực tuyến</span>
+      <span th:if="${teacher.supportsOffline}">Trực tiếp</span>
+    </div>
+  </section>
+
+  <div class="profile-message-action" th:if="${studentCanMessage}">
+    <form method="post" action="/student/messages/open">
+      <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <input type="hidden" name="teacherId" th:value="${messageTeacherId}">
+      <button class="button button--secondary" type="submit">Nhắn tin với gia sư</button>
+    </form>
+    <p>Chỉ mở được cuộc trò chuyện khi bạn đã có quan hệ học tập hợp lệ với gia sư.</p>
+  </div>
+  <p class="profile-message-action profile-message-action--guest" th:if="${guestCanMessage}"><a href="/auth/login">Đăng nhập để nhắn tin</a></p>
+
+  <div class="profile-content">
+    <div class="profile-main-column">
+      <section class="profile-section" aria-labelledby="about-title">
+        <h2 id="about-title">Giới thiệu</h2>
+        <p class="profile-bio" th:if="${teacher.bio != null and !#strings.isEmpty(teacher.bio)}" th:text="${teacher.bio}">Giới thiệu về gia sư</p>
+        <p class="profile-muted" th:if="${teacher.bio == null or #strings.isEmpty(teacher.bio)}">Gia sư chưa cập nhật phần giới thiệu.</p>
+        <div class="profile-languages" th:if="${!teacher.languages.isEmpty()}">
+          <h3>Ngôn ngữ</h3>
+          <ul><li th:each="language : ${teacher.languages}" th:text="${language}">Tiếng Việt</li></ul>
+        </div>
+        <div class="profile-subjects" th:if="${!teacher.subjects.isEmpty()}">
+          <h3>Môn giảng dạy</h3>
+          <ul><li th:each="subject : ${teacher.subjects}" th:text="${subject}">Môn học</li></ul>
+        </div>
+        <a class="profile-video-link" th:if="${teacher.introductionVideoUrl != null and #strings.startsWith(teacher.introductionVideoUrl, 'https://')}"
+           th:href="${teacher.introductionVideoUrl}" target="_blank" rel="noopener noreferrer">Xem video giới thiệu</a>
+      </section>
+
+      <section id="packages" class="profile-section" aria-labelledby="packages-title">
+        <div class="profile-section__heading">
+          <div><h2 id="packages-title">Gói học đang mở</h2><p>Điều khoản và học phí của từng gói.</p></div>
+        </div>
+        <div class="profile-message-notice" role="alert" th:if="${purchaseError != null}" th:text="${purchaseError}">Chưa tạo được hóa đơn.</div>
+        <p class="profile-muted" role="status" th:if="${selectedPackageId != null}">Bạn đang tiếp tục với gói học đã chọn. Kiểm tra thông tin rồi chọn gói để tạo hóa đơn.</p>
+        <div class="profile-load-error" role="alert" th:if="${packagesUnavailable}">
+          <p>Chưa tải được danh sách gói học.</p><a class="text-link" href="#packages">Thử tải lại trang</a>
+        </div>
+        <p class="profile-empty" th:if="${!packagesUnavailable and #lists.isEmpty(packages)}">Gia sư chưa mở gói học nào.</p>
+        <div class="package-list" th:if="${!packagesUnavailable and !#lists.isEmpty(packages)}">
+          <article class="profile-package" th:each="package : ${packages}" th:id="|package-${package.id}|">
+            <div class="profile-package__content">
+              <div class="profile-package__main">
+                <p class="profile-package__subject" th:text="${package.subjectName}">Môn học</p>
+                <h3 th:text="${package.name}">Tên gói</h3>
+                <p class="profile-package__description" th:if="${package.description != null and !#strings.isEmpty(package.description)}" th:text="${package.description}">Mô tả</p>
+              </div>
+              <dl class="profile-package__terms">
+                <div>
+                  <dt>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Số buổi</span>
+                  </dt>
+                  <dd th:text="${package.totalSessions}">0</dd>
+                </div>
+                <div>
+                  <dt>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Thời lượng</span>
+                  </dt>
+                  <dd th:text="|${package.sessionDurationMinutes} phút/buổi|">0 phút/buổi</dd>
+                </div>
+                <div>
+                  <dt>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 8 14"/></svg>
+                    <span>Thời hạn</span>
+                  </dt>
+                  <dd th:text="|${package.durationDays} ngày|">0 ngày</dd>
+                </div>
+              </dl>
+            </div>
+            <div class="profile-package__action">
+              <p>Giá trọn gói</p>
+              <strong th:text="|${#numbers.formatInteger(package.priceVnd, 1, 'POINT')}đ|">0đ</strong>
+              <form method="post" action="/student/invoices" th:if="${studentCanPurchase}">
+                <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" name="pricingPackageId" th:value="${package.id}">
+                <input type="hidden" name="idempotencyKey" th:value="${purchaseKeys.get(package.id)}">
+                <input type="hidden" name="returnTo" th:value="${purchaseReturnTo}">
+                <button class="button button--primary" type="submit" th:text="${package.id == selectedPackageId ? 'Tiếp tục thanh toán' : 'Chọn gói học'}">Chọn gói học</button>
+              </form>
+              <a class="button button--primary" th:if="${guestCanMessage}"
+                 th:href="@{/auth/login(continueTo=${'/teachers/' + teacher.id + '?packageId=' + package.id})}">Đăng nhập để chọn gói</a>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <aside class="profile-side-column">
+      <section id="trial" class="profile-section profile-trial-section" aria-labelledby="trial-title">
+        <h2 id="trial-title">Yêu cầu học thử</h2>
+        <p class="profile-trial-intro">Gửi môn và thời gian bạn mong muốn. Gia sư cần phản hồi trước khi buổi học được xác nhận.</p>
+        <p class="profile-trial-notice profile-trial-notice--success" role="status" th:if="${trialRequestSuccess}" th:text="${trialRequestSuccess}">Đã gửi yêu cầu học thử.</p>
+        <p class="profile-trial-notice profile-trial-notice--error" role="alert" tabindex="-1" autofocus th:if="${trialRequestError}" th:text="${trialRequestError}">Chưa gửi được yêu cầu.</p>
+        <div class="profile-trial-state" role="alert" th:if="${trialSubjectsUnavailable}">
+          <p>Chưa tải được danh sách môn gia sư đang dạy.</p><a class="text-link" href="#trial-title">Tải lại hồ sơ</a>
+        </div>
+        <form class="profile-trial-form" method="post" action="/student/trials/requests" th:if="${studentCanRequestTrial and !trialSubjectsUnavailable and !#lists.isEmpty(trialSubjects)}">
+          <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <input type="hidden" name="teacherId" th:value="${teacher.id}">
+          <div class="profile-trial-field">
+            <label for="trial-subject">Môn muốn học</label>
+            <select id="trial-subject" name="subjectId" required>
+              <option value="">Chọn môn học</option>
+              <option th:each="subject : ${trialSubjects}" th:value="${subject.id}" th:text="${subject.name}" th:selected="${trialFormSubjectId == subject.id.toString()}">Môn học</option>
+            </select>
+          </div>
+          <div class="profile-trial-field">
+            <label for="trial-preferred-time">Thời gian mong muốn (giờ Việt Nam)</label>
+            <input id="trial-preferred-time" type="datetime-local" name="preferredStartTime" required th:min="${trialMinimumLocalTime}" th:value="${trialFormPreferredStartTime}">
+          </div>
+          <div class="profile-trial-field">
+            <label for="trial-note">Mục tiêu hoặc lời nhắn <span>(không bắt buộc)</span></label>
+            <textarea id="trial-note" name="note" rows="3" maxlength="1000" th:text="${trialFormNote}"></textarea>
+          </div>
+          <button class="button button--primary button--wide profile-trial-submit" type="submit">Gửi yêu cầu học thử</button>
+          <p class="profile-trial-hint">Thời gian gửi là mong muốn ban đầu, chưa phải lịch học đã xác nhận.</p>
+        </form>
+        <p class="profile-trial-state" th:if="${studentCanRequestTrial and !trialSubjectsUnavailable and #lists.isEmpty(trialSubjects)}">Gia sư chưa có môn đang dạy để nhận yêu cầu học thử.</p>
+        <p class="profile-trial-state" th:if="${guestCanRequestTrial}"><a class="text-link" th:href="@{/auth/login(continueTo=${'/teachers/' + teacher.id})}">Đăng nhập để yêu cầu học thử</a></p>
+        <p class="profile-trial-state" th:if="${!guestCanRequestTrial and !studentCanRequestTrial}">Yêu cầu học thử chỉ dành cho tài khoản học viên.</p>
+      </section>
+      <section class="profile-section" aria-labelledby="availability-title">
+        <h2 id="availability-title">Lịch rảnh</h2>
+        <div class="profile-load-error" role="alert" th:if="${availabilityUnavailable}">
+          <p>Chưa tải được lịch rảnh.</p><a class="text-link" href="#availability-title">Thử tải lại trang</a>
+        </div>
+        <p class="profile-empty" th:if="${!availabilityUnavailable and #lists.isEmpty(availability)}">Gia sư chưa công khai khung giờ rảnh.</p>
+        <ul class="availability-list" th:if="${!availabilityUnavailable and !#lists.isEmpty(availability)}">
+          <li th:each="slot : ${availability}">
+            <strong th:text="${slot.dayLabel}">Thứ hai</strong>
+            <span th:text="|${slot.startTime} – ${slot.endTime}|">09:00 – 10:00</span>
+          </li>
+        </ul>
+      </section>
+
+      <section id="reviews" class="profile-section" aria-labelledby="reviews-title">
+        <h2 id="reviews-title">Đánh giá của học viên</h2>
+        <div class="profile-load-error" role="alert" th:if="${reviewsUnavailable}">
+          <p>Chưa tải được đánh giá.</p><a class="text-link" href="#reviews">Thử tải lại trang</a>
+        </div>
+        <p class="profile-empty" th:if="${!reviewsUnavailable and #lists.isEmpty(reviews)}">Chưa có đánh giá được công khai.</p>
+        <ul class="review-list" th:if="${!reviewsUnavailable and !#lists.isEmpty(reviews)}">
+          <li class="profile-review" th:each="review : ${reviews}">
+            <div class="profile-review__heading">
+              <strong th:text="${review.studentName != null ? review.studentName : 'Học viên'}">Học viên</strong>
+              <span class="profile-review__rating" th:aria-label="|${review.rating} trên 5 sao|">
+                <svg class="rating-star" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m8 1.5 1.9 4 4.4.6-3.2 3.1.8 4.4L8 11.5l-3.9 2.1.8-4.4-3.2-3.1 4.4-.6z"/></svg>
+                <span th:text="${review.rating}">5</span>
+              </span>
+            </div>
+            <p th:if="${review.comment != null and !#strings.isEmpty(review.comment)}" th:text="${review.comment}">Nhận xét</p>
+            <p class="profile-muted" th:if="${review.comment == null or #strings.isEmpty(review.comment)}">Học viên chưa viết nhận xét.</p>
+          </li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+  <aside class="mobile-booking-dock" aria-label="Thao tác nhanh cho học viên">
+    <div class="mobile-booking-dock__info">
+      <span class="mobile-booking-dock__label">Học phí</span>
+      <strong class="mobile-booking-dock__price" th:text="${!#lists.isEmpty(packages) ? #numbers.formatInteger(packages[0].priceVnd, 1, 'POINT') + 'đ' : 'Liên hệ'}">Liên hệ</strong>
+    </div>
+    <div class="mobile-booking-dock__actions">
+      <a class="button button--primary" href="#packages">Chọn gói học</a>
+    </div>
+  </aside>
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <a class="brand brand--footer" href="/" aria-label="Tutor Match — Trang chủ">
+      <span class="brand__mark" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M4 8.5c4.7-1.2 8.6-.3 12 2.4 3.4-2.7 7.3-3.6 12-2.4v15c-4.7-1.2-8.6-.3-12 2.4-3.4-2.7-7.3-3.6-12-2.4z"/><path d="M16 11v14"/></svg></span>
+      <span class="brand__name">tutor<span>match</span></span>
+    </a>
+    <p>Tìm người đồng hành cho mục tiêu học tập của bạn.</p>
+    <a class="text-link" href="/support">Trung tâm hỗ trợ</a>
+  </div>
+</footer>
+</body>
+</html>

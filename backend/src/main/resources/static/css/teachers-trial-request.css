@@ -1,0 +1,16 @@
+.profile-trial-section h2{margin:0;color:var(--ink);font:650 1.25rem/1.35 var(--font-heading,"Be Vietnam Pro",sans-serif)}
+.profile-trial-intro{margin:.45rem 0 1rem;color:var(--muted-strong);line-height:1.55}
+.profile-trial-form{display:grid;gap:1rem}
+.profile-trial-field{display:grid;gap:.4rem;min-width:0}
+.profile-trial-field label{color:var(--ink);font-size:.9rem;font-weight:650;line-height:1.4}
+.profile-trial-field label span{color:var(--muted);font-weight:400}
+.profile-trial-field :is(select,input,textarea){width:100%;min-width:0;min-height:44px;padding:.65rem .75rem;border:1px solid var(--border);border-radius:var(--radius-control);background:var(--surface);color:var(--ink);font:inherit}
+.profile-trial-field textarea{min-height:96px;resize:vertical;line-height:1.5}
+.profile-trial-field :is(select,input,textarea):focus-visible,.profile-trial-submit:focus-visible,.profile-trial-section a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.profile-trial-submit{min-height:46px;padding:.65rem 1rem;border:1px solid var(--ink);border-radius:var(--radius-control);background:var(--brand-yellow);color:var(--ink);font:inherit;font-weight:700;text-align:center;cursor:pointer}
+.profile-trial-submit:hover{background:#f3c91e}
+.profile-trial-hint,.profile-trial-state{margin:0;color:var(--muted-strong);font-size:.9rem;line-height:1.55}
+.profile-trial-notice{margin:.8rem 0;padding:.75rem .85rem;border:1px solid var(--border);border-radius:var(--radius-card);line-height:1.5;overflow-wrap:anywhere}
+.profile-trial-notice--success{background:#edf7ef;color:var(--success)}
+.profile-trial-notice--error{background:#fff4f1;color:#7a271a}
+.profile-trial-state a{color:var(--ink);font-weight:650;text-underline-offset:3px}

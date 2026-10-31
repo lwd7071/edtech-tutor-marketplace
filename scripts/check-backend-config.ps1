@@ -59,6 +59,17 @@ if ($emailProvider -eq 'brevo') {
   }
 }
 
+$paymentProvider = if ([string]::IsNullOrWhiteSpace($configured['APP_PAYMENT_PROVIDER'])) { 'disabled' } else { $configured['APP_PAYMENT_PROVIDER'] }
+if ($paymentProvider -eq 'payos' -or $paymentProvider -eq 'enabled') {
+  $payosRequired = @('PAYOS_CLIENT_ID', 'PAYOS_API_KEY', 'PAYOS_CHECKSUM_KEY')
+  $missing += @($payosRequired | Where-Object {
+    -not $configured.ContainsKey($_) -or
+    [string]::IsNullOrWhiteSpace($configured[$_]) -or
+    $configured[$_] -match '^replace-with-' -or
+    $configured[$_] -match '^\$\{[A-Za-z_][A-Za-z0-9_]*\}$'
+  })
+}
+
 $missing = @($missing | Select-Object -Unique)
 if ($missing.Count -gt 0) {
   throw "Cloud configuration is incomplete. Missing or blank keys: $($missing -join ', ')"

@@ -39,30 +39,33 @@ export function SubjectPickerClient({
 }: Props) {
   const router = useRouter();
   const [searchText, setSearchText] = useState(keyword);
-  const [selected, setSelected] = useState(selectedSubject);
+  const [selected, setSelected] = useState<SubjectSummary[]>(selectedSubject ? [selectedSubject] : []);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     setSearchText(keyword);
-    setSelected(selectedSubject);
+    setSelected(selectedSubject ? [selectedSubject] : []);
     const readyTimer = window.setTimeout(() => setIsNavigating(false), 240);
     return () => window.clearTimeout(readyTimer);
   }, [keyword, selectedSubject, educationLevel, currentPage]);
 
-  const navigate = (nextKeyword: string, nextLevel: string, page = 1, subjectId?: string) => {
+  const navigate = (nextKeyword: string, nextLevel: string, page = 1, subjectIds: string[] = []) => {
     const query = new URLSearchParams();
     if (nextKeyword.trim()) query.set('keyword', nextKeyword.trim());
     if (nextLevel) query.set('educationLevel', nextLevel);
     if (page > 1) query.set('page', String(page));
-    if (subjectId) query.set('subjectId', subjectId);
+    subjectIds.forEach(subjectId => query.append('subjectId', subjectId));
     setIsNavigating(true);
     router.push(`/subjects${query.size ? `?${query}` : ''}`);
   };
 
-  const selectSubject = (subject: SubjectSummary) => {
-    setSelected(subject);
-    navigate(keyword, educationLevel, currentPage, subject.id);
+  const toggleSubject = (subject: SubjectSummary) => {
+    const next = selected.some(item => item.id === subject.id)
+      ? selected.filter(item => item.id !== subject.id)
+      : [...selected, subject];
+    setSelected(next);
+    navigate(keyword, educationLevel, currentPage, next.map(item => item.id));
   };
 
   const labels = Object.fromEntries(levels.map(level => [level.value, level.label]));
@@ -108,7 +111,7 @@ export function SubjectPickerClient({
               allowClear
               enterButton="Tìm môn"
               onSearch={value => {
-                setSelected(undefined);
+                setSelected([]);
                 navigate(value, educationLevel);
               }}
             />
@@ -118,7 +121,7 @@ export function SubjectPickerClient({
                 aria-label="Lọc theo cấp học"
                 value={educationLevel}
                 onChange={event => {
-                  setSelected(undefined);
+                  setSelected([]);
                   navigate(keyword, event.target.value);
                 }}
               >
@@ -154,21 +157,20 @@ export function SubjectPickerClient({
           </div>
         ) : subjects.length ? (
           <fieldset className="tm-subject-picker-list" aria-label="Danh sách môn học">
-            <legend>Chọn một môn học</legend>
+            <legend>Chọn một hoặc nhiều môn học</legend>
             {subjects.map(subject => (
-              <label className={`tm-subject-option${selected?.id === subject.id ? ' is-selected' : ''}`} key={subject.id}>
+              <label className={`tm-subject-option${selected.some(item => item.id === subject.id) ? ' is-selected' : ''}`} key={subject.id}>
                 <input
-                  type="radio"
-                  name="subjectId"
+                  type="checkbox"
                   value={subject.id}
-                  checked={selected?.id === subject.id}
-                  onChange={() => selectSubject(subject)}
+                  checked={selected.some(item => item.id === subject.id)}
+                  onChange={() => toggleSubject(subject)}
                 />
                 <span className="tm-subject-option-copy">
                   <strong>{subject.name}</strong>
                   <small>{subject.educationLevel ? labels[subject.educationLevel] || subject.educationLevel : 'Môn học'}</small>
                 </span>
-                {selected?.id === subject.id && <span className="tm-subject-option-status">Đã chọn</span>}
+                {selected.some(item => item.id === subject.id) && <span className="tm-subject-option-status">Đã chọn</span>}
               </label>
             ))}
           </fieldset>
@@ -176,36 +178,39 @@ export function SubjectPickerClient({
           <section className="tm-empty-panel" aria-labelledby="subject-empty-title">
             <h2 id="subject-empty-title">Chưa tìm thấy môn học phù hợp</h2>
             <p>Thử một từ khóa khác hoặc xem tất cả cấp học.</p>
-            <Button onClick={() => { setSearchText(''); setSelected(undefined); navigate('', ''); }}>Xem tất cả môn học</Button>
+            <Button onClick={() => { setSearchText(''); setSelected([]); navigate('', ''); }}>Xem tất cả môn học</Button>
           </section>
         )}
       </section>
 
       <section className="tm-subject-picker-footer" aria-label="Tiếp tục tìm gia sư">
         <div className="tm-subject-selection-summary" aria-live="polite">
-          {selected ? (
+          {selected.length ? (
             <>
-              <span>Môn đã chọn</span>
-              <strong>{selected.name}</strong>
-              {selected.educationLevel && <small>{labels[selected.educationLevel] || selected.educationLevel}</small>}
+              <span>Môn đã chọn ({selected.length})</span>
+              <strong>{selected.map(item => item.name).join(', ')}</strong>
             </>
           ) : (
-            <><strong>Chưa chọn môn học</strong><span>Chọn một môn để xem gia sư phù hợp.</span></>
+            <><strong>Chưa chọn môn học</strong><span>Chọn môn để lọc gia sư phù hợp, hoặc xem tất cả gia sư.</span></>
           )}
         </div>
         <div className="tm-subject-picker-actions">
           <Link href="/teachers">Xem tất cả gia sư</Link>
-          <Button type="primary" size="large" disabled={!selected} onClick={() => selected && router.push(`/teachers?subjectId=${encodeURIComponent(selected.id)}`)}>
-            Tìm gia sư{selected ? ` môn ${selected.name}` : ''}
+          <Button type="primary" size="large" onClick={() => {
+            const query = new URLSearchParams();
+            selected.forEach(item => query.append('subjectId', item.id));
+            router.push(`/teachers${query.size ? `?${query}` : ''}`);
+          }}>
+            Tìm gia sư
           </Button>
         </div>
       </section>
 
       {totalPages > 1 && (
         <nav className="tm-pagination tm-subject-pagination" aria-label="Phân trang môn học">
-          {currentPage > 1 && <button className="tm-pagination-link" onClick={() => navigate(keyword, educationLevel, currentPage - 1, selected?.id)}>Trang trước</button>}
+          {currentPage > 1 && <button className="tm-pagination-link" onClick={() => navigate(keyword, educationLevel, currentPage - 1, selected.map(item => item.id))}>Trang trước</button>}
           <span>Trang {currentPage} / {totalPages}</span>
-          {currentPage < totalPages && <button className="tm-pagination-link" onClick={() => navigate(keyword, educationLevel, currentPage + 1, selected?.id)}>Trang sau</button>}
+          {currentPage < totalPages && <button className="tm-pagination-link" onClick={() => navigate(keyword, educationLevel, currentPage + 1, selected.map(item => item.id))}>Trang sau</button>}
         </nav>
       )}
     </div>

@@ -1,0 +1,54 @@
+<header class="admin-workspace-header" th:fragment="header">
+  <div class="admin-brand-wrapper">
+    <a class="admin-workspace-brand" href="/" aria-label="Tutor Match — Trang chủ">Tutor Match</a>
+    <span class="admin-role-badge">Quản trị viên</span>
+  </div>
+  <div class="admin-header-actions">
+    <a class="admin-header-action-item" href="/admin/notifications" title="Thông báo" aria-label="Thông báo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <span>Thông báo</span>
+    </a>
+    <form class="admin-header-logout" method="post" action="/auth/logout">
+      <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <button type="submit">Đăng xuất</button>
+    </form>
+  </div>
+  <script defer src="/js/assistant-widget.js" th:attr="data-csrf=${_csrf != null ? _csrf.token : ''},data-role='ADMIN'"></script>
+</header>
+<nav class="admin-workspace-nav" th:fragment="nav" aria-label="Điều hướng quản trị">
+  <!-- 5 Nhóm điều hướng chính ở thanh top -->
+  <div class="admin-workspace-nav__main">
+    <a href="/admin/dashboard" th:attr="aria-current=${activeWorkspaceNav == 'dashboard' or activeWorkspaceNav == null or activeWorkspaceNav == 'overview' ? 'page' : null}">Tổng quan</a>
+    <a href="/admin/teachers" th:attr="aria-current=${activeWorkspaceNav == 'teachers' or activeWorkspaceNav == 'credentials' or activeWorkspaceNav == 'subjects' ? 'page' : null}">Xét duyệt</a>
+    <a href="/admin/payouts" th:attr="aria-current=${activeWorkspaceNav == 'payouts' or activeWorkspaceNav == 'refunds' or activeWorkspaceNav == 'extensions' or activeWorkspaceNav == 'settlements' ? 'page' : null}">Tài chính</a>
+    <a href="/admin/users" th:attr="aria-current=${activeWorkspaceNav == 'users' ? 'page' : null}">Người dùng</a>
+    <a href="/admin/settings" th:attr="aria-current=${activeWorkspaceNav == 'settings' or activeWorkspaceNav == 'audit-logs' ? 'page' : null}">Hệ thống</a>
+  </div>
+
+  <!-- Thanh Sub-pills ngữ cảnh cho từng phân hệ (Không hiển thị ở trang Tổng quan hoặc Người dùng) -->
+  <div class="admin-workspace-nav__sub" th:if="${activeWorkspaceNav != 'dashboard' and activeWorkspaceNav != null and activeWorkspaceNav != 'overview' and activeWorkspaceNav != 'users'}">
+    <!-- Phân hệ Xét duyệt -->
+    <div class="admin-sub-pills" th:if="${activeWorkspaceNav == 'teachers' or activeWorkspaceNav == 'credentials' or activeWorkspaceNav == 'subjects'}">
+      <a href="/admin/teachers" th:classappend="${activeWorkspaceNav == 'teachers' ? 'is-active' : ''}">Duyệt gia sư</a>
+      <a href="/admin/credentials" th:classappend="${activeWorkspaceNav == 'credentials' ? 'is-active' : ''}">Duyệt minh chứng</a>
+      <a href="/admin/subjects" th:classappend="${activeWorkspaceNav == 'subjects' ? 'is-active' : ''}">Duyệt môn học</a>
+    </div>
+
+    <!-- Phân hệ Tài chính -->
+    <div class="admin-sub-pills" th:if="${activeWorkspaceNav == 'payouts' or activeWorkspaceNav == 'refunds' or activeWorkspaceNav == 'extensions' or activeWorkspaceNav == 'settlements'}">
+      <a href="/admin/payouts" th:classappend="${activeWorkspaceNav == 'payouts' ? 'is-active' : ''}">Chi trả</a>
+      <a href="/admin/refunds" th:classappend="${activeWorkspaceNav == 'refunds' ? 'is-active' : ''}">Hoàn tiền</a>
+      <a href="/admin/extensions" th:classappend="${activeWorkspaceNav == 'extensions' ? 'is-active' : ''}">Gia hạn</a>
+      <a href="/admin/booking-settlements" th:classappend="${activeWorkspaceNav == 'settlements' ? 'is-active' : ''}">Quyết toán buổi học</a>
+    </div>
+
+    <!-- Phân hệ Hệ thống -->
+    <div class="admin-sub-pills" th:if="${activeWorkspaceNav == 'settings' or activeWorkspaceNav == 'audit-logs'}">
+      <a href="/admin/settings" th:classappend="${activeWorkspaceNav == 'settings' ? 'is-active' : ''}">Cài đặt</a>
+      <a href="/admin/audit-logs" th:classappend="${activeWorkspaceNav == 'audit-logs' ? 'is-active' : ''}">Nhật ký</a>
+    </div>
+  </div>
+</nav>

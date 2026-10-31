@@ -16,6 +16,7 @@ import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 import com.edtech.platform.teacher.facade.TeacherFacade;
 import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
+import com.edtech.platform.subject.facade.SubjectFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +41,7 @@ class TrialRequestServiceTest {
     @Mock private TeacherFacade teacherFacade;
     @Mock private IdentityFacade identityFacade;
     @Mock private CommunicationFacade communicationFacade;
+    @Mock private SubjectFacade subjectFacade;
 
     private TrialRequestService trialRequestService;
 
@@ -55,7 +57,8 @@ class TrialRequestServiceTest {
                 bookingRepository,
                 teacherFacade,
                 identityFacade,
-                communicationFacade
+                communicationFacade,
+                subjectFacade
         );
     }
 

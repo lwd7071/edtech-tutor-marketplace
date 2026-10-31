@@ -81,6 +81,19 @@ public class TeacherFacadeImplTest {
         assertTrue(snapshot.isVerified());
         assertTrue(snapshot.isVisible());
     }
+    @Test
+    void getTeacher_ReturnsFullBioAndExcerpt() {
+        String longBio = "Thạc sĩ Toán học ĐH Sư Phạm Hà Nội, 10 năm kinh nghiệm luyện thi ĐH và bồi dưỡng học sinh giỏi. Phương pháp dạy tư duy mạch lạc, dễ nhớ.";
+        ReflectionTestUtils.setField(testProfile, "bio", longBio);
+        when(teacherProfileRepository.findById(testTeacherId)).thenReturn(Optional.of(testProfile));
+
+        TeacherSnapshot snapshot = teacherFacade.getTeacher(testTeacherId);
+
+        assertNotNull(snapshot);
+        assertEquals(longBio, snapshot.bio());
+        assertTrue(snapshot.bioExcerpt().endsWith("..."));
+        assertTrue(snapshot.bioExcerpt().length() <= 103);
+    }
 
     @Test
     void getTeacher_ThrowsNotFound() {

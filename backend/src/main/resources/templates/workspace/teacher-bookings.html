@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#fffdf7">
+  <title>Lịch dạy | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/public.css"><link rel="stylesheet" href="/css/student-dashboard.css"><link rel="stylesheet" href="/css/teacher-workspace.css"><link rel="stylesheet" href="/css/teacher-bookings.css">
+</head>
+<body>
+<div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-bookings-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+    <header class="teacher-bookings-heading"><div><h1>Lịch dạy</h1><p>Theo dõi thời gian, học viên và trạng thái từng buổi học.</p></div></header>
+
+    <section class="teacher-bookings-panel" aria-labelledby="teacher-bookings-title">
+      <header class="teacher-bookings-panel__heading"><div><h2 id="teacher-bookings-title">Các buổi học</h2><p>Chọn một buổi để xem thông tin và thao tác phù hợp.</p></div><span th:if="${!bookingsUnavailable}" th:text="${totalBookings + ' buổi'}">0 buổi</span></header>
+      <form class="teacher-bookings-filter" method="get" action="/teacher/bookings">
+        <div><label for="booking-status">Trạng thái</label><select id="booking-status" name="status"><option th:each="option : ${bookingStatuses}" th:value="${option.value}" th:text="${option.label}" th:selected="${option.value == bookingFilter}">Tất cả trạng thái</option></select></div>
+        <div><label for="booking-from">Từ ngày</label><input id="booking-from" name="from" type="date" th:value="${fromDate}"></div>
+        <div><label for="booking-to">Đến ngày</label><input id="booking-to" name="to" type="date" th:value="${toDate}"></div>
+        <button class="teacher-bookings-button teacher-bookings-button--secondary" type="submit">Lọc lịch</button>
+      </form>
+      <p class="teacher-bookings-filter-note" th:if="${filterInvalid}">Trạng thái tìm kiếm không hợp lệ. Đang hiển thị tất cả lịch.</p>
+      <p class="teacher-bookings-filter-note" role="alert" th:if="${dateFilterInvalid}">Khoảng ngày không hợp lệ. Nhập ngày theo định dạng trên lịch rồi thử lại.</p>
+
+      <div class="teacher-bookings-state teacher-bookings-state--error" role="alert" th:if="${bookingsUnavailable}"><h3>Chưa tải được lịch dạy</h3><p>Lịch chưa được cập nhật. Hãy thử tải lại trang.</p><a th:href="@{/teacher/bookings(status=${bookingFilter},from=${fromDate},to=${toDate},page=${currentPage})}">Thử tải lại</a></div>
+      <div class="teacher-bookings-empty" th:if="${!bookingsUnavailable and #lists.isEmpty(bookingRows) and hasFilters}"><h3>Không có buổi học khớp bộ lọc</h3><p>Thử đổi trạng thái hoặc khoảng ngày.</p><a href="/teacher/bookings">Xóa bộ lọc</a></div>
+      <div class="teacher-bookings-empty" th:if="${!bookingsUnavailable and #lists.isEmpty(bookingRows) and !hasFilters}"><h3>Chưa có buổi học</h3><p>Các buổi đã lên lịch sẽ xuất hiện tại đây.</p><a href="/teacher/availability">Xem lịch rảnh</a></div>
+
+      <ol class="teacher-booking-list" th:if="${!bookingsUnavailable and !#lists.isEmpty(bookingRows)}">
+        <li class="teacher-booking-row" th:each="booking : ${bookingRows}">
+          <a class="teacher-booking-row__main" th:href="@{/teacher/bookings/{id}(id=${booking.id})}">
+            <span class="teacher-booking-row__date"><strong th:text="${booking.startLabel}">Thứ Hai, 28/10/2026 · 19:00</strong><span th:text="${'Kết thúc ' + booking.endLabel}">Kết thúc 20:00</span></span>
+            <span class="teacher-booking-row__person"><strong th:text="${booking.studentName}">Học viên</strong><span th:text="${booking.subjectName}">Môn học</span></span>
+            <span class="teacher-booking-row__meta"><span class="teacher-booking-status" th:classappend="${' status-' + #strings.toLowerCase(booking.statusCode)}" th:text="${booking.statusLabel}">Đã lên lịch</span><span th:text="${booking.modeLabel}">Trực tuyến</span><span class="teacher-booking-trial" th:if="${booking.trial}">Học thử</span></span>
+          </a>
+          <p class="teacher-booking-warning" th:if="${booking.outsideAvailabilityWarning}">Buổi học nằm ngoài lịch rảnh đã khai báo.</p>
+        </li>
+      </ol>
+      <nav class="teacher-bookings-pagination" aria-label="Phân trang lịch dạy" th:if="${!bookingsUnavailable and totalPages > 1}">
+        <a th:if="${hasPrevious}" th:href="@{/teacher/bookings(status=${bookingFilter},from=${fromDate},to=${toDate},page=${currentPage - 1})}">Trang trước</a><span th:text="${'Trang ' + (currentPage + 1) + ' / ' + totalPages}">Trang 1 / 2</span><a th:if="${hasNext}" th:href="@{/teacher/bookings(status=${bookingFilter},from=${fromDate},to=${toDate},page=${currentPage + 1})}">Trang sau</a>
+      </nav>
+    </section>
+  </div>
+</main>
+<footer class="teacher-message-footer"><div><a href="/teacher/bookings">Tutor Match</a><span>Lịch dạy của bạn.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

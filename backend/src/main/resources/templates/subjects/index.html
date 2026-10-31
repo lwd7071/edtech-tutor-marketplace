@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Môn học | Tutor Match</title>
+  <meta name="description" content="Tìm môn học và khám phá gia sư theo cấp học.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/subjects.css">
+</head>
+<body>
+<div th:replace="~{fragments/public-header :: header}"></div>
+<main id="main-content" class="subjects-page">
+  <div class="subjects-shell">
+    <nav class="subjects-breadcrumb" aria-label="Đường dẫn"><a href="/">Trang chủ</a><span aria-hidden="true">/</span><span aria-current="page">Môn học</span></nav>
+    <header class="subjects-heading">
+      <h1 id="page-title">Môn học</h1>
+      <p>Tìm môn bạn quan tâm, sau đó xem các gia sư đang giảng dạy.</p>
+    </header>
+
+    <form class="subjects-filters" action="/subjects" method="get" aria-labelledby="filters-title">
+      <h2 id="filters-title" class="visually-hidden">Tìm và lọc môn học</h2>
+      <div class="subjects-filter__keyword">
+        <label for="keyword">Tên môn học</label>
+        <input id="keyword" name="keyword" type="search" maxlength="100" th:value="${keyword}" placeholder="Ví dụ: Toán, tiếng Anh">
+      </div>
+      <div class="subjects-filter__level">
+        <label for="educationLevel">Cấp học</label>
+        <select id="educationLevel" name="educationLevel">
+          <option value="">Tất cả cấp học</option>
+          <option th:each="option : ${educationLevels}" th:value="${option.value}" th:text="${option.label}" th:selected="${educationLevel == option.value.name()}">Tiểu học</option>
+        </select>
+      </div>
+      <button class="subjects-button" type="submit">Tìm môn học</button>
+      <a class="subjects-reset" href="/subjects">Xóa lọc</a>
+    </form>
+
+    <div class="subjects-filter-error" role="alert" th:if="${filterError}">
+      <p th:if="${invalidKeyword}">Tên môn học không được vượt quá 100 ký tự.</p>
+      <p th:if="${invalidLevel}">Cấp học không hợp lệ. Hãy chọn lại từ danh sách.</p>
+    </div>
+
+    <section class="subjects-results" aria-labelledby="results-title">
+      <header class="subjects-results__heading">
+        <h2 id="results-title">Danh sách môn học</h2>
+        <p th:if="${!unavailable and !filterError}" th:text="|${#numbers.formatInteger(results.totalElements, 1, 'POINT')} môn|">0 môn</p>
+      </header>
+      <div class="subjects-state" th:if="${unavailable}" role="alert">
+        <h3>Chưa tải được danh sách môn học</h3>
+        <p>Kiểm tra kết nối rồi thử lại.</p>
+        <a class="subjects-button subjects-button--inline" th:href="@{/subjects(keyword=${keyword},educationLevel=${educationLevel})}">Thử lại</a>
+      </div>
+      <div class="subjects-state" th:if="${filterError}">
+        <h3>Kiểm tra lại thông tin tìm kiếm</h3>
+        <p>Chỉnh bộ lọc rồi gửi lại để xem kết quả.</p>
+      </div>
+      <div class="subjects-state" th:if="${!unavailable and !filterError and results.empty}">
+        <h3 th:if="${!#strings.isEmpty(keyword) or !#strings.isEmpty(educationLevel)}">Không tìm thấy môn học phù hợp</h3>
+        <h3 th:if="${#strings.isEmpty(keyword) and #strings.isEmpty(educationLevel)}">Danh mục đang được cập nhật</h3>
+        <p>Thử từ khóa khác hoặc xem toàn bộ danh sách gia sư.</p>
+        <a class="subjects-text-link" href="/teachers">Tìm gia sư</a>
+      </div>
+
+      <div class="subjects-list" th:if="${!unavailable and !filterError and !results.empty}">
+        <article class="subject-row" th:each="subject : ${results.content}">
+          <div class="subject-row__content">
+            <h3 th:text="${subject.name}">Toán học</h3>
+            <p th:if="${subject.description != null and !#strings.isEmpty(subject.description)}" th:text="${subject.description}">Mô tả môn học</p>
+            <p class="subject-row__level" th:if="${subject.educationLevel != null}" th:switch="${subject.educationLevel.name()}">
+              <span th:case="'ELEMENTARY'">Tiểu học</span>
+              <span th:case="'PRIMARY_SCHOOL'">Tiểu học</span>
+              <span th:case="'MIDDLE_SCHOOL'">Trung học cơ sở</span>
+              <span th:case="'HIGH_SCHOOL'">Trung học phổ thông</span>
+              <span th:case="'UNIVERSITY'">Đại học</span>
+              <span th:case="'OTHER'">Khác</span>
+              <span th:case="*">Cấp học đang cập nhật</span>
+            </p>
+          </div>
+          <a class="subject-row__action" th:href="@{/teachers(subjectId=${subject.id})}">Xem gia sư <svg class="subject-row__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
+        </article>
+      </div>
+      <nav class="subjects-pagination" aria-label="Phân trang" th:if="${!unavailable and !filterError and results.totalPages > 1}">
+        <a th:if="${previousUrl != null}" th:href="${previousUrl}">Trang trước</a>
+        <span th:unless="${previousUrl != null}" aria-disabled="true">Trang trước</span>
+        <span th:text="|Trang ${results.number + 1} / ${results.totalPages}|">Trang 1 / 1</span>
+        <a th:if="${nextUrl != null}" th:href="${nextUrl}">Trang sau</a>
+        <span th:unless="${nextUrl != null}" aria-disabled="true">Trang sau</span>
+      </nav>
+    </section>
+  </div>
+</main>
+<div th:replace="~{fragments/public-header :: footer}"></div>
+</body>
+</html>

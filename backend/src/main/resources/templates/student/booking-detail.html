@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Chi tiết buổi học | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/student-bookings.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-bookings-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+    <a class="booking-back" href="/student/bookings">← Quay lại lịch học</a>
+    <section class="booking-state booking-state--error" role="alert" th:if="${bookingUnavailable}">
+      <h1>Chưa tải được chi tiết buổi học</h1><p>Hãy tải lại để kiểm tra trạng thái mới nhất.</p>
+      <a th:href="@{/student/bookings/{id}(id=${bookingId})}">Tải lại</a>
+    </section>
+    <article class="booking-detail" th:unless="${bookingUnavailable}">
+      <header class="booking-detail__heading">
+        <div><h1 th:text="${booking.subjectName}">Môn học</h1><p th:text="|Buổi học với ${booking.teacherName}|">Buổi học với gia sư</p></div>
+        <span class="booking-status" th:text="${booking.statusLabel}">Đã lên lịch</span>
+      </header>
+      <div class="booking-flash" role="status" th:if="${bookingNotice != null}" th:text="${bookingNotice}">Đã ghi nhận xác nhận.</div>
+      <div class="booking-flash booking-flash--error" role="alert" th:if="${bookingActionError != null}" th:text="${bookingActionError}">Chưa thực hiện được thao tác.</div>
+
+      <dl class="booking-facts">
+        <div><dt>Bắt đầu</dt><dd th:text="${booking.startLabel}">Thứ Hai, 28/10/2026 · 19:00</dd></div>
+        <div><dt>Kết thúc</dt><dd th:text="${booking.endLabel}">Thứ Hai, 28/10/2026 · 20:00</dd></div>
+        <div><dt>Hình thức</dt><dd th:text="${booking.modeLabel}">Trực tuyến</dd></div>
+        <div><dt>Gia sư</dt><dd th:text="${booking.teacherName}">Gia sư</dd></div>
+        <div th:if="${booking.trial}"><dt>Loại buổi</dt><dd>Học thử</dd></div>
+      </dl>
+
+      <section class="booking-connection" th:if="${booking.data['meetingLink'] != null or booking.data['locationAddress'] != null}">
+        <h2>Thông tin tham gia</h2>
+        <p th:if="${booking.data['meetingLink'] != null}"><strong>Liên kết trực tuyến:</strong> <a class="booking-wrap" th:if="${booking.meetingLinkUrl != null}" th:href="${booking.meetingLinkUrl}" target="_blank" rel="noopener noreferrer" th:text="${booking.data['meetingLink']}">https://example.test</a><span class="booking-wrap" th:unless="${booking.meetingLinkUrl != null}" th:text="${booking.data['meetingLink']}">Liên kết chưa đúng định dạng</span></p>
+        <p th:if="${booking.data['locationAddress'] != null}"><strong>Địa điểm:</strong> <span class="booking-wrap" th:text="${booking.data['locationAddress']}">Địa chỉ</span></p>
+      </section>
+      <p class="booking-cancel-reason" th:if="${booking.data['cancelReason'] != null and !#strings.isEmpty(booking.data['cancelReason'])}"><strong>Lý do hủy:</strong> <span class="booking-wrap" th:text="${booking.data['cancelReason']}">Lý do</span></p>
+
+      <section class="booking-report" th:if="${booking.sessionReport != null and !booking.sessionReport.isEmpty()}">
+        <h2>Báo cáo buổi học</h2>
+        <p th:if="${booking.sessionReport.content != null}" th:text="${booking.sessionReport.content}">Nội dung buổi học</p>
+        <p th:if="${booking.sessionReport.feedback != null}" th:text="${booking.sessionReport.feedback}">Nhận xét</p>
+        <p th:if="${booking.sessionReport.followUpNote != null}" th:text="${booking.sessionReport.followUpNote}">Việc cần làm tiếp</p>
+      </section>
+
+      <form class="booking-confirm" method="post" th:if="${booking.canConfirm and !booking.trial}" th:action="@{/student/bookings/{id}/confirm(id=${booking.data.id})}">
+        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <input type="hidden" name="version" th:value="${booking.data.version}">
+        <p>Buổi học đã kết thúc. Hãy xác nhận sau khi đã kiểm tra nội dung buổi học.</p>
+        <button type="submit">Xác nhận buổi học</button>
+      </form>
+    </article>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/student">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<header class="site-header" th:fragment="header">
+  <a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
+  <div class="site-header__inner">
+    <a class="brand" href="/" aria-label="Tutor Match — Trang chủ">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false">
+          <path d="M4 8.5c4.7-1.2 8.6-.3 12 2.4 3.4-2.7 7.3-3.6 12-2.4v15c-4.7-1.2-8.6-.3-12 2.4-3.4-2.7-7.3-3.6-12-2.4z" />
+          <path d="M16 11v14" />
+        </svg>
+      </span>
+      <span class="brand__name">tutor<span>match</span></span>
+    </a>
+    <nav class="public-nav" aria-label="Điều hướng chính">
+      <a class="public-nav__link" th:classappend="${activeNav == 'teachers' ? ' public-nav__link--active' : ''}" href="/teachers" th:attr="aria-current=${activeNav == 'teachers' ? 'page' : null}">Tìm gia sư</a>
+      <a class="public-nav__link" th:classappend="${activeNav == 'ranking' ? ' public-nav__link--active' : ''}" href="/ranking" th:attr="aria-current=${activeNav == 'ranking' ? 'page' : null}">Bảng xếp hạng</a>
+      <a class="public-nav__link" th:classappend="${activeNav == 'become-a-tutor' ? ' public-nav__link--active' : ''}" href="/become-a-tutor" th:attr="aria-current=${activeNav == 'become-a-tutor' ? 'page' : null}">Trở thành gia sư</a>
+      <a class="public-nav__link" th:classappend="${activeNav == 'subjects' ? ' public-nav__link--active' : ''}" href="/subjects" th:attr="aria-current=${activeNav == 'subjects' ? 'page' : null}">Môn học</a>
+      <a class="public-nav__link" th:classappend="${activeNav == 'how-it-works' ? ' public-nav__link--active' : ''}" href="/how-it-works" th:attr="aria-current=${activeNav == 'how-it-works' ? 'page' : null}">Cách hoạt động</a>
+    </nav>
+    <div th:if="${htmlUser == null}" class="site-header__actions">
+      <a class="header-login" href="/auth/login">Đăng nhập</a>
+      <a class="button button--small button--primary" href="/auth/register">Tạo tài khoản</a>
+    </div>
+    <div th:if="${htmlUser != null}" class="site-header__actions">
+      <a class="button button--small button--primary"
+         th:href="${htmlUser.role == 'STUDENT' ? '/student' : (htmlUser.role == 'TEACHER' ? '/teacher' : '/admin')}">Không gian của tôi</a>
+      <form method="post" action="/auth/logout">
+        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button class="header-login" type="submit">Đăng xuất</button>
+      </form>
+    </div>
+  </div>
+  <script defer src="/js/assistant-widget.js" th:attr="data-csrf=${_csrf != null ? _csrf.token : ''},data-role=${htmlUser != null ? htmlUser.role : 'GUEST'}"></script>
+</header>
+
+<footer class="site-footer" th:fragment="footer">
+  <div class="site-footer__inner">
+    <a class="brand" href="/" aria-label="Tutor Match — Trang chủ"><span class="brand__name">tutor<span>match</span></span></a>
+    <nav aria-label="Liên kết thông tin">
+      <a href="/ranking">Bảng xếp hạng gia sư</a>
+      <a href="/how-it-works">Cách hoạt động</a>
+      <a href="/terms">Điều khoản</a>
+      <a href="/privacy">Quyền riêng tư</a>
+      <a href="/support">Hỗ trợ</a>
+    </nav>
+    <small>© Tutor Match</small>
+  </div>
+</footer>

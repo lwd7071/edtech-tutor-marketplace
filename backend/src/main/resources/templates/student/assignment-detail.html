@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Chi tiết bài tập | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/student-learning.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-learning-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+    <a class="learning-back" href="/student/assignments">← Bài tập của tôi</a>
+    <section class="learning-state learning-state--error" role="alert" th:if="${assignmentUnavailable}">
+      <h1>Chưa tải được bài tập</h1><p>Hãy thử tải lại. Nếu bài tập không còn thuộc tài khoản của bạn, danh sách sẽ không hiển thị nội dung đó.</p><a class="learning-button learning-button--secondary" href="/student/assignments">Về danh sách</a>
+    </section>
+    <article class="assignment-detail" th:if="${assignment != null}">
+      <header class="assignment-detail__heading">
+        <div><h1 th:text="${assignment.title}">Tên bài tập</h1><p><span th:text="${assignment.status == T(com.edtech.platform.learning.domain.AssignmentStatus).CLOSED ? 'Đã đóng' : 'Đã giao'}">Đã giao</span><span aria-hidden="true"> · </span><span>Hạn nộp: </span><time th:if="${assignment.dueAt != null}" th:datetime="${assignment.dueAt}" th:text="${dueLabel}">19:00, 28/10/2026</time><span th:unless="${assignment.dueAt != null}">Chưa đặt</span></p></div>
+        <span class="learning-badge learning-badge--danger" th:if="${assignmentOverdue}">Quá hạn</span>
+      </header>
+      <div class="learning-alert" role="status" th:if="${submissionNotice != null}" th:text="${submissionNotice}">Đã nộp bài cho gia sư.</div>
+      <div class="learning-alert learning-alert--error" role="alert" th:if="${submissionError != null}" th:text="${submissionError}">Chưa lưu được bài làm.</div>
+      <div class="learning-alert learning-alert--error" role="status" th:if="${unsupportedQuiz}">Bài này dùng hình thức trắc nghiệm, hiện chưa có giao diện làm bài đã được xác minh. Nội dung đề vẫn được giữ để bạn xem.</div>
+      <p class="assignment-closed-note" role="status" th:if="${assignment.status == T(com.edtech.platform.learning.domain.AssignmentStatus).CLOSED}">Bài tập đã đóng. Bạn vẫn có thể xem đề và bài đã lưu.</p>
+      <section class="assignment-section" aria-labelledby="prompt-title">
+        <h2 id="prompt-title">Đề bài</h2>
+        <div class="assignment-prose"><p th:each="block : ${assignment.contentBlocks}" th:if="${block.type == 'TEXT'}" th:text="${block.content}">Nội dung đề bài.</p></div>
+        <ul class="assignment-files" th:if="${!#lists.isEmpty(assignmentFiles)}" aria-label="Tệp đính kèm của đề bài">
+          <li th:each="file : ${assignmentFiles}"><a th:href="${file.secureUrl}" target="_blank" rel="noopener noreferrer" th:text="${file.originalFilename}">Tệp đề bài</a><span th:text="${file.mimeType}">application/pdf</span></li>
+        </ul>
+      </section>
+      <section class="assignment-section" aria-labelledby="submission-title" th:if="${submission != null}">
+        <header class="assignment-section__heading"><h2 id="submission-title" th:text="${submission.status == T(com.edtech.platform.learning.domain.SubmissionStatus).GRADED ? 'Bài đã chấm' : (submission.status == T(com.edtech.platform.learning.domain.SubmissionStatus).SUBMITTED ? 'Bài đã nộp' : 'Bản nháp')}">Bài đã nộp</h2><span th:text="${submission.status == T(com.edtech.platform.learning.domain.SubmissionStatus).GRADED ? 'Đã có kết quả' : (submission.status == T(com.edtech.platform.learning.domain.SubmissionStatus).SUBMITTED ? 'Đang chờ gia sư chấm' : 'Chưa gửi cho gia sư')}">Đang chờ gia sư chấm</span></header>
+        <div class="assignment-prose"><p th:each="block : ${submission.contentBlocks}" th:if="${block.type == 'TEXT'}" th:text="${block.content}">Câu trả lời của học viên.</p></div>
+        <ul class="assignment-files" th:if="${!#lists.isEmpty(submissionFiles)}" aria-label="Tệp trong bài làm">
+          <li th:each="file : ${submissionFiles}"><a th:href="${file.secureUrl}" target="_blank" rel="noopener noreferrer" th:text="${file.originalFilename}">Tệp bài làm</a><span th:text="${file.mimeType}">application/pdf</span></li>
+        </ul>
+        <div class="assignment-feedback" th:if="${submission.status == T(com.edtech.platform.learning.domain.SubmissionStatus).GRADED}">
+          <p class="assignment-score"><span>Điểm</span><strong th:text="${submission.score == null ? '—' : submission.score + '/10'}">8/10</strong></p>
+          <div><h3>Nhận xét của gia sư</h3><blockquote th:text="${submission.feedbackText == null or #strings.isEmpty(submission.feedbackText) ? 'Gia sư chưa để lại nhận xét.' : submission.feedbackText}">Nhận xét.</blockquote></div>
+        </div>
+      </section>
+      <section class="assignment-section assignment-editor" aria-labelledby="editor-title" th:if="${canEdit}">
+        <header><h2 id="editor-title" th:text="${submission == null ? 'Bài làm của bạn' : 'Cập nhật bài làm'}">Bài làm của bạn</h2><p>Chọn lưu nháp để tiếp tục sau hoặc nộp bài để gửi gia sư.</p></header>
+        <form method="post" enctype="multipart/form-data" th:action="@{/student/assignments/{id}/submission(id=${assignment.id})}">
+          <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <input type="hidden" name="version" th:value="${submission == null ? 0 : submission.version}">
+          <label for="answer">Câu trả lời</label>
+          <textarea id="answer" name="answer" rows="9" th:text="${submissionAnswer != null ? submissionAnswer : previousAnswer}"></textarea>
+          <label for="assignment-files-input">Tệp đính kèm <span>(tối đa 20 MB mỗi tệp; PDF, Office, ZIP hoặc ảnh)</span></label>
+          <input id="assignment-files-input" name="files" type="file" multiple accept=".pdf,.docx,.xlsx,.pptx,.zip,.jpg,.jpeg,.png,.gif,.webp">
+          <p class="assignment-form-note">Tệp được kiểm tra định dạng và dung lượng trước khi lưu.</p>
+          <div class="assignment-actions">
+            <button class="learning-button learning-button--secondary" type="submit" name="status" value="DRAFT">Lưu bản nháp</button>
+            <button class="learning-button learning-button--primary" type="submit" name="status" value="SUBMITTED">Nộp bài</button>
+          </div>
+        </form>
+      </section>
+    </article>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

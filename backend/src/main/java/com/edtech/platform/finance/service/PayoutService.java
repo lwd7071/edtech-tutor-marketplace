@@ -12,6 +12,7 @@ import com.edtech.platform.finance.repository.LedgerEntryRepository;
 import com.edtech.platform.finance.repository.PayoutRequestRepository;
 import com.edtech.platform.finance.repository.TeacherBankAccountRepository;
 import com.edtech.platform.finance.repository.WalletRepository;
+import com.edtech.platform.finance.security.AccountNumberProtector;
 import com.edtech.platform.teacher.facade.TeacherFacade;
 import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import com.edtech.platform.admin.facade.AuditTrailFacade;
@@ -23,6 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.UUID;
 
 @Service
@@ -34,6 +38,7 @@ public class PayoutService {
     private final TeacherBankAccountRepository bankAccountRepository;
     private final TeacherFacade teacherFacade;
     private final AuditTrailFacade auditTrail;
+    private final AccountNumberProtector accountNumbers;
 
     /** Backwards-compatible constructor for unit tests and non-audited callers. */
     @Autowired
@@ -42,6 +47,7 @@ public class PayoutService {
                          LedgerEntryRepository ledgerEntryRepository,
                          TeacherBankAccountRepository bankAccountRepository,
                          TeacherFacade teacherFacade,
+                         AccountNumberProtector accountNumbers,
                          AuditTrailFacade auditTrail) {
         this.payoutRequestRepository = payoutRequestRepository;
         this.walletRepository = walletRepository;
@@ -49,6 +55,18 @@ public class PayoutService {
         this.bankAccountRepository = bankAccountRepository;
         this.teacherFacade = teacherFacade;
         this.auditTrail = auditTrail;
+        this.accountNumbers = accountNumbers;
+    }
+
+    /** Backwards-compatible constructor for unit tests and non-workspace callers. */
+    public PayoutService(PayoutRequestRepository payoutRequestRepository,
+                         WalletRepository walletRepository,
+                         LedgerEntryRepository ledgerEntryRepository,
+                         TeacherBankAccountRepository bankAccountRepository,
+                         TeacherFacade teacherFacade,
+                         AuditTrailFacade auditTrail) {
+        this(payoutRequestRepository, walletRepository, ledgerEntryRepository, bankAccountRepository,
+                teacherFacade, null, auditTrail);
     }
 
     /** Backwards-compatible constructor for unit tests and non-audited callers. */
@@ -57,7 +75,8 @@ public class PayoutService {
                          LedgerEntryRepository ledgerEntryRepository,
                          TeacherBankAccountRepository bankAccountRepository,
                          TeacherFacade teacherFacade) {
-        this(payoutRequestRepository, walletRepository, ledgerEntryRepository, bankAccountRepository, teacherFacade, null);
+        this(payoutRequestRepository, walletRepository, ledgerEntryRepository, bankAccountRepository,
+                teacherFacade, null, null);
     }
 
     private UUID resolveTeacherId(UUID teacherUserId) {
@@ -161,6 +180,50 @@ public class PayoutService {
                 : payoutRequestRepository.findAllByOrderByCreatedAtDesc(pageable);
         return page.map(PayoutRequestView::from);
     }
+
+    /** Admin-only HTML read model; account numbers stay out of the public REST payout DTO. */
+    @Transactional(readOnly = true)
+    public Page<AdminPayoutWorkspaceRow> findAdminPayoutWorkspace(String status, Pageable pageable) {
+        PayoutStatus parsedStatus = null;
+        if (status != null && !status.isBlank()) {
+            try { parsedStatus = PayoutStatus.valueOf(status.trim().toUpperCase(java.util.Locale.ROOT)); }
+            catch (IllegalArgumentException exception) { throw new BusinessException(ErrorCode.VALIDATION_ERROR); }
+        }
+        Page<PayoutRequest> page = parsedStatus == null
+                ? payoutRequestRepository.findAllByOrderByCreatedAtDesc(pageable)
+                : payoutRequestRepository.findByStatusOrderByCreatedAtDesc(parsedStatus, pageable);
+        Set<UUID> bankAccountIds = page.getContent().stream().map(PayoutRequest::getBankAccountId).collect(Collectors.toSet());
+        Map<UUID, TeacherBankAccount> accountById = bankAccountRepository.findAllById(bankAccountIds).stream()
+                .collect(Collectors.toMap(TeacherBankAccount::getId, account -> account));
+        return page.map(payout -> adminWorkspaceRow(payout, accountById.get(payout.getBankAccountId())));
+    }
+
+    @Transactional(readOnly = true)
+    public String adminProofPublicId(UUID payoutId) {
+        PayoutRequest payout = payoutRequestRepository.findById(payoutId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+        if (payout.getStatus() != PayoutStatus.SUCCEEDED
+                || payout.getProofPublicId() == null || payout.getProofPublicId().isBlank()) {
+            throw new BusinessException(ErrorCode.PAYOUT_PROOF_REQUIRED);
+        }
+        return payout.getProofPublicId();
+    }
+
+    private AdminPayoutWorkspaceRow adminWorkspaceRow(PayoutRequest payout, TeacherBankAccount account) {
+        if (account == null || accountNumbers == null) {
+            return new AdminPayoutWorkspaceRow(PayoutRequestView.from(payout), null, null, null, false);
+        }
+        try {
+            return new AdminPayoutWorkspaceRow(PayoutRequestView.from(payout), account.getBankName(),
+                    account.getAccountHolderName(), accountNumbers.decrypt(account.getAccountNumberEncrypted()), true);
+        } catch (RuntimeException exception) {
+            return new AdminPayoutWorkspaceRow(PayoutRequestView.from(payout), null, null, null, false);
+        }
+    }
+
+    public record AdminPayoutWorkspaceRow(PayoutRequestView payout, String bankName,
+                                         String accountHolderName, String accountNumber,
+                                         boolean bankDetailsAvailable) {}
 
     @Transactional
     public PayoutRequestView processPayout(UUID adminId, UUID payoutId, ProcessPayoutCommand request) {

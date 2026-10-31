@@ -1,0 +1,157 @@
+package com.edtech.platform.communication.web;
+
+import com.edtech.platform.auth.service.SessionService;
+import com.edtech.platform.common.dto.response.AttachmentView;
+import com.edtech.platform.common.security.AuthenticatedUser;
+import com.edtech.platform.common.security.JwtTokenProvider;
+import com.edtech.platform.common.security.UserStatusCacheService;
+import com.edtech.platform.common.service.AttachmentService;
+import com.edtech.platform.communication.domain.MessageType;
+import com.edtech.platform.communication.dto.chat.ChatMessageRequest;
+import com.edtech.platform.communication.dto.chat.ConversationView;
+import com.edtech.platform.communication.dto.chat.MessageView;
+import com.edtech.platform.communication.service.ChatCommandService;
+import com.edtech.platform.communication.service.ChatQueryService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+@WebMvcTest(TeacherMessagesPageController.class)
+@AutoConfigureMockMvc(addFilters = false)
+class TeacherMessagesPageControllerTest {
+    @Autowired private MockMvc mockMvc;
+    @MockBean private ChatQueryService chatQueries;
+    @MockBean private ChatCommandService chatCommands;
+    @MockBean private AttachmentService attachments;
+    @MockBean private JwtTokenProvider jwtTokenProvider;
+    @MockBean private UserStatusCacheService userStatusCacheService;
+    @MockBean private SessionService sessions;
+    @MockBean private Clock clock;
+
+    private final UUID teacherId = UUID.randomUUID();
+    private final UUID studentUserId = UUID.randomUUID();
+    private final UUID conversationId = UUID.randomUUID();
+    private final UUID clientMessageId = UUID.randomUUID();
+
+    @BeforeEach
+    void setUp() {
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                new AuthenticatedUser(teacherId, "teacher@example.test", "TEACHER"), null, List.of()));
+    }
+
+    @Test
+    void rendersEmptyInboxAsNoScriptServerPage() throws Exception {
+        when(chatQueries.getConversations(eq(teacherId), any())).thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
+        mockMvc.perform(get("/teacher/messages"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("workspace/teacher-messages"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Chưa có cuộc trò chuyện")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("<script"))));
+    }
+
+    @Test
+    void rendersSelectedConversationAndMessages() throws Exception {
+        when(chatQueries.getConversations(eq(teacherId), any())).thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 21));
+        when(chatQueries.getConversation(eq(conversationId), eq(teacherId))).thenReturn(conversation());
+        when(chatQueries.getMessages(eq(conversationId), eq(teacherId), any()))
+                .thenReturn(new PageImpl<>(List.of(message("Chào bạn")), PageRequest.of(0, 20), 1));
+
+        mockMvc.perform(get("/teacher/messages").param("id", conversationId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Học viên Minh Anh")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Chào bạn")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("multipart/form-data")));
+    }
+
+    @Test
+    void chatComposerShouldRenderCompactModernChatBarWithAttachAndSendButtons() throws Exception {
+        when(chatQueries.getConversations(eq(teacherId), any())).thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 21));
+        when(chatQueries.getConversation(eq(conversationId), eq(teacherId))).thenReturn(conversation());
+        when(chatQueries.getMessages(eq(conversationId), eq(teacherId), any()))
+                .thenReturn(new PageImpl<>(List.of(message("Chào bạn")), PageRequest.of(0, 20), 1));
+
+        mockMvc.perform(get("/teacher/messages").param("id", conversationId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"message-composer\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("message-composer__attach-btn")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("message-composer__send-btn")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("placeholder=\"Nhập tin nhắn...\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/js/chat-realtime.js")));
+    }
+
+    @Test
+    void textMessageUsesPrincipalAndIdempotencyIdThenRedirects() throws Exception {
+        mockMvc.perform(post("/teacher/messages/send")
+                        .param("conversationId", conversationId.toString())
+                        .param("clientMessageId", clientMessageId.toString())
+                        .param("content", "  Xin chào gia sư  "))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/teacher/messages?id=" + conversationId + "&page=0&messagePage=0"));
+
+        var request = org.mockito.ArgumentCaptor.forClass(ChatMessageRequest.class);
+        verify(chatCommands).sendMessage(eq(teacherId), request.capture());
+        org.junit.jupiter.api.Assertions.assertEquals(clientMessageId, request.getValue().getClientMessageId());
+        org.junit.jupiter.api.Assertions.assertEquals(MessageType.TEXT, request.getValue().getMessageType());
+        org.junit.jupiter.api.Assertions.assertEquals("Xin chào gia sư", request.getValue().getContent());
+    }
+
+    @Test
+    void attachmentUploadUsesMessageTypeAndDirectCommandService() throws Exception {
+        UUID attachmentId = UUID.randomUUID();
+        when(attachments.uploadAttachment(eq(teacherId), eq(com.edtech.platform.common.domain.AttachableType.MESSAGE), any()))
+                .thenReturn(new AttachmentView(attachmentId, "https://files.example.test/picture.png", "picture.png", "image/png", 12L));
+        MockMultipartFile file = new MockMultipartFile("file", "picture.png", "image/png", new byte[]{1, 2, 3});
+
+        mockMvc.perform(multipart("/teacher/messages/send")
+                        .file(file)
+                        .param("conversationId", conversationId.toString())
+                        .param("clientMessageId", clientMessageId.toString())
+                        .param("content", "Xem ảnh này"))
+                .andExpect(status().is3xxRedirection());
+
+        verify(chatQueries).getMessages(eq(conversationId), eq(teacherId), any());
+        verify(attachments).uploadAttachment(eq(teacherId), eq(com.edtech.platform.common.domain.AttachableType.MESSAGE), any());
+        var request = org.mockito.ArgumentCaptor.forClass(ChatMessageRequest.class);
+        verify(chatCommands).sendMessage(eq(teacherId), request.capture());
+        org.junit.jupiter.api.Assertions.assertEquals(attachmentId, request.getValue().getAttachmentId());
+        org.junit.jupiter.api.Assertions.assertEquals(MessageType.IMAGE, request.getValue().getMessageType());
+    }
+
+    private ConversationView conversation() {
+        return ConversationView.builder().id(conversationId).participantId(studentUserId)
+                .participantName("Học viên Minh Anh").lastMessagePreview("Tin gần nhất").unreadCount(1)
+                .lastMessageAt(Instant.parse("2026-10-28T12:00:00Z")).build();
+    }
+
+    private MessageView message(String content) {
+        return MessageView.builder().id(UUID.randomUUID()).conversationId(conversationId).senderId(studentUserId)
+                .clientMessageId(UUID.randomUUID()).messageType(MessageType.TEXT).content(content)
+                .sentAt(Instant.parse("2026-10-28T12:00:00Z")).build();
+    }
+}

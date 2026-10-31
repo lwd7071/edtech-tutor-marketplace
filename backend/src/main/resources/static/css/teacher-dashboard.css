@@ -1,0 +1,610 @@
+/* Teacher Dashboard Styles - Refined Minimalist Layout (Cards & Bento Grid) */
+.teacher-overview-page {
+  --teacher-overview-ink: var(--ink, #171714);
+  --teacher-overview-muted: var(--muted-strong, #625f56);
+  --teacher-overview-border: var(--border, #ded9cc);
+  --teacher-overview-surface: var(--surface, #fffdf7);
+  --teacher-overview-yellow: var(--brand-yellow, #ffd43b);
+  padding-bottom: 36px;
+  color: var(--teacher-overview-ink);
+  accent-color: var(--brand-yellow, #ffd43b);
+}
+
+.teacher-overview-heading {
+  margin: 22px 0 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--teacher-overview-border);
+}
+
+.teacher-overview-heading h1 {
+  margin: 0;
+  color: var(--teacher-overview-ink);
+  font: 700 2.1rem/1.2 var(--font-heading, "Be Vietnam Pro", sans-serif);
+  letter-spacing: -.025em;
+  overflow-wrap: anywhere;
+}
+
+.teacher-overview-heading p {
+  max-width: 65ch;
+  margin: 6px 0 0;
+  color: var(--teacher-overview-muted);
+  line-height: 1.5;
+}
+
+/* 4 KPI Stat Cards */
+.teacher-stat-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0 20px;
+}
+
+.teacher-stat-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1px solid var(--teacher-overview-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.teacher-stat-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+}
+
+.teacher-stat-card__label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--teacher-overview-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.teacher-stat-card__value {
+  margin: 8px 0 4px;
+  font-size: 1.5rem;
+  font-weight: 750;
+  color: var(--teacher-overview-ink);
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.teacher-stat-card__hint {
+  font-size: 0.82rem;
+  color: var(--teacher-overview-muted);
+  overflow-wrap: anywhere;
+}
+
+/* Profile Alert Banner */
+.teacher-overview-profile {
+  margin: 0 0 18px;
+  padding: 16px 20px;
+  border-radius: 10px;
+  background: #fffdf5;
+  border: 1px solid #fed7aa;
+  border-left: 4px solid #f59e0b;
+}
+
+.teacher-overview-profile.teacher-overview-profile--warning {
+  background: #fff8f6;
+  border-color: #fecaca;
+  border-left: 4px solid #ef4444;
+}
+
+.teacher-overview-profile .teacher-overview-section-heading {
+  margin-bottom: 6px;
+}
+
+.teacher-overview-profile .teacher-overview-section-heading a {
+  display: inline-flex;
+  min-height: 36px;
+  flex: none;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid var(--teacher-overview-border);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--teacher-overview-ink);
+  font-size: 0.88rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.teacher-overview-profile .teacher-overview-section-heading a:hover {
+  background: var(--surface-warm);
+}
+
+.teacher-overview-status {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 650;
+  line-height: 1.5;
+  color: #78350f;
+  overflow-wrap: anywhere;
+}
+
+.teacher-overview-profile--warning .teacher-overview-status {
+  color: #991b1b;
+}
+
+.teacher-overview-rejection {
+  max-width: 75ch;
+  margin: 4px 0 0;
+  color: #7f1d1d;
+  line-height: 1.5;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+/* Card Section Containers */
+.teacher-card-section {
+  background: #ffffff;
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.teacher-card-section h2 {
+  margin: 0;
+  color: var(--teacher-overview-ink);
+  font: 700 1.15rem/1.35 var(--font-heading, "Be Vietnam Pro", sans-serif);
+  overflow-wrap: anywhere;
+}
+
+.teacher-overview-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1ece1;
+}
+
+.teacher-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.teacher-action-divider {
+  color: var(--teacher-overview-border);
+}
+
+.teacher-card-action-link {
+  color: var(--teacher-overview-muted);
+  font-size: 0.88rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition: color 150ms ease;
+  overflow-wrap: anywhere;
+}
+
+.teacher-card-action-link:hover {
+  color: var(--teacher-overview-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.teacher-card-action-link:focus-visible,
+.teacher-overview-primary-link:focus-visible,
+.teacher-empty-cta:focus-visible,
+.teacher-schedule-open-link:focus-visible {
+  outline: 3px solid var(--focus, #155eef);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.teacher-badge-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Yêu cầu đặt buổi Action Card */
+.teacher-overview-requests {
+  margin: 0 0 20px;
+  border-left: 4px solid var(--brand-yellow);
+}
+
+.teacher-overview-request-count {
+  margin: 0 0 10px;
+  color: var(--teacher-overview-muted);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+/* Main Bento Grid (2 Columns: 60% Left / 40% Right) */
+.teacher-dashboard-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.teacher-dashboard-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Buổi học kế tiếp */
+.teacher-overview-next-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.teacher-overview-next-meta {
+  margin: 6px 0 14px;
+  color: var(--teacher-overview-muted);
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.teacher-overview-primary-link {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  padding: 0 18px;
+  border-radius: 8px;
+  background: var(--teacher-overview-ink);
+  color: #fffdf7 !important;
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-decoration: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.teacher-empty-cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  margin-top: 10px;
+  padding: 0 14px;
+  border-radius: 6px;
+  background: var(--surface-warm);
+  border: 1px solid var(--teacher-overview-border);
+  color: var(--teacher-overview-ink);
+  font-size: 0.88rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition: all 150ms ease;
+}
+
+.teacher-empty-cta:hover {
+  background: #ffffff;
+  border-color: #777268;
+}
+
+/* Lists styling inside cards */
+.teacher-overview-list,
+.teacher-overview-schedule-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.teacher-overview-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  border-top: 1px solid #f1ece1;
+  line-height: 1.5;
+}
+
+.teacher-overview-list li:first-child {
+  padding-top: 2px;
+  border-top: 0;
+}
+
+.teacher-overview-list li > div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.teacher-overview-list li strong,
+.teacher-overview-list li a {
+  overflow-wrap: anywhere;
+  color: var(--teacher-overview-ink);
+  text-decoration: none;
+}
+
+.teacher-overview-list li a:hover {
+  text-decoration: underline;
+}
+
+.teacher-overview-list li div > span,
+.teacher-overview-list time,
+.teacher-overview-list .teacher-overview-submission {
+  color: var(--teacher-overview-muted);
+  font-size: 0.88rem;
+}
+
+.teacher-overview-list time {
+  max-width: 18rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.teacher-overview-list-link {
+  display: inline-flex;
+  margin-top: 12px;
+  color: var(--teacher-overview-ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.teacher-overview-list-link:hover {
+  text-decoration: underline;
+}
+
+/* Schedule List */
+.teacher-overview-schedule-list li {
+  display: grid;
+  grid-template-columns: minmax(170px, 1.15fr) minmax(90px, .65fr) minmax(110px, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 11px 0;
+  border-top: 1px solid #f1ece1;
+}
+
+.teacher-overview-schedule-list li:first-child {
+  border-top: 0;
+  padding-top: 2px;
+}
+
+.teacher-overview-schedule-list time,
+.teacher-overview-schedule-list li > span {
+  color: var(--teacher-overview-muted);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.teacher-overview-schedule-list li > strong {
+  overflow-wrap: anywhere;
+  font-size: 0.95rem;
+}
+
+.teacher-schedule-open-link {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--teacher-overview-border);
+  background: var(--surface-warm);
+  color: var(--teacher-overview-ink);
+  font-size: 0.85rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.teacher-schedule-open-link:hover {
+  background: #ffffff;
+  border-color: #777268;
+}
+
+/* Balances inside Wallet Card */
+.teacher-overview-balances {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+.teacher-balance-item {
+  padding: 12px 14px;
+  background: var(--surface-warm);
+  border-radius: 8px;
+  border: 1px solid #ebe5d8;
+}
+
+.teacher-overview-balances dt {
+  color: var(--teacher-overview-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.teacher-balance-value {
+  margin: 4px 0 0;
+  font-size: 1.35rem;
+  font-weight: 750;
+  color: var(--teacher-overview-ink);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.teacher-balance-value--held {
+  color: var(--teacher-overview-muted);
+}
+
+.teacher-overview-wallet-note {
+  margin: 10px 0 0;
+  color: var(--teacher-overview-muted);
+  font-size: 0.82rem;
+}
+
+.teacher-overview-empty,
+.teacher-overview-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px 16px;
+  background: var(--surface-warm);
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+.teacher-overview-empty p,
+.teacher-overview-error p {
+  margin: 0;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.teacher-overview-empty p {
+  color: var(--teacher-overview-muted);
+}
+
+.teacher-overview-error {
+  background: #fff8f6;
+  border: 1px solid #fecaca;
+  color: var(--danger, #b42318);
+}
+
+.teacher-overview-error a {
+  color: var(--danger, #b42318);
+  font-weight: 700;
+}
+
+/* Subgrid cho 2 thẻ nằm ngang: Bài tập có bài nộp & Thu nhập */
+.teacher-overview-side-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.teacher-overview-side-row > .teacher-card-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.teacher-overview-side-row .teacher-overview-section-heading {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+}
+
+.teacher-overview-side-row .teacher-card-section h2 {
+  font-size: 1.05rem;
+}
+
+.teacher-overview-side-row .teacher-overview-list li {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 8px 0;
+}
+
+.teacher-overview-side-row .teacher-overview-submission {
+  display: inline-flex;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.teacher-overview-side-row .teacher-overview-balances {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.teacher-overview-side-row .teacher-balance-item {
+  padding: 10px 12px;
+}
+
+.teacher-overview-side-row .teacher-balance-value {
+  font-size: 1.25rem;
+  margin-top: 2px;
+}
+
+.teacher-overview-side-row .teacher-overview-wallet-note {
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 0.8rem;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1023px) {
+  .teacher-stat-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .teacher-dashboard-main-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .teacher-overview-side-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .teacher-overview-schedule-list li {
+    grid-template-columns: minmax(130px, 1fr) minmax(80px, .6fr) minmax(100px, 1fr) auto;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .teacher-overview-heading {
+    margin: 16px 0 14px;
+    padding-bottom: 12px;
+  }
+  .teacher-overview-heading h1 {
+    font-size: 1.65rem;
+  }
+  .teacher-stat-cards {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .teacher-card-section {
+    padding: 16px 16px;
+  }
+  .teacher-overview-section-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .teacher-overview-side-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .teacher-overview-schedule-list li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 8px;
+  }
+  .teacher-overview-schedule-list time {
+    grid-column: 1 / -1;
+  }
+  .teacher-overview-schedule-list li > span {
+    grid-column: 1;
+  }
+  .teacher-overview-schedule-list li > a {
+    grid-column: 2;
+    grid-row: 2 / 4;
+  }
+  .teacher-overview-balances {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .teacher-overview-page * {
+    scroll-behavior: auto;
+  }
+}

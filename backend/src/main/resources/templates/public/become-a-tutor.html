@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Trở thành gia sư | Tutor Match</title>
+  <meta name="description" content="Tìm hiểu các bước tạo hồ sơ, gửi duyệt và bắt đầu dạy trên Tutor Match.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preload" href="/fonts/be-vietnam-pro-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/public-guide.css">
+</head>
+<body>
+<div th:replace="~{fragments/public-header :: header}"></div>
+<main id="main-content" class="public-guide">
+  <div class="public-guide__shell">
+    <nav class="public-guide__breadcrumb" aria-label="Đường dẫn">
+      <a href="/">Trang chủ</a><span aria-hidden="true">/</span><span aria-current="page">Trở thành gia sư</span>
+    </nav>
+
+    <header class="public-guide__heading">
+      <h1>Chia sẻ kiến thức, đồng hành cùng học viên</h1>
+      <p>Tạo hồ sơ, giới thiệu kinh nghiệm và tổ chức việc dạy học 1–1 trên Tutor Match.</p>
+    </header>
+
+    <ol class="public-guide__steps" aria-label="Các bước đăng ký gia sư">
+      <li class="public-guide-step">
+        <span class="public-guide-step__number" aria-hidden="true">1</span>
+        <div class="public-guide-step__body">
+          <h2>Chuẩn bị hồ sơ</h2>
+          <p>Giới thiệu bản thân, môn giảng dạy, kinh nghiệm và giấy tờ cần thiết để xác minh thông tin.</p>
+        </div>
+      </li>
+      <li class="public-guide-step">
+        <span class="public-guide-step__number" aria-hidden="true">2</span>
+        <div class="public-guide-step__body">
+          <h2>Gửi hồ sơ để xét duyệt</h2>
+          <p>Kiểm tra thông tin rồi gửi hồ sơ. Bạn có thể theo dõi trạng thái và bổ sung nội dung khi được yêu cầu.</p>
+        </div>
+      </li>
+      <li class="public-guide-step">
+        <span class="public-guide-step__number" aria-hidden="true">3</span>
+        <div class="public-guide-step__body">
+          <h2>Bắt đầu giảng dạy</h2>
+          <p>Sau khi được duyệt, bạn có thể tạo gói học, cập nhật lịch rảnh và phản hồi yêu cầu học thử.</p>
+        </div>
+      </li>
+    </ol>
+
+    <nav class="public-guide__actions" aria-label="Đăng ký gia sư">
+      <a class="button button--primary" href="/auth/register?role=TEACHER">Đăng ký gia sư</a>
+      <a class="public-guide__actions-secondary" href="/teacher/profile">Tiếp tục hồ sơ</a>
+    </nav>
+  </div>
+</main>
+<div th:replace="~{fragments/public-header :: footer}"></div>
+</body>
+</html>

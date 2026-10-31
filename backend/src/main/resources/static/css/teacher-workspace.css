@@ -1,0 +1,256 @@
+/* Teacher Workspace Core Styles - Minimalist & Swiss Style */
+.teacher-messages-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 60px;
+  padding: 8px max(24px, calc((100% - 1200px)/2));
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.teacher-brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.teacher-messages-brand {
+  color: var(--ink);
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 750;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.teacher-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-warm, #f7f3e8);
+  border: 1px solid var(--border);
+  color: var(--muted-strong);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.teacher-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.teacher-header-action-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 150ms ease;
+}
+
+.teacher-header-action-item:hover {
+  background: var(--surface-warm);
+}
+
+.teacher-header-action-item svg {
+  flex-shrink: 0;
+  color: var(--muted-strong);
+}
+
+.teacher-header-logout {
+  margin: 0;
+}
+
+.teacher-header-logout button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.teacher-header-logout button:hover {
+  background: #fff0ed;
+  border-color: #fca5a5;
+  color: #b91c1c;
+}
+
+/* Grouped Navigation (5 Main Groups - Minimalist Underline Style) */
+.teacher-messages-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 16px 0 0;
+}
+
+.teacher-messages-nav__main {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: thin;
+}
+
+.teacher-messages-nav__main a {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 13px 16px;
+  color: var(--muted-strong);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  transition: color 150ms ease, border-color 150ms ease;
+  white-space: nowrap;
+}
+
+.teacher-messages-nav__main a:hover {
+  color: var(--ink);
+  background: transparent;
+}
+
+.teacher-messages-nav__main a[aria-current="page"] {
+  color: var(--ink);
+  font-weight: 700;
+  border-bottom-color: var(--brand-yellow);
+  background: transparent;
+}
+
+/* Sub-pills (Contextual Secondary Navigation - Minimal Soft Pills) */
+.teacher-messages-nav__sub {
+  display: flex;
+  align-items: center;
+  padding: 12px 0 4px;
+}
+
+.teacher-sub-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.teacher-sub-pills a {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--surface-warm);
+  color: var(--muted-strong);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  transition: all 150ms ease;
+  white-space: nowrap;
+}
+
+.teacher-sub-pills a:hover {
+  background: #ffffff;
+  color: var(--ink);
+  border-color: #beb8ab;
+}
+
+.teacher-sub-pills a.is-active {
+  background: var(--ink);
+  color: #ffffff;
+  border-color: var(--ink);
+  font-weight: 650;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.teacher-messages-header button:focus-visible,
+.teacher-messages-nav a:focus-visible,
+.teacher-header-action-item:focus-visible {
+  outline: 3px solid var(--focus, #155eef);
+  outline-offset: 3px;
+}
+
+/* Footer */
+.teacher-message-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(1200px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 24px 0;
+  color: var(--muted-strong);
+}
+
+.teacher-message-footer > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.teacher-message-footer a {
+  color: var(--ink);
+  font-weight: 650;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .teacher-messages-header {
+    padding-inline: 16px;
+    flex-wrap: wrap;
+  }
+  .teacher-header-action-item span {
+    display: none;
+  }
+  .teacher-messages-nav__main {
+    margin-inline: -16px;
+    padding-inline: 16px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .teacher-messages-nav__main a {
+    white-space: nowrap;
+    padding: 11px 12px;
+  }
+  .teacher-messages-nav__sub {
+    margin-inline: -16px;
+    padding-inline: 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .teacher-sub-pills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    width: max-content;
+  }
+  .teacher-sub-pills a {
+    white-space: nowrap;
+  }
+  .teacher-message-footer {
+    width: calc(100% - 32px);
+    flex-wrap: wrap;
+  }
+  .teacher-overview-page,
+  .teacher-workspace-container {
+    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 24px);
+  }
+}

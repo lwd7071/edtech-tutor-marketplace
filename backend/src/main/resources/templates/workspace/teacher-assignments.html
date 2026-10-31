@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#fffdf7">
+  <title>Bài tập | Tutor Match</title>
+  <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/public.css"><link rel="stylesheet" href="/css/student-dashboard.css"><link rel="stylesheet" href="/css/teacher-workspace.css"><link rel="stylesheet" href="/css/teacher-assignments.css">
+</head>
+<body>
+<div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-learning-page"><div class="student-dashboard__container">
+  <div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+  <header class="teacher-learning-heading"><div><p class="teacher-learning-eyebrow">Không gian gia sư</p><h1>Bài tập</h1><p>Giao bài cho học viên và theo dõi bài đã nộp.</p></div><a class="teacher-learning-button teacher-learning-button--primary" href="/teacher/assignments/new">+ Giao bài</a></header>
+  <p class="teacher-learning-alert" role="status" th:if="${assignmentNotice}" th:text="${assignmentNotice}">Đã lưu.</p>
+  <section class="teacher-learning-state teacher-learning-state--error" role="alert" th:if="${assignmentsUnavailable}"><h2>Chưa tải được danh sách bài tập</h2><p>Hãy thử tải lại sau.</p><a th:href="@{/teacher/assignments(page=${currentPage})}">Tải lại danh sách</a></section>
+  <section th:if="${!assignmentsUnavailable}" aria-labelledby="teacher-assignment-list-title">
+    <div class="teacher-learning-list-heading"><h2 id="teacher-assignment-list-title">Bài đã giao và bản nháp</h2><span th:text="${totalElements + ' bài'}">0 bài</span></div>
+    <div class="teacher-learning-state" th:if="${#lists.isEmpty(assignmentRows)}"><h3>Chưa có bài tập</h3><p>Tạo bài đầu tiên cho học viên đang học với bạn.</p><a class="teacher-learning-button teacher-learning-button--primary" href="/teacher/assignments/new">Tạo bài tập</a></div>
+    <ol class="teacher-assignment-list" th:unless="${#lists.isEmpty(assignmentRows)}">
+      <li th:each="row : ${assignmentRows}"><article class="teacher-assignment-card">
+        <div class="teacher-assignment-card__main"><p th:text="${row.studentName + ' · ' + row.subjectName}">Học viên · Môn học</p><h3><a th:href="@{/teacher/assignments/{id}(id=${row.data['id']})}" th:text="${row.data['title']}">Tên bài tập</a></h3><span>Hạn nộp: <span th:text="${row.dueLabel}">Chưa đặt hạn</span></span></div>
+        <div class="teacher-assignment-card__meta"><span class="teacher-learning-badge" th:text="${row.statusLabel}">Đã giao</span><span th:text="${'Bài nộp: ' + row.submissionLabel}">Bài nộp: Chưa nộp</span></div>
+        <a class="teacher-assignment-card__open" th:href="@{/teacher/assignments/{id}(id=${row.data['id']})}">Mở bài <span aria-hidden="true">→</span></a>
+      </article></li>
+    </ol>
+    <nav class="teacher-learning-pagination" aria-label="Phân trang bài tập" th:if="${totalPages > 1}"><a th:if="${hasPrevious}" th:href="@{/teacher/assignments(page=${currentPage - 1})}">← Trang trước</a><span th:text="|Trang ${currentPage + 1} / ${totalPages}|">Trang 1 / 1</span><a th:if="${hasNext}" th:href="@{/teacher/assignments(page=${currentPage + 1})}">Trang sau →</a></nav>
+  </section>
+</div></main>
+<footer class="teacher-message-footer"><div><a href="/">Tutor Match</a><span>Bài tập và bài nộp.</span></div><a href="/support">Trợ giúp</a></footer>
+</body></html>

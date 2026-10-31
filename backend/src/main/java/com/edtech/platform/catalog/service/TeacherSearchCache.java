@@ -8,6 +8,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+
 @Service
 @RequiredArgsConstructor
 public class TeacherSearchCache {
@@ -24,4 +25,5 @@ public class TeacherSearchCache {
         int size = params.size() == null ? 20 : params.size();
         return CachedTeacherSearchPage.from(repository.searchTeachers(params, PageRequest.of(page, size)));
     }
+
 }

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Gói học của tôi | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/student-packages.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-packages-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+    <header class="packages-heading">
+      <div><h1>Gói học của tôi</h1><p>Theo dõi số buổi, hạn dùng và trạng thái từng gói.</p></div>
+    </header>
+
+    <form class="package-filter" method="get" action="/student/packages">
+      <label for="package-status">Lọc theo trạng thái</label>
+      <select id="package-status" name="status">
+        <option th:each="option : ${statusOptions}" th:value="${option.value}" th:text="${option.label}" th:selected="${option.value == selectedStatus}">Tất cả gói học</option>
+      </select>
+      <input type="hidden" name="page" value="0">
+      <button class="package-filter__submit" type="submit">Áp dụng</button>
+      <a href="/student/packages">Xóa lọc</a>
+    </form>
+
+    <p class="package-filter-error" role="alert" th:if="${statusFilterInvalid}">Trạng thái lọc không hợp lệ. Đang hiển thị tất cả gói học.</p>
+
+    <div class="package-state package-state--error" role="alert" th:if="${packagesUnavailable}">
+      <h2>Chưa tải được danh sách gói học.</h2><p>Trạng thái và số buổi chưa thể hiển thị lúc này.</p><a href="/student/packages">Thử tải lại</a>
+    </div>
+    <div class="package-state" th:if="${!packagesUnavailable and #lists.isEmpty(packageRows)}">
+      <h2 th:text="${selectedStatus == 'ALL' ? 'Bạn chưa có gói học nào.' : 'Không có gói học trong trạng thái này.'}">Bạn chưa có gói học nào.</h2>
+      <p th:if="${selectedStatus == 'ALL'}">Xem hồ sơ và gói học của gia sư trước khi bắt đầu.</p>
+      <a class="dashboard-secondary-link" th:if="${selectedStatus == 'ALL'}" href="/teachers">Tìm gia sư</a>
+      <a class="package-state__reset" th:unless="${selectedStatus == 'ALL'}" href="/student/packages">Xem tất cả gói học</a>
+    </div>
+
+    <section class="package-results" aria-label="Danh sách gói học" th:if="${!packagesUnavailable and !#lists.isEmpty(packageRows)}">
+      <p class="package-result-count" th:text="|${totalElements} gói học|">0 gói học</p>
+      <ol class="package-grid">
+        <li class="package-card" th:each="row : ${packageRows}">
+          <header class="package-card__heading">
+            <div class="package-card__identity">
+              <p class="package-card__subject" th:text="${row.data.subject.name}">Môn học</p>
+              <h2 th:text="${row.data.packageName}">Tên gói</h2>
+              <p class="package-card__teacher">Gia sư <strong th:text="${row.data.teacher.fullName}">Tên gia sư</strong></p>
+            </div>
+            <span class="package-status" th:classappend="${' package-status--' + #strings.toLowerCase(row.data.status)}" th:text="${row.statusLabel}">Đang hoạt động</span>
+          </header>
+          <dl class="package-sessions" aria-label="Phân bổ số buổi học">
+            <div><dt>Còn lại</dt><dd th:text="${row.data.remainingSessions}">0</dd></div>
+            <div><dt>Đã lên lịch</dt><dd th:text="${row.data.reservedSessions}">0</dd></div>
+            <div><dt>Đã học</dt><dd th:text="${row.data.completedSessions}">0</dd></div>
+            <div><dt>Đã hoàn tiền</dt><dd th:text="${row.data.refundedSessions}">0</dd></div>
+          </dl>
+          <dl class="package-terms">
+            <div><dt>Hạn dùng</dt><dd th:text="${row.expiryLabel}">Không giới hạn</dd></div>
+            <div><dt>Đã thanh toán</dt><dd th:text="${row.priceLabel}">0 ₫</dd></div>
+          </dl>
+          <a class="package-card__link" th:href="@{/student/packages/{id}(id=${row.data.id})}">Xem chi tiết <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M3 10h13m-5-5 5 5-5 5"/></svg></a>
+        </li>
+      </ol>
+      <nav class="package-pagination" aria-label="Phân trang gói học" th:if="${totalPages > 1}">
+        <a th:if="${hasPrevious}" th:href="@{/student/packages(status=${selectedStatus == 'ALL' ? null : selectedStatus},page=${currentPage - 1},size=${pageSize})}">← Trang trước</a>
+        <span th:text="|Trang ${currentPage + 1} / ${totalPages}|">Trang 1 / 1</span>
+        <a th:if="${hasNext}" th:href="@{/student/packages(status=${selectedStatus == 'ALL' ? null : selectedStatus},page=${currentPage + 1},size=${pageSize})}">Trang sau →</a>
+      </nav>
+    </section>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

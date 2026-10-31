@@ -60,7 +60,7 @@ public class TeacherMarketplaceService {
     @Cacheable(value = "TEACHER_PUBLIC_PROFILE", key = "#teacherId")
     public TeacherPublicDetail getTeacherDetail(UUID teacherId) {
         TeacherSnapshot ts = teacherFacade.getTeacher(teacherId);
-        if (ts == null) {
+        if (ts == null || !"APPROVED".equals(ts.status()) || !ts.isVisible()) {
             throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
         }
         
@@ -74,7 +74,7 @@ public class TeacherMarketplaceService {
             ts.id(),
             ts.fullName(),
             ts.avatarUrl(),
-            ts.bioExcerpt(),
+            ts.bio() != null ? ts.bio() : ts.bioExcerpt(),
             ts.yearsOfExperience() != null ? ts.yearsOfExperience() : 0,
             ts.languages() != null ? ts.languages() : List.of(),
             ts.supportsOnline(),

@@ -16,6 +16,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
+import org.springframework.data.domain.Sort;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -66,6 +68,18 @@ public class SubjectFacadeImplTest {
             subjectFacade.getSubject(testSubjectId);
         });
         assertEquals(ErrorCode.SUBJECT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    void getActiveSubjects_ReturnsSortedActiveSnapshots() {
+        when(subjectRepository.findAllByIsActiveTrue(any(Sort.class))).thenReturn(List.of(testSubject));
+
+        List<SubjectSnapshot> subjects = subjectFacade.getActiveSubjects();
+
+        assertEquals(1, subjects.size());
+        assertEquals(testSubjectId, subjects.get(0).id());
+        assertEquals("Toán cơ bản", subjects.get(0).name());
+        assertTrue(subjects.get(0).isActive());
     }
 
     @Test

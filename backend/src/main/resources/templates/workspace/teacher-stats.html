@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Thống kê hoạt động | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/teacher-workspace.css">
+  <link rel="stylesheet" href="/css/teacher-stats.css">
+</head>
+<body>
+<div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-stats-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+    <header class="teacher-stats-heading">
+      <div><h1>Thống kê hoạt động</h1><p>Kết quả giảng dạy được tổng hợp từ các buổi học và đánh giá đã xác nhận.</p></div>
+      <p class="teacher-stats-updated" th:if="${stats != null}">Cập nhật <time th:if="${stats.calculatedAt != null}" th:datetime="${stats.calculatedAt}" th:text="${calculatedAtLabel}">21:00, 28/10/2026</time><span th:if="${stats.calculatedAt == null}" th:text="${calculatedAtLabel}">Chưa có thời gian cập nhật</span></p>
+    </header>
+
+    <section class="teacher-stats-state teacher-stats-state--error" role="alert" th:if="${statsUnavailable}">
+      <p>Chưa tải được thống kê.</p><a href="/teacher/stats">Thử tải lại</a>
+    </section>
+    <section class="teacher-stats-state" th:if="${statsEmpty}">
+      <h2>Chưa có dữ liệu thống kê</h2><p>Số liệu sẽ hiển thị khi hệ thống có kết quả giảng dạy được xác nhận.</p>
+    </section>
+    <div class="teacher-stats-content" th:if="${stats != null}">
+      <section class="teacher-stats-summary" aria-label="Chỉ số tổng quan">
+        <div class="teacher-stat"><span>Buổi học hoàn thành</span><strong th:text="${#numbers.formatInteger(stats.completedSessionCount, 1, 'COMMA')}">0</strong><small>Tổng số buổi đã xác nhận hoàn thành</small></div>
+        <div class="teacher-stat"><span>Đánh giá trung bình</span><strong th:text="${stats.reviewCount > 0 ? #numbers.formatDecimal(stats.averageRating, 1, 1) : '—'}">—</strong><small th:text="${stats.reviewCount > 0 ? #numbers.formatInteger(stats.reviewCount, 1, 'COMMA') + ' lượt đánh giá' : 'Chưa có đánh giá'}">Chưa có đánh giá</small></div>
+        <div class="teacher-stat"><span>Xếp hạng toàn hệ thống</span><strong th:text="${stats.globalRank > 0 ? '#' + #numbers.formatInteger(stats.globalRank, 1, 'COMMA') : '—'}">—</strong><small th:text="${stats.globalRank > 0 ? 'Điểm xếp hạng đã điều chỉnh: ' + #numbers.formatDecimal(stats.bayesianRating, 1, 1) : 'Chưa đủ dữ liệu xếp hạng'}">Chưa đủ dữ liệu xếp hạng</small></div>
+      </section>
+      <section class="teacher-stats-activity" aria-labelledby="teacher-stats-activity-title">
+        <div><h2 id="teacher-stats-activity-title">Hoạt động giảng dạy</h2><p>Các tỷ lệ được tính từ dữ liệu booking và học thử hiện có.</p></div>
+        <dl>
+          <div><dt>Tỷ lệ hoàn thành</dt><dd th:text="${completionRateLabel}">0%</dd></div>
+          <div><dt>Buổi học thử</dt><dd th:text="${#numbers.formatInteger(stats.trialSessionCount, 1, 'COMMA')}">0</dd></div>
+          <div><dt>Chuyển đổi từ học thử</dt><dd th:text="${trialConversionRateLabel}">0%</dd></div>
+        </dl>
+      </section>
+    </div>
+  </div>
+</main>
+<footer class="teacher-message-footer"><div><a href="/teacher/stats">Tutor Match</a><span>Thống kê hoạt động giảng dạy.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

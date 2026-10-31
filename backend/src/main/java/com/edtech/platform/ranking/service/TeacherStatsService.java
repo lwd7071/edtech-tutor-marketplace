@@ -2,8 +2,6 @@ package com.edtech.platform.ranking.service;
 
 import org.springframework.stereotype.Service;
 
-import com.edtech.platform.teacher.facade.TeacherFacade;
-import com.edtech.platform.teacher.facade.dto.TeacherSnapshot;
 import com.edtech.platform.common.config.RedisCacheConfig;
 import com.edtech.platform.ranking.domain.TeacherStats;
 import com.edtech.platform.ranking.dto.response.TeacherRankingItem;
@@ -14,7 +12,6 @@ import com.edtech.platform.booking.facade.BookingEligibilityFacade;
 import com.edtech.platform.ranking.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +19,6 @@ import com.edtech.platform.common.exception.BusinessException;
 import com.edtech.platform.common.exception.ErrorCode;
 
 import java.util.UUID;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +26,7 @@ import java.util.Map;
 public class TeacherStatsService {
 
     private final TeacherStatsRepository teacherStatsRepository;
-    private final TeacherFacade teacherFacade;
+    private final TeacherRankingCache teacherRankingCache;
     private final PlatformSettingsFacade platformSettingsFacade;
     private final BookingEligibilityFacade bookingEligibilityFacade;
     private final ReviewRepository reviewRepository;
@@ -58,25 +54,10 @@ public class TeacherStatsService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisCacheConfig.GLOBAL_RANKING, key = "(#subjectId == null ? 'ALL' : #subjectId.toString()) + '_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     public Page<TeacherRankingItem> getGlobalRanking(UUID subjectId, Pageable pageable) {
-        String subjectIdStr = subjectId != null ? subjectId.toString() : null;
-        Page<TeacherStats> statsPage = teacherStatsRepository.findGlobalRanking(subjectIdStr, pageable);
-        
-        Map<UUID, TeacherSnapshot> snapshots = teacherFacade.getTeachers(statsPage.getContent().stream().map(TeacherStats::getTeacherId).toList());
-        return statsPage.map(stats -> {
-            TeacherSnapshot snapshot = snapshots.get(stats.getTeacherId());
-
-            return TeacherRankingItem.builder()
-                    .teacherId(stats.getTeacherId())
-                    .fullName(snapshot != null ? snapshot.fullName() : null)
-                    .avatarUrl(snapshot != null ? snapshot.avatarUrl() : null)
-                    .bioExcerpt(snapshot != null ? snapshot.bioExcerpt() : null)
-                    .bayesianRating(stats.getBayesianRating())
-                    .completedSessionCount(stats.getCompletedSessionCount())
-                    .globalRank(stats.getGlobalRank())
-                    .build();
-        });
+        CachedTeacherRankingPage cachedPage = teacherRankingCache.get(
+                subjectId, pageable.getPageNumber(), pageable.getPageSize());
+        return cachedPage.toPage(pageable.getSort());
     }
 
     @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)

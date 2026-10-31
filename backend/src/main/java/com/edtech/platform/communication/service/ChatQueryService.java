@@ -53,6 +53,25 @@ public class ChatQueryService {
     }
 
     @Transactional(readOnly = true)
+    public ConversationView getConversation(UUID conversationId, UUID userId) {
+        Conversation conversation = conversations.findById(conversationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CONVERSATION_NOT_FOUND));
+        membership.requireMember(conversation, userId);
+        UUID teacherAccountId = membership.teacherAccountId(conversation);
+        UUID participantId = teacherAccountId.equals(userId) ? conversation.getStudentId() : teacherAccountId;
+        IdentitySnapshot participant = identities.getIdentity(participantId).orElse(null);
+        return ConversationView.builder()
+                .id(conversation.getId())
+                .teacherId(conversation.getTeacherId())
+                .studentId(conversation.getStudentId())
+                .participantId(participantId)
+                .participantName(participant == null ? "Người dùng" : participant.fullName())
+                .participantAvatar(participant == null ? null : participant.avatarUrl())
+                .lastMessageAt(conversation.getLastMessageAt())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
     public Page<MessageView> getMessages(UUID conversationId, UUID userId, Pageable pageable) {
         Conversation conversation = conversations.findById(conversationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CONVERSATION_NOT_FOUND));

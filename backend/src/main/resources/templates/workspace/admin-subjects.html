@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Duyệt đề xuất môn học | Tutor Match</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/admin-dashboard.css">
+  <link rel="stylesheet" href="/css/admin-subjects.css">
+</head>
+<body>
+<a class="admin-dashboard__skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<div th:replace="~{fragments/admin-workspace-header :: header}"></div>
+<main class="admin-dashboard admin-subjects" id="main-content">
+  <div class="admin-dashboard__container">
+    <div th:replace="~{fragments/admin-workspace-header :: nav}"></div>
+    <header class="admin-dashboard__heading">
+      <h1>Duyệt đề xuất môn học</h1>
+      <p>Xem đề xuất từ gia sư rồi gắn với môn đang có hoặc tạo môn mới trong danh mục.</p>
+    </header>
+
+    <div class="admin-subjects__notice admin-subjects__notice--success" role="status" th:if="${actionSuccess}" th:text="${actionSuccess}"></div>
+    <div class="admin-subjects__notice admin-subjects__notice--error" role="alert" th:if="${actionError}" th:text="${actionError}"></div>
+    <div class="admin-subjects__catalog-warning" role="alert" th:if="${subjectsUnavailable}">
+      Chưa tải được danh mục môn đang hoạt động. Bạn vẫn có thể kiểm tra đề xuất và tạo môn mới; việc gắn môn có sẵn tạm thời chưa dùng được.
+    </div>
+
+    <section class="admin-subjects__queue" aria-labelledby="subject-proposals-title">
+      <div class="admin-subjects__queue-heading">
+        <div>
+          <h2 id="subject-proposals-title">Đề xuất từ gia sư</h2>
+          <p th:if="${!proposalsUnavailable}" th:text="${totalElements + ' đề xuất đang chờ'}">0 đề xuất</p>
+        </div>
+        <label class="admin-subjects__size-label" for="subject-page-size">Mỗi trang</label>
+        <form class="admin-subjects__size-form" method="get" action="/admin/subjects">
+          <input type="hidden" name="page" value="0">
+          <select id="subject-page-size" name="size">
+            <option value="10" th:selected="${pageSize == 10}">10</option>
+            <option value="20" th:selected="${pageSize == 20}">20</option>
+            <option value="50" th:selected="${pageSize == 50}">50</option>
+          </select>
+          <button type="submit">Áp dụng</button>
+        </form>
+      </div>
+
+      <div class="admin-subjects__error" th:if="${proposalsUnavailable}" role="alert">
+        <p>Chưa tải được đề xuất môn học.</p>
+        <a th:href="@{/admin/subjects(page=${pageNumber},size=${pageSize})}">Thử tải lại</a>
+      </div>
+
+      <div class="admin-subjects__empty" th:if="${!proposalsUnavailable and #lists.isEmpty(proposals)}">
+        <h3>Chưa có đề xuất đang chờ</h3>
+        <p>Đề xuất mới từ gia sư sẽ xuất hiện trong danh sách này.</p>
+      </div>
+
+      <ul class="admin-subjects__list" th:if="${!proposalsUnavailable and !#lists.isEmpty(proposals)}">
+        <li th:each="proposalRow : ${proposals}">
+          <article class="admin-subjects__proposal">
+            <header class="admin-subjects__proposal-heading">
+              <div>
+                <h3 th:text="${proposalRow.data.proposedName}">Tên môn được đề xuất</h3>
+                <p th:text="${proposalRow.educationLevelLabel}">Cấp học</p>
+              </div>
+              <span class="admin-subjects__version" th:text="${'Phiên bản ' + proposalRow.data.version}">Phiên bản 0</span>
+            </header>
+            <p class="admin-subjects__description" th:text="${#strings.isEmpty(proposalRow.data.description) ? 'Gia sư chưa thêm mô tả.' : proposalRow.data.description}">Mô tả đề xuất</p>
+            <dl class="admin-subjects__metadata">
+              <div><dt>Gia sư</dt><dd th:text="${proposalRow.data.teacherId}">UUID</dd></div>
+              <div><dt>Trạng thái</dt><dd>Chờ duyệt</dd></div>
+            </dl>
+
+            <div class="admin-subjects__actions">
+              <details class="admin-subjects__action" th:open="${linkProposalId == proposalRow.data.proposalId.toString()}">
+                <summary>Gắn với môn đang có</summary>
+                <form method="post" th:action="@{/admin/subjects/{id}/link(id=${proposalRow.data.proposalId})}">
+                  <input type="hidden" name="version" th:value="${proposalRow.data.version}">
+                  <input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" name="size" th:value="${pageSize}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'existing-subject-' + proposalRow.data.proposalId}">Môn đang hoạt động</label>
+                  <select required name="existingSubjectId" th:id="${'existing-subject-' + proposalRow.data.proposalId}" th:disabled="${subjectsUnavailable or #lists.isEmpty(activeSubjects)}">
+                    <option value="">Chọn môn học</option>
+                    <option th:each="option : ${activeSubjects}" th:value="${option.data.id}" th:text="${option.displayLabel()}" th:selected="${linkProposalId == proposalRow.data.proposalId.toString() and linkSubjectId == option.data.id.toString()}">Môn học</option>
+                  </select>
+                  <label th:for="${'link-note-' + proposalRow.data.proposalId}">Ghi chú cho gia sư (không bắt buộc)</label>
+                  <textarea name="note" rows="2" maxlength="1000" th:id="${'link-note-' + proposalRow.data.proposalId}" th:text="${linkProposalId == proposalRow.data.proposalId.toString() ? linkNote : ''}"></textarea>
+                  <button type="submit" th:disabled="${subjectsUnavailable or #lists.isEmpty(activeSubjects)}">Gắn môn</button>
+                  <p class="admin-subjects__form-help" th:if="${#lists.isEmpty(activeSubjects) and !subjectsUnavailable}">Chưa có môn đang hoạt động để gắn.</p>
+                </form>
+              </details>
+
+              <details class="admin-subjects__action" th:open="${createProposalId == proposalRow.data.proposalId.toString()}">
+                <summary>Tạo môn mới</summary>
+                <form method="post" th:action="@{/admin/subjects/{id}/create(id=${proposalRow.data.proposalId})}">
+                  <input type="hidden" name="version" th:value="${proposalRow.data.version}">
+                  <input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" name="size" th:value="${pageSize}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'subject-code-' + proposalRow.data.proposalId}">Mã môn học</label>
+                  <input required maxlength="50" pattern="[A-Za-z0-9_-]+" name="code" placeholder="Ví dụ: MATH_12" th:id="${'subject-code-' + proposalRow.data.proposalId}" th:value="${createProposalId == proposalRow.data.proposalId.toString() and createForm != null ? createForm.code : ''}">
+                  <label th:for="${'subject-name-' + proposalRow.data.proposalId}">Tên môn chuẩn hóa</label>
+                  <input required maxlength="150" name="name" th:id="${'subject-name-' + proposalRow.data.proposalId}" th:value="${createProposalId == proposalRow.data.proposalId.toString() and createForm != null ? createForm.name : proposalRow.data.proposedName}">
+                  <label th:for="${'subject-level-' + proposalRow.data.proposalId}">Cấp học</label>
+                  <select required name="educationLevel" th:id="${'subject-level-' + proposalRow.data.proposalId}">
+                    <option value="">Chọn cấp học</option>
+                    <option th:each="level : ${educationLevels}" th:value="${level.value}" th:text="${level.label}" th:selected="${createProposalId == proposalRow.data.proposalId.toString() and createForm != null ? createForm.educationLevel == level.value : proposalRow.data.educationLevel == level.value}">Cấp học</option>
+                  </select>
+                  <label th:for="${'subject-description-' + proposalRow.data.proposalId}">Mô tả môn học</label>
+                  <textarea maxlength="2000" rows="3" name="description" th:id="${'subject-description-' + proposalRow.data.proposalId}" th:text="${createProposalId == proposalRow.data.proposalId.toString() and createForm != null ? createForm.description : proposalRow.data.description}"></textarea>
+                  <label th:for="${'subject-note-' + proposalRow.data.proposalId}">Ghi chú cho gia sư (không bắt buộc)</label>
+                  <textarea maxlength="1000" rows="2" name="note" th:id="${'subject-note-' + proposalRow.data.proposalId}" th:text="${createProposalId == proposalRow.data.proposalId.toString() and createForm != null ? createForm.note : ''}"></textarea>
+                  <button type="submit">Phê duyệt và tạo môn</button>
+                </form>
+              </details>
+
+              <details class="admin-subjects__action admin-subjects__action--reject" th:open="${rejectProposalId == proposalRow.data.proposalId.toString()}">
+                <summary>Từ chối đề xuất</summary>
+                <form method="post" th:action="@{/admin/subjects/{id}/reject(id=${proposalRow.data.proposalId})}">
+                  <input type="hidden" name="version" th:value="${proposalRow.data.version}">
+                  <input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" name="size" th:value="${pageSize}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'reject-reason-' + proposalRow.data.proposalId}">Lý do từ chối</label>
+                  <textarea required rows="3" name="reason" th:id="${'reject-reason-' + proposalRow.data.proposalId}" th:text="${rejectProposalId == proposalRow.data.proposalId.toString() ? rejectReason : ''}"></textarea>
+                  <button type="submit">Xác nhận từ chối</button>
+                </form>
+              </details>
+            </div>
+          </article>
+        </li>
+      </ul>
+
+      <nav class="admin-subjects__pagination" th:if="${!proposalsUnavailable and totalPages > 1}" aria-label="Phân trang đề xuất môn học">
+        <a th:if="${hasPrevious}" th:href="@{/admin/subjects(page=${pageNumber - 1},size=${pageSize})}">Trang trước</a>
+        <span th:text="${'Trang ' + (pageNumber + 1) + ' / ' + totalPages}">Trang 1 / 1</span>
+        <a th:if="${hasNext}" th:href="@{/admin/subjects(page=${pageNumber + 1},size=${pageSize})}">Trang sau</a>
+      </nav>
+    </section>
+  </div>
+</main>
+</body>
+</html>

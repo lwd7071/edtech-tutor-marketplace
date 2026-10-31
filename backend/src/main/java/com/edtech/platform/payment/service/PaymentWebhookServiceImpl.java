@@ -111,6 +111,7 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
                 invoice.getPackageNameSnapshot(),
                 invoice.getTotalSessionsSnapshot(),
                 invoice.getDurationDaysSnapshot(),
+                invoice.getSessionDurationMinutesSnapshot(),
                 invoice.getAmountVnd(),
                 commissionRate,
                 payment.paidAt()

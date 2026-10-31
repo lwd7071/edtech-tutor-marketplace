@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#fffdf7">
+  <title>Gói học | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/public.css"><link rel="stylesheet" href="/css/student-dashboard.css"><link rel="stylesheet" href="/css/teacher-workspace.css"><link rel="stylesheet" href="/css/teacher-packages.css">
+</head>
+<body>
+<div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-packages-page"><div class="student-dashboard__container">
+  <div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+  <header class="teacher-packages-heading"><div><h1>Gói học</h1><p>Thiết lập số buổi, thời hạn và giá để học viên cân nhắc trước khi mua.</p></div><a class="teacher-packages-primary" href="/teacher/packages/create">Tạo gói học</a></header>
+  <p class="teacher-packages-notice" role="status" th:if="${packageNotice != null}" th:text="${packageNotice}">Đã cập nhật gói.</p>
+  <p class="teacher-packages-notice teacher-packages-notice--error" role="alert" th:if="${packageError != null}" th:text="${packageError}">Không thể thực hiện thao tác.</p>
+  <section class="teacher-packages-content" aria-labelledby="teacher-packages-title">
+    <div class="teacher-packages-content__heading"><div><h2 id="teacher-packages-title">Gói của bạn</h2><p>Gói đang bán được hiển thị trên hồ sơ công khai.</p></div><span th:if="${!packagesUnavailable}" th:text="${packagePage.totalElements} + ' gói'">0 gói</span></div>
+    <div class="teacher-packages-state teacher-packages-state--error" role="alert" th:if="${packagesUnavailable}"><h3>Chưa tải được danh sách gói</h3><p>Thử tải lại trang. Các thao tác với gói tạm thời bị ẩn.</p><a href="/teacher/packages">Tải lại danh sách</a></div>
+    <div class="teacher-packages-empty" th:if="${!packagesUnavailable and packagePage.empty}"><h3>Bạn chưa tạo gói học</h3><p>Tạo gói đầu tiên sau khi hồ sơ gia sư được duyệt.</p><a href="/teacher/packages/create">Tạo gói học</a></div>
+    <ul class="teacher-package-list" th:if="${!packagesUnavailable and !packagePage.empty}" aria-label="Danh sách gói học">
+      <li class="teacher-package-row" th:each="pkg : ${packagePage.content}">
+        <div class="teacher-package-row__main"><p class="teacher-package-row__subject" th:text="${pkg.subjectName}">Toán học</p><h3><a th:href="@{/teacher/packages/{id}(id=${pkg.id})}" th:text="${pkg.name}">Gói ôn tập</a></h3><p class="teacher-package-row__terms" th:text="${pkg.totalSessions + ' buổi · ' + pkg.sessionDurationMinutes + ' phút/buổi · ' + pkg.durationDays + ' ngày'}">10 buổi · 60 phút/buổi · 90 ngày</p></div>
+        <div class="teacher-package-row__price"><strong th:text="${#numbers.formatInteger(pkg.priceVnd, 1, 'POINT')} + ' ₫'">1.000.000 ₫</strong><span th:classappend="${' status-' + #strings.toLowerCase(pkg.status.name())}" th:text="${pkg.status == T(com.edtech.platform.catalog.domain.PackageStatus).ACTIVE ? 'Đang bán' : (pkg.status == T(com.edtech.platform.catalog.domain.PackageStatus).DRAFT ? 'Bản nháp' : 'Tạm ngưng')}">Đang bán</span></div>
+      </li>
+    </ul>
+    <nav class="teacher-packages-pagination" aria-label="Phân trang" th:if="${!packagesUnavailable and packagePage.totalPages > 1}">
+      <a th:if="${packagePage.hasPrevious()}" th:href="@{/teacher/packages(page=${packagePage.number - 1})}">Trang trước</a><span th:text="${'Trang ' + (packagePage.number + 1) + ' / ' + packagePage.totalPages}">Trang 1 / 2</span><a th:if="${packagePage.hasNext()}" th:href="@{/teacher/packages(page=${packagePage.number + 1})}">Trang sau</a>
+    </nav>
+  </section>
+</div></main>
+<footer class="teacher-message-footer"><div><a href="/teacher/packages">Tutor Match</a><span>Quản lý gói học.</span></div><a href="/support">Trợ giúp</a></footer>
+</body></html>

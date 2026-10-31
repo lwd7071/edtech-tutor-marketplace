@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Bài tập của tôi | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/student-learning.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-learning-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+    <header class="learning-heading">
+      <div><h1>Bài tập của tôi</h1><p>Theo dõi hạn nộp, gửi câu trả lời và xem nhận xét của gia sư.</p></div>
+    </header>
+    <form class="learning-filter" method="get" action="/student/assignments">
+      <label for="assignment-progress">Tiến độ</label>
+      <select id="assignment-progress" name="progress">
+        <option th:each="option : ${progressOptions}" th:value="${option.value}" th:text="${option.label}" th:selected="${option.value == selectedProgress}">Chưa làm</option>
+      </select>
+      <input type="hidden" name="page" value="0">
+      <label for="assignment-page-size">Số bài mỗi trang</label>
+      <select id="assignment-page-size" name="size">
+        <option value="10" th:selected="${pageSize == 10}">10</option><option value="20" th:selected="${pageSize == 20}">20</option><option value="50" th:selected="${pageSize == 50}">50</option><option value="100" th:selected="${pageSize == 100}">100</option>
+      </select>
+      <button class="learning-button learning-button--primary" type="submit">Lọc bài tập</button>
+    </form>
+    <p class="learning-alert" role="status" th:if="${submissionNotice != null}" th:text="${submissionNotice}">Đã lưu bài làm.</p>
+    <p class="learning-alert learning-alert--error" role="alert" th:if="${progressInvalid}">Tiến độ lọc không hợp lệ. Đang hiển thị bài chưa làm.</p>
+    <section class="learning-state learning-state--error" role="alert" th:if="${assignmentsUnavailable}">
+      <h2>Chưa tải được danh sách bài tập</h2><p>Hãy kiểm tra kết nối rồi thử lại.</p><a class="learning-button learning-button--secondary" th:href="@{/student/assignments(progress=${selectedProgress})}">Thử tải lại</a>
+    </section>
+    <section class="learning-results" aria-labelledby="assignment-list-title" th:if="${!assignmentsUnavailable}">
+      <header class="learning-results__heading"><h2 id="assignment-list-title" th:text="${selectedProgressLabel}">Chưa làm</h2><span th:text="|${totalElements} bài|">0 bài</span></header>
+      <div class="learning-state" th:if="${#lists.isEmpty(assignmentRows)}">
+        <h3>Chưa có bài tập ở mục này</h3><p>Bài tập mới sẽ xuất hiện tại đây khi gia sư giao bài.</p>
+        <a class="learning-button learning-button--secondary" th:if="${selectedProgress != 'TODO'}" th:href="@{/student/assignments(progress='TODO')}">Xem bài chưa làm</a>
+      </div>
+      <ol class="assignment-list" th:unless="${#lists.isEmpty(assignmentRows)}">
+        <li th:each="row : ${assignmentRows}">
+          <article class="assignment-row">
+            <div class="assignment-row__main">
+              <h3><a th:href="@{/student/assignments/{id}(id=${row.data.id})}" th:text="${row.data.title}">Tên bài tập</a></h3>
+              <p><span>Hạn nộp</span> <time th:if="${row.data.dueAt != null}" th:datetime="${row.data.dueAt}" th:text="${row.dueLabel}">19:00, 28/10/2026</time><span th:unless="${row.data.dueAt != null}" th:text="${row.dueLabel}">Chưa đặt hạn</span></p>
+            </div>
+            <div class="assignment-row__status">
+              <span th:if="${row.overdue and selectedProgress == 'TODO'}" class="learning-badge learning-badge--danger">Quá hạn</span>
+              <span class="learning-badge" th:text="${row.progressLabel}">Chưa làm</span>
+              <span class="learning-badge" th:if="${row.statusLabel == 'Đã đóng'}" th:text="${row.statusLabel}">Đã đóng</span>
+            </div>
+            <a class="assignment-row__open" th:href="@{/student/assignments/{id}(id=${row.data.id})}">Mở bài tập <span aria-hidden="true">→</span></a>
+          </article>
+        </li>
+      </ol>
+      <nav class="learning-pagination" aria-label="Phân trang bài tập" th:if="${totalPages > 1}">
+        <a th:if="${hasPrevious}" th:href="@{/student/assignments(progress=${selectedProgress},page=${currentPage - 1},size=${pageSize})}">← Trang trước</a>
+        <span th:text="|Trang ${currentPage + 1} / ${totalPages}|">Trang 1 / 1</span>
+        <a th:if="${hasNext}" th:href="@{/student/assignments(progress=${selectedProgress},page=${currentPage + 1},size=${pageSize})}">Trang sau →</a>
+      </nav>
+    </section>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

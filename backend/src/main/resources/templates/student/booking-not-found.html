@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7"><title>Không tìm thấy buổi học | Tutor Match</title>
+  <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/public.css"><link rel="stylesheet" href="/css/student-dashboard.css"><link rel="stylesheet" href="/css/student-bookings.css">
+</head>
+<body><div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-bookings-page"><div class="student-dashboard__container">
+  <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+  <section class="booking-state"><h1>Không tìm thấy buổi học</h1><p>Buổi học không tồn tại hoặc không thuộc tài khoản của bạn.</p><a href="/student/bookings">Quay lại lịch học</a></section>
+</div></main>
+<footer class="student-footer"><div><a href="/student">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer></body></html>

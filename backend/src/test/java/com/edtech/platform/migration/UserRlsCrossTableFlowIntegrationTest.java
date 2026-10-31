@@ -88,8 +88,8 @@ public class UserRlsCrossTableFlowIntegrationTest extends AuthIntegrationTestBas
                     INSERT INTO public.student_packages (id, student_id, teacher_id, subject_id, pricing_package_id, invoice_id,
                                                         package_name_snapshot, total_sessions, remaining_sessions, reserved_sessions,
                                                         completed_sessions, refunded_sessions, purchase_price_vnd, commission_rate,
-                                                        starts_at, expires_at, status)
-                    VALUES (?, ?, ?, ?, ?, ?, 'Gói 10 buổi Toán', 10, 10, 0, 0, 0, 2000000, 0.1500, ?, ?, 'ACTIVE')
+                                                        starts_at, expires_at, status, session_duration_minutes_snapshot)
+                    VALUES (?, ?, ?, ?, ?, ?, 'Gói 10 buổi Toán', 10, 10, 0, 0, 0, 2000000, 0.1500, ?, ?, 'ACTIVE', 60)
                     """, studentPackageId, studentUserId, teacherProfileId, subjectId, pricingPackageId, invoiceId,
                     java.sql.Timestamp.from(startsAt), java.sql.Timestamp.from(expiresAt));
 

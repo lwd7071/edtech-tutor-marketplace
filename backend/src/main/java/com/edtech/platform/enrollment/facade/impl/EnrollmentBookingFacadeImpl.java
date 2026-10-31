@@ -39,6 +39,7 @@ public class EnrollmentBookingFacadeImpl implements EnrollmentBookingFacade {
                 p.getCompletedSessions(),
                 p.getRefundedSessions(),
                 p.getTotalSessions(),
+                p.getSessionDurationMinutesSnapshot(),
                 p.getPurchasePriceVnd(),
                 p.getCommissionRate(),
                 p.getExpiresAt(),

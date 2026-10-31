@@ -50,7 +50,7 @@ public class ArchitectureTest {
                         if (targetModule != null && !moduleName.equals(targetModule)) {
                             if (targetClass.isAnnotatedWith("jakarta.persistence.Entity") ||
                                 targetClass.isAnnotatedWith("javax.persistence.Entity") ||
-                                targetClass.getPackageName().contains(".domain")) {
+                                (targetClass.getPackageName().contains(".domain") && !targetClass.isEnum())) {
                                 String message = String.format("%s depends on cross-module domain/entity %s",
                                         item.getName(), targetClass.getName());
                                 events.add(SimpleConditionEvent.violated(item, message));

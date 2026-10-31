@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Tổng quan gia sư | Tutor Match</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/teacher-workspace.css">
+  <link rel="stylesheet" href="/css/teacher-dashboard.css">
+</head>
+<body>
+<div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-overview-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+
+    <header class="teacher-overview-heading">
+      <div>
+        <h1>Tổng quan công việc</h1>
+        <p>Các buổi học và việc đang cần bạn xem.</p>
+      </div>
+    </header>
+
+    <!-- Banner trạng thái hồ sơ tinh tế -->
+    <section class="teacher-overview-profile" aria-labelledby="teacher-overview-profile-title"
+             th:classappend="${profileRejected == true ? 'teacher-overview-profile--warning' : ''}">
+      <div class="teacher-overview-section-heading">
+        <h2 id="teacher-overview-profile-title">Hồ sơ giảng dạy</h2>
+        <a th:href="@{/teacher/profile}" th:text="${profileActionLabel ?: 'Mở hồ sơ'}">Mở hồ sơ</a>
+      </div>
+      <p class="teacher-overview-status" th:if="${profileUnavailable}" role="alert">
+        Chưa tải được trạng thái hồ sơ. <a href="/teacher/profile">Mở hồ sơ để thử lại</a>
+      </p>
+      <div th:if="${!profileUnavailable}">
+        <p class="teacher-overview-status" th:text="${profileStatusLabel}">Hồ sơ chưa gửi xét duyệt</p>
+        <p class="teacher-overview-rejection" th:if="${profileRejected and profileRejectionReason != null}">
+          Lý do cần chỉnh sửa: <span th:text="${profileRejectionReason}">Lý do</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- 4 KPI Stat Cards Đo lường nhanh -->
+    <div class="teacher-stat-cards" aria-label="Chỉ số hoạt động nhanh">
+      <div class="teacher-stat-card">
+        <span class="teacher-stat-card__label">Lịch hôm nay</span>
+        <strong class="teacher-stat-card__value" th:text="${nextBooking != null ? '1 buổi' : '0 buổi'}">0 buổi</strong>
+        <span class="teacher-stat-card__hint" th:text="${nextBooking != null ? nextBooking.subjectName : 'Chưa có lịch'}">Chưa có lịch</span>
+      </div>
+      <div class="teacher-stat-card">
+        <span class="teacher-stat-card__label">Yêu cầu chờ</span>
+        <strong class="teacher-stat-card__value" th:text="${(pendingBookingRequestCount ?: 0) + (pendingTrialCount ?: 0) + ' yêu cầu'}">0 yêu cầu</strong>
+        <span class="teacher-stat-card__hint" th:text="${(pendingBookingRequestCount ?: 0) + ' đặt buổi · ' + (pendingTrialCount ?: 0) + ' học thử'}">0 đặt buổi · 0 học thử</span>
+      </div>
+      <div class="teacher-stat-card">
+        <span class="teacher-stat-card__label">Bài tập cần chấm</span>
+        <strong class="teacher-stat-card__value" th:text="${#lists.size(assignmentRows ?: {}) + ' bài'}">0 bài</strong>
+        <span class="teacher-stat-card__hint">Bài tập gần đây</span>
+      </div>
+      <div class="teacher-stat-card">
+        <span class="teacher-stat-card__label">Số dư khả dụng</span>
+        <strong class="teacher-stat-card__value" th:text="${availableBalanceLabel ?: '0 ₫'}">0 ₫</strong>
+        <span class="teacher-stat-card__hint">Sẵn sàng rút tiền</span>
+      </div>
+    </div>
+
+    <!-- Main Dashboard Grid 2 Cột (60% Trái / 40% Phải) -->
+    <div class="teacher-dashboard-main-grid">
+      <!-- CỘT TRÁI: LỊCH TRÌNH & CA DẠY -->
+      <div class="teacher-dashboard-column teacher-dashboard-column--main">
+        <!-- Card 1: Buổi học sắp tới -->
+        <section class="teacher-overview-section teacher-overview-next teacher-card-section" aria-labelledby="teacher-overview-next-title">
+          <div class="teacher-overview-section-heading">
+            <h2 id="teacher-overview-next-title">Buổi học sắp tới</h2>
+            <div class="teacher-section-actions">
+              <a class="teacher-card-action-link" href="/teacher/bookings">Lịch dạy đầy đủ</a>
+              <span class="teacher-action-divider" aria-hidden="true">·</span>
+              <a class="teacher-card-action-link" href="/teacher/availability">Xem lịch rảnh</a>
+            </div>
+          </div>
+          <div class="teacher-overview-error" role="alert" th:if="${bookingsUnavailable}">
+            <p>Chưa tải được lịch dạy.</p><a href="/teacher/bookings">Mở lịch dạy để thử lại</a>
+          </div>
+          <div class="teacher-overview-empty" th:if="${!bookingsUnavailable and nextBooking == null}">
+            <p>Chưa có buổi học sắp tới.</p>
+            <a class="teacher-empty-cta" href="/teacher/availability">+ Xem và thêm khung giờ rảnh</a>
+          </div>
+          <div class="teacher-overview-next-detail" th:if="${nextBooking != null}">
+            <p class="teacher-overview-next-title" th:text="${nextBooking.subjectName + ' · ' + nextBooking.studentName}">Môn học · Học viên</p>
+            <p class="teacher-overview-next-meta">
+              <time th:datetime="${nextBooking.startTime}" th:text="${nextBooking.dateLabel}">Thời gian</time>
+              <span aria-hidden="true"> · </span><span th:text="${nextBooking.deliveryModeLabel}">Online</span>
+            </p>
+            <a class="teacher-overview-primary-link" th:href="@{/teacher/bookings/{id}(id=${nextBooking.id})}">Mở buổi học</a>
+          </div>
+        </section>
+
+        <!-- Card 2: Lịch dạy sắp tới -->
+        <section class="teacher-overview-schedule teacher-card-section" aria-labelledby="teacher-overview-schedule-title" th:if="${!bookingsUnavailable}">
+          <div class="teacher-overview-section-heading">
+            <h2 id="teacher-overview-schedule-title">Lịch dạy sắp tới</h2>
+            <div class="teacher-section-actions">
+              <a class="teacher-card-action-link" href="/teacher/bookings">Xem toàn bộ lịch</a>
+              <span class="teacher-action-divider" aria-hidden="true">·</span>
+              <a class="teacher-card-action-link" href="/teacher/availability">Tạo khung giờ rảnh</a>
+            </div>
+          </div>
+          <div class="teacher-overview-empty" th:if="${!bookingsUnavailable and #lists.isEmpty(bookingRows)}">
+            <p>Chưa có buổi học sắp tới.</p>
+          </div>
+          <ol class="teacher-overview-schedule-list" th:if="${!bookingsUnavailable and !#lists.isEmpty(bookingRows)}">
+            <li th:each="booking : ${bookingRows}">
+              <time th:datetime="${booking.startTime}" th:text="${booking.dateLabel}">Thời gian</time>
+              <strong th:text="${booking.subjectName}">Môn học</strong>
+              <span th:text="${booking.studentName}">Học viên</span>
+              <a class="teacher-schedule-open-link" th:href="@{/teacher/bookings/{id}(id=${booking.id})}">Mở buổi học</a>
+            </li>
+          </ol>
+        </section>
+      </div>
+
+      <!-- CỘT PHẢI: YÊU CẦU, BÀI TẬP & THU NHẬP -->
+      <div class="teacher-dashboard-column teacher-dashboard-column--side">
+        <!-- Card 3: Yêu cầu đặt buổi đang chờ -->
+        <section class="teacher-overview-requests teacher-card-section" aria-labelledby="teacher-overview-requests-title">
+          <div class="teacher-overview-section-heading">
+            <h2 id="teacher-overview-requests-title">Yêu cầu đặt buổi đang chờ</h2>
+            <a class="teacher-card-action-link" th:href="@{/teacher/booking-requests(status='PENDING')}">Mở danh sách →</a>
+          </div>
+          <p class="teacher-overview-request-count" th:if="${!bookingRequestsUnavailable and pendingBookingRequestCount > 0}"
+             th:text="${pendingBookingRequestCount + ' yêu cầu cần phản hồi'}">0 yêu cầu cần phản hồi</p>
+          <div class="teacher-overview-error" role="alert" th:if="${bookingRequestsUnavailable}">
+            <p>Chưa tải được yêu cầu đặt buổi.</p><a th:href="@{/teacher/booking-requests(status='PENDING')}">Tải lại danh sách</a>
+          </div>
+          <div class="teacher-overview-empty" th:if="${!bookingRequestsUnavailable and #lists.isEmpty(bookingRequestRows)}">
+            <p>Không có yêu cầu đặt buổi nào đang chờ.</p>
+          </div>
+          <ul class="teacher-overview-list" th:if="${!bookingRequestsUnavailable and !#lists.isEmpty(bookingRequestRows)}">
+            <li th:each="request : ${bookingRequestRows}">
+              <div><strong th:text="${request.studentName + ' · ' + request.subjectName}">Học viên · Môn học</strong>
+                <span>Giờ học mong muốn</span></div>
+              <time th:text="${request.dateLabel}">Thời gian đề xuất</time>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Card 4: Yêu cầu học thử đang chờ -->
+        <section class="teacher-overview-section teacher-overview-trials teacher-card-section" aria-labelledby="teacher-overview-trials-title">
+          <div class="teacher-overview-section-heading">
+            <h2 id="teacher-overview-trials-title">Yêu cầu học thử đang chờ</h2>
+            <span class="teacher-badge-count" th:if="${!trialsUnavailable and pendingTrialCount > 0}" th:text="${pendingTrialCount + ' yêu cầu'}">0 yêu cầu</span>
+          </div>
+          <div class="teacher-overview-error" role="alert" th:if="${trialsUnavailable}">
+            <p>Chưa tải được yêu cầu học thử.</p><a href="/teacher/trial-requests">Mở danh sách để thử lại</a>
+          </div>
+          <div class="teacher-overview-empty" th:if="${!trialsUnavailable and #lists.isEmpty(trialRows)}">
+            <p>Không có yêu cầu nào đang chờ phản hồi.</p>
+            <a class="teacher-card-action-link" href="/teacher/trial-requests">Xem yêu cầu học thử →</a>
+          </div>
+          <ul class="teacher-overview-list" th:if="${!trialsUnavailable and !#lists.isEmpty(trialRows)}">
+            <li th:each="trial : ${trialRows}">
+              <div><strong th:text="${trial.studentName + ' · ' + trial.subjectName}">Học viên · Môn học</strong>
+                <span>Thời gian đề xuất</span></div>
+              <time th:datetime="${trial.preferredStartTime}" th:text="${trial.dateLabel}">Thời gian</time>
+            </li>
+          </ul>
+          <a class="teacher-overview-list-link" th:if="${!trialsUnavailable and !#lists.isEmpty(trialRows)}" href="/teacher/trial-requests">Xem và phản hồi →</a>
+        </section>
+
+        <!-- Hàng 2 thẻ nằm ngang: Bài tập có bài nộp & Thu nhập -->
+        <div class="teacher-overview-side-row">
+          <!-- Card: Bài tập có bài nộp -->
+          <section class="teacher-overview-section teacher-overview-assignments teacher-card-section" aria-labelledby="teacher-overview-assignments-title">
+            <div class="teacher-overview-section-heading">
+              <h2 id="teacher-overview-assignments-title">Bài tập có bài nộp</h2>
+              <a class="teacher-card-action-link" href="/teacher/assignments">Tất cả bài tập →</a>
+            </div>
+            <div class="teacher-overview-error" role="alert" th:if="${assignmentsUnavailable}">
+              <p>Chưa tải được bài tập.</p><a href="/teacher/assignments">Mở bài tập để thử lại</a>
+            </div>
+            <div class="teacher-overview-empty" th:if="${!assignmentsUnavailable and #lists.isEmpty(assignmentRows)}">
+              <p>Chưa có bài nộp trong các bài tập gần đây.</p>
+            </div>
+            <ul class="teacher-overview-list" th:if="${!assignmentsUnavailable and !#lists.isEmpty(assignmentRows)}">
+              <li th:each="assignment : ${assignmentRows}">
+                <div><a th:href="@{/teacher/assignments/{id}(id=${assignment.id})}" th:text="${assignment.title}">Bài tập</a>
+                  <span th:text="${assignment.studentName + ' · ' + assignment.subjectName}">Học viên · Môn học</span></div>
+                <span class="teacher-overview-submission" th:text="${assignment.submissionLabel}">Chờ chấm</span>
+              </li>
+            </ul>
+          </section>
+
+          <!-- Card: Thu nhập -->
+          <section class="teacher-overview-section teacher-overview-wallet teacher-card-section" aria-labelledby="teacher-overview-wallet-title">
+            <div class="teacher-overview-section-heading">
+              <h2 id="teacher-overview-wallet-title">Thu nhập</h2>
+              <a class="teacher-card-action-link" href="/teacher/wallet">Mở ví →</a>
+            </div>
+            <div class="teacher-overview-error" role="alert" th:if="${walletUnavailable}">
+              <p>Chưa tải được số dư.</p><a href="/teacher/wallet">Mở ví để thử lại</a>
+            </div>
+            <dl class="teacher-overview-balances" th:if="${!walletUnavailable}">
+              <div class="teacher-balance-item">
+                <dt>Số dư khả dụng</dt>
+                <dd class="teacher-balance-value" th:text="${availableBalanceLabel}">0 ₫</dd>
+              </div>
+              <div class="teacher-balance-item">
+                <dt>Đang giữ theo lịch học</dt>
+                <dd class="teacher-balance-value teacher-balance-value--held" th:text="${heldBalanceLabel}">0 ₫</dd>
+              </div>
+            </dl>
+            <p class="teacher-overview-wallet-note" th:if="${!walletUnavailable}">Số dư đang giữ chưa thể rút.</p>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<footer class="teacher-message-footer"><div><a href="/">Tutor Match</a><span>Tổng quan công việc gia sư.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

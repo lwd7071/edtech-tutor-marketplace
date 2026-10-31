@@ -75,6 +75,11 @@ public class BookingService {
             throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
         }
 
+        Instant snapshotEnd = start.plusSeconds(pkg.sessionDurationMinutesSnapshot() * 60L);
+        if (!snapshotEnd.equals(end)) {
+            throw new BusinessException(ErrorCode.BOOKING_DURATION_MISMATCH);
+        }
+
         // 4. Validate package invariants & relation
         if (!teacherId.equals(pkg.teacherId())) {
             throw new BusinessException(ErrorCode.PACKAGE_RELATION_MISMATCH);

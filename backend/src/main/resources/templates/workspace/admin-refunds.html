@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Đối soát hoàn tiền | Tutor Match</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/admin-dashboard.css">
+  <link rel="stylesheet" href="/css/admin-refunds.css">
+</head>
+<body>
+<a class="admin-dashboard__skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<div th:replace="~{fragments/admin-workspace-header :: header}"></div>
+<main class="admin-dashboard admin-refunds" id="main-content">
+  <div class="admin-dashboard__container">
+    <div th:replace="~{fragments/admin-workspace-header :: nav}"></div>
+    <header class="admin-dashboard__heading">
+      <h1>Đối soát hoàn tiền</h1>
+      <p>Xem yêu cầu, quyết định số buổi được hoàn và xác nhận chuyển khoản.</p>
+    </header>
+
+    <div class="admin-refunds__notice admin-refunds__notice--success" role="status" th:if="${actionSuccess}" th:text="${actionSuccess}"></div>
+    <div class="admin-refunds__notice admin-refunds__notice--error" role="alert" th:if="${actionError}" th:text="${actionError}"></div>
+
+    <section class="admin-refunds__queue" aria-labelledby="refunds-title">
+      <div class="admin-refunds__queue-heading">
+        <div>
+          <h2 id="refunds-title">Yêu cầu hoàn tiền</h2>
+          <p th:if="${!refundsUnavailable}" th:text="${#numbers.formatInteger(totalElements, 1, 'POINT') + ' yêu cầu'}">0 yêu cầu</p>
+        </div>
+        <form class="admin-refunds__filter" method="get" action="/admin/refunds">
+          <label for="refund-status">Trạng thái</label>
+          <select id="refund-status" name="status">
+            <option th:each="option : ${statusOptions}" th:value="${option.value}" th:text="${option.label}" th:selected="${selectedStatus == option.value}">Tất cả trạng thái</option>
+          </select>
+          <button type="submit">Lọc</button>
+        </form>
+      </div>
+
+      <div class="admin-refunds__error" th:if="${refundsUnavailable}" role="alert">
+        <p>Chưa tải được danh sách yêu cầu hoàn tiền.</p>
+        <a th:href="@{/admin/refunds(status=${selectedStatus},page=${pageNumber})}">Thử tải lại</a>
+      </div>
+
+      <div class="admin-refunds__empty" th:if="${!refundsUnavailable and #lists.isEmpty(refundRows)}">
+        <h3>Không có yêu cầu ở trạng thái này</h3>
+        <p>Chọn trạng thái khác để xem các yêu cầu còn lại.</p>
+      </div>
+
+      <ul class="admin-refunds__list" th:if="${!refundsUnavailable and !#lists.isEmpty(refundRows)}">
+        <li th:each="row : ${refundRows}">
+          <article class="admin-refunds__item">
+            <header class="admin-refunds__item-heading">
+              <div>
+                <h3>Yêu cầu <span th:text="${'#' + #strings.substring(row.data.id.toString(), 0, 8)}">#00000000</span></h3>
+                <p th:text="${row.dateLabel}">Thời gian gửi</p>
+              </div>
+              <span class="admin-refunds__status" th:attr="data-status=${row.data.status.name()}" th:text="${row.statusLabel}">Chờ duyệt</span>
+            </header>
+
+            <dl class="admin-refunds__details">
+              <div><dt>Học viên</dt><dd th:text="${row.data.studentId}">UUID học viên</dd></div>
+              <div><dt>Gói học</dt><dd th:text="${row.data.studentPackageId}">UUID gói</dd></div>
+              <div><dt>Số buổi yêu cầu</dt><dd th:text="${row.data.requestedSessions + ' buổi'}">0 buổi</dd></div>
+              <div><dt>Số tiền dự kiến hoàn</dt><dd th:text="${row.amountLabel}">Chưa xác định</dd></div>
+              <div><dt>Tài khoản nhận</dt><dd th:text="${row.data.bankName + ' · ' + row.data.accountNumberMasked}">Ngân hàng · ••••</dd></div>
+              <div><dt>Chủ tài khoản</dt><dd th:text="${row.data.accountHolderName}">Tên chủ tài khoản</dd></div>
+              <div class="admin-refunds__reason"><dt>Lý do</dt><dd th:text="${row.data.reason}">Lý do hoàn tiền</dd></div>
+              <div th:if="${row.data.adminNote != null and !#strings.isEmpty(row.data.adminNote)}"><dt>Ghi chú xử lý</dt><dd th:text="${row.data.adminNote}">Ghi chú</dd></div>
+              <div th:if="${row.data.bankReference != null and !#strings.isEmpty(row.data.bankReference)}"><dt>Mã giao dịch</dt><dd th:text="${row.data.bankReference}">Mã giao dịch</dd></div>
+              <div><dt>Chứng từ</dt><dd><a th:if="${row.proofRecorded}" th:href="@{/admin/refunds/{id}/proof(id=${row.data.id})}">Tải chứng từ qua hệ thống</a><span th:unless="${row.proofRecorded}">Chưa có</span></dd></div>
+            </dl>
+
+            <div class="admin-refunds__actions">
+              <details th:if="${row.data.status.name() == 'PENDING'}" th:open="${openApproveId == row.data.id.toString()}">
+                <summary>Duyệt hoàn tiền</summary>
+                <form method="post" th:action="@{/admin/refunds/{id}/approve(id=${row.data.id})}">
+                  <input type="hidden" name="version" th:value="${row.data.version}">
+                  <input type="hidden" name="status" th:value="${selectedStatus}">
+                  <input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" name="idempotencyKey" th:value="${idempotencyKeys[row.data.id.toString()]}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'approve-sessions-' + row.data.id}">Số buổi duyệt</label>
+                  <input required type="number" min="1" th:max="${row.data.requestedSessions}" name="approvedSessions" th:id="${'approve-sessions-' + row.data.id}" th:value="${openApproveId == row.data.id.toString() and approveSessions != null ? approveSessions : row.data.requestedSessions}" th:autofocus="${openApproveId == row.data.id.toString()}">
+                  <p class="admin-refunds__help" th:text="${'Tối đa ' + row.data.requestedSessions + ' buổi theo yêu cầu. Số tiền do hệ thống tính.'}">Số tiền do hệ thống tính.</p>
+                  <label th:for="${'approve-note-' + row.data.id}">Ghi chú cho học viên (không bắt buộc)</label>
+                  <textarea rows="3" name="adminNote" th:id="${'approve-note-' + row.data.id}" th:text="${openApproveId == row.data.id.toString() ? approveNote : ''}"></textarea>
+                  <button type="submit">Xác nhận duyệt</button>
+                </form>
+              </details>
+
+              <details class="admin-refunds__reject" th:if="${row.data.status.name() == 'PENDING'}" th:open="${openRejectId == row.data.id.toString()}">
+                <summary>Từ chối yêu cầu</summary>
+                <form method="post" th:action="@{/admin/refunds/{id}/reject(id=${row.data.id})}">
+                  <input type="hidden" name="version" th:value="${row.data.version}">
+                  <input type="hidden" name="status" th:value="${selectedStatus}">
+                  <input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" name="idempotencyKey" th:value="${idempotencyKeys[row.data.id.toString()]}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'reject-reason-' + row.data.id}">Lý do từ chối</label>
+                  <textarea required rows="3" maxlength="1000" name="reason" th:id="${'reject-reason-' + row.data.id}" th:text="${openRejectId == row.data.id.toString() ? rejectReason : ''}" th:autofocus="${openRejectId == row.data.id.toString()}"></textarea>
+                  <button type="submit">Xác nhận từ chối</button>
+                </form>
+              </details>
+
+              <details th:if="${row.data.status.name() == 'APPROVED'}" th:open="${openCompleteId == row.data.id.toString()}">
+                <summary>Xác nhận đã chuyển khoản</summary>
+                <form method="post" enctype="multipart/form-data" th:action="@{/admin/refunds/{id}/complete(id=${row.data.id})}">
+                  <input type="hidden" name="version" th:value="${row.data.version}">
+                  <input type="hidden" name="status" th:value="${selectedStatus}">
+                  <input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" name="idempotencyKey" th:value="${idempotencyKeys[row.data.id.toString()]}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'transfer-reference-' + row.data.id}">Mã giao dịch ngân hàng</label>
+                  <input required maxlength="255" name="bankReference" th:id="${'transfer-reference-' + row.data.id}" th:value="${openCompleteId == row.data.id.toString() ? transferReference : ''}" th:autofocus="${openCompleteId == row.data.id.toString()}">
+                  <label th:for="${'transfer-time-' + row.data.id}">Thời gian chuyển khoản</label>
+                  <input required type="datetime-local" name="transferredAt" th:id="${'transfer-time-' + row.data.id}" th:value="${openCompleteId == row.data.id.toString() ? transferTime : ''}">
+                  <label th:for="${'transfer-proof-' + row.data.id}">Chứng từ (JPG, PNG hoặc PDF; tối đa 10 MiB)</label>
+                  <input required type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" name="proof" th:id="${'transfer-proof-' + row.data.id}">
+                  <button type="submit">Lưu xác nhận chuyển khoản</button>
+                </form>
+              </details>
+            </div>
+          </article>
+        </li>
+      </ul>
+
+      <nav class="admin-refunds__pagination" th:if="${!refundsUnavailable and totalPages > 1}" aria-label="Phân trang yêu cầu hoàn tiền">
+        <a th:if="${hasPrevious}" th:href="@{/admin/refunds(status=${selectedStatus},page=${pageNumber - 1})}">Trang trước</a>
+        <span th:text="${'Trang ' + (pageNumber + 1) + ' / ' + totalPages}">Trang 1 / 1</span>
+        <a th:if="${hasNext}" th:href="@{/admin/refunds(status=${selectedStatus},page=${pageNumber + 1})}">Trang sau</a>
+      </nav>
+    </section>
+  </div>
+</main>
+</body>
+</html>

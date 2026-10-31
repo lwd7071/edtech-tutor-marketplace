@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#fffdf7"><title>Lịch rảnh | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/public.css"><link rel="stylesheet" href="/css/student-dashboard.css"><link rel="stylesheet" href="/css/teacher-workspace.css"><link rel="stylesheet" href="/css/teacher-availability.css"></head>
+<body><div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-availability-page"><div class="student-dashboard__container"><div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+  <header class="teacher-availability-heading"><div><h1>Lịch rảnh</h1><p>Thêm những khoảng giờ bạn có thể nhận lịch học. Các khung giờ được lưu theo múi giờ đã chọn.</p></div></header>
+  <p class="teacher-availability-notice" role="status" th:if="${availabilityNotice != null}" th:text="${availabilityNotice}">Đã lưu lịch rảnh.</p>
+  <div class="teacher-availability-notice teacher-availability-notice--error" role="alert" tabindex="-1" th:if="${availabilityUnavailable}"><p>Chưa tải được lịch hiện tại. Tải lại trang trước khi thay đổi để tránh ghi đè dữ liệu.</p><a href="/teacher/availability">Tải lại lịch</a></div>
+  <section class="teacher-availability-panel" aria-labelledby="availability-title">
+    <header class="teacher-availability-panel__heading"><div><h2 id="availability-title">Khung giờ có thể dạy</h2><p>Thêm nhiều khung giờ trong cùng ngày nếu cần.</p></div><span th:if="${!availabilityUnavailable}" th:text="${#lists.size(availabilityForm.items)} + ' khung giờ'">0 khung giờ</span></header>
+    <p class="teacher-availability-warning">Khi lưu, toàn bộ lịch rảnh hiện tại sẽ được thay bằng danh sách bên dưới. Khung giờ trùng nhau không thể cùng hoạt động.</p>
+    <div class="teacher-availability-empty" th:if="${!availabilityUnavailable and #lists.isEmpty(availabilityForm.items)}"><h3>Chưa có khung giờ nào</h3><p>Thêm ngày và giờ bạn thường có thể dạy.</p></div>
+    <form class="teacher-availability-form" method="post" action="/teacher/availability" th:object="${availabilityForm}">
+      <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <p class="teacher-availability-form__error" role="alert" tabindex="-1" autofocus th:if="${availabilityForm.formError != null}" th:text="${availabilityForm.formError}">Kiểm tra lại lịch rảnh.</p>
+      <fieldset class="teacher-availability-slots" th:disabled="${availabilityUnavailable}"><legend class="visually-hidden">Danh sách khung giờ</legend>
+        <article class="teacher-availability-slot" th:each="slot, row : *{items}">
+          <h3 th:text="${'Khung giờ ' + (row.index + 1)}">Khung giờ 1</h3>
+          <div class="teacher-availability-slot__fields">
+            <div class="teacher-availability-field"><label th:for="${'day-' + row.index}">Ngày</label><select th:id="${'day-' + row.index}" th:field="*{items[__${row.index}__].dayOfWeek}" required th:attr="aria-invalid=${slot.dayError != null},aria-describedby=${slot.dayError != null} ? ${'day-error-' + row.index} : null"><option value="">Chọn ngày</option><option th:each="day : ${dayOptions}" th:value="${day.value}" th:text="${day.label}">Thứ Hai</option></select><p class="teacher-availability-field__error" th:id="${'day-error-' + row.index}" role="alert" th:if="${slot.dayError != null}" th:text="${slot.dayError}">Chọn ngày.</p></div>
+            <div class="teacher-availability-field"><label th:for="${'start-' + row.index}">Bắt đầu</label><input type="time" required th:id="${'start-' + row.index}" th:field="*{items[__${row.index}__].startTime}" th:attr="aria-invalid=${slot.startError != null},aria-describedby=${slot.startError != null} ? ${'start-error-' + row.index} : null"><p class="teacher-availability-field__error" th:id="${'start-error-' + row.index}" role="alert" th:if="${slot.startError != null}" th:text="${slot.startError}">Nhập giờ bắt đầu.</p></div>
+            <div class="teacher-availability-field"><label th:for="${'end-' + row.index}">Kết thúc</label><input type="time" required th:id="${'end-' + row.index}" th:field="*{items[__${row.index}__].endTime}" th:attr="aria-invalid=${slot.endError != null},aria-describedby=${slot.endError != null} ? ${'end-error-' + row.index} : null"><p class="teacher-availability-field__error" th:id="${'end-error-' + row.index}" role="alert" th:if="${slot.endError != null}" th:text="${slot.endError}">Nhập giờ kết thúc.</p></div>
+            <div class="teacher-availability-field"><label th:for="${'timezone-' + row.index}">Múi giờ</label><input type="text" autocomplete="off" placeholder="Asia/Ho_Chi_Minh" th:id="${'timezone-' + row.index}" th:field="*{items[__${row.index}__].timezone}" th:attr="aria-invalid=${slot.timezoneError != null},aria-describedby=${slot.timezoneError != null} ? ${'timezone-error-' + row.index} : null"><p class="teacher-availability-field__error" th:id="${'timezone-error-' + row.index}" role="alert" th:if="${slot.timezoneError != null}" th:text="${slot.timezoneError}">Múi giờ không hợp lệ.</p></div>
+            <div class="teacher-availability-field"><label th:for="${'active-' + row.index}">Trạng thái</label><select th:id="${'active-' + row.index}" th:field="*{items[__${row.index}__].active}" required><option value="true">Đang hoạt động</option><option value="false">Tạm ẩn</option></select><p class="teacher-availability-field__error" th:if="${slot.activeError != null}" role="alert" th:text="${slot.activeError}">Chọn trạng thái.</p></div>
+          </div>
+          <button class="teacher-availability-remove" type="submit" name="action" th:value="${'remove:' + row.index}" th:attr="aria-label=${'Xóa khung giờ ' + (row.index + 1)}" th:disabled="${availabilityUnavailable}">Xóa</button>
+        </article>
+      </fieldset>
+      <div class="teacher-availability-actions"><button class="teacher-availability-add" type="submit" name="action" value="add" th:disabled="${availabilityUnavailable}">Thêm khung giờ</button><button class="teacher-availability-save" type="submit" name="action" value="save" th:disabled="${availabilityUnavailable}">Lưu lịch rảnh</button></div>
+    </form>
+  </section>
+</div></main><footer class="teacher-message-footer"><div><a href="/teacher/availability">Tutor Match</a><span>Quản lý lịch dạy.</span></div><a href="/support">Trợ giúp</a></footer></body></html>

@@ -21,14 +21,25 @@ public record TeacherSearchParams(
         @Min(value = 0, message = "Giá tối đa phải lớn hơn hoặc bằng 0") Long maxPrice,
         @DecimalMin(value = "0.0", message = "Đánh giá tối thiểu phải >= 0")
         @DecimalMax(value = "5.0", message = "Đánh giá tối thiểu phải <= 5") Double minRating,
-        @Pattern(regexp = "(?i)^(ONLINE|OFFLINE)$", message = "deliveryMode phải là ONLINE hoặc OFFLINE") String deliveryMode,
-        @Pattern(regexp = "(?i)^(price_asc|price_desc|rating_desc|experience_desc)$", message = "sort phải là price_asc, price_desc, rating_desc hoặc experience_desc") String sort,
-        @Pattern(regexp = "^[0-9]{2}$", message = "Mã tỉnh phải gồm 2 chữ số") String provinceCode,
-        @Pattern(regexp = "^[0-9]{5}$", message = "Mã xã/phường phải gồm 5 chữ số") String wardCode,
+        @Pattern(regexp = "(?i)^(ONLINE|OFFLINE)?$", message = "deliveryMode phải là ONLINE hoặc OFFLINE") String deliveryMode,
+        @Pattern(regexp = "(?i)^(price_asc|price_desc|rating_desc|experience_desc)?$", message = "sort phải là price_asc, price_desc, rating_desc hoặc experience_desc") String sort,
+        @Pattern(regexp = "^([0-9]{2})?$", message = "Mã tỉnh phải gồm 2 chữ số") String provinceCode,
+        @Pattern(regexp = "^([0-9]{5})?$", message = "Mã xã/phường phải gồm 5 chữ số") String wardCode,
         @Min(value = 0, message = "Trang phải lớn hơn hoặc bằng 0") Integer page,
         @Min(value = 1, message = "Kích thước trang phải lớn hơn hoặc bằng 1")
         @Max(value = 100, message = "Kích thước trang không được vượt quá 100") Integer size
 ) {
+    public TeacherSearchParams {
+        deliveryMode = blankToNull(deliveryMode);
+        sort = blankToNull(sort);
+        provinceCode = blankToNull(provinceCode);
+        wardCode = blankToNull(wardCode);
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
     @AssertTrue(message = "Giá tối thiểu phải nhỏ hơn hoặc bằng giá tối đa")
     public boolean isValidPriceRange() {
         if (minPrice == null || maxPrice == null) return true;

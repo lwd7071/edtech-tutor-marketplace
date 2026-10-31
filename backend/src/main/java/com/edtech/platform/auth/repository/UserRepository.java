@@ -23,11 +23,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query(value = "select u from User u where u.role in :roles and u.status in :statuses " +
             "and (:role is null or u.role = :role) and (:status is null or u.status = :status) " +
-            "and (:keyword is null or lower(u.fullName) like lower(concat('%', :keyword, '%')) " +
+            "and (:keyword = '' or lower(u.fullName) like lower(concat('%', :keyword, '%')) " +
             "or lower(u.email) like lower(concat('%', :keyword, '%')))",
             countQuery = "select count(u) from User u where u.role in :roles and u.status in :statuses " +
                     "and (:role is null or u.role = :role) and (:status is null or u.status = :status) " +
-                    "and (:keyword is null or lower(u.fullName) like lower(concat('%', :keyword, '%')) " +
+                    "and (:keyword = '' or lower(u.fullName) like lower(concat('%', :keyword, '%')) " +
                     "or lower(u.email) like lower(concat('%', :keyword, '%')))")
     org.springframework.data.domain.Page<User> findDirectory(
             @Param("roles") java.util.Collection<com.edtech.platform.auth.domain.Role> roles,

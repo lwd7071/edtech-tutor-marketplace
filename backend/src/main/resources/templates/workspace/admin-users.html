@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>Quản lý người dùng | Tutor Match</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/admin-dashboard.css">
+  <link rel="stylesheet" href="/css/admin-users.css">
+</head>
+<body>
+<a class="admin-dashboard__skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<div th:replace="~{fragments/admin-workspace-header :: header}"></div>
+<main class="admin-dashboard admin-users" id="main-content">
+  <div class="admin-dashboard__container">
+    <div th:replace="~{fragments/admin-workspace-header :: nav}"></div>
+    <header class="admin-dashboard__heading">
+      <h1>Quản lý người dùng</h1>
+      <p>Tìm học viên, gia sư và xem trạng thái tài khoản.</p>
+    </header>
+
+    <div class="admin-users__notice admin-users__notice--success" role="status" th:if="${actionSuccess}" th:text="${actionSuccess}"></div>
+    <div class="admin-users__notice admin-users__notice--error" role="alert" th:if="${actionError}" th:text="${actionError}"></div>
+    <div class="admin-users__notice admin-users__notice--error" role="alert" th:if="${invalidFilters}">
+      Một số bộ lọc hoặc cách sắp xếp không hợp lệ; danh sách đã dùng giá trị an toàn.
+    </div>
+
+    <section class="admin-users__directory" aria-labelledby="users-title">
+      <div class="admin-users__directory-heading">
+        <div>
+          <h2 id="users-title">Danh sách tài khoản</h2>
+          <p th:if="${!usersUnavailable and !invalidKeyword}" th:text="${totalElements + ' người dùng'}">0 người dùng</p>
+        </div>
+      </div>
+
+      <form class="admin-users__filters" method="get" action="/admin/users">
+        <input type="hidden" name="page" value="0">
+        <label class="admin-users__search-label" for="user-keyword">Tìm theo tên hoặc email</label>
+        <input type="search" id="user-keyword" name="keyword" maxlength="100" th:value="${keyword}"
+               th:attr="aria-invalid=${invalidKeyword ? 'true' : null},aria-describedby=${invalidKeyword ? 'keyword-error' : null}"
+               placeholder="Nhập tên hoặc email">
+        <p class="admin-users__field-error" id="keyword-error" th:if="${invalidKeyword}" role="alert">Từ khóa tối đa 100 ký tự.</p>
+        <label for="user-role">Vai trò</label>
+        <select id="user-role" name="role">
+          <option value="">Tất cả vai trò</option>
+          <option value="STUDENT" th:selected="${role == 'STUDENT'}">Học viên</option>
+          <option value="TEACHER" th:selected="${role == 'TEACHER'}">Gia sư</option>
+        </select>
+        <label for="user-status">Trạng thái</label>
+        <select id="user-status" name="status">
+          <option value="">Tất cả trạng thái</option>
+          <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Đang hoạt động</option>
+          <option value="LOCKED" th:selected="${status == 'LOCKED'}">Đã khóa</option>
+        </select>
+        <label for="user-sort-field">Sắp xếp theo</label>
+        <select id="user-sort-field" name="sortField">
+          <option th:each="option : ${sortFields}" th:value="${option.value}" th:text="${option.label}" th:selected="${sortField == option.value}">Trường sắp xếp</option>
+        </select>
+        <select id="user-sort-direction" name="sortDirection" aria-label="Chiều sắp xếp">
+          <option value="desc" th:selected="${sortDirection == 'DESC'}">Giảm dần</option>
+          <option value="asc" th:selected="${sortDirection == 'ASC'}">Tăng dần</option>
+        </select>
+        <label for="user-page-size">Mỗi trang</label>
+        <select id="user-page-size" name="size">
+          <option value="20" th:selected="${pageSize == 20}">20</option>
+          <option value="50" th:selected="${pageSize == 50}">50</option>
+          <option value="100" th:selected="${pageSize == 100}">100</option>
+        </select>
+        <button type="submit">Áp dụng</button>
+        <a th:href="@{/admin/users}">Xóa bộ lọc</a>
+      </form>
+
+      <div class="admin-users__error" th:if="${usersUnavailable}" role="alert">
+        <p>Chưa tải được danh sách người dùng.</p>
+        <a th:href="@{/admin/users(keyword=${keyword},role=${role},status=${status},page=${pageNumber},size=${pageSize},sort=${sortValue})}">Thử tải lại</a>
+      </div>
+      <div class="admin-users__invalid-keyword" th:if="${invalidKeyword}">
+        <h3>Không thể tìm theo từ khóa này</h3>
+        <p>Rút ngắn từ khóa còn tối đa 100 ký tự rồi thử lại.</p>
+      </div>
+      <div class="admin-users__empty" th:if="${!usersUnavailable and !invalidKeyword and #lists.isEmpty(users)}">
+        <h3>Không tìm thấy người dùng</h3>
+        <p>Thử đổi từ khóa hoặc xóa một bộ lọc.</p>
+      </div>
+
+      <div class="admin-users__list-heading" aria-hidden="true" th:if="${!usersUnavailable and !invalidKeyword and !#lists.isEmpty(users)}">
+        <span>Tài khoản</span><span>Vai trò</span><span>Trạng thái</span><span>Hoạt động</span><span>Thao tác</span>
+      </div>
+      <ul class="admin-users__list" th:if="${!usersUnavailable and !invalidKeyword and !#lists.isEmpty(users)}">
+        <li th:each="row : ${users}">
+          <article class="admin-users__row">
+            <div class="admin-users__identity">
+              <h3 th:text="${#strings.isEmpty(row.data.fullName) ? 'Chưa có tên hiển thị' : row.data.fullName}">Tên người dùng</h3>
+              <a th:if="${!#strings.isEmpty(row.data.email)}" th:href="|mailto:${row.data.email}|" th:text="${row.data.email}">email</a>
+              <span th:if="${#strings.isEmpty(row.data.email)}">Chưa có email</span>
+            </div>
+            <p class="admin-users__role" th:text="${row.data.role == 'TEACHER' ? 'Gia sư' : 'Học viên'}">Học viên</p>
+            <p class="admin-users__status" th:attr="data-status=${row.data.status}">
+              <span class="admin-users__status-mark" aria-hidden="true"></span>
+              <span th:text="${row.data.status == 'ACTIVE' ? 'Đang hoạt động' : 'Đã khóa'}">Trạng thái</span>
+            </p>
+            <dl class="admin-users__activity">
+              <div><dt>Ngày tạo</dt><dd th:text="${row.createdAt}">Ngày giờ</dd></div>
+              <div><dt>Lần đăng nhập cuối</dt><dd th:text="${row.lastLoginAt}">Ngày giờ</dd></div>
+            </dl>
+            <div class="admin-users__actions">
+              <a class="admin-users__audit-link" th:href="@{/admin/audit-logs(targetType='USER',targetId=${row.data.id})}">Xem nhật ký thao tác</a>
+              <details class="admin-users__moderation" th:open="${moderationUserId == row.data.id.toString()}">
+              <summary th:text="${row.data.status == 'ACTIVE' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}">Điều chỉnh trạng thái</summary>
+              <p th:if="${row.data.status == 'ACTIVE'}">Người dùng sẽ không thể đăng nhập khi tài khoản bị khóa.</p>
+              <p th:if="${row.data.status == 'LOCKED'}">Tài khoản sẽ được kích hoạt lại.</p>
+              <form method="post" th:action="@{/admin/users/{id}/status(id=${row.data.id})}">
+                <input type="hidden" name="status" th:value="${row.data.status == 'ACTIVE' ? 'LOCKED' : 'ACTIVE'}">
+                <input type="hidden" name="keyword" th:value="${keyword}">
+                <input type="hidden" name="role" th:value="${role}">
+                <input type="hidden" name="statusFilter" th:value="${status}">
+                <input type="hidden" name="page" th:value="${pageNumber}">
+                <input type="hidden" name="size" th:value="${pageSize}">
+                <input type="hidden" name="sort" th:value="${sortValue}">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <label th:for="${'moderation-reason-' + row.data.id}">Lý do điều chỉnh trạng thái</label>
+                <textarea required maxlength="1000" rows="3" name="reason" th:id="${'moderation-reason-' + row.data.id}" th:text="${moderationUserId == row.data.id.toString() ? moderationReason : ''}"></textarea>
+                <button type="submit" th:attr="data-lock-action=${row.data.status == 'ACTIVE'}"
+                        th:text="${row.data.status == 'ACTIVE' ? 'Xác nhận khóa' : 'Xác nhận mở khóa'}">Xác nhận</button>
+              </form>
+              </details>
+            </div>
+          </article>
+        </li>
+      </ul>
+
+      <nav class="admin-users__pagination" th:if="${!usersUnavailable and totalPages > 1}" aria-label="Phân trang người dùng">
+        <a th:if="${hasPrevious}" th:href="@{/admin/users(keyword=${keyword},role=${role},status=${status},page=${pageNumber - 1},size=${pageSize},sort=${sortValue})}">Trang trước</a>
+        <span th:text="${'Trang ' + (pageNumber + 1) + ' / ' + totalPages}">Trang 1 / 1</span>
+        <a th:if="${hasNext}" th:href="@{/admin/users(keyword=${keyword},role=${role},status=${status},page=${pageNumber + 1},size=${pageSize},sort=${sortValue})}">Trang sau</a>
+      </nav>
+    </section>
+  </div>
+</main>
+</body>
+</html>

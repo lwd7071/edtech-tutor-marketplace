@@ -27,6 +27,13 @@ class IdentityDirectoryFacadeIntegrationTest extends AbstractIntegrationTest {
         user("pending-match@example.test", "Minh Pending", "STUDENT", "PENDING_VERIFICATION", false);
         user("deleted-match@example.test", "Minh Deleted", "TEACHER", "ACTIVE", true);
 
+        var allVisible = directory.searchUsers(null, null, null, PageRequest.of(0, 20, Sort.by("email", "id")));
+        assertThat(allVisible.getContent()).extracting(snapshot -> snapshot.id())
+                .contains(student, teacher)
+                .doesNotContain(jdbc.queryForObject("select id from users where email = 'admin-match@example.test'", UUID.class))
+                .doesNotContain(jdbc.queryForObject("select id from users where email = 'pending-match@example.test'", UUID.class))
+                .doesNotContain(jdbc.queryForObject("select id from users where email = 'deleted-match@example.test'", UUID.class));
+
         var byName = directory.searchUsers("minh", null, null, PageRequest.of(0, 20, Sort.by("email", "id")));
         assertThat(byName.getContent()).extracting(snapshot -> snapshot.id()).containsExactly(student);
 

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Hồ sơ cá nhân | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/student-profile.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-profile-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+    <header class="profile-heading">
+      <h1>Hồ sơ cá nhân</h1>
+      <p>Quản lý thông tin liên hệ phụ huynh cho tài khoản học viên.</p>
+    </header>
+
+    <section class="profile-account" aria-labelledby="profile-account-title">
+      <div class="profile-account__identity">
+        <img th:if="${identity != null and identity.avatarUrl != null and !#strings.isEmpty(identity.avatarUrl)}"
+             class="profile-account__avatar" th:src="${identity.avatarUrl}"
+             th:alt="|Ảnh đại diện ${identity.fullName}|">
+        <span th:unless="${identity != null and identity.avatarUrl != null and !#strings.isEmpty(identity.avatarUrl)}"
+              class="profile-account__avatar profile-account__avatar--fallback" aria-hidden="true"
+              th:text="${identity != null and identity.fullName != null and !#strings.isEmpty(identity.fullName) ? #strings.substring(identity.fullName, 0, 1) : 'H'}">H</span>
+        <div class="profile-account__copy">
+          <h2 id="profile-account-title" th:text="${identity != null and identity.fullName != null and !#strings.isEmpty(identity.fullName) ? identity.fullName : 'Tài khoản học viên'}">Tài khoản học viên</h2>
+          <p th:text="${accountEmail}">student@example.test</p>
+        </div>
+      </div>
+      <dl class="profile-account__facts">
+        <div><dt>Vai trò</dt><dd>Học viên</dd></div>
+        <div th:if="${accountStatusLabel != null}"><dt>Trạng thái</dt><dd th:text="${accountStatusLabel}">Đang hoạt động</dd></div>
+      </dl>
+    </section>
+
+    <section class="profile-contact" aria-labelledby="parent-contact-title">
+      <header class="profile-contact__heading">
+        <h2 id="parent-contact-title">Thông tin liên hệ phụ huynh</h2>
+        <p>Thông tin không bắt buộc. Có thể bật email cập nhật khi đã nhập địa chỉ phụ huynh.</p>
+      </header>
+
+      <div class="profile-notice" role="status" th:if="${profileNotice != null}" th:text="${profileNotice}">Đã lưu thông tin.</div>
+      <section class="profile-state profile-state--error" role="alert" th:if="${contactUnavailable}">
+        <h3>Chưa tải được thông tin liên hệ</h3>
+        <p>Thử tải lại trang để tiếp tục.</p>
+        <a href="/student/profile">Tải lại</a>
+      </section>
+
+      <form th:if="${!contactUnavailable}" class="profile-form" method="post" action="/student/profile" th:object="${profileForm}">
+        <input th:if="${_csrf != null}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <div class="profile-form__errors" role="alert" tabindex="-1" th:if="${formError != null or #fields.hasAnyErrors()}">
+          <p th:if="${formError != null}" th:text="${formError}">Vui lòng kiểm tra thông tin.</p>
+          <p th:if="${#fields.hasAnyErrors()}">Một số thông tin chưa đúng. Hãy sửa các trường được đánh dấu.</p>
+        </div>
+
+        <div class="profile-form__fields">
+          <div class="profile-field">
+            <label for="parentFullName">Họ và tên phụ huynh <span>(không bắt buộc)</span></label>
+            <input id="parentFullName" type="text" autocomplete="name" maxlength="120" th:field="*{parentFullName}"
+                   th:attr="aria-invalid=${#fields.hasErrors('parentFullName')},aria-describedby=${#fields.hasErrors('parentFullName')} ? 'parentFullName-error' : null">
+            <p id="parentFullName-error" class="profile-field__error" th:if="${#fields.hasErrors('parentFullName')}" th:errors="*{parentFullName}">Tên chưa hợp lệ.</p>
+          </div>
+          <div class="profile-field">
+            <label for="parentPhone">Số điện thoại phụ huynh <span>(không bắt buộc)</span></label>
+            <input id="parentPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="11" th:field="*{parentPhone}"
+                   th:attr="aria-invalid=${#fields.hasErrors('parentPhone')},aria-describedby=${#fields.hasErrors('parentPhone')} ? 'parentPhone-error' : null">
+            <p id="parentPhone-error" class="profile-field__error" th:if="${#fields.hasErrors('parentPhone')}" th:errors="*{parentPhone}">Số điện thoại chưa hợp lệ.</p>
+          </div>
+          <div class="profile-field profile-field--wide">
+            <label for="parentEmail">Email phụ huynh <span>(không bắt buộc)</span></label>
+            <input id="parentEmail" type="email" autocomplete="email" maxlength="254" th:field="*{parentEmail}"
+                   th:attr="aria-invalid=${#fields.hasErrors('parentEmail')},aria-describedby=${#fields.hasErrors('parentEmail')} ? 'parentEmail-error' : 'parentEmail-hint'">
+            <p id="parentEmail-hint" class="profile-field__hint">Để trống nếu không muốn nhận cập nhật qua email phụ huynh.</p>
+            <p id="parentEmail-error" class="profile-field__error" th:if="${#fields.hasErrors('parentEmail')}" th:errors="*{parentEmail}">Email chưa hợp lệ.</p>
+          </div>
+        </div>
+
+        <div class="profile-notify">
+          <input id="notifyParent" type="checkbox" th:field="*{notifyParent}">
+          <div>
+            <label for="notifyParent">Gửi cập nhật qua email phụ huynh</label>
+            <p>Chỉ dùng khi có email phụ huynh.</p>
+          </div>
+        </div>
+
+        <footer class="profile-form__actions">
+          <button type="submit">Lưu thông tin</button>
+        </footer>
+      </form>
+    </section>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/student">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

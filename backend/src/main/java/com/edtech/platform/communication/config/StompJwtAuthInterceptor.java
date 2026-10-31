@@ -1,6 +1,7 @@
 package com.edtech.platform.communication.config;
 
 import com.edtech.platform.common.security.AuthenticatedUser;
+import com.edtech.platform.common.security.HtmlSessionWebSocketHandshakeInterceptor;
 import com.edtech.platform.common.security.JwtTokenProvider;
 import com.edtech.platform.common.security.UserStatusCacheService;
 import org.springframework.context.annotation.Configuration;
@@ -65,6 +66,9 @@ public class StompJwtAuthInterceptor implements ChannelInterceptor {
                     authenticated = true;
                 }
             }
+            if (!authenticated) {
+                authenticated = authenticateHtmlSession(accessor);
+            }
             if (!authenticated) throw new org.springframework.security.access.AccessDeniedException("Authentication required");
         }
         if (accessor != null && (StompCommand.SEND.equals(accessor.getCommand()) || StompCommand.SUBSCRIBE.equals(accessor.getCommand()))) {
@@ -116,5 +120,20 @@ public class StompJwtAuthInterceptor implements ChannelInterceptor {
 
     private boolean active(UUID userId) {
         return "ACTIVE".equals(statuses.resolve(userId).orElse(null));
+    }
+
+    private boolean authenticateHtmlSession(StompHeaderAccessor accessor) {
+        if (accessor.getSessionId() == null || accessor.getUser() == null) return false;
+        Object principal = accessor.getUser() instanceof org.springframework.security.core.Authentication auth
+                ? auth.getPrincipal() : null;
+        if (!(principal instanceof AuthenticatedUser user)
+                || !("STUDENT".equals(user.role()) || "TEACHER".equals(user.role()))) return false;
+        Object rawExpiry = accessor.getSessionAttributes() == null ? null
+                : accessor.getSessionAttributes().get(HtmlSessionWebSocketHandshakeInterceptor.ACCESS_EXPIRES_AT_ATTRIBUTE);
+        if (!(rawExpiry instanceof Instant expiresAt) || !expiresAt.isAfter(clock.instant()) || !active(user.id())) {
+            return false;
+        }
+        sessions.put(accessor.getSessionId(), new Session(user.id(), expiresAt));
+        return true;
     }
 }

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Chi trả gia sư | Tutor Match</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/admin-dashboard.css">
+  <link rel="stylesheet" href="/css/admin-payouts.css">
+</head>
+<body>
+<a class="admin-dashboard__skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<div th:replace="~{fragments/admin-workspace-header :: header}"></div>
+<main class="admin-dashboard admin-payouts" id="main-content">
+  <div class="admin-dashboard__container">
+    <div th:replace="~{fragments/admin-workspace-header :: nav}"></div>
+    <header class="admin-dashboard__heading">
+      <h1>Chi trả gia sư</h1>
+      <p>Kiểm tra tài khoản nhận, xử lý yêu cầu và lưu chứng từ chuyển khoản.</p>
+    </header>
+
+    <div class="admin-payouts__notice admin-payouts__notice--success" role="status" th:if="${actionSuccess}" th:text="${actionSuccess}"></div>
+    <div class="admin-payouts__notice admin-payouts__notice--error" role="alert" th:if="${actionError}" th:text="${actionError}"></div>
+
+    <section class="admin-payouts__queue" aria-labelledby="payouts-title">
+      <div class="admin-payouts__queue-heading">
+        <div>
+          <h2 id="payouts-title">Yêu cầu rút tiền</h2>
+          <p th:if="${!payoutsUnavailable}" th:text="${#numbers.formatInteger(totalElements, 1, 'POINT') + ' yêu cầu'}">0 yêu cầu</p>
+        </div>
+        <form class="admin-payouts__filter" method="get" action="/admin/payouts">
+          <label for="payout-status">Trạng thái</label>
+          <select id="payout-status" name="status">
+            <option th:each="option : ${statusOptions}" th:value="${option.value}" th:text="${option.label}" th:selected="${selectedStatus == option.value}">Tất cả trạng thái</option>
+          </select>
+          <button type="submit">Lọc</button>
+        </form>
+      </div>
+
+      <div class="admin-payouts__error" th:if="${payoutsUnavailable}" role="alert">
+        <p>Chưa tải được danh sách yêu cầu chi trả.</p>
+        <a th:href="@{/admin/payouts(status=${selectedStatus},page=${pageNumber})}">Thử tải lại</a>
+      </div>
+
+      <div class="admin-payouts__empty" th:if="${!payoutsUnavailable and #lists.isEmpty(payoutRows)}">
+        <h3>Không có yêu cầu ở trạng thái này</h3>
+        <p>Chọn trạng thái khác để xem các yêu cầu còn lại.</p>
+      </div>
+
+      <ul class="admin-payouts__list" th:if="${!payoutsUnavailable and !#lists.isEmpty(payoutRows)}">
+        <li th:each="row : ${payoutRows}">
+          <article class="admin-payouts__item">
+            <header class="admin-payouts__item-heading">
+              <div>
+                <h3>Yêu cầu <span th:text="${'#' + #strings.substring(row.data.id.toString(), 0, 8)}">#00000000</span></h3>
+                <p th:text="${row.createdLabel}">Ngày gửi</p>
+              </div>
+              <span class="admin-payouts__status" th:attr="data-status=${row.data.status.name()}" th:text="${row.statusLabel}">Chờ xử lý</span>
+            </header>
+
+            <dl class="admin-payouts__details">
+              <div><dt>Gia sư</dt><dd th:text="${row.data.teacherId}">Mã gia sư</dd></div>
+              <div><dt>Số tiền</dt><dd th:text="${row.amountLabel}">0 ₫</dd></div>
+              <div><dt>Mã tài khoản ngân hàng</dt><dd th:text="${row.data.bankAccountId}">Mã tài khoản</dd></div>
+              <div><dt>Ghi chú từ gia sư</dt><dd th:text="${row.data.teacherNote != null and !#strings.isEmpty(row.data.teacherNote) ? row.data.teacherNote : 'Không có'}">Ghi chú</dd></div>
+              <div th:if="${row.data.adminNote != null and !#strings.isEmpty(row.data.adminNote)}"><dt>Lý do xử lý</dt><dd th:text="${row.data.adminNote}">Ghi chú quản trị</dd></div>
+              <div th:if="${row.data.bankReference != null and !#strings.isEmpty(row.data.bankReference)}"><dt>Mã giao dịch</dt><dd th:text="${row.data.bankReference}">Mã giao dịch</dd></div>
+              <div th:if="${row.transferredLabel != null}"><dt>Thời gian chuyển</dt><dd th:text="${row.transferredLabel}">Thời gian</dd></div>
+              <div><dt>Chứng từ</dt><dd><a th:if="${row.proofRecorded}" th:href="@{/admin/payouts/{id}/proof(id=${row.data.id})}">Tải chứng từ qua hệ thống</a><span th:unless="${row.proofRecorded}">Chưa có</span></dd></div>
+            </dl>
+
+            <details class="admin-payouts__bank-details">
+              <summary>Xem thông tin tài khoản nhận</summary>
+              <dl th:if="${row.bankDetailsAvailable}">
+                <div><dt>Ngân hàng</dt><dd th:text="${row.bankName}">Ngân hàng</dd></div>
+                <div><dt>Chủ tài khoản</dt><dd th:text="${row.accountHolderName}">Chủ tài khoản</dd></div>
+                <div><dt>Số tài khoản</dt><dd th:text="${row.accountNumber}">Số tài khoản</dd></div>
+              </dl>
+              <p th:unless="${row.bankDetailsAvailable}">Không thể giải mã thông tin tài khoản. Hãy kiểm tra cấu hình bảo mật trước khi chuyển tiền.</p>
+            </details>
+
+            <div class="admin-payouts__actions">
+              <form th:if="${row.data.status.name() == 'PENDING'}" method="post" th:action="@{/admin/payouts/{id}/process(id=${row.data.id})}">
+                <input type="hidden" name="version" th:value="${row.data.version}">
+                <input type="hidden" name="status" th:value="${selectedStatus}">
+                <input type="hidden" name="page" th:value="${pageNumber}">
+                <input type="hidden" name="idempotencyKey" th:value="${idempotencyKeys[row.data.id.toString()]}">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit">Bắt đầu xử lý</button>
+              </form>
+
+              <details class="admin-payouts__reject" th:if="${row.data.status.name() == 'PENDING' or row.data.status.name() == 'PROCESSING'}" th:open="${openRejectId == row.data.id.toString()}">
+                <summary>Từ chối yêu cầu</summary>
+                <form method="post" th:action="@{/admin/payouts/{id}/reject(id=${row.data.id})}">
+                  <input type="hidden" name="version" th:value="${row.data.version}">
+                  <input type="hidden" name="status" th:value="${selectedStatus}">
+                  <input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" name="idempotencyKey" th:value="${idempotencyKeys[row.data.id.toString()]}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'payout-reason-' + row.data.id}">Lý do từ chối</label>
+                  <textarea required rows="3" maxlength="1000" name="reason" th:id="${'payout-reason-' + row.data.id}" th:text="${openRejectId == row.data.id.toString() ? rejectReason : ''}" th:autofocus="${openRejectId == row.data.id.toString()}"></textarea>
+                  <button type="submit">Xác nhận từ chối</button>
+                </form>
+              </details>
+
+              <details th:if="${row.data.status.name() == 'PROCESSING'}" th:open="${openCompleteId == row.data.id.toString()}">
+                <summary>Xác nhận đã chuyển khoản</summary>
+                <form method="post" enctype="multipart/form-data" th:action="@{/admin/payouts/{id}/complete(id=${row.data.id})}">
+                  <input type="hidden" name="version" th:value="${row.data.version}">
+                  <input type="hidden" name="status" th:value="${selectedStatus}">
+                  <input type="hidden" name="page" th:value="${pageNumber}">
+                  <input type="hidden" name="idempotencyKey" th:value="${idempotencyKeys[row.data.id.toString()]}">
+                  <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <label th:for="${'payout-reference-' + row.data.id}">Mã giao dịch ngân hàng</label>
+                  <input required maxlength="255" name="bankReference" th:id="${'payout-reference-' + row.data.id}" th:value="${openCompleteId == row.data.id.toString() ? transferReference : ''}" th:autofocus="${openCompleteId == row.data.id.toString()}">
+                  <label th:for="${'payout-time-' + row.data.id}">Thời gian chuyển khoản (giờ Việt Nam)</label>
+                  <input required type="datetime-local" name="transferredAt" th:id="${'payout-time-' + row.data.id}" th:value="${openCompleteId == row.data.id.toString() ? transferTime : row.transferredInput}">
+                  <label th:for="${'payout-proof-' + row.data.id}">Chứng từ (JPG, PNG hoặc PDF; tối đa 10 MiB)</label>
+                  <input required type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" name="proof" th:id="${'payout-proof-' + row.data.id}">
+                  <button type="submit">Lưu xác nhận chuyển khoản</button>
+                </form>
+              </details>
+            </div>
+          </article>
+        </li>
+      </ul>
+
+      <nav class="admin-payouts__pagination" th:if="${!payoutsUnavailable and totalPages > 1}" aria-label="Phân trang yêu cầu chi trả">
+        <a th:if="${hasPrevious}" th:href="@{/admin/payouts(status=${selectedStatus},page=${pageNumber - 1})}">Trang trước</a>
+        <span th:text="${'Trang ' + (pageNumber + 1) + ' / ' + totalPages}">Trang 1 / 1</span>
+        <a th:if="${hasNext}" th:href="@{/admin/payouts(status=${selectedStatus},page=${pageNumber + 1})}">Trang sau</a>
+      </nav>
+    </section>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Cài đặt nền tảng | Tutor Match</title>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/admin-dashboard.css">
+  <link rel="stylesheet" href="/css/admin-settings.css">
+</head>
+<body>
+<a class="admin-dashboard__skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<div th:replace="~{fragments/admin-workspace-header :: header}"></div>
+<main class="admin-dashboard admin-settings" id="main-content">
+  <div class="admin-dashboard__container">
+    <div th:replace="~{fragments/admin-workspace-header :: nav}"></div>
+    <header class="admin-dashboard__heading">
+      <h1>Cài đặt nền tảng</h1>
+      <p>Quản lý mức hoa hồng, ngưỡng đánh giá và thời hạn vận hành lịch học.</p>
+    </header>
+
+    <div class="admin-settings__notice admin-settings__notice--success" role="status" th:if="${actionSuccess}" th:text="${actionSuccess}"></div>
+    <div class="admin-settings__notice admin-settings__notice--error" role="alert" th:if="${actionError}" th:text="${actionError}"></div>
+
+    <section class="admin-settings__panel" aria-labelledby="settings-title">
+      <div class="admin-settings__panel-heading">
+        <div><h2 id="settings-title">Thông số hiện hành</h2><p th:if="${!settingsUnavailable}" th:text="${'Cập nhật lần cuối: ' + updatedAtLabel}">Thời gian cập nhật</p></div>
+      </div>
+      <div class="admin-settings__error" th:if="${settingsUnavailable}" role="alert">
+        <p>Chưa tải được cài đặt nền tảng.</p><a href="/admin/settings">Thử tải lại</a>
+      </div>
+      <form class="admin-settings__form" th:if="${!settingsUnavailable}" method="post" action="/admin/settings">
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <div class="admin-settings__field">
+          <label for="commission-rate">Hoa hồng nền tảng (%)</label>
+          <input id="commission-rate" name="commissionRate" type="number" min="0" max="100" step="0.01" required th:value="${commissionRateInput}" aria-describedby="commission-help">
+          <p id="commission-help">Giá trị từ 0 đến 100. Kiểm tra mức áp dụng trước khi lưu.</p>
+        </div>
+        <div class="admin-settings__field">
+          <label for="bayesian-minimum-reviews">Số đánh giá tối thiểu</label>
+          <input id="bayesian-minimum-reviews" name="bayesianMinimumReviews" type="number" min="0" step="1" required th:value="${bayesianMinimumReviewsInput}" aria-describedby="reviews-help">
+          <p id="reviews-help">Số lượng dùng trong điều chỉnh xếp hạng Bayesian.</p>
+        </div>
+        <div class="admin-settings__field">
+          <label for="booking-reminder-hours">Nhắc lịch trước (giờ)</label>
+          <input id="booking-reminder-hours" name="bookingReminderHours" type="number" min="1" step="1" required th:value="${bookingReminderHoursInput}" aria-describedby="reminder-help">
+          <p id="reminder-help">Phải lớn hơn 0.</p>
+        </div>
+        <div class="admin-settings__field">
+          <label for="booking-expiration-hours">Hạn xác nhận lịch (giờ)</label>
+          <input id="booking-expiration-hours" name="bookingExpirationHours" type="number" min="1" step="1" required th:value="${bookingExpirationHoursInput}" aria-describedby="expiration-help">
+          <p id="expiration-help">Phải lớn hơn 0.</p>
+        </div>
+        <div class="admin-settings__actions"><button type="submit">Lưu cài đặt</button></div>
+      </form>
+    </section>
+  </div>
+</main>
+</body>
+</html>

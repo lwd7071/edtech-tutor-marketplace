@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Kết quả thanh toán | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/student-payment.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-payment-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+    <a class="payment-back" href="/student/packages">← Về gói học</a>
+    <section class="payment-panel" aria-labelledby="result-title">
+      <div class="payment-state payment-state--error" role="alert" th:if="${paymentUnavailable}">
+        <h1 id="result-title">Chưa xác minh được kết quả</h1>
+        <p>Không thể tải trạng thái hóa đơn lúc này. Hãy thử lại để xem dữ liệu mới nhất từ hệ thống.</p>
+        <a class="payment-button payment-button--primary" th:href="@{/student/payment-result/{id}(id=${invoiceId})}">Thử lại</a>
+      </div>
+      <div th:if="${!paymentUnavailable and invoice != null}">
+        <p class="payment-eyebrow">Hóa đơn <span th:text="${invoice.invoiceNumber}">TM-0000</span></p>
+        <h1 id="result-title" th:text="${invoice.status == 'PAID' ? 'Thanh toán thành công' : (invoice.status == 'PENDING' ? 'Đang chờ xác nhận thanh toán' : (invoice.status == 'EXPIRED' ? 'Hóa đơn đã hết hạn' : (invoice.status == 'CANCELLED' ? 'Thanh toán chưa hoàn tất' : 'Chưa xác định được trạng thái')))}">Đang chờ xác nhận thanh toán</h1>
+        <p class="payment-intro" th:text="${invoice.status == 'PAID' ? 'Hệ thống đã xác nhận khoản thanh toán cho hóa đơn này.' : (invoice.status == 'PENDING' ? 'Trạng thái hiện tại vẫn đang chờ. Bạn có thể tải lại trang để kiểm tra lần nữa.' : (invoice.status == 'EXPIRED' ? 'Hóa đơn đã hết hạn và chưa được ghi nhận thanh toán.' : (invoice.status == 'CANCELLED' ? 'Hóa đơn đã bị hủy và chưa được ghi nhận thanh toán.' : 'Hệ thống chưa xác định được trạng thái. Hãy kiểm tra lại sau.')))}">Trạng thái hiện tại vẫn đang chờ. Bạn có thể tải lại trang để kiểm tra lần nữa.</p>
+        <dl class="payment-summary">
+          <div><dt>Kết quả</dt><dd th:text="${invoice.status == 'PAID' ? 'Đã thanh toán' : (invoice.status == 'PENDING' ? 'Đang chờ' : (invoice.status == 'EXPIRED' ? 'Hết hạn' : (invoice.status == 'CANCELLED' ? 'Đã hủy' : 'Chưa xác định')))}">Đang chờ</dd></div>
+          <div><dt>Số tiền</dt><dd th:text="${invoice.amountLabel}">0 ₫</dd></div>
+          <div><dt>Mã hóa đơn</dt><dd th:text="${invoice.invoiceNumber}">TM-0000</dd></div>
+        </dl>
+        <nav class="payment-actions" aria-label="Bước tiếp theo">
+          <a class="payment-button payment-button--primary" th:if="${invoice.status == 'PAID'}" href="/student/packages">Xem gói học đã mua</a>
+          <a class="payment-button payment-button--primary" th:if="${invoice.status == 'PENDING'}" th:href="@{/student/checkout/{id}(id=${invoice.id})}">Quay lại thanh toán</a>
+          <a class="payment-button payment-button--primary" th:if="${invoice.status == 'EXPIRED' or invoice.status == 'CANCELLED'}" href="/teachers">Tìm gói học khác</a>
+          <a class="payment-button payment-button--secondary" th:href="@{/student/payment-result/{id}(id=${invoice.id})}">Kiểm tra lại</a>
+          <a class="payment-button payment-button--secondary" href="/student">Về tổng quan</a>
+        </nav>
+      </div>
+    </section>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

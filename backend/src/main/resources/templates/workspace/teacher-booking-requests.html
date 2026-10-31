@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7"><title>Yêu cầu đặt buổi | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/public.css"><link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/teacher-workspace.css"><link rel="stylesheet" href="/css/teacher-booking-requests.css">
+</head>
+<body>
+<div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-booking-requests">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+    <header class="booking-requests-heading">
+      <div><p class="booking-requests-eyebrow">Lịch dạy</p><h1>Yêu cầu đặt buổi</h1>
+        <p>Chọn giờ cuối cùng và hình thức học, hoặc phản hồi nếu bạn chưa thể nhận yêu cầu.</p></div>
+      <a class="button button--secondary" href="/teacher/bookings">Xem lịch đã xác nhận</a>
+    </header>
+    <p class="booking-requests-notice booking-requests-notice--success" role="status" th:if="${requestSuccess}" th:text="${requestSuccess}">Đã cập nhật.</p>
+    <p class="booking-requests-notice booking-requests-notice--error" role="alert" th:if="${requestError}" th:text="${requestError}">Không thể cập nhật.</p>
+    <form class="booking-requests-filter" method="get" action="/teacher/booking-requests">
+      <label for="status">Lọc theo trạng thái</label>
+      <select id="status" name="status">
+        <option value="ALL" th:selected="${selectedStatus == 'ALL'}">Tất cả</option>
+        <option value="PENDING" th:selected="${selectedStatus == 'PENDING'}">Chờ phản hồi</option>
+        <option value="ACCEPTED" th:selected="${selectedStatus == 'ACCEPTED'}">Đã xác nhận</option>
+        <option value="REJECTED" th:selected="${selectedStatus == 'REJECTED'}">Đã từ chối</option>
+        <option value="CANCELLED" th:selected="${selectedStatus == 'CANCELLED'}">Đã hủy</option>
+      </select><button class="button button--secondary" type="submit">Lọc</button>
+    </form>
+    <p class="booking-requests-filter-error" role="status" th:if="${statusInvalid}">Trạng thái lọc không hợp lệ; đang hiển thị tất cả.</p>
+    <section class="booking-requests-state" role="alert" th:if="${requestsUnavailable}">
+      <h2>Chưa tải được yêu cầu.</h2><p>Hãy thử lại sau ít phút.</p><a href="/teacher/booking-requests">Tải lại</a>
+    </section>
+    <section class="booking-requests-empty" th:if="${!requestsUnavailable and #lists.isEmpty(requestRows)}">
+      <span class="booking-requests-empty__mark" aria-hidden="true">✓</span><h2>Chưa có yêu cầu đặt buổi</h2>
+      <p>Khi học viên gửi yêu cầu bằng gói đã mua, yêu cầu sẽ xuất hiện ở đây.</p>
+    </section>
+    <div class="booking-request-list" th:if="${!requestsUnavailable and !#lists.isEmpty(requestRows)}">
+      <article class="booking-request-card" th:each="row : ${requestRows}">
+        <header class="booking-request-card__header">
+          <div><p class="booking-request-card__subject" th:text="${row.subjectName}">Môn học</p>
+            <h2 th:text="${row.studentName}">Học viên</h2>
+            <p th:text="|Mong muốn: ${#temporals.format(row.request.preferredStartTime, 'EEEE, dd/MM/yyyy · HH:mm', 'Asia/Ho_Chi_Minh')}|"></p></div>
+          <span class="booking-request-status" th:text="${row.request.status}">PENDING</span>
+        </header>
+        <p class="booking-request-note" th:if="${row.request.studentNote != null and !#strings.isEmpty(row.request.studentNote)}" th:text="${row.request.studentNote}">Ghi chú học viên</p>
+        <div class="booking-request-actions" th:if="${row.request.status.name() == 'PENDING'}">
+          <form method="post" th:action="@{/teacher/booking-requests/{id}/accept(id=${row.request.id})}">
+            <input type="hidden" name="version" th:value="${row.request.version}">
+            <label th:for="|start-${row.request.id}|">Thời gian xác nhận</label>
+            <input required type="datetime-local" name="startTime" th:id="|start-${row.request.id}|">
+            <label th:for="|mode-${row.request.id}|">Hình thức học</label>
+            <select required name="deliveryMode" th:id="|mode-${row.request.id}|"><option th:each="mode : ${deliveryModes}" th:value="${mode}" th:text="${mode == T(com.edtech.platform.booking.domain.DeliveryMode).ONLINE ? 'Trực tuyến' : 'Trực tiếp'}">Trực tuyến</option></select>
+            <label th:for="|meeting-${row.request.id}|">Link học trực tuyến <span>(nếu học online)</span></label>
+            <input type="url" name="meetingLink" maxlength="500" th:id="|meeting-${row.request.id}|">
+            <label th:for="|address-${row.request.id}|">Địa điểm học <span>(nếu học trực tiếp)</span></label>
+            <input type="text" name="locationAddress" maxlength="500" th:id="|address-${row.request.id}|">
+            <button class="button button--primary" type="submit">Xác nhận và lên lịch</button>
+          </form>
+          <form method="post" th:action="@{/teacher/booking-requests/{id}/reject(id=${row.request.id})}">
+            <input type="hidden" name="version" th:value="${row.request.version}">
+            <label th:for="|reason-${row.request.id}|">Lý do từ chối</label>
+            <textarea required minlength="1" maxlength="1000" name="reason" rows="2" th:id="|reason-${row.request.id}|"></textarea>
+            <button class="button button--secondary" type="submit">Từ chối yêu cầu</button>
+          </form>
+        </div>
+        <p class="booking-request-reason" th:if="${row.request.decisionReason != null}" th:text="${row.request.decisionReason}">Lý do phản hồi</p>
+      </article>
+    </div>
+    <nav class="booking-requests-pagination" aria-label="Phân trang" th:if="${totalPages > 1}">
+      <a th:if="${hasPrevious}" th:href="@{/teacher/booking-requests(status=${selectedStatus},page=${currentPage - 1})}">Trang trước</a>
+      <span th:text="|Trang ${currentPage + 1} / ${totalPages}|">Trang 1 / 1</span>
+      <a th:if="${hasNext}" th:href="@{/teacher/booking-requests(status=${selectedStatus},page=${currentPage + 1})}">Trang sau</a>
+    </nav>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

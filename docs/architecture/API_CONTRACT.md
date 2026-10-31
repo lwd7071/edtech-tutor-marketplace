@@ -23,6 +23,8 @@ Authorization: Bearer <access-token>
 - Endpoint public và webhook không yêu cầu JWT.
 - Endpoint role-specific yêu cầu đúng role và kiểm tra ownership tại Service.
 - Mỗi request có JWT kiểm tra trạng thái tài khoản hiện tại. Backend cache `userId → status` trong Redis tối đa 30 giây; lock/unlock invalidate trước thay đổi và write-through sau commit. Redis lỗi phải fallback database, không được bỏ qua status check.
+- UI render phía server dùng HTTP session cookie opaque theo [ADR 0016](../adr/0016-server-rendered-authentication.md); CSRF bật cho mutation HTML. Access/refresh JWT chỉ được giữ phía server trong session và không xác thực REST bằng cookie.
+- REST `/api/**` luôn xác thực bằng JWT Bearer; CSRF tắt riêng cho API và CORS dùng allowlist cấu hình. OAuth2 callback cho Next tiếp tục theo flow hiện hành cho tới khi cutover UI.
 
 ### 1.2. Response envelope
 
@@ -241,6 +243,37 @@ Page<T>     data: T[], meta: PageMeta
 | GET | `/api/public/teachers/{id}/availability` | — | `AvailabilityView[]` |
 | GET | `/api/public/teachers/{id}/reviews` | `page`, `size`, `sort` | `ReviewView[]` |
 | GET | `/api/public/teachers/ranking` | `subjectId?`, `page`, `size` | `TeacherRankingItem[]` |
+| POST | `/api/public/assistant/chat` | `AssistantChatRequest` | `AssistantChatResponse` |
+
+`POST /api/public/assistant/chat` là endpoint REST public, luôn dùng phạm vi Guest kể cả khi có Bearer JWT. Widget Thymeleaf gọi `POST /assistant/chat` cùng origin dưới HTML security chain: role lấy từ session server, request phải có CSRF token; Guest không cần đăng nhập. Hai endpoint cùng nhận `message` tối đa 1000 ký tự và tối đa 12 history messages (`USER`/`ASSISTANT`, mỗi message tối đa 1000 ký tự). Role trong body bị bỏ qua. Không lưu history ở backend; response luôn có `Cache-Control: no-store`. Response `data` gồm `outcome=ANSWERED|NEEDS_CLARIFICATION|CONTACT_ADMIN`, `reply`, `sources[]` (`label`, đường dẫn nội bộ do server chọn) và `language` (BCP 47). Nguồn hướng dẫn nằm trong playbook có phiên bản trong repo và được lọc theo role; tìm gia sư chỉ dùng catalog công khai đã duyệt/đang hiển thị. Trợ lý không đọc dữ liệu cá nhân/hàng đợi hoặc thực hiện thao tác. Provider thiếu key/lỗi mạng/HTTP lỗi trả `503 EXTERNAL_SERVICE_UNAVAILABLE`; vượt 10 request trong 300 giây trả `429 RATE_LIMIT_EXCEEDED`. Rate limit dùng user ID nếu có principal hợp lệ, nếu không dùng địa chỉ client.
+
+Ví dụ request:
+
+```json
+{
+  "message": "Tìm gia sư Toán",
+  "history": []
+}
+```
+
+Ví dụ response:
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": {
+    "outcome": "ANSWERED",
+    "reply": "Bạn có thể xem các gia sư Toán phù hợp.",
+    "sources": [{ "label": "Tìm gia sư", "url": "/teachers" }],
+    "language": "vi"
+  },
+  "errors": null,
+  "meta": null
+}
+```
+
+`GET /api/public/teachers/{id}` chỉ công khai hồ sơ có `profileStatus=APPROVED` và `isVisible=true`; ID không tồn tại, hồ sơ chưa duyệt hoặc hồ sơ đang ẩn đều trả `404` để không tiết lộ hồ sơ chưa được công khai.
 
 `TeacherSearchParams`:
 
@@ -250,7 +283,7 @@ deliveryMode=ONLINE|OFFLINE, dayOfWeek=MONDAY..SUNDAY,
 startTime=HH:mm:ss, endTime=HH:mm:ss, page, size, sort
 ```
 
-`keyword` dài tối đa 100 ký tự, được trim và tìm kiếm không phân biệt hoa/thường hoặc dấu tiếng Việt. Ví dụ `Toan`, `toán` và ` TOÁN ` có cùng semantics. Với `sort=rating_desc`, giáo viên chưa có rating được xem là `0` và đứng sau giáo viên có rating dương; `id` là tie-breaker ổn định.
+`keyword` dài tối đa 100 ký tự. `page` mặc định 0, `size` mặc định 20 và tối đa 100. `sort` chỉ nhận `price_asc`, `price_desc`, `rating_desc`, `experience_desc`; mặc định do service quyết định. Giá tối thiểu không được lớn hơn giá tối đa. Lọc giờ phải truyền đủ cả `dayOfWeek`, `startTime`, `endTime`. `provinceCode` dài 2 chữ số, `wardCode` dài 5 chữ số. Keyword được chuẩn hóa để tìm không phân biệt hoa/thường và dấu tiếng Việt. Các filter dạng chuỗi tùy chọn chấp nhận cả chuỗi rỗng như không truyền; điều này hỗ trợ native HTML GET form gửi các control chưa chọn.
 
 Khi filter giờ rảnh, phải truyền đủ `dayOfWeek`, `startTime`, `endTime`. Khớp khi `availability.startTime <= startTime AND availability.endTime >= endTime`.
 
@@ -359,7 +392,7 @@ PUT availability thay toàn bộ danh sách trong một transaction; overlap tr�
 
 `UpsertPricingPackageRequest.version` phải bằng `0` khi tạo. PUT và PATCH status bắt buộc gửi version hiện tại; version cũ trả `409 CONCURRENT_MODIFICATION`.
 | POST | `/api/teacher/bookings/{id}/cancel` | `CancelBookingRequest` | `BookingDetail` |
-| GET | `/api/teacher/trial-requests` | `status?`, pagination | `TrialRequestView[]` |
+| GET | `/api/teacher/trial-requests` | pagination | `TrialRequestView[]` |
 | POST | `/api/teacher/trial-requests/{id}/accept` | `AcceptTrialRequest` + current `version` | `BookingDetail` (`201`) |
 | POST | `/api/teacher/trial-requests/{id}/reject` | `RejectTrialRequest` + current `version` | `TrialRequestView` |
 | GET | `/api/teacher/students` | `keyword?`, pagination | `TeacherStudentView[]` |
@@ -420,6 +453,8 @@ Gia sư xác nhận booking trả phí và nộp `SessionReport` trong cùng m�
 
 StudentPackage phải `ACTIVE` tại thời điểm tạo Booking mới. Nếu package chuyển `LOCKED_EXPIRED` sau khi Booking đã được tạo, Booking `SCHEDULED` đó vẫn được giữ nguyên và diễn ra bình thường; hệ thống không tự động hủy hoặc hoàn lượt chỉ vì package hết hạn.
 
+`endTime` của `POST /api/teacher/bookings` phải đúng bằng `startTime` cộng thời lượng snapshot đã mua trên StudentPackage; nếu không, backend trả `BOOKING_DURATION_MISMATCH`. REST API vẫn không có Student create-booking endpoint. Luồng HTML Thymeleaf Student request → Teacher confirmation được ghi tại [ADR 0017](../adr/0017-paid-booking-request-workflow.md) và bản đồ route tại [API_INTEGRATION.md](../thymeleaf/API_INTEGRATION.md).
+
 ```json
 // AcceptTrialRequest
 {
@@ -452,10 +487,13 @@ Chỉ nhận xác nhận sau `endTime` và trước hạn hiệu lực (đúng t
 
 | Method | Endpoint | Request | Response `data` |
 |---|---|---|---|
+| GET | `/api/teacher/assignments` | pagination (`Pageable`) | assignment read views + `PageMeta` |
+| GET | `/api/teacher/assignments/{id}` | — | owned assignment read view |
 | POST | `/api/teacher/assignments` | `CreateAssignmentRequest` (`version=0`) | `AssignmentDetail` (`201`) |
 | PUT | `/api/teacher/assignments/{id}` | `CreateAssignmentRequest` + current `version` | `AssignmentDetail` |
 | POST | `/api/teacher/assignments/{id}/publish` | `{ "version": n }` | `AssignmentDetail` |
 | POST | `/api/teacher/assignments/{id}/close` | `{ "version": n }` | `AssignmentDetail` |
+| GET | `/api/teacher/submissions/{id}` | — | owned `SubmissionDetail` |
 | POST | `/api/teacher/submissions/{id}/grade` | `GradeSubmissionRequest` + current `version` | `SubmissionDetail` |
 | GET | `/api/teacher/wallet` | — | `WalletView` |
 | GET | `/api/teacher/wallet/ledger` | filters, pagination | `LedgerEntryView[]` |
@@ -489,6 +527,10 @@ dùng lại key; payload mới phải dùng key mới.
   "status": "PUBLISHED"
 }
 ```
+
+Teacher assignment read views return the current `version` with each assignment. The version is required by
+draft update, publish and close commands; the Teacher list also includes the associated submission status/id
+when a submission exists. Teacher list enrichment is batched for student identities, subjects and submissions.
 
 ```json
 // CreatePayoutRequest
@@ -838,18 +880,22 @@ Response xác nhận tối giản theo yêu cầu provider; không bắt buộc 
 ```json
 {
   "id": "43c6445f-2f69-4bd1-a108-17647845d66a",
-  "teacher": { "id": "uuid", "fullName": "Trần Thu Hà" },
-  "subject": { "id": "uuid", "name": "Toán 11" },
+  "pricingPackageId": "ebc78c1d-31d1-4e75-b528-cd5d6c44dd54",
+  "invoiceId": "48a753cd-89ca-4ca9-a0be-2ea6489720cc",
   "packageName": "Toán 11 — 10 buổi",
   "totalSessions": 10,
   "remainingSessions": 7,
-  "reservedSessions": 1,
-  "completedSessions": 2,
-  "refundedSessions": 0,
   "purchasePriceVnd": 1000000,
+  "commissionRate": 5.00,
   "startsAt": "2026-08-19T02:00:00Z",
   "expiresAt": "2026-11-17T02:00:00Z",
   "status": "ACTIVE",
+  "teacherId": "752169a4-cc2f-455f-a567-f55399eeb8f8",
+  "studentId": "7f9a5cce-29de-4eb9-b07e-259d0b216eef",
+  "subjectId": "0cd80fd5-df93-4ac8-857d-f1e599b86381",
+  "reservedSessions": 1,
+  "completedSessions": 2,
+  "refundedSessions": 0,
   "lockedReason": null,
   "version": 4
 }
@@ -860,23 +906,22 @@ Response xác nhận tối giản theo yêu cầu provider; không bắt buộc 
 ```json
 {
   "id": "d5dfe201-e7c0-4540-9564-a52c82bf910c",
-  "teacher": { "id": "uuid", "fullName": "Trần Thu Hà" },
-  "student": { "id": "uuid", "fullName": "Nguyễn Minh An" },
+  "teacherId": "752169a4-cc2f-455f-a567-f55399eeb8f8",
+  "studentId": "7f9a5cce-29de-4eb9-b07e-259d0b216eef",
+  "subjectId": "0cd80fd5-df93-4ac8-857d-f1e599b86381",
   "studentPackageId": "43c6445f-2f69-4bd1-a108-17647845d66a",
-  "subject": { "id": "uuid", "name": "Toán 11" },
   "startTime": "2026-08-20T12:00:00Z",
   "endTime": "2026-08-20T13:30:00Z",
   "deliveryMode": "ONLINE",
-  "meetingLink": "https://meet.example/abc",
-  "locationAddress": null,
   "status": "SCHEDULED",
-  "cancelReason": null,
   "trial": false,
   "outsideAvailabilityWarning": false,
-  "sessionReport": null,
+  "cancelReason": null,
   "version": 1
 }
 ```
+
+`BookingDetail` hiện chỉ chứa các ID quan hệ, thời gian, hình thức, trạng thái, cờ trial/availability, lý do hủy và version. Không có nested `teacher`/`student`/`subject`, `meetingLink`, `locationAddress` hoặc `sessionReport` trong DTO này.
 
 ### 9.3. ContentBlock
 
@@ -944,7 +989,7 @@ List và detail của Admin dùng cùng `BookingSettlementAdminView`: `bookingId
 | Booking | `SCHEDULED`, `COMPLETED`, `CANCELLED`, `EXPIRED` |
 | Delivery | `ONLINE`, `OFFLINE` |
 | Payout | `PENDING`, `PROCESSING`, `SUCCEEDED`, `REJECTED` |
-| Refund | `PENDING`, `APPROVED`, `REFUNDED`, `REJECTED` |
+| Refund | `PENDING`, `APPROVED`, `PROCESSING`, `REFUNDED`, `REJECTED`, `FAILED` |
 | Assignment | `DRAFT`, `PUBLISHED`, `CLOSED` |
 | Submission | `DRAFT`, `SUBMITTED`, `GRADED` |
 

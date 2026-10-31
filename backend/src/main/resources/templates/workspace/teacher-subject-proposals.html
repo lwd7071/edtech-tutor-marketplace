@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Đề xuất môn học | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/teacher-workspace.css">
+  <link rel="stylesheet" href="/css/teacher-subject-proposals.css">
+</head>
+<body>
+<div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-proposals-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+    <header class="teacher-proposals-heading"><h1>Đề xuất môn học</h1>
+      <p>Chưa thấy môn phù hợp trong danh mục? Gửi đề xuất để đội ngũ xem xét.</p>
+    </header>
+
+    <div class="teacher-proposals-notice" role="status" th:if="${proposalNotice != null}" th:text="${proposalNotice}">Đã gửi đề xuất.</div>
+    <div class="teacher-proposals-notice teacher-proposals-notice--error" role="alert" th:if="${proposalError != null}" th:text="${proposalError}">Chưa gửi được đề xuất.</div>
+    <div class="teacher-proposals-notice teacher-proposals-notice--error" role="alert" tabindex="-1" th:if="${proposalFormError != null}" th:text="${proposalFormError}">Kiểm tra lại thông tin đề xuất.</div>
+
+    <div class="teacher-proposals-layout">
+      <section class="teacher-proposals-history" aria-labelledby="proposal-history-title">
+        <header class="teacher-proposals-history__heading"><div><h2 id="proposal-history-title">Đề xuất của bạn</h2><p th:text="${totalElements + ' đề xuất'}">0 đề xuất</p></div></header>
+        <form class="teacher-proposals-filter" method="get" action="/teacher/subject-proposals">
+          <label for="proposalStatus">Trạng thái</label><select id="proposalStatus" name="status">
+            <option value="ALL" th:selected="${status == 'ALL'}">Tất cả</option>
+            <option value="PENDING" th:selected="${status == 'PENDING'}">Đang chờ duyệt</option>
+            <option value="APPROVED" th:selected="${status == 'APPROVED'}">Đã chấp thuận</option>
+            <option value="REJECTED" th:selected="${status == 'REJECTED'}">Cần chỉnh sửa</option>
+          </select><button type="submit">Lọc</button>
+        </form>
+        <p class="teacher-proposals-filter__error" role="status" th:if="${statusInvalid}">Bộ lọc không hợp lệ; đang hiển thị tất cả đề xuất.</p>
+        <div class="teacher-proposals-state teacher-proposals-state--error" role="alert" th:if="${proposalsUnavailable}">
+          <h3>Chưa tải được đề xuất</h3><p>Thử tải lại danh sách. Nội dung đề xuất chưa được thay đổi.</p><a th:href="@{/teacher/subject-proposals(status=${status},page=${currentPage})}">Tải lại</a>
+        </div>
+        <div class="teacher-proposals-empty" th:if="${!proposalsUnavailable and #lists.isEmpty(proposalRows)}">
+          <span class="teacher-proposals-empty__shape" aria-hidden="true"></span><h3>Chưa có đề xuất nào</h3><p>Đề xuất môn mới sẽ xuất hiện tại đây cùng trạng thái xét duyệt.</p>
+        </div>
+        <ol class="teacher-proposals-list" th:if="${!proposalsUnavailable and !#lists.isEmpty(proposalRows)}">
+          <li class="teacher-proposal-card" th:each="row : ${proposalRows}">
+            <div class="teacher-proposal-card__top"><div><p class="teacher-proposal-card__level" th:text="${row.educationLevelLabel}">Trung học phổ thông</p><h3 th:text="${row.data.proposedName}">Tên môn đề xuất</h3></div>
+              <span class="teacher-proposal-status" th:classappend="${' is-' + #strings.toLowerCase(row.data.status.name())}" th:text="${row.statusLabel}">Đang chờ duyệt</span></div>
+            <p class="teacher-proposal-card__description" th:if="${row.data.description != null and !#strings.isEmpty(row.data.description)}" th:text="${row.data.description}">Mô tả đề xuất</p>
+            <div class="teacher-proposal-card__review" th:if="${row.data.reviewNote != null and !#strings.isEmpty(row.data.reviewNote)}"><h4>Phản hồi</h4><p th:text="${row.data.reviewNote}">Nội dung phản hồi</p></div>
+            <footer><span th:if="${row.reviewedAtLabel != null}" th:text="${'Xét duyệt lúc ' + row.reviewedAtLabel}">Xét duyệt lúc 10:00, 01/01/2026</span><span th:if="${row.data.createdSubjectId != null}">Môn đã được thêm vào danh mục.</span></footer>
+          </li>
+        </ol>
+        <nav class="teacher-proposals-pagination" aria-label="Phân trang đề xuất" th:if="${!proposalsUnavailable and totalPages > 1}">
+          <a th:if="${hasPrevious}" th:href="@{/teacher/subject-proposals(status=${status},page=${currentPage - 1})}">Trang trước</a>
+          <span th:unless="${hasPrevious}" aria-disabled="true">Trang trước</span>
+          <span th:text="${'Trang ' + (currentPage + 1) + ' / ' + totalPages}">Trang 1 / 3</span>
+          <a th:if="${hasNext}" th:href="@{/teacher/subject-proposals(status=${status},page=${currentPage + 1})}">Trang sau</a>
+          <span th:unless="${hasNext}" aria-disabled="true">Trang sau</span>
+        </nav>
+      </section>
+
+      <aside class="teacher-proposals-form-panel" aria-labelledby="proposal-form-title">
+        <form method="post" th:action="@{/teacher/subject-proposals}" th:object="${proposalForm}">
+          <header><h2 id="proposal-form-title">Gửi đề xuất</h2><p>Đội ngũ sẽ xem xét thông tin bạn cung cấp.</p></header>
+          <div class="teacher-proposals-field"><label for="proposedName">Tên môn học</label><input id="proposedName" type="text" th:field="*{proposedName}" autocomplete="off" required th:attr="aria-invalid=${#fields.hasErrors('proposedName')},aria-describedby=${#fields.hasErrors('proposedName')} ? 'proposedName-error' : null,autofocus=${#fields.hasErrors('proposedName')} ? 'autofocus' : null">
+            <p id="proposedName-error" class="teacher-proposals-field__error" role="alert" th:if="${#fields.hasErrors('proposedName')}" th:errors="*{proposedName}">Nhập tên môn học.</p></div>
+          <div class="teacher-proposals-field"><label for="educationLevel">Cấp học</label><select id="educationLevel" th:field="*{educationLevel}" required th:attr="aria-invalid=${#fields.hasErrors('educationLevel')},aria-describedby=${#fields.hasErrors('educationLevel')} ? 'educationLevel-error' : null,autofocus=${!#fields.hasErrors('proposedName') and #fields.hasErrors('educationLevel')} ? 'autofocus' : null">
+              <option value="">Chọn cấp học</option><option th:each="level : ${educationLevels}" th:value="${level.value}" th:text="${level.label}">Trung học phổ thông</option>
+            </select><p id="educationLevel-error" class="teacher-proposals-field__error" role="alert" th:if="${#fields.hasErrors('educationLevel')}" th:errors="*{educationLevel}">Chọn cấp học.</p></div>
+          <div class="teacher-proposals-field"><label for="description">Mô tả <span>(không bắt buộc)</span></label><textarea id="description" rows="4" th:field="*{description}" th:attr="aria-invalid=${#fields.hasErrors('description')},aria-describedby=${#fields.hasErrors('description')} ? 'description-error' : null,autofocus=${!#fields.hasErrors('proposedName') and !#fields.hasErrors('educationLevel') and #fields.hasErrors('description')} ? 'autofocus' : null" placeholder="Nêu ngắn gọn nội dung hoặc nhu cầu học môn này"></textarea>
+            <p id="description-error" class="teacher-proposals-field__error" role="alert" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Mô tả chưa hợp lệ.</p></div>
+          <button class="teacher-proposals-button" type="submit" th:disabled="${proposalsUnavailable}">Gửi đề xuất</button>
+        </form>
+      </aside>
+    </div>
+  </div>
+</main>
+<footer class="teacher-message-footer"><div><a href="/teacher/subject-proposals">Tutor Match</a><span>Đề xuất môn học.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>

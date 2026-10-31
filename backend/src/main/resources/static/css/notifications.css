@@ -1,0 +1,41 @@
+.notification-page{--notification-line:var(--border);--notification-muted:var(--muted);color:var(--ink)}
+.notification-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:28px 0 24px}
+.notification-heading h1{margin:0;font-size:clamp(28px,3vw,36px);line-height:1.15;letter-spacing:-.025em}
+.notification-heading p{max-width:65ch;margin:9px 0 0;color:var(--notification-muted);line-height:1.55}
+.notification-button{display:inline-flex;min-height:42px;align-items:center;justify-content:center;padding:9px 15px;border:1px solid var(--ink);border-radius:4px;background:transparent;color:var(--ink);font:inherit;font-weight:600;text-decoration:none;cursor:pointer}
+.notification-button:hover,.notification-read-button:hover{background:var(--surface-warm)}
+.notification-filters{display:flex;gap:24px;overflow-x:auto;border-bottom:1px solid var(--notification-line);scrollbar-color:var(--muted) transparent}
+.notification-filters a{position:relative;display:flex;min-height:46px;align-items:center;flex:none;color:var(--notification-muted);text-decoration:none;white-space:nowrap}
+.notification-filters a.is-active{color:var(--ink);font-weight:650}
+.notification-filters a.is-active::after{position:absolute;right:0;bottom:-1px;left:0;height:2px;background:var(--brand-yellow);content:""}
+.notification-content{min-height:240px}
+.notification-list{margin:0;padding:0;list-style:none}
+.notification-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 24px;padding:22px 8px;border-bottom:1px solid var(--notification-line)}
+.notification-item--unread{background:#fffdf5}
+.notification-item__main{min-width:0;color:inherit;text-decoration:none}
+.notification-item__main:focus-visible,.notification-filters a:focus-visible,.notification-pagination a:focus-visible,.notification-button:focus-visible,.notification-read-button:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.notification-item__copy{display:grid;gap:6px;max-width:75ch}
+.notification-item__title{font-weight:650;line-height:1.4;overflow-wrap:anywhere}
+.notification-item__body{color:#38372f;line-height:1.55;overflow-wrap:anywhere;white-space:pre-line}
+.notification-item__meta{display:flex;grid-column:1;gap:14px;color:var(--notification-muted);font-size:13px}
+.notification-item form{grid-column:2;grid-row:1 / span 2;align-self:center}
+.notification-read-button{padding:8px;border:0;background:transparent;color:var(--ink);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.notification-state{padding:48px 18px;text-align:center}
+.notification-state h2{margin:0;font-size:21px}.notification-state p{margin:9px 0 18px;color:var(--notification-muted)}
+.notification-state--error{color:var(--danger)}
+.notification-pagination{display:flex;align-items:center;justify-content:flex-end;gap:20px;padding:22px 0}
+.notification-pagination a{color:var(--ink);text-underline-offset:3px}
+.notification-flash{padding:12px 14px;border:1px solid var(--success);border-radius:4px;background:#f1f8f3;color:var(--success)}
+.notification-flash--error{border-color:var(--danger);background:#fff5f4;color:var(--danger)}
+.notification-teacher-header{border-bottom:1px solid var(--border);background:var(--surface)}
+.notification-teacher-header__inner{display:flex;max-width:1200px;min-height:72px;align-items:center;justify-content:space-between;gap:24px;margin:auto;padding:12px 24px}
+.notification-teacher-header nav,.notification-teacher-header__inner>div{display:flex;align-items:center;gap:20px}
+.notification-teacher-header nav a{color:var(--ink);text-decoration:none}
+.notification-teacher-header__inner>div span{color:var(--muted)}
+.notification-teacher-header form{margin:0}
+.notification-teacher-header button{padding:8px 12px;border:1px solid var(--ink);border-radius:4px;background:transparent;color:var(--ink);font:inherit;cursor:pointer}
+.notification-teacher-nav{margin-top:20px}
+.notification-teacher-nav a{color:var(--ink);font-weight:600}
+.notification-teacher-header a:focus-visible,.notification-teacher-header button:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+@media(max-width:700px){.notification-heading{align-items:stretch;flex-direction:column;gap:14px;margin-top:20px}.notification-heading form{align-self:flex-start}.notification-filters{gap:20px}.notification-item{grid-template-columns:1fr;gap:10px;padding:18px 4px}.notification-item__meta{grid-column:1}.notification-item form{grid-column:1;grid-row:auto;justify-self:start;margin-left:-8px}.notification-pagination{justify-content:center}.notification-teacher-header__inner{flex-wrap:wrap;padding:12px 16px}.notification-teacher-header nav{order:3;width:100%}.notification-teacher-header__inner>div{margin-left:auto}}
+@media(prefers-reduced-motion:reduce){.notification-page *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}

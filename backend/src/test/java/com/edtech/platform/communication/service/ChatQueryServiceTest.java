@@ -26,6 +26,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.edtech.platform.common.exception.BusinessException;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class ChatQueryServiceTest {
@@ -74,6 +79,35 @@ class ChatQueryServiceTest {
         assertThat(result.getParticipantAvatar()).isEqualTo("https://cdn.example.com/avatar.jpg");
         assertThat(result.getLastMessagePreview()).isEqualTo("Chào thầy");
         assertThat(result.getUnreadCount()).isEqualTo(2);
+    }
+
+    @Test
+    void directConversationReadChecksMembershipAndDoesNotNeedConversationListPage() {
+        UUID teacherId = UUID.randomUUID(), teacherAccountId = UUID.randomUUID(), studentId = UUID.randomUUID();
+        Conversation conversation = conversation(teacherId, studentId);
+        when(conversations.findById(conversation.getId())).thenReturn(Optional.of(conversation));
+        when(teachers.getTeacher(teacherId)).thenReturn(teacher(teacherId, teacherAccountId));
+        when(identities.getIdentity(teacherAccountId)).thenReturn(Optional.of(new IdentitySnapshot(
+                teacherAccountId, "teacher@example.com", "Gia sư", "TEACHER", "ACTIVE",
+                null, false, null)));
+
+        ConversationView result = service().getConversation(conversation.getId(), studentId);
+
+        assertThat(result.getId()).isEqualTo(conversation.getId());
+        assertThat(result.getParticipantId()).isEqualTo(teacherAccountId);
+        verify(conversations, never()).findByUserId(any(), any());
+    }
+
+    @Test
+    void directConversationReadHidesConversationFromNonMember() {
+        UUID teacherId = UUID.randomUUID(), studentId = UUID.randomUUID();
+        Conversation conversation = conversation(teacherId, studentId);
+        when(conversations.findById(conversation.getId())).thenReturn(Optional.of(conversation));
+        when(teachers.getTeacher(teacherId)).thenReturn(teacher(teacherId, UUID.randomUUID()));
+
+        assertThatThrownBy(() -> service().getConversation(conversation.getId(), UUID.randomUUID()))
+                .isInstanceOf(BusinessException.class);
+        org.mockito.Mockito.verifyNoInteractions(identities);
     }
 
     private ChatQueryService service() {

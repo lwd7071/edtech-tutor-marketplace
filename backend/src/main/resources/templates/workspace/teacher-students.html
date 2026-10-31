@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#fffdf7"><title>Học viên | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-vietnamese-wght-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/public.css"><link rel="stylesheet" href="/css/student-dashboard.css"><link rel="stylesheet" href="/css/teacher-workspace.css"><link rel="stylesheet" href="/css/teacher-students.css"></head>
+<body><div th:replace="~{fragments/teacher-messages-header :: header}"></div>
+<main id="main-content" class="student-dashboard teacher-students-page"><div class="student-dashboard__container"><div th:replace="~{fragments/teacher-messages-header :: nav(${activeWorkspaceNav})}"></div>
+  <header class="teacher-students-heading"><div><h1>Học viên</h1><p>Học viên và các gói học đã mua từ bạn.</p></div></header>
+  <section class="teacher-students-panel" aria-labelledby="teacher-students-title">
+    <header class="teacher-students-panel__heading"><div><h2 id="teacher-students-title">Danh sách học viên</h2><p>Thông tin được tổng hợp từ các gói học của bạn.</p></div><span th:if="${!studentsUnavailable}" th:text="${totalPackages} + ' gói học'">0 gói học</span></header>
+    <div class="teacher-students-state teacher-students-state--error" role="alert" th:if="${studentsUnavailable}"><h3>Chưa tải được danh sách</h3><p>Thử tải lại trang. Dữ liệu hiện tại chưa được thay đổi.</p><a href="/teacher/students">Tải lại học viên</a></div>
+    <div class="teacher-students-empty" th:if="${!studentsUnavailable and #lists.isEmpty(studentRows)}"><h3>Chưa có học viên</h3><p>Danh sách sẽ xuất hiện khi có học viên mua gói học của bạn.</p><a href="/teacher/packages">Quản lý gói học</a></div>
+    <ul class="teacher-student-list" th:if="${!studentsUnavailable and !#lists.isEmpty(studentRows)}" aria-label="Học viên và gói đã mua">
+      <li class="teacher-student-row" th:each="student : ${studentRows}">
+        <div class="teacher-student-row__identity"><span class="teacher-student-avatar" aria-hidden="true" th:text="${student.initial}">H</span><div><h3 th:text="${student.studentName}">Học viên</h3><p th:text="${#lists.size(student.packages)} + ' gói học'">1 gói học</p></div></div>
+        <ul class="teacher-student-packages" aria-label="Gói học" ><li th:each="pkg : ${student.packages}"><span th:text="${pkg.packageName}">Gói học</span><span th:text="${pkg.subjectName}">Môn học</span><span th:text="${pkg.statusLabel}">Đang hoạt động</span></li></ul>
+        <a class="teacher-student-row__link" th:href="@{/teacher/students/{id}(id=${student.studentId})}">Xem các gói học<span class="visually-hidden" th:text="${' của ' + student.studentName}"> của học viên</span></a>
+      </li>
+    </ul>
+    <nav class="teacher-students-pagination" aria-label="Phân trang gói học" th:if="${!studentsUnavailable and totalPages > 1}"><a th:if="${hasPrevious}" th:href="@{/teacher/students(page=${currentPage - 1})}">Trang trước</a><span th:text="${'Trang ' + (currentPage + 1) + ' / ' + totalPages}">Trang 1 / 2</span><a th:if="${hasNext}" th:href="@{/teacher/students(page=${currentPage + 1})}">Trang sau</a></nav>
+  </section>
+</div></main><footer class="teacher-message-footer"><div><a href="/teacher/students">Tutor Match</a><span>Quản lý học viên.</span></div><a href="/support">Trợ giúp</a></footer></body></html>

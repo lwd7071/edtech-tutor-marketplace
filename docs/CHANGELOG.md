@@ -1,10 +1,614 @@
 # Changelog theo đợt hoàn thành
 
+## 2026-10-30 — Trợ lý AI theo vai trò và ngôn ngữ
+- Thêm playbook hướng dẫn có phiên bản trong repo cho Guest, Student, Teacher và Admin; Groq chọn chủ đề, bộ lọc tìm gia sư và ngôn ngữ câu hỏi, backend giới hạn nguồn/link theo role. Giữ API public ở phạm vi Guest, thêm chat HTML session + CSRF và widget Admin. Không đọc dữ liệu cá nhân hoặc thực hiện thao tác.
+- Kiểm thử mục tiêu PASS 56/56; `node --check` PASS. Groq thật và browser QA chưa chạy do thiếu key trong môi trường và chưa có server local. Không có migration của trợ lý, không truy cập Supabase.
+
+## 2026-10-30 — Bổ sung liên kết Bảng xếp hạng trên Header & Tối ưu Cuộn ngang Mobile Nav (TDD & UI/UX Pro Max)
+- Bổ sung liên kết Bảng xếp hạng (`public-header.html`): Thêm `<a class="public-nav__link" href="/ranking">Bảng xếp hạng</a>` vào thanh điều hướng chính `public-nav` ngay sau `Tìm gia sư`, tự động gắn `public-nav__link--active` và `aria-current="page"` khi duyệt `/ranking`.
+- Tối ưu Mobile Nav UI/UX Pro Max (`public.css`): Bổ sung `white-space: nowrap` chống rớt dòng chữ tiếng Việt, `overflow-x: auto` cuộn ngang êm ái với `scrollbar-width: none`, touch target đạt chuẩn >= 44px.
+- Kiểm thử TDD 3 Slices: Bổ sung test cases trong `HomePageControllerTest`, `TeacherRankingPageControllerTest`, `MobileSystemLayoutTest`. Chạy regression 37/37 tests PASS 100%. Không đổi schema DB Supabase.
+
+## 2026-10-30 — Cập nhật báo cáo Tutor Match theo giao diện và source hiện hành
+- Đối chiếu lại báo cáo với route inventory, trạng thái, architecture/API, ADR và code hiện tại; giữ hướng dẫn 71 route/use case cùng sơ đồ, diễn giải source và phạm vi bằng chứng.
+- Thay ảnh mới cho một số trang công khai/auth bằng ảnh QA local, bổ sung ảnh Teacher Dashboard nhóm cung cấp; các ảnh còn lại được đánh dấu tham khảo lịch sử. Bổ sung 3 prompt tái dựng về dashboard Teacher, PayOS/VietQR và responsive UI, nâng phụ lục lên 20 mục.
+- Cập nhật trường Word tự động cho mục lục/danh mục. Render kiểm tra 199 trang; không sửa ứng dụng hoặc schema, không truy cập production/Supabase.
+
+## 2026-10-30 — Chuẩn hóa Giao diện Mobile Toàn diện: App-like Bottom Nav, Filter Bottom Sheet & Sticky Booking Dock (TDD & UI/UX Pro Max)
+- Chuẩn hóa Mobile Design Tokens & Base Shell (`tokens.css`, `public.css`): Bổ sung `--mobile-nav-height: 64px`, `--touch-target-min: 48px`, `--radius-sheet: 16px`. Hỗ trợ vùng an toàn `env(safe-area-inset-bottom)` cho iPhone Home Bar.
+- Triệt tiêu lỗi auto-zoom trên iOS: Áp dụng `font-size: 16px !important` cho `input`, `select`, `textarea` trên mobile (`<= 768px`) và chuẩn hóa kích thước bấm tối thiểu 48px cho toàn bộ nút/control.
+- Mobile Bottom Navigation Bar cho Học viên (`student-workspace-nav.html`, `student-dashboard.css`): Thanh điều hướng cố định chân màn hình gồm 4 tab cốt lõi (`Tổng quan`, `Gói học`, `Lịch học`, `Tin nhắn`) có icon SVG trực quan, active state rõ ràng, kèm bù trừ padding đáy tránh che khuất nội dung.
+- Mobile Filter Bottom Sheet & Sticky Booking Dock (`teachers/search.html`, `teachers/profile.html`, `teachers.css`, `teachers-profile.css`): Nút "Bộ lọc" trên mobile mở Slide-up Bottom Sheet bo góc 16px viền mực 1.5px; Trang hồ sơ trang bị thanh Booking Dock cố định ở đáy tối ưu vùng ngón tay cái (Thumb Zone).
+- Mobile Bottom Navigation Bar cho Gia sư (`teacher-messages-header.html`, `teacher-workspace.css`): Thanh điều hướng cố định chân màn hình 4 tab (`Tổng quan`, `Lịch dạy`, `Học viên`, `Ví tiền`) với padding an toàn.
+- Kiểm thử TDD 5 Vertical Slices: Thêm mới `MobileSystemLayoutTest`, `StudentMobileNavLayoutTest`, `TeacherSearchMobileLayoutTest`, `TeacherMobileNavLayoutTest`. Toàn bộ 48/48 tests layout và hồi quy đều PASS 100%. Không đổi schema DB Supabase.
+
+
+## 2026-10-30 — Kích hoạt Cổng thanh toán PayOS, Tự sinh Mã VietQR SVG Vector & Polling Đối chiếu Tự động trên Trang Checkout
+- Kích hoạt cổng thanh toán PayOS an toàn: Đồng bộ `APP_PAYMENT_PROVIDER=payos` trong `.env.cloud`, bổ sung `OnPayOsProviderCondition` hỗ trợ tương thích đa cấu hình (`payos` và `enabled`), cập nhật `PaymentProviderProperties` và `scripts/check-backend-config.ps1` kiểm tra tính hợp lệ của các khóa PayOS.
+- Sinh mã VietQR vector dạng SVG siêu nhẹ (`QrCodeSvgService`): Tích hợp thư viện `com.google.zxing:core:3.5.3`, tự động chuyển đổi chuỗi VietQR EMVCo sang SVG Data URI vector sắc nét với màu viền mực `#171714` (`--ink`), không cần mạng ngoài, không phụ thuộc CDN hay dịch vụ bên thứ ba.
+- Nâng cấp giao diện Checkout học viên (`checkout.html`, `student-payment.css`): Hiển thị thẻ QR VietQR chuẩn Neubrutalism-lite viền mực 1.5px bo góc 12px, kèm badge hướng dẫn quét qua App ngân hàng và thanh trạng thái polling mượt mà.
+- Cơ chế đối chiếu thanh toán tự động (Auto-polling): Script client tự động kiểm tra trạng thái hóa đơn qua API `/api/student/invoices/{id}` mỗi 3 giây; chuyển hướng tự động sang `/student/payment-result/{id}` ngay khi trạng thái chuyển sang `PAID` mà không cần học viên thao tác tải lại trang.
+- Kiểm thử TDD toàn diện: Bổ sung `QrCodeSvgServiceTest`, cập nhật `PaymentProviderPropertiesTest`, `PayOsPaymentGatewayConfigurationTest` và `StudentPaymentPageControllerTest` đạt PASS **16/16 tests (100%)**. Regression kiểm thử layout 22/22 tests PASS 100%. Không đổi schema DB Supabase.
+
+## 2026-10-30 — Tối ưu hóa Luồng Đăng ký & Xóa Dead-End Xác minh Email (TDD & UI/UX Pro Max)
+- Xóa bỏ Dead-End trong Xác minh Email (`verify-email.html`): Bổ sung nút CTA vàng căn giữa `Đăng nhập ngay →` khi kích hoạt tài khoản thành công, loại bỏ cảm giác cụt luồng; thêm `text-decoration: none` cho `.auth-submit`.
+- Đồng bộ mô tả vai trò (`register.html`): Thêm nhãn mô tả chi tiết ("— tìm gia sư và theo dõi buổi học", "— tạo hồ sơ và quản lý lớp học") tạo đối xứng cân bằng trực quan với màn hình OAuth.
+- Kiểm thử TDD 2 Slices: Bổ sung test trong `HtmlAccountAccessControllerTest` và `HtmlRegistrationControllerTest` (RED -> GREEN). Regression 44/44 tests PASS 100%. Không đổi schema DB.
+
+## 2026-10-30 — Chuẩn hóa Căn giữa chữ & Icon cho Hệ thống Nút Auth (TDD & UI/UX Pro Max)
+- Căn giữa Nút Submit chính (`.auth-submit`): Nâng cấp thuộc tính căn chỉnh từ `justify-content: space-between` sang `justify-content: center`, bổ sung `gap: 8px` và `text-align: center`. Căn giữa cân đối cả văn bản ("Đăng nhập", "Tạo tài khoản") và icon mũi tên `→`.
+- Sửa lỗi lệch trái Nút Google (`.auth-oauth` / `.auth-submit--secondary`): Khắc phục việc bị ghi đè CSS, đồng bộ căn giữa `justify-content: center; text-align: center;` cho nhãn "Tiếp tục với Google".
+- Hoàn tất căn giữa đồng bộ cho 4 nút trên trang Đăng nhập và Tạo tài khoản, cùng các form xác thực khác trong phân hệ Auth.
+- Kiểm thử TDD: Bổ sung test `authButtonsShouldCenterAlignContent` trong `ButtonSystemLayoutTest.java` (chu trình RED -> GREEN). Toàn bộ 17/17 tests trong `ButtonSystemLayoutTest` và 11/11 tests trong `HtmlLoginControllerTest` & `HtmlRegistrationControllerTest` đều PASS 100%. Không đổi DB schema Supabase.
+
+## 2026-10-29 — Chuẩn hóa Box chữ nhật bo góc 8px/12px & Lan tỏa Viền mực 1.5px toàn hệ thống (TDD & UI/UX Pro Max)
+- Chuẩn hóa Bo góc hình học (Loại bỏ Pill 9999px): Xóa bỏ hoàn toàn hình dạng con nhộng trên Hero và Header (`.home-body .site-header .button--primary`, `.home-search`, `.home-button`, `.home-hero__badge`, `.home-hero__connector-tag`). Chuyển về chuẩn box chữ nhật bo góc 8px (`var(--radius-control)`) cho nút/badge và 12px (`var(--radius-card)`) cho thanh tìm kiếm, đạt sự đồng bộ hình học 100% với toàn bộ hệ thống nút.
+- Lan tỏa Viền mực 1.5px (`border: 1.5px solid var(--ink)`) cho Public & Auth:
+  - Auth: `.auth-card`, `.auth-role`, `.auth-parent` chuyển từ viền xám mờ sang viền mực 1.5px sắc nét.
+  - Tìm gia sư (`teachers.css`): `.teacher-card` đồng bộ viền mực 1.5px.
+  - Chi tiết gia sư (`teachers-profile.css`): `.profile-hero`, `.profile-section` đồng bộ viền mực 1.5px.
+  - Môn học (`subjects.css`): `.subjects-filters` đồng bộ viền mực 1.5px.
+- Lan tỏa Viền mực 1.5px cho Không gian Dashboard (Student/Teacher/Admin):
+  - Student: `.overview-card`, `.dashboard-panel`, `.dashboard-next-step`, `.package-filter`, `.package-card`, `.package-detail` nâng lên viền mực 1.5px.
+  - Teacher: `.teacher-card-section` nâng lên viền mực 1.5px.
+- Kiểm thử TDD toàn diện: Bổ sung 3 test cases trong `ButtonSystemLayoutTest.java` (`homeHeroAndHeaderShouldUseStandardRectangularRoundedBordersInsteadOfPills`, `publicAndAuthCardsShouldHaveCrispInkBorder`, `workspaceCardsShouldHaveCrispInkBorder`) đạt 16/16 tests PASS. Regression 37 layout tests toàn hệ thống PASS 100%. Không thay đổi schema DB.
+
+## 2026-10-29 — Đồng bộ biến môi trường `.env.cloud` sang Canonical Website Domain cho Thymeleaf Cutover
+- Cập nhật `APP_FRONTEND_URL` và `APP_OAUTH2_FRONTEND_CALLBACK_URI` sang website canonical `https://tutormatch.id.vn`.
+- Mở rộng `APP_CORS_ALLOWED_ORIGINS` bao gồm `https://tutormatch.id.vn` song song với các domain cũ để hỗ trợ rollback.
+- Thêm cờ `APP_CACHE_REVALIDATION_ENABLED=false` tắt revalidation Next.js.
+- Chạy `check-backend-config.ps1 -Profile cloud` đạt pass toàn diện; bảo đảm an toàn secret không lộ ra ngoài.
+
+
+## 2026-10-29 — Nghiệm thu cutover cụm Compose / Nginx E2E, Redis session persistence & Multi-instance
+- Build Docker image `edtech-backend:latest` thành công với multi-stage JRE 21.
+- Khởi chạy cụm Compose (PostgreSQL 16, Redis 7, backend Spring Boot, Nginx 1.30.5) đạt 100% trạng thái Healthy; Flyway tự động migrate v1-v42 trên local database.
+- Nghiệm thu Nginx E2E qua cổng 8081: `/health` 200 UP, `/` SSR Thymeleaf 200 OK, static CSS tokens/public 200 OK, `/api/**` proxy API envelope, `/ws` chuyển tiếp WebSocket protocol.
+- Xác minh Redis Session: session cookie `SESSION` lưu trong namespace `edtech:session`, tồn tại và tự phục hồi sau khi restart container backend, hỗ trợ chia sẻ session giữa 2 instances backend song song (`--scale backend=2`, 10/10 requests 200 OK).
+- Giữ nguyên `frontend/` và workflow CI Next.js làm phương án rollback chờ staging nghiệm thu với Google OAuth / PayOS sandbox thật; migration diff rỗng, không mutate Supabase.
+
+
+## 2026-10-29 — Tái cấu trúc Trang Tìm gia sư: Loại bỏ Hero Banner & Chuyển sang Horizontal Top Filter Bar (TDD & UI/UX Pro Max)
+- Loại bỏ Hero Banner cồng kềnh: Xóa bỏ khối `.marketplace-intro` (hình vẽ và tiêu đề "Tìm người đồng hành cho chặng học tiếp theo"), giải phóng 45% diện tích màn hình trên nếp gấp ("above the fold").
+- Tích hợp Compact Header: Thay bằng tiêu đề gọn `.teachers-page-header` với số lượng gia sư sẵn sàng.
+- Thiết kế Horizontal Top Filter Bar (chuẩn Preply): Gom toàn bộ bộ lọc lên thanh ngang 2 tầng (Hàng 1: Từ khóa, Môn học, Hình thức, Học phí từ-đến, Nút tìm gia sư; Hàng 2: Đánh giá sao, Khu vực, Lịch rảnh, Sắp xếp, Xóa lọc).
+- Mở rộng Full-Width Layout: Loại bỏ Sidebar 256px bên trái, mở rộng danh sách kết quả gia sư ra toàn bộ chiều ngang, thẻ gia sư hiển thị thoáng đãng và trực quan.
+- Kiểm thử TDD: Bổ sung 3 tests trong `TeacherSearchPageControllerTest.java` (8/8 tests PASS), kiểm tra regression `HomePageControllerTest` (6/6 tests PASS) và `ButtonSystemLayoutTest` (13/13 tests PASS). Không thay đổi schema DB.
+
+
+## 2026-10-29 — Nâng cấp viền đậm 1.5px mực cho Card & Button Homepage theo chuẩn Neubrutalism-lite (TDD & UI/UX Pro Max)
+- Nâng cấp viền Card thẻ gia sư (`.teacher-card`): Chuyển từ viền xám mờ `1px solid var(--border)` sang viền đen mực sắc nét `border: 1.5px solid var(--ink)` (`#171714`), giúp khối thẻ nổi bật dứt khoát trên nền trắng kem.
+- Nâng cấp viền Thẻ môn học (`.home-subject`): Áp dụng `border: 1.5px solid var(--ink)` đồng bộ, tạo cấu trúc wireframe rõ ràng.
+- Nâng cấp viền Khối gia sư (`.home-join`): Chuyển từ viền xám sang `border: 1.5px solid var(--ink)`, tăng độ tương phản và phân tách không gian.
+- Chuẩn hóa nút phụ (`.button--secondary`): Nâng cấp viền từ `1.5px solid var(--border)` sang `border: 1.5px solid var(--ink)` (chuẩn nút viền đen chữ đen nền sáng như nút "Sửa", "Tắt" tham chiếu), tương thích hoàn hảo cụm Dual Action Stack trên Thẻ gia sư ("Xem hồ sơ" vàng viền mực 1.5px + "Nhắn tin" trắng viền mực 1.5px).
+- Kiểm thử TDD: Mở rộng `ButtonSystemLayoutTest.java` (13/13 tests PASS) với `secondaryButtonShouldHaveCrispBorder` và `homeCardsShouldHaveCrispInkBorder`. Regression kiểm tra 34 layout tests toàn hệ thống PASS 100%. Không thay đổi schema DB.
+
+## 2026-10-29 — Chuẩn hóa màu sắc trang Đăng nhập & Đăng ký (TDD & UI/UX Pro Max)
+- Đồng bộ nhận diện thương hiệu Logo: Chuyển `.auth-brand` về chuẩn toàn đen đồng bộ 100% với landing page (`public.css`), chữ `tutor` đậm (`font-weight: 700`), chữ `match` (`font-weight: 400`, `color: inherit`), xóa bỏ màu cam warning.
+- Chuẩn hóa Text Links: Toàn bộ liên kết biểu mẫu xác thực (*"Quên mật khẩu?"*, *"Tạo tài khoản"*, *"Đăng nhập"*, *"← Tìm gia sư"*, *"chính sách quyền riêng tư"*, v.v.) chuyển từ màu cam (`var(--warning)`) sang màu mực đen (`var(--ink)`) có gạch chân (`underline`, offset 3px), hover chuyển `#000`, đạt tỉ lệ tương phản 16.5:1 (vượt chuẩn WCAG AAA).
+- Đồng bộ Radio Controls: Ký hiệu chọn vai trò Học viên / Gia sư (`.auth-role-option input`) chuyển `accent-color` từ cam sang `var(--ink)`, tạo điểm nhấn tròn sắc nét khi được chọn.
+- Tinh giản điểm nhấn thị giác (Focal Point): Loại bỏ các chi tiết màu cam gây nhiễu, toàn trang tập trung vào điểm nhấn hành động duy nhất là nút nộp form màu vàng (`var(--brand-yellow)`).
+- Kiểm thử TDD: Mở rộng `ButtonSystemLayoutTest.java` (12/12 tests PASS) với test case `authPagesShouldUseInkColorForBrandLinksAndRadioInsteadOfWarning`. Regression kiểm tra 33 layout tests toàn hệ thống PASS 100%. Không thay đổi schema DB.
+
+## 2026-10-29 — Chuẩn hóa nút phẳng Flat UI (Loại bỏ bóng đổ dưới) đồng bộ toàn bộ Public, Student, Teacher & Admin Workspace
+- Loại bỏ hoàn toàn bóng viền dưới (`box-shadow: 0 2px 0 var(--ink)`) và `transform: translateY(1px)` trên toàn bộ hệ thống nút bấm: Public, Auth, Student, Teacher và Admin.
+- Áp dụng phong cách phẳng hiện đại (Flat UI): bo góc 8px, viền mực sắc nét 1.5px solid mực (`#171714`), nền vàng thương hiệu (`var(--brand-yellow)`), hover êm ái sang `#f4ca28`.
+- Đồng bộ hóa toàn diện: Xóa bỏ các nút lọc gán cứng nền đen trong Admin Workspace (Users, Audit Logs, Teachers, Extensions, Payouts, Refunds, Subjects, Dashboard queue actions) và đưa toàn bộ về chuẩn nút chính vàng viền mực phẳng.
+- Giữ vững ngoại lệ tương phản cao: Nút trên Hero trang chủ (nền vàng) tiếp tục sử dụng nút đen chữ trắng để tránh chìm màu.
+- Kiểm thử TDD: Cập nhật `ButtonSystemLayoutTest.java` (11/11 tests PASS) xác nhận nút phẳng và viền mực cho cả 4 phân hệ. Frontend Jest tests PASS 3/3, Typecheck 0 lỗi. Không thay đổi schema DB.
+
+
+## 2026-10-29 — Khắc phục viền kép Header Quản trị viên & Tích hợp Thông báo Admin (TDD & UI/UX Pro Max)
+- Khắc phục lỗi hiển thị 2 viền đáy trên Top Navigation của Quản trị viên: Gỡ bỏ `border-bottom` của `.admin-workspace-header` và đặt `margin: 0` trên `.admin-workspace-nav`, gom khối header và nav liền mạch với duy nhất 1 đường viền ở đáy nav.
+- Bổ sung mục Thông báo trên Header Admin: Tích hợp nút `/admin/notifications` với icon chuông SVG 18x18px và nhãn 'Thông báo' trong cụm `.admin-header-actions` cạnh nút Đăng xuất, hỗ trợ responsive chuẩn mobile.
+- Mở rộng SSR controller cho Thông báo Quản trị viên: Bổ sung các endpoints `GET /admin/notifications`, `POST /admin/notifications/{id}/read`, và `POST /admin/notifications/read-all` trong `NotificationPageController.java` và tích hợp layout Admin trong `workspace/notifications.html`.
+- Kiểm thử TDD toàn diện: Bổ sung 5 tests TDD trong `NotificationPageControllerTest` và `AdminWorkspaceNavAndDashboardLayoutTest`. Chạy regression 6 test suites đạt 40/40 tests PASS 100%. Không thay đổi schema DB.
+
+
+## 2026-10-29 — Đồng bộ toàn diện hệ thống nút Button (TDD & UI/UX Pro Max)
+- Thống nhất quy tắc nút chính: Nền vàng chữ đen viền mực 1.5px và bo góc 8px trên toàn bộ các trang và surface thông thường.
+- Giữ ngoại lệ tương phản: Chỉ khu vực nền vàng (Hero banner trang chủ) dùng nút đen chữ trắng để tránh chìm màu.
+- Xóa bỏ phân mảnh nút trong Không gian Học viên: Đồng bộ nút lọc Gói học (`.package-filter__submit` từ nền đen sang vàng), nút lọc Bài tập (từ phụ trắng sang chính vàng), nút Lọc lịch & Xác nhận buổi học (viền mực 1.5px + tactile shadow), cùng các nút Yêu cầu, Hồ sơ, Thanh toán và Tin nhắn.
+- Kiểm thử TDD: Mở rộng `ButtonSystemLayoutTest.java` (9/9 tests PASS). Toàn bộ 29 tests controller học viên PASS 100%, TypeScript 0 lỗi.
+
+
+## 2026-10-29 — Sửa seed snapshot thời lượng gói học V42
+- Điền snapshot thời lượng 60 phút cho mọi `student_packages` trong seed, khớp invoice và constraint V42.
+
+## 2026-10-29 — Minh họa 2D Nét đen & Tái cấu trúc Header/Hero Trang chủ theo phong cách Preply (TDD & UI/UX Pro Max)
+- Bổ sung liên kết 'Trở thành gia sư' vào Header điều hướng chính (public-nav), gom toàn bộ cụm menu khám phá sang trái bám sát Logo tutormatch (margin-right: auto).
+- Áp dụng nền vàng full-bleed tràn viền (100vw) bao trùm cả Header và Hero trên trang chủ, xóa viền ngăn cách tạo khối thống nhất liền mạch.
+- Tối ưu Hero Section: Bổ sung pill badge 'Tiến bộ cùng gia sư 1-1', thanh search pill trắng nổi bật và nút CTA pill đen tuyền bo góc 9999px.
+- Minh họa 2D nét đen Concept 1: Dựng SVG khung cửa sổ lớp học 2D, đường nối tương tác đứt đoạn từ gia sư sang học viên và các sticker doodle sao lấp lánh/vòng cung tiến độ.
+- Kiểm thử TDD: Thêm 3 test case mới trong HomePageControllerTest, toàn bộ 6/6 tests của HomePageControllerTest và 4/4 tests của StudentHeaderAndNavLayoutTest PASS.
+
+## 2026-10-29 — Đồng bộ Logo Header trỏ về Trang chủ cho cả 3 Role (TDD)
+- Cập nhật liên kết thương hiệu: Cả 3 role Học viên, Gia sư và Quản trị viên đều thống nhất trỏ Logo Tutor Match về Homepage `/` kèm nhãn `aria-label="Tutor Match — Trang chủ"`.
+- Giữ vững luồng điều hướng: Người dùng có thể quay lại trang Dashboard cá nhân bất kỳ lúc nào thông qua tab 'Tổng quan' ở thanh điều hướng phụ.
+- Bổ sung kiểm thử TDD: 3 test cases trong `StudentHeaderAndNavLayoutTest`, `TeacherWorkspaceNavAndDashboardLayoutTest` và `AdminWorkspaceNavAndDashboardLayoutTest` xác nhận `href="/"`. Toàn bộ 19/19 tests layout PASS.
+
+## 2026-10-29 — Nâng cấp hệ thống Button Neubrutalism-lite & Cụm Action Thẻ Gia sư (TDD & UI/UX Pro Max)
+- Nâng cấp Token cơ sở: Cập nhật `--radius-control` từ 4px lên 8px cho các nút và control trong `tokens.css` và `tutor-match.css`.
+- Nâng cấp styling nút theo phong cách Neubrutalism-lite (Preply-inspired): Thêm viền mực 1.5px dứt khoát `border: 1.5px solid var(--ink)` và hiệu ứng tactile hard shadow 2px cho nút chính `.button--primary`, nút phụ `.button--secondary` có viền 1.5px.
+- Xây dựng cụm nút kép (Dual Action Stack) trên Thẻ Gia sư: Bổ sung cụm hành động gồm nút chính 'Xem hồ sơ' và nút phụ 'Nhắn tin' có khoảng cách gap 8px chuẩn touch ergonomics.
+- Đồng bộ Action Bar trên trang Chi tiết Gia sư: Chuẩn hóa nút Nhắn tin về `.button--secondary` và form gửi yêu cầu học thử về `.button--primary`.
+- Kiểm thử TDD toàn diện: Viết test mới `ButtonSystemLayoutTest.java`, bổ sung test trong `TeacherSearchPageControllerTest`, `TeacherProfilePageControllerTest` và `TeacherCard.test.tsx`. Toàn bộ 25 backend tests và 3 frontend tests PASS 100%.
+
+## 2026-10-29 — Tái cấu trúc Header & Hero Trang chủ theo phong cách Preply (TDD & UI/UX Pro Max)
+- Bổ sung liên kết 'Trở thành gia sư' vào Header điều hướng chính (public-nav), gom toàn bộ cụm menu khám phá sang trái bám sát Logo tutormatch (margin-right: auto).
+- Áp dụng nền vàng full-bleed tràn viền (100vw) bao trùm cả Header và Hero trên trang chủ, bỏ viền ngăn cách để tạo khối thống nhất liền mạch.
+- Tối ưu Hero Section: Bổ sung pill badge 'Tiến bộ cùng gia sư 1-1', thanh search pill trắng nổi bật và nút CTA pill đen tuyền.
+- Dựng cụm visual mockup mô phỏng buổi học video 1-1 (học viên, gia sư) và 2 thẻ thông số tiến độ (thời lượng thực hành 70/30 và đánh giá 4.9 sao).
+- Kiểm thử TDD: Thêm 2 test case mới trong HomePageControllerTest, toàn bộ 5/5 tests của HomePageControllerTest và 4/4 tests của StudentHeaderAndNavLayoutTest PASS.
+
+## 2026-10-29 — Đồng bộ Top Navigation Học viên theo chuẩn Gia sư (TDD & UI/UX Pro Max)
+- Chuyển đổi vị trí tag vai trò: Đưa badge Học viên từ cụm action bên phải sang đứng cạnh Logo Tutor Match bên trái (.student-brand-wrapper), áp dụng kiểu dáng pill capsule bo tròn 999px mềm mại (.student-role-badge) và chữ in hoa HỌC VIÊN đồng nhất tuyệt đối với badge GIA SƯ.
+- Bổ sung mục Tin nhắn: Thêm liên kết /student/messages có SVG icon tin nhắn 18x18px và nhãn 'Tin nhắn' vào bên phải trước mục Thông báo.
+- Hoàn thiện UI/UX và responsive: Class .student-header-action-item đồng bộ cho cả Tin nhắn và Thông báo, hover nền var(--surface-warm), focus ring 3px rõ nét, tự động ẩn nhãn chữ trên mobile (<= 640px) giữ touch target >= 44px.
+- Quy trình TDD backend: Thêm 2 test cases TDD (headerShouldPlaceStudentRoleBadgeNextToBrandOnTheLeft, headerShouldContainMessagesLinkWithIconAndLabel) trong StudentHeaderAndNavLayoutTest. Toàn bộ 24/24 tests liên quan PASS. Không thay đổi DB migration hay chạm Supabase.
+
+## 2026-10-29 — Tích hợp Spring Boot DevTools & Tắt Cache Template cho Hot Reload
+- Bổ sung spring-boot-devtools vào ackend/pom.xml (scope: runtime, optional: true) phục vụ dev workflow: tự động restart ứng dụng cực nhanh khi class thay đổi.
+- Cấu hình tắt cache Thymeleaf (spring.thymeleaf.cache: \) và static resources (period: \) trong ackend/src/main/resources/application.yml. Khi sửa HTML/CSS, chỉ cần lưu file và F5 trình duyệt để cập nhật ngay lập tức.
+- Chạy kiểm thử tự động xác minh: 9/9 tests của TeacherWorkspaceNavAndDashboardLayoutTest và TeacherDashboardPageControllerTest PASS. Không đổi DB migration hay kết nối Supabase.
+
+## 2026-10-29 — Bổ sung dữ liệu cho toàn bộ cặp gia sư–học sinh
+- Thêm fixture theo 120 cặp hiện có: gói, invoice/payment, 600 booking, báo cáo/review, bài tập/nộp bài, hội thoại và ledger khớp wallet; bổ sung profile phụ trợ còn thiếu cho các gia sư. Không thay đổi các user account.
+- Rà soát tĩnh theo migration V1–V41; chưa chạy SQL vì không có `psql` và Docker daemon không chạy. Không kết nối Supabase.
+
+## 2026-10-29 — Đồng bộ viền thẻ Dashboard Học viên (Xóa viền vàng dạ quang)
+- Loại bỏ viền vàng dạ quang (`var(--brand-yellow)`) trên 2 thẻ "Buổi học tiếp theo" (`.overview-card--next`) và "Đang tìm gia sư?" (`.dashboard-next-step`) trong `student-dashboard.css`.
+- Đưa viền của cả 4 thẻ trên trang Tổng quan học viên (`/student`) về chuẩn mực thiết kế đồng bộ với hệ thống token `1px solid var(--border)`. Bổ sung hiệu ứng hover text-decoration cho link trong `.dashboard-next-step`.
+- Bổ sung kiểm thử TDD trong `StudentDashboardPageControllerTest` xác minh tính đồng nhất của viền thẻ và ngăn ngừa tái xuất hiện viền vàng dạ quang. Toàn bộ 6/6 tests liên quan PASS.
+
+## 2026-10-29 — Tối ưu bố cục hàng đôi Bài tập có bài nộp & Thu nhập trên Teacher Dashboard (`/teacher`)
+- Sắp xếp lại giao diện cột phải của trang Tổng quan gia sư (`/teacher`) theo Phương án 1 (Bento Compact Row):
+  - Nhóm thẻ *Bài tập có bài nộp* và thẻ *Thu nhập* thành hàng đôi song song nằm ngang (`.teacher-overview-side-row`), giảm bớt chiều dài dọc của trang tổng quan.
+  - Áp dụng kỹ thuật Bento Card và compact design: chia tỉ lệ grid 2 cột `repeat(2, minmax(0, 1fr))` với khoảng cách `gap: 16px`, co giãn chiều cao bằng nhau (`align-items: stretch`).
+  - Thẻ Bài tập có bài nộp: Tối ưu list item hiển thị 2 tầng (tiêu đề bài tập + môn/học viên ở trên, badge trạng thái 'Chờ chấm' ở dưới dạng pill bo tròn), link điều hướng tinh gọn 'Tất cả bài tập →'.
+  - Thẻ Thu nhập: Chuyển 2 khối số dư khả dụng và tạm giữ thành 2 hàng dọc thoáng mắt, font số tabular-nums to rõ `1.25rem`, ghi chú bám đáy card.
+  - Tối ưu responsive: Giữ 2 cột trên tablet (`<= 1023px`) và tự động xếp chồng 1 cột trên mobile (`<= 640px`) tránh tràn màn hình.
+- Quy trình TDD backend: Thêm test case `assignmentsAndWalletShouldBeRenderedSideBySide` trong `TeacherWorkspaceNavAndDashboardLayoutTest`, toàn bộ 9/9 tests liên quan PASS. Không chạm vào DB migration hay Supabase.
+
+## 2026-10-29 — Đồng bộ màu nền Full-Width cho Teacher Dashboard (`/teacher`)
+- Xử lý triệt để hiện tượng lệch màu nền giữa trang Tổng quan gia sư (`/teacher`) và các phân hệ khác (`/teacher/bookings`, `/teacher/wallet`, v.v.):
+  - Loại bỏ các thuộc tính `max-width: 1180px;` và `margin-inline: auto;` trên `.teacher-overview-page` trong `teacher-dashboard.css`.
+  - Thẻ `<main>` kế thừa trọn vẹn đặc tính full-width của `.student-dashboard` với màu nền ấm `--surface-warm` (`#f7f3e8`) phủ kín toàn bộ viewport ngang, loại bỏ hoàn toàn viền trắng lộ ra từ thẻ `<body>` ở 2 mép màn hình.
+  - Nội dung dashboard bên trong vẫn được giữ cố định an toàn và căn giữa hài hòa bởi `.student-dashboard__container` (`max-width: 1200px`).
+  - Rà soát xác minh giao diện Student và Admin: cả 2 phân hệ đều đã tuân thủ layout full-width chuẩn và không gặp lỗi này.
+- Quy trình TDD: Bổ sung test assertion trong `TeacherWorkspaceNavAndDashboardLayoutTest` kiểm chứng tính toàn vẹn của thẻ `<main>` và CSS không chứa rule thu hẹp; toàn bộ 18/18 tests liên quan PASS. Không chạm vào DB migration hay Supabase.
+
+
+## 2026-10-29 — Tối giản Top Navigation Teacher & Admin theo chuẩn Student (Phương án 1)
+- Tinh chỉnh CSS điều hướng Top Navigation ở Teacher (`teacher-workspace.css`) và Admin (`admin-dashboard.css`) từ dạng nút khối vàng dày (pill button group) sang dạng **Underline Tab phẳng tối giản** theo đúng ngôn ngữ thiết kế của Student:
+  - Tầng 1 (Primary Navigation): `display: flex`, đường kẻ dưới `1px solid var(--border)`. Trạng thái active dùng `border-bottom: 3px solid var(--brand-yellow)` và chữ đen đậm `var(--ink)`, các tab thường dùng chữ `var(--muted-strong)` thanh lịch, loại bỏ hoàn toàn mảng nền vàng gây nặng mắt.
+  - Tầng 2 (Contextual Sub-pills): Chuyển thành các **Soft Pill Chips** bo tròn 999px nhẹ nhàng (cao 32px, nền `var(--surface-warm)`, active nền `var(--ink)` chữ trắng) giúp phân định tầng thị giác rõ ràng giữa danh mục chính và trang con.
+  - Tối ưu responsive trên màn hình nhỏ `<= 640px`: cuộn ngang tự nhiên `overflow-x: auto` với `-webkit-overflow-scrolling: touch`, lề âm bù padding container để vuốt mượt mà không bị ngắt dòng.
+- Quy trình TDD backend: Cập nhật và bổ sung các assertions trong `TeacherWorkspaceNavAndDashboardLayoutTest` và `AdminWorkspaceNavAndDashboardLayoutTest` xác nhận `aria-current="page"` trên nhóm active và class `is-active` trên sub-pills; chạy suite liên quan PASS 13/13. Không sửa DB schema hay kết nối Supabase.
+
+
+## 2026-10-29 — Sửa lỗi hiển thị đầy đủ phần Giới thiệu Gia sư (`/teachers/{id}`)
+- Phát hiện và khắc phục nguyên nhân phần Giới thiệu (`bio`) trên trang hồ sơ gia sư bị cắt cụt ở ký tự thứ 100 thành 'Phươ...': `TeacherMarketplaceService` truyền `TeacherSnapshot.bioExcerpt()` thay vì toàn bộ `bio`.
+- Bổ sung trường `bio` vào `TeacherSnapshot`, cập nhật `TeacherFacadeImpl` truyền đầy đủ `profile.getBio()`, và `TeacherMarketplaceService` ưu tiên `bio` đầy đủ cho trang hồ sơ chi tiết.
+- TDD backend: Thêm test case trong `TeacherFacadeImplTest` và `TeacherMarketplacePublicProfileTest`, chạy toàn bộ 3 test suites liên quan PASS 22/22. Không thay đổi DB migration hay đụng vào Supabase.
+
+
+## 2026-10-29 — Tinh gọn ô Chat Box & Tối ưu thẻ Gói học (Phương án 1 - Compact Card)
+- Hoàn thiện thẻ gói học `.profile-package` (`teachers/profile.html` & `teachers-profile.css`) theo Phương án 1 (Horizontal Compact Card):
+  - Loại bỏ hoàn toàn 3 khối cột rỗng bị hiệu ứng stretch kéo giãn.
+  - Chuyển 3 thông số (Số buổi, Thời lượng, Thời hạn) thành các pill badges nhỏ gọn cao $\sim 26\text{px}$ có bo tròn 999px kèm icon SVG mini (Lịch, Đồng hồ, Thời hạn) đặt ngay dưới phần mô tả.
+  - Cột thanh toán bên phải căn lề phải ngay ngắn với nhãn "Giá trọn gói", số tiền to nổi bật và nút "Chọn gói học" vàng thương hiệu vừa vặn; trên mobile tự động co giãn 2 bên không bị vỡ hàng.
+- Tái cấu trúc ô soạn tin nhắn `.message-composer` (`student/messages.html`, `workspace/teacher-messages.html` & `student-messages.css`) thành Modern Chat Bar 1 hàng duy nhất: nút kẹp giấy 📎 đính kèm tệp nhỏ gọn (ẩn input file mặc định), ô nhập tin bo góc mềm mại, nút gửi vàng thương hiệu tinh tế; file đã chọn hiển thị dạng chip nhỏ phía trên.
+- Quy trình TDD: Bổ sung test suites `TeacherProfilePageControllerTest`, `StudentMessagesPageControllerTest`, `TeacherMessagesPageControllerTest` kiểm tra cấu trúc layout mới, regression test PASS 23/23. Không sửa DB schema hay kết nối Supabase.
+
+
+## 2026-10-29 — Tối ưu Header & Workspace Navigation Học viên (`/student`)
+- Đưa mục "Thông báo" từ thanh tab bên dưới lên Header trên cùng (`student-header.html`) dạng icon chuông (tương đồng với giao diện Teacher và Admin), hiển thị text và SVG chuông trên desktop và tự động rút gọn thành icon tròn ở màn hình di động `<= 640px`.
+- Rút gọn thanh điều hướng `workspace-nav` của Học viên (`student-workspace-nav.html`) chỉ còn thuần 7 tab học tập: `Tổng quan`, `Gói học`, `Lịch học`, `Bài tập`, `Báo cáo buổi học`, `Yêu cầu`, `Hồ sơ`.
+- Bổ sung CSS cho `.student-header-notification-link` trong `student-dashboard.css` đảm bảo chiều cao tối thiểu 38px (touch target 44px trên mobile), hover nhẹ, và focus ring `3px` chuẩn accessibility theo tiêu chuẩn UI/UX Pro Max.
+- TDD suite `StudentHeaderAndNavLayoutTest` cùng regression tests `StudentDashboardPageControllerTest`, `NotificationPageControllerTest` PASS 9/9. Không thay đổi DB migration hay đụng vào Supabase.
+
+## 2026-10-29 — Tái thiết kế UI/UX Admin Workspace & Dashboard (`/admin/dashboard`)
+- Thêm huy hiệu vai trò `QUẢN TRỊ VIÊN` vào Header; thay thế 11 tab vàng chói dàn trải thành thanh Top Navigation 5 nhóm gọn gàng: Tổng quan, Xét duyệt, Tài chính, Người dùng, Hệ thống.
+- Bổ sung thanh Sub-pills ngữ cảnh cho các phân hệ con (Xét duyệt, Tài chính, Hệ thống), hoạt động bằng thẻ link HTML thuần thân thiện với chế độ tắt JavaScript (no-JS).
+- Tái cấu trúc Admin Dashboard theo hệ thống Bento Grid và UI/UX Pro Max:
+  - Bổ sung 4 thẻ KPI Stat Cards: GMV đã thanh toán, Hoa hồng ghi nhận, Yêu cầu rút tiền, Yêu cầu hoàn tiền (có viền cảnh báo alert màu hổ phách).
+  - Bento Grid 2 cột: Cột trái (Hàng đợi rút tiền/hoàn tiền có nút hành động trực tiếp + Quy mô người dùng); Cột phải (Trạng thái buổi học phân màu + Lối tắt quản trị 4 ô thao tác nhanh).
+- TDD suite `AdminWorkspaceNavAndDashboardLayoutTest` cùng 7 controller test suites liên quan PASS 49/49. Playwright verification xác nhận giao diện desktop/mobile và responsive 7 viewports (320px–1440px) không overflow. Không sửa DB schema hay kết nối Supabase.
+
+## 2026-10-29 — Tái thiết kế UI/UX Teacher Workspace & Dashboard (`/teacher`)
+- Rút gọn Header & thanh điều hướng Top Nav từ 18 tab dàn trải thành 5 nhóm logic: Tổng quan, Lịch & Yêu cầu, Lớp & Học tập, Thu nhập & Ví, Hồ sơ & Môn dạy. Các trang con hiển thị hàng sub-pills thuần HTML không phụ thuộc JavaScript.
+- Thiết kế lại Dashboard `/teacher` theo hệ thống Bento Grid 2 cột (60% Lịch trình / 40% Yêu cầu & Tài chính):
+  - Banner hồ sơ giảng dạy dịu mắt (Alert banner kem hổ phách).
+  - Bổ sung 4 thẻ KPI Stat Cards: Lịch hôm nay, Yêu cầu chờ, Bài tập cần chấm, Số dư khả dụng.
+  - Toàn bộ các section phần thân (Buổi học sắp tới, Lịch dạy sắp tới, Yêu cầu đặt buổi, Yêu cầu học thử, Bài tập có bài nộp, Thu nhập & Ví) được đóng gói thành các Bento Card nền trắng bo góc 12px viền mềm với empty state và typography phân cấp rõ ràng.
+- TDD backend test suite `TeacherWorkspaceNavAndDashboardLayoutTest` cùng 8 controller tests liên quan PASS 58/58. Playwright verification xác nhận giao diện desktop/mobile và responsive 7 viewports (320px–1440px) hoàn toàn không overflow. Không sửa DB schema hay kết nối Supabase.
+
+## 2026-10-29 — Xác minh Supabase schema V42
+- Flyway read-only info xác nhận V42 ở trạng thái `Success`; validate toàn bộ 42 migrations thành công. Không áp migration trong lần xác minh này.
+- Backend Cloud chưa được khởi động lại sau khi xác minh schema; cảnh báo tương thích Flyway 9.22.3 với PostgreSQL 17.6 được ghi nhận trong `docs/STATUS.md`.
+
+## 2026-10-29 — Sửa UUID trong invoice seed
+- Thay bảy chuỗi `idem-inv-*` không hợp lệ ở cột `invoices.idempotency_key` bằng UUID của từng invoice. Tại thời điểm sửa chưa chạy SQL; sau đó người dùng báo đã chạy seed, chi tiết xác minh nằm trong `docs/STATUS.md`.
+
+## 2026-10-29 — Dựng lại landing page Thymeleaf `/`
+- Thay hero minh họa và CTA trang trí bằng phần mở đầu editorial, mục lục môn có số gia sư lấy từ một truy vấn nhóm, bốn hồ sơ gia sư thật, ba bước, FAQ native `<details>` và menu gọn cho mobile. Không thêm số liệu tin cậy, script hay migration.
+- Browser report của lượt dựng ghi 7 viewport, keyboard menu/focus, FAQ và console sạch; hai ảnh desktop/mobile được giữ tại `acceptance-20261029/home/`. Trong lượt rà cuối, hai ảnh đã được mở/xem và `HomePageControllerTest` + `TeacherSearchRepositoryIntegrationTest` chạy lại PASS 8/8. JavaScript-off chưa xác minh. Route `/` tiếp tục `Đang làm`.
+
+## 2026-10-29 — Báo cáo sweep 70/70 route Thymeleaf (cần tái xác minh)
+- Báo cáo trước ghi 70 route legacy đã được nghiệm thu trên Spring `test`; đây là kết quả được báo cáo, chưa tái xác minh đủ trong đợt cuối.
+- Breakdown được ghi là 18 Public/Auth + 15 Student + 26 Teacher + 12 Admin = 71; nhóm Teacher gồm route bổ sung `/teacher/booking-requests`, nên số liệu này không chứng minh chính xác 70 route legacy.
+- Báo cáo mô tả Playwright `javaScriptEnabled: false`, nhưng runner/log không có trong artifact hiện tại. CDP permission gate không cho phép kiểm tra JS-off và không được dùng browser automation khác làm đường vòng; kết luận no-JS vì vậy chưa được xác nhận.
+- 345 ảnh sweep cũ được giữ nguyên, nhưng không có manifest ánh xạ từng ảnh với route/trạng thái/chế độ JS. Các sửa code được ghi từ đợt đó vẫn nằm trong working tree; lượt cuối không xác minh lại toàn bộ.
+- Đợt cuối chạy lại `HomePageControllerTest` + `TeacherSearchRepositoryIntegrationTest`: PASS 8/8; mở và xem hai ảnh homepage desktop/mobile. `/` vẫn chưa hoàn tất do thiếu browser proof no-JS. Không sửa migration hoặc kết nối Supabase.
+
+
+## 2026-10-29 — Browser acceptance một phần `/student/assignments`
+- Căn nhãn trạng thái thẻ với filter TODO/SUBMITTED/GRADED; bổ sung MockMvc assertion. Với lỗi assignment không tồn tại/không thuộc Student, controller trả view Thymeleaf 404 theo assertion MockMvc.
+- Browser Spring `test` xác minh GET filter/URL, empty và invalid-filter state, SSR bài đã chấm/đề/feedback, Teacher 403, form POST+CSRF+PRG lưu draft, và keyboard focus một phần. Dữ liệu seed JSON sai shape được sửa riêng trong PostgreSQL disposable để render record; hai tài khoản test được chuẩn bị trên DB disposable.
+- Route vẫn `Đang làm`: browser ownership-negative vẫn hiện JSON 404, viewport/console chưa đủ bằng chứng, JS-off bị browser gate chặn, chưa upload file thật và screenshot chưa lưu artifact. `StudentAssignmentPageControllerTest` + `SecurityChainIsolationTest` PASS 43/43; migration diff rỗng, không dùng production.
+
+## 2026-10-29 — Browser acceptance một phần cho notifications Student/Teacher
+- Spring `test` browser xác minh notification SSR theo session/role, GET filters, Student SYSTEM empty + invalid filter, Teacher unread empty sau mutation, mark-one-read POST+CSRF+PRG và role mismatch 403.
+- Viewport 320–1440, keyboard/focus, console và 0 script đã kiểm tra; ảnh desktop/mobile populated/empty đã chụp và xem. `NotificationPageControllerTest` + `SecurityChainIsolationTest` PASS 41/41.
+- Hai route còn `Đang làm`: JavaScript-off bị CDP gate chặn; mark-all, service-error và destination ownership-negative chưa browser-verified. Mutation chỉ cập nhật hai notification fixture trong DB disposable; không đổi migration hay dùng môi trường production.
+
+## 2026-10-29 — Làm rõ CTA tại `/student/requests`
+- Browser review phát hiện lời nhắc chọn gói hoàn tiền/gia hạn xuất hiện cả ở tab Học thử. Giới hạn lời nhắc cho tab refund/extension, thêm regression assertion; không đổi API hay nghiệp vụ.
+- Student session browser xác minh trial PENDING, refund form POST+CSRF, empty refund list, Teacher 403 SSR, 0 script, viewport 320–1440, 18 bước keyboard/focus và console. Ảnh desktop/mobile đã chụp/xem; `StudentRequestsPageControllerTest` PASS 4/4.
+- Route còn `Đang làm`: JS-off bị CDP gate chặn, refund/extension POST và một số state chưa browser-verified. Dùng Spring `test`, PostgreSQL/Redis disposable, provider giả; không đổi migration.
+
+## 2026-10-29 — Trial request từ hồ sơ gia sư công khai
+- Bổ sung form học thử native POST+CSRF trong public teacher profile cho Student, với PRG tới danh sách yêu cầu khi thành công và giữ input khi lỗi nghiệp vụ; Guest được dẫn đăng nhập, role Teacher không thấy form tạo request.
+- Browser Spring `test` xác minh SSR, submit thành công và lỗi trial đã dùng, responsiveness 320–1280px, focus, console, screenshots desktop/mobile đã chụp và xem. Focused route suite PASS **27/27**.
+- Route `/teachers/{id}` vẫn `Đang làm`: JavaScript-off bị browser gate chặn; một số empty/error/login-return cases và xác minh request mới trong inbox đúng gia sư còn thiếu. Không đổi API contract REST hay migration; chỉ PostgreSQL/Redis disposable và provider giả.
+
+## 2026-10-29 — Browser audit `/teacher/availability` và focus summary lỗi
+- Audit trực tiếp trên Spring `test` phát hiện lỗi domain/validation chỉ render summary nhưng để focus ở `body`; thêm một điểm `autofocus` ở summary, bỏ nhiều autofocus có thể trùng nhau trên field. Lỗi field vẫn được nối với input qua `aria-describedby`/`aria-invalid`.
+- Browser xác minh Guest→login, Teacher SSR, Student 403, native POST+CSRF add/remove, empty state không ghi DB, xung đột/timezone error, focus 3px, 0 script, console sạch và viewport 320–1440. Ảnh desktop/mobile populated/empty/error/403 đã chụp và xem dưới `acceptance-20261029/teacher/`.
+- `TeacherAvailabilityPageControllerTest` PASS 8/8. Route vẫn `Đang làm`: JS-off bị browser CDP permission gate chặn; service-unavailable, full keyboard sweep và success-message browser state chưa xác minh. Không đổi API hay migration; dùng PostgreSQL/Redis disposable và provider giả.
+
+## 2026-10-29 — Nghiệm thu browser một phần cho Teacher packages
+- Sửa pagination out-of-range của `/teacher/packages`: `page=99` chuyển về trang hợp lệ cuối thay vì hiển thị empty state mâu thuẫn với tổng số gói. Bổ sung skip link vào shared Teacher header; thêm regression assertion.
+- Spring `test` browser xác minh Teacher list/create/detail, Student 403, POST+CSRF+PRG create/update, field validation/focus, package đã mua bị khóa sửa và responsive 320–1440; screenshots desktop/mobile/focus/error đã chụp và xem. `TeacherPackagesPageControllerTest` PASS 11/11.
+- Ba route tiếp tục `Đang làm`, chưa pass vì CDP permission gate chặn kiểm tra JS-off; detail còn thiếu foreign existing package browser case. Focused suite PASS 11/11 và full suite sau delta PASS 892/892, 0 failures/errors/skips. Không dùng 8080, `.env.cloud`, Supabase hoặc provider production; migration không đổi.
+
+## 2026-10-29 — Browser acceptance một phần cho public profile và invoice flow
+- Thêm native Student form `POST /student/invoices` gọi `InvoiceService` trực tiếp, có CSRF và PRG; guest login continuation giữ package đã chọn qua allowlisted public profile UUID + `packageId`. Header public phản ánh role/session và logout POST+CSRF.
+- Browser Spring `test` xác minh Student mua package qua fake gateway tới checkout PENDING; query `?status=PAID` không làm giả kết quả. Checkout copy provider-neutral; desktop/mobile screenshots đã xem; backend focused PASS 30/30 và full suite PASS 891/891.
+- Cập nhật route progress và API integration labels. Ba route liên quan vẫn `Đang làm`: JS-off bị CDP gate từ chối, error/empty/ownership-negative browser states và staging callback còn thiếu. Cutover được ghi riêng; không dùng 8080, `.env.cloud`, Supabase, provider production hoặc migration.
+
+## 2026-10-29 — Provider thanh toán giả chỉ dành cho profile `test`
+- Thêm adapter tạo checkout link ở domain `.test`, ghi nhớ link theo order code và từ chối webhook; profile `test` chọn adapter này, còn PayOS vẫn chỉ được tạo khi cấu hình provider `payos`.
+- Checkout SSR chấp nhận host giả chỉ khi đồng thời active profile `test` và provider `fake`; production allowlist không đổi. Test gateway/checkout PASS 11/11; browser runtime chưa restart nên chưa nghiệm thu invoice flow.
+
+## 2026-10-29 — Ưu tiên yêu cầu đặt buổi trên Teacher dashboard
+- Thêm SSR summary cho yêu cầu đặt buổi `PENDING` ở đầu dashboard, với danh sách, empty/error state và link GET tới danh sách đang chờ. Dùng `BookingRequestService` hiện có; không thêm API hay thay nghiệp vụ.
+- Cập nhật route spec/progress; focused dashboard/security PASS 40/40, full test profile `test` gần nhất PASS 884/884.
+
+## 2026-10-29 — Bổ sung browser evidence cho `/teacher`
+- Runtime Spring `test` cô lập: Guest chuyển login, Student nhận 403, Teacher nhận SSR 200. Student gửi booking request QA qua form POST+CSRF+PRG; không reserve lượt. Dashboard empty/populated, link danh sách, CSRF trên form, console, focus và viewport 320–1440 đã kiểm tra.
+- Ảnh empty/populated desktop/mobile/focus đã lưu và xem tại `acceptance-20261029/teacher/`. Route vẫn `Đang làm`: browser gate chặn JS-off và error state riêng của vùng request chưa được fault-inject. Không đổi cutover; không dùng port 8080, `.env.cloud`, Supabase hay provider production; migration không đổi.
+
+## 2026-10-29 — Sửa fixture RLS và chạy full backend regression
+- Cập nhật ba fixture SQL để điền `session_duration_minutes_snapshot` bắt buộc theo V42; không thay đổi migration.
+- Regression nhóm RLS PASS 9/9; full `mvn -f backend/pom.xml test` với `SPRING_PROFILES_ACTIVE=test` PASS **884/884**, 0 failures/errors/skips; PostgreSQL Testcontainers dùng một lần.
+- Không dùng `.env.cloud`, Supabase, provider production hoặc port 8080. Đây là bằng chứng backend regression, không thay đổi trạng thái nghiệm thu browser/cutover của route.
+
+## 2026-10-29 — Harden và làm rõ `/auth/login`
+- OAuth error chuyển focus tới Email và mô tả field qua `aria-describedby`; bỏ kicker thừa, sửa specificity để CTA Google hiển thị nền secondary theo hệ thiết kế.
+- `HtmlLoginControllerTest` PASS 5/5. Browser `test` xác minh SSR/error, POST+CSRF form, redirect target sanitization, 0 script, console, keyboard/focus, contrast, viewport 320/390/768/1280; desktop/mobile screenshot đã chụp/xem. Shared style được recheck trên register và verify-email.
+- Route vẫn `Đang làm`: JS-off bị CDP gate chặn; session/logout và Google staging chưa xác minh. Không submit credential; chỉ dùng profile `test`, PostgreSQL/Redis disposable và provider giả.
+
+## 2026-10-29 — Browser check `/oauth2/callback` compatibility redirect
+- Xác minh direct browser GET chuyển URL callback cũ về login URL sạch trên Spring `test`; trang đích SSR có form POST+CSRF và 0 script. Provider callback thật vẫn ở Spring Security endpoint theo ADR 0016.
+- Chụp/xem login destination desktop/mobile; viewport 320/390/768/1280, focus bàn phím và console đã kiểm tra. Route vẫn `Đang làm` vì JS-off, staging callback/cookie và artifact ảnh ổn định còn thiếu.
+- Không dùng Google thật, `.env.cloud`, Supabase hay provider production; không thay đổi migration.
+
+## 2026-10-29 — Browser check `/auth/oauth/role` Guest state
+- Làm rõ trạng thái OAuth hết hạn bằng title/H1 và một alert được focus; bổ sung liên kết accessibility/focus cho lỗi chưa chọn role. Không đổi API hay nghiệp vụ.
+- Spring `test` browser xác nhận Guest SSR, không có role form/token/script; focus/keyboard, console, desktop/mobile và viewport 320/390/768/1280 đã kiểm tra; chụp/xem ảnh. `HtmlOAuthControllerTest` PASS 5/5.
+- Route vẫn `Đang làm`: browser JS-off và pending OAuth session chưa được xác minh; Google staging và ảnh artifact ổn định còn thiếu. Dùng PostgreSQL/Redis disposable và provider giả; không dùng production services.
+
+## 2026-10-29 — Browser check `/auth/reset-password` và token URL hardening
+- Bỏ kicker trùng, bổ sung focus native cho field/alert lỗi và PRG URL sạch cho token query quá dài trên reset-password/verify-email. `HtmlAccountAccessControllerTest` PASS 14/14.
+- Browser Spring `test` xác minh Guest state, token giả được stage trong session, form reset POST+CSRF, error alert focus, resend/reset query không còn token; 0 script/console warnings, viewport 320/390/768/1280 không tràn; screenshot desktop/mobile/lỗi đã chụp/xem.
+- Route `/auth/reset-password` vẫn `Đang làm`: no-JS browser chưa xác minh do CDP permission gate; không nhập/submit password. Không đổi migration, API contract hay gọi provider production.
+
+## 2026-10-29 — Browser check `/auth/verify-email`
+- Bỏ kicker lặp; đưa native focus về email khi form resend lỗi và alert khi token lỗi PRG. `HtmlAccountAccessControllerTest` PASS 9/9.
+- Browser Spring `test` xác minh Guest SSR, token giả qua session rồi POST+CSRF trả lỗi hết hạn chung, resend với `.example.test` trả notice chung; 0 script/console warning-error. 320/390/768/1280 không tràn; desktop, mobile, error và success screenshots đã chụp/xem.
+- Route vẫn `Đang làm`: chưa có browser JS-off do CDP gate; ảnh chưa lưu artifact ổn định. Không đổi API/schema và không dùng production services.
+
+## 2026-10-29 — Browser acceptance một phần trang chủ và sửa học phí chưa công bố
+- Browser Spring `test` xác minh Guest SSR, featured subjects/teachers, native GET search sang `/teachers` và profile link. Phát hiện card gia sư không có gói ACTIVE hiển thị `0 đ/buổi`; sửa trang chủ và trang tìm kiếm để ghi “Học phí đang cập nhật”.
+- `HomePageControllerTest` + `TeacherSearchPageControllerTest` PASS **7/7**. Restart runtime xác nhận bản template mới; screenshot 320/390/768/1280px đã chụp/xem, không thấy tràn ngang; Tab đầu tiên có focus rõ. Console/keyboard sweep/JS-off/artifact ảnh ổn định còn thiếu; ảnh ở 1440px bị crop nên chưa được tính. Route `/` vẫn `Đang làm`; không đổi API/schema.
+
+## 2026-10-29 — Recheck browser trang chủ `/`
+- Spring `test` Guest SSR và native GET `keyword=Toán` tới `/teachers?keyword=To%C3%A1n` đã xác minh trên browser. Console sạch, 0 script, skip-link focus rõ; viewport 320–1280 không tràn. Desktop/mobile screenshots đã lưu và xem tại `acceptance-20261029/public/`.
+- Route tiếp tục `Đang làm`: chưa keyboard-sweep đầy đủ, JS-off bị permission gate chặn và service-error state chưa fault-inject trên browser. Không đổi cutover/schema; chỉ dùng PostgreSQL/Redis disposable và provider giả.
+
+## 2026-10-29 — Recheck hồ sơ gia sư công khai
+- Từ search Guest, mở hồ sơ gia sư SSR và kiểm tra credential, gói, lịch, review cùng CTA đăng nhập; viewport 320–1280 không tràn, skip-link focus rõ, console sạch. Ảnh desktop/mobile đã lưu và xem dưới `acceptance-20261029/public/`.
+- Public profile hiển thị `bioExcerpt` 100 ký tự theo snapshot hiện hành; đây là dữ liệu rút gọn từ service, không phải CSS truncation. Route vẫn `Đang làm`: browser JS-off bị gate chặn, Student session/form và service-error state chưa xác minh. Không đổi API/schema.
+
+## 2026-10-29 — Sửa public teacher detail not-found và visibility
+- Browser trên Spring profile `test` phát hiện UUID hồ sơ không tồn tại trả 503 thay vì trang 404. Controller nay map mã `TEACHER_PROFILE_NOT_FOUND`, và public service chỉ trả hồ sơ APPROVED + visible; bổ sung contract/API và regression cho HTML + REST.
+- Focused controller/service/public REST/cache tests PASS **10/10**. Browser sau restart xác nhận hồ sơ thật SSR, CTA Guest tới login và missing UUID hiển thị trang 404; ảnh desktop/mobile đã chụp/xem. `/teachers/{id}` vẫn `Đang làm`: JS-off bị gate CDP từ chối, chưa có Student-session/form proof, console/keyboard sweep và screenshot artifact ổn định.
+- Runtime chỉ dùng Spring `test`, PostgreSQL/Redis disposable và provider giả; Flyway validate 42, không chạy migration. Migration V42 trong working tree có sẵn từ phần việc trước, không chỉnh sửa trong lượt này.
+
+## 2026-10-29 — Browser acceptance một phần cho `/support`
+- Kiểm tra trực tiếp Spring `test`: Guest nhận SSR nội dung hỗ trợ; ba link Student đều điều hướng về đăng nhập khi chưa có session. Chụp/xem desktop và xác nhận focus bàn phím đầu tiên.
+- Giữ `/support` ở `Đang làm`: mobile/tablet, console, toàn bộ keyboard, JS-off và artifact ảnh ổn định chưa xác minh. Không đổi code/API/schema; không dùng môi trường production.
+
+## 2026-10-29 — Sửa role preselection cho đăng ký gia sư
+- Browser trên `/become-a-tutor` cho thấy CTA đã thêm `?role=TEACHER` nhưng GET `/auth/register` bỏ qua query và preselect Student. Controller nay whitelists Teacher; mặc định và giá trị không hỗ trợ rơi về Student. POST validation giữ role đã chọn.
+- `HtmlRegistrationControllerTest` + `BecomeTutorPageControllerTest` PASS **6/6**. Browser xác minh CTA tới form Teacher, link tiếp tục hồ sơ yêu cầu login; ảnh desktop/mobile đã chụp/xem, không submit registration/email. Route vẫn `Đang làm` do JS-off bị browser gate từ chối và artifact ảnh ổn định chưa có.
+
+## 2026-10-29 — Browser verification một phần nhóm Student dashboard và lịch học
+- Trên Spring `test` + PostgreSQL/Redis disposable: dashboard SSR fixture, Guest→login, Teacher→403, link từ dashboard sang lịch; booking list populated, GET filter/empty/invalid-query, detail SSR và unknown-ID 404. Chụp/xem dashboard desktop-mobile, booking list populated/empty và detail desktop-mobile; viewport 320–1440 trên dashboard, mobile 390 cho list/detail, Tab focus-visible và console sạch.
+- `StudentDashboardPageControllerTest`, `StudentBookingPageControllerTest`, `SecurityChainIsolationTest` PASS **46/46**. Browser JS-off bị gate CDP từ chối; error states mới có MockMvc evidence, route chưa PASS và ảnh chưa có artifact ổn định. Migration không đổi trong đợt này; không dùng `.env.cloud`, Supabase hoặc provider production.
+
+## 2026-10-29 — Browser acceptance một phần cho booking request SSR
+- Runtime Spring profile `test` dùng PostgreSQL/Redis disposable và fixture/provider giả. Browser xác minh Student request POST+CSRF/PRG, Teacher GET filter + empty state, accept POST+CSRF tạo Booking, ownership 403 và package counter chuyển từ 5/5 sang 4 còn lại + 1 đã lên lịch. Mobile/desktop screenshots đã chụp/xem; focus Student và console được kiểm tra.
+- Focused regression `BookingRequestServiceTest`, `BookingServiceTest`, `StudentPackageTest`, `StudentPackagePageControllerTest`, `TeacherBookingRequestsPageControllerTest`, `SecurityChainIsolationTest` PASS **67/67**; Flyway clean/upgrade V42 trước đó PASS **29/29**. Browser từ chối quyền CDP để tắt JavaScript nên no-JS chưa xác minh, route vẫn `Đang làm`; ảnh chưa có artifact ổn định. Không dùng `.env.cloud`, Supabase hoặc provider production.
+
+## 2026-10-29 — Bắt đầu workflow Student request → Teacher xác nhận booking trả phí
+- Ghi quyết định tại ADR 0017: request không reserve lượt; Teacher chốt giờ/mode/logistics để tạo Booking; một package chỉ có một request PENDING; session duration được snapshot lúc mua. Thêm migration V42.
+- SSR Student package detail có form request/cancel; Teacher có route `/teacher/booking-requests` với filter GET và accept/reject POST. REST contract không thêm Student create endpoint. Cập nhật CONTEXT, API/ERROR contract và Thymeleaf route integration/progress.
+- Test profile `test`: Flyway clean-schema + upgrade V41→V42 PASS 29/29; controller/domain focused suite PASS 27/27. Chưa nghiệm thu browser; chưa nối hoặc mutate Supabase theo yêu cầu runtime cô lập.
+
+## 2026-10-29 — Sửa mapping dữ liệu `/teacher/stats`
+- Đối chiếu browser empty state với fixture disposable cho thấy controller truyền account ID trong khi `TeacherStats` dùng TeacherProfile ID. Cả SSR page và REST `/api/teacher/stats` hiện resolve profile qua `TeacherFacade` trước khi truy vấn stats; page/API tests dùng hai UUID khác nhau và security regression PASS 41/41.
+- Regression chạy lại bằng profile `test`: `TeacherStatsControllerTest`, `TeacherStatsPageControllerTest` và `SecurityChainIsolationTest` PASS 41/41. Browser Guest direct GET `/teacher/stats` chuyển về `/auth/login`; Teacher populated sau restart vẫn chưa xác minh vì chưa có session fixture. Route chưa nghiệm thu; API contract/schema không đổi, không kết nối Supabase.
+
+## 2026-10-29 — Nghiệm thu browser một phần `/teacher/subject-proposals`
+- Browser Spring `test` xác minh SSR, role/session, POST CSRF+PRG, validation, GET filter/empty state, focus, responsive 320–1440; ảnh desktop/mobile, empty, validation và 403 đã xem. Tạo một fixture QA trong database disposable.
+- Sửa form create thiếu CSRF (`th:action`) và loại option alias `PRIMARY_SCHOOL` khỏi UI để tránh nhãn cấp học trùng; API/domain alias vẫn được giữ. Controller/security regression PASS 47/47.
+- Route còn thiếu browser JS-off và ảnh artifact ổn định; route-level backend service error chưa được mô phỏng trực tiếp trên browser. Migration diff trống; không kết nối Supabase/provider production.
+
+## 2026-10-29 — Nghiệm thu browser một phần `/teacher/subjects`
+- Browser Spring `test` xác minh SSR Teacher, Guest redirect, Student 403, CSRF các form, PRG add/remove, empty state disposable rồi restore fixture, DB outage 503/recovery, keyboard focus/disclosure và viewport 320–1440; ảnh desktop/mobile/empty/403 đã xem.
+- Phát hiện form add thiếu CSRF do `action` literal; đổi sang `th:action` và thêm assertion. Controller + security regression PASS 47/47. Route còn thiếu browser JS-off và artifact ảnh ổn định; không thay đổi migration hoặc gọi provider/Supabase.
+
+## 2026-10-29 — Nghiệm thu browser một phần `/teacher/credentials`
+- Runtime Spring `test` dùng PostgreSQL/Redis disposable và fixture giả. Browser xác minh SSR Teacher, edit GET, Guest redirect, Student 403, CSRF của create/update/delete/logout, focus-visible 2.4px, ảnh desktop/mobile/edit/403 đã chụp và xem; viewport CSS 384/468/1728 không tràn, console sạch.
+- Browser phát hiện form create multipart thiếu CSRF do `action` literal; đổi sang `th:action`, thêm assertion form-level. `TeacherCredentialsPageControllerTest` PASS 9/9. Không upload/download vì storage adapter đang dùng Cloudinary thật; không gửi mutation.
+- Route vẫn `Đang làm`: chưa có browser JS-off, keyboard/focus sweep đầy đủ và artifact ảnh ổn định. Cutover chưa sẵn sàng riêng, đồng thời topology session production chưa xác minh. Migration diff trống; không kết nối Supabase.
+
+## 2026-10-29 — Thu gọn điều hướng mobile nhóm Teacher
+- Thay nav dài nhiều hàng bằng bốn lối tắt thường dùng (`Tổng quan`, `Lịch dạy`, `Học thử`, `Tin nhắn`) và disclosure native `Thêm` cho 13 route còn lại. Desktop giữ danh sách 17 link; menu mobile dùng `<details>/<summary>`, thao tác được bằng bàn phím và không cần JavaScript.
+- Browser trên instance Spring `test` tại `127.0.0.1:18082` với PostgreSQL/Redis QA disposable: CSS viewport 320/390/640/641/1440, không tràn ngang; menu mở bằng Enter, focus-visible, link route đang hoạt động được đánh dấu trong danh sách, nhãn dài xuống dòng; 0 script/console error. Ảnh mobile/desktop đã chụp và xem.
+- Controller tests `TeacherDocumentsPageControllerTest`, `TeacherDashboardPageControllerTest`, `TeacherProfilePageControllerTest` PASS **16/16** với profile `test`. Chưa có browser JS-off hoặc artifact ảnh lưu ổn định; không gửi upload/delete. Instance chỉ dùng PostgreSQL/Redis QA disposable, Flyway tắt, không dùng 8080, `.env.cloud`, Supabase hoặc provider production; migration diff trống.
+
+## 2026-10-29 — Browser verification một phần `/teacher/documents`
+- Trên Spring `test` runtime cô lập, xác minh Teacher SSR fixture, multipart form và logout POST có CSRF, private URL không render, không có script/console error, keyboard focus, viewport 390/1440 và ảnh desktop/mobile đã chụp/xem.
+- `TeacherDocumentsPageControllerTest` + `TeacherDocumentServiceTest` PASS **17/17** khi ép profile `test`. Không upload/xóa tài liệu; application test khai báo credential Cloudinary giả nhưng chưa xác minh upload adapter có thể tránh mạng. Một lần gọi test ban đầu thiếu profile override nên khởi chạy context mặc định `cloud`; không dùng kết quả đó làm bằng chứng nghiệm thu. Lượt chạy hợp lệ sau đó xác nhận active profile `test`.
+- Route vẫn chưa nghiệm thu đầy đủ do chưa có browser JS-off, Guest/Student browser và artifact ảnh ổn định. Ảnh mobile cho thấy nav Teacher chiếm khoảng 8 hàng; cần xử lý trước khi pass. Migration diff trống; không kết nối Supabase.
+
+## 2026-10-29 — Browser verification một phần nhóm Auth Guest
+- Mở trực tiếp bảy route Auth trên Spring `test`: Guest SSR, `h1`, native POST forms/CSRF, trạng thái thiếu reset/OAuth session, compatibility callback, keyboard focus, console và responsive 390/1440. Chụp/xem login desktop, register và các account recovery/OAuth states trên mobile.
+- Không submit đăng ký hay email forms; chưa có login/logout session thật, Google/email staging, browser JS-off hoặc artifact ảnh ổn định. Các route Auth vẫn chưa nghiệm thu đầy đủ; cutover riêng nhóm Auth còn chờ provider/session topology. Chi tiết theo từng route trong `docs/STATUS.md` và `docs/thymeleaf/PROGRESS.md`.
+- Auth/security regression PASS **59/59**. Runtime dùng PostgreSQL/Redis disposable và fake data/provider; migration diff trống, không kết nối Supabase.
+
+## 2026-10-29 — Browser verification một phần hồ sơ công khai `/teachers/{id}`
+- Trên Spring `test` runtime, mở hồ sơ từ kết quả tìm gia sư; xác minh SSR dữ liệu fixture, CTA chat/chọn gói tới login, missing-profile fallback, 0 script, keyboard focus, console sạch và desktop/mobile viewport. Chụp rồi xem ảnh; chưa lưu artifact ổn định.
+- `TeacherProfilePageControllerTest` + `SecurityChainIsolationTest` PASS **40/40** trên profile `test`.
+- Route còn thiếu browser JavaScript-off thực sự và Student session/form proof để nghiệm thu đầy đủ. Login fixture bị rate-limiter chặn sau lần thử sai; không đoán credential thêm. Tách riêng kết quả route/cutover trong `docs/STATUS.md` và `docs/thymeleaf/PROGRESS.md`.
+- Runtime dùng PostgreSQL/Redis disposable và fake data/provider; không dùng 8080, `.env.cloud`, Supabase hay provider production. Migration diff trống.
+
+## 2026-10-29 — Browser verification một phần `/teacher/wallet` và `/teacher/payouts`
+- Kiểm tra hai route trên Spring `test` runtime cô lập với PostgreSQL/Redis disposable và fake data/provider: SSR, session/role, wallet error/recovery, filter GET/empty state, invalid-page redirect, focus, console và mobile/desktop viewport. Ảnh đã chụp và xem; chưa lưu artifact ổn định.
+- Regression finance page/service/security PASS **46/46**. Browser JS-off thực sự còn bị permission gate chặn; cả hai route giữ trạng thái đang làm và chưa nghiệm thu đầy đủ. Không gửi payout mutation. Cập nhật riêng route acceptance/cutover trong `docs/STATUS.md` và route tracker.
+- Migration diff trống; không dùng 8080, `.env.cloud`, Supabase hoặc provider production.
+
+## 2026-10-29 — Browser verification `/teacher`
+- Nghiệm thu một phần dashboard Teacher trên Spring `test` runtime với PostgreSQL/Redis disposable và fixture giả: SSR, role/session, empty/error/recovery, booking detail link, logout POST+CSRF, focus, console và viewport 320–1200; chụp và xem ảnh desktop/mobile.
+- Browser phát hiện wallet được truy vấn bằng user ID thay vì TeacherProfile ID và PostgreSQL `::bigint` cast bị bind nhầm; sửa query service/repository và thêm regression test. Focused dashboard/finance/security tests PASS **13/13**. DB fixture chỉ sửa trong bản sao QA.
+- Browser JavaScript-off bị permission gate từ chối; không lách gate. Vì thế route vẫn chưa nghiệm thu đầy đủ. Theo dõi riêng nghiệm thu route với sẵn sàng cutover trong `docs/STATUS.md`; nhóm Teacher và toàn FE chưa sẵn sàng cutover. Migration diff trống, không kết nối Supabase.
+
+## 2026-10-29 — Browser verification `/teacher/profile`
+- Kiểm tra route bằng Teacher session trên runtime test cô lập: SSR/profile data, Student 403, Guest redirect, POST validation + CSRF field, native GET residence filter, no-script markup, keyboard focus, console và responsive. Ảnh desktop/tablet/mobile/validation/403 đã chụp và xem.
+- Visual review phát hiện status card mobile ép text vào cột 65px; đổi sang grid trong breakpoint mobile và xem lại tại 320/390 CSS px. Không lưu profile/residence changes; fixture sau lỗi vẫn nguyên.
+- `TeacherProfilePageControllerTest` + `SecurityChainIsolationTest` PASS **46/46**. Browser JS-off bị permission gate chặn nên route chưa nghiệm thu đầy đủ; trạng thái cutover được theo dõi riêng. Migration diff trống; không kết nối Supabase.
+
+## 2026-10-29 — Browser sweep nhóm Admin và xử lý session DB outage
+- Sweep trực tiếp 12 route Admin trên Spring test runtime cô lập: SSR, Admin/Guest/Student role, desktop/mobile, JS on/off, viewport 320–1440, focus, console, forms và CSRF fields. DB outage trả lỗi SSR riêng từng route trên cả desktop/mobile; empty state no-JS đã xác minh cho users, refunds, payouts và audit logs. `/admin/users` giữ trạng thái nghiệm thu đầy đủ; 11 route còn lại đã có thêm error/empty evidence nhưng vẫn thiếu một hoặc nhiều bằng chứng action/validation/empty đầy đủ để pass.
+- Sửa session identity lookup khi DB lỗi: fail closed bằng trang Thymeleaf HTTP 503/no-store, giữ session để khôi phục, cho phép public error page và CSS chạy khi DB không truy cập được. Browser xác minh 503/error, CSS, cookie/session và recovery 200.
+- Sửa CSS error panel để link thử lại xuống dòng rõ ràng trên mobile; chụp và xem ảnh sau sửa. Runtime cô lập dùng PostgreSQL/Redis tạm; fault-injection cache key đã được dọn và hai container QA đang chạy lại.
+- Focused tests PASS **41/41**; full backend `mvn test` PASS **845/845**. Runtime dùng PostgreSQL/Redis tạm và fixture/provider giả; seed lỗi được sửa trong bản sao tạm QA, không sửa source seed. Migration diff trống; không kết nối Supabase.
+
+## 2026-10-29 — Nghiệm thu browser `/admin/users`
+- Nghiệm thu route trực tiếp trên runtime test cô lập: Admin/guest/Student session, SSR dữ liệu thật, empty và DB-error states, GET filter/no-JS, POST+CSRF/PRG, logout, audit link, keyboard focus và viewport 320–1440. Chụp/xem desktop-mobile với JS on/off; route không có lỗi console. Ghi riêng route đã pass trong khi nhóm Admin/toàn bộ FE chưa sẵn sàng cutover.
+- Sửa lỗi PostgreSQL `lower(bytea)` khi keyword rỗng, mobile filter grid và cột action; mở `/forbidden` cho forward từ POST để CSRF thiếu token giữ HTTP 403 thay vì 500.
+- PostgreSQL integration + Admin page + security regression PASS **46/46**. Migration diff trống; dùng PostgreSQL/Redis QA tạm, không kết nối Supabase.
+
+## 2026-10-29 — Thêm Admin settings và audit logs Thymeleaf
+- Dựng `/admin/settings` SSR theo request validation hiện có và `AdminSettingsService`; dựng `/admin/audit-logs` filter/page GET, disclosure escaped JSON và no-store. Nối link lịch sử thao tác từ `/admin/users`.
+- Focused MockMvc/security PASS **45/45**. Browser/responsive/a11y/session-cookie chưa xác minh; migration diff trống, không kết nối Supabase.
+
+## 2026-10-29 — Thêm Admin booking settlements Thymeleaf
+- Dựng `/admin/booking-settlements` SSR với filter/page GET, trạng thái xác nhận hai bên và form quyết định chỉ hiện ở settlement state phù hợp; version, CSRF, PRG và nghiệp vụ/audit giữ trong `BookingService`.
+- MockMvc/security PASS **41/41**. Browser/responsive/a11y/session-cookie/query count chưa xác minh; migration diff trống, không kết nối Supabase.
+
+## 2026-10-29 — Thêm Admin payouts Thymeleaf
+- Dựng `/admin/payouts` SSR với filter/page GET, thông tin tài khoản nhận đọc theo lô và disclosure riêng tư; process/reject/complete dùng version, CSRF, PRG, idempotency; chứng từ đi qua same-origin proxy. REST contract và schema không đổi.
+- Focused MockMvc/security/service tests PASS **44/44**. Browser/responsive/a11y/session-cookie/provider chưa xác minh; migration diff trống, không kết nối Supabase.
+
+## 2026-10-29 — Thêm Admin extensions Thymeleaf
+- Dựng `/admin/extensions` SSR: lọc/phân trang GET; duyệt ngày gia hạn hoặc từ chối qua POST+CSRF+PRG và idempotency. Giữ đúng service hiện có, không giả lập version.
+- Refund/extension/security combined MockMvc PASS **45/45** (7 refund page, 5 extension page, 33 security/isolation). Browser/responsive/a11y/session-cookie/provider chưa xác minh; migration diff trống, không kết nối Supabase.
+
+## 2026-10-29 — Thêm Admin refunds Thymeleaf
+- Dựng `/admin/refunds` SSR với lọc/phân trang GET, duyệt/từ chối/hoàn tất chuyển khoản qua POST+CSRF+PRG và `FinanceCommandExecutor`; chứng từ được upload theo service hiện hành và tải qua same-origin no-store proxy.
+- Page MockMvc PASS **7/7**; `SecurityChainIsolationTest` PASS **32/32**. Browser/responsive/a11y/session-cookie và provider storage chưa xác minh; migration diff trống, không kết nối Supabase.
+
+## 2026-10-29 — Thêm Admin users Thymeleaf
+- Dựng `/admin/users` SSR với tìm kiếm/lọc/sắp xếp/phân trang GET; status moderation bằng form disclosure native có lý do, POST+CSRF+PRG và audit context. Hiển thị hoạt động theo múi giờ Việt Nam; chưa link audit history vì route HTML đích chưa tồn tại.
+- Page/security MockMvc PASS **40/40** (9 page, 31 security/isolation). Browser/responsive/a11y/session-cookie chưa xác minh; không đổi REST/schema, migration diff trống, không kết nối Supabase.
+
+## 2026-10-29 — Thêm Admin subject proposals Thymeleaf
+- Dựng `/admin/subjects` SSR để xử lý hàng đợi đề xuất, gắn môn active/tạo môn/từ chối bằng form native; giữ version, CSRF, PRG và audit context. Ghi rõ phần CRUD danh mục trong API contract chưa xác minh từ controller hiện hành.
+- Page/security MockMvc PASS **39/39**, gồm kiểm tra giữ dữ liệu và mở lại form sau conflict. Browser/responsive/a11y/session-cookie chưa xác minh; không đổi REST/schema, migration diff trống, không kết nối Supabase.
+
+## 2026-10-29 — Thêm Admin credentials Thymeleaf
+- Dựng `/admin/credentials` với status navigation GET, duyệt/từ chối có optimistic version qua POST+CSRF+PRG và download minh chứng private cùng origin; nối mục này vào Admin navigation.
+- MockMvc/security PASS **36/36**. Browser/responsive/a11y và provider storage chưa xác minh. Service chưa có pagination; không đổi REST/schema, migration diff trống, không kết nối Supabase.
+
+## 2026-10-29 — Thêm Admin teacher approvals Thymeleaf
+- Dựng `/admin/teachers` SSR để lọc trạng thái, xem hồ sơ và proof riêng tư, duyệt/từ chối bằng form POST+CSRF+PRG qua domain service; nối lối vào từ navigation Admin.
+- Controller và security regression PASS **34/34**. Chưa xác minh browser, screenshot, responsive/a11y hoặc provider storage thật. Không đổi REST/schema; migration diff trống, không kết nối Supabase.
+
+## 2026-10-29 — Bắt đầu Admin Thymeleaf với dashboard
+- Dựng hai route `/admin` và `/admin/dashboard` dùng chung read-only SSR; xếp hàng đợi tài chính trước số liệu hoạt động, giữ dữ liệu thật, trạng thái lỗi/rỗng và không phụ thuộc JavaScript. Đặt bean name rõ cho public teacher profile để Spring Boot khởi động không xung đột với Teacher profile workspace.
+- Controller/security regression PASS **30/30**, public profile regression PASS **3/3**. Full app chạy trên PostgreSQL/Redis Docker tạm; hai route × desktop/mobile × JS on/off PASS, viewport 320–1440 không tràn, keyboard skip-link và contrast đã kiểm tra. Ảnh đã xem tại Codex visualizations `thymeleaf/admin/`. Không đổi REST/schema, migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm Teacher dashboard Thymeleaf
+- Dựng `/teacher` SSR, ưu tiên trial requests đang chờ và buổi học sắp tới, tiếp theo là lịch, bài nộp và số dư; mỗi vùng có trạng thái lỗi/rỗng độc lập, không cần JavaScript.
+- Controller/service/security regression PASS **33/33**. Browser screenshots, responsive/a11y và session-cookie smoke chưa xác minh; không đổi REST/schema, migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm Teacher finance Thymeleaf
+- Dựng ví/ledger, quản lý tài khoản ngân hàng và yêu cầu rút tiền bằng SSR; giữ account number đầy đủ ngoài HTML/flash, dùng finance idempotency và rate limiter hiện hành.
+- Controller/security regression PASS **32/32**. Browser screenshot, responsive/a11y thực tế, session-cookie và payout staging chưa xác minh. Không đổi REST/schema; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm Teacher packages Thymeleaf
+- Dựng SSR list/create/detail cho gói gia sư; form native POST+CSRF+PRG, versioned update/status, ownership/invariant giữ trong `PricingPackageService`, và khóa nội dung gói đã mua.
+- TeacherPackagesPageControllerTest + SecurityChainIsolationTest PASS **29/29**; browser/responsive/a11y/session-cookie chưa xác minh. Không đổi REST/schema; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm Teacher availability Thymeleaf
+- Dựng `/teacher/availability` SSR để thêm/xóa nhiều khung giờ, giữ dữ liệu qua native POST, lưu nguyên lịch qua service và hiển thị validation/error states; không cần JavaScript.
+- TeacherAvailabilityPageControllerTest + SecurityChainIsolationTest PASS **28/28**; browser/responsive/a11y/session-cookie chưa xác minh. Không đổi REST/schema; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm Teacher subject proposals Thymeleaf
+- Dựng `/teacher/subject-proposals` SSR list/create với status filter/pagination GET, review feedback và form giữ dữ liệu khi lỗi; không tạo Teacher action ngoài quyền hiện hành.
+- Controller/service/security regression PASS **28/28** (9 controller, 1 service, 18 security/isolation), gồm status filter/paging, field validation/retention/focus, empty/error states, create+PRG và role/CSRF. CSS detector sạch; browser/responsive/a11y/session cookie chưa xác minh. Không đổi REST/schema; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm Teacher subjects Thymeleaf
+- Dựng `/teacher/subjects` SSR từ `TeacherSubjectService` và danh mục active qua `SubjectFacade`; add/remove bằng form POST+CSRF+PRG, catalog/list error states và no-JS confirmation.
+- Controller/service/security regression PASS **28/28** (9 controller, 2 service, 17 security/isolation), gồm catalog/list errors, empty state, no-JS markup, add/remove, focus và role/CSRF. Impeccable CSS scan cuối sạch; browser/responsive/a11y/session cookie chưa xác minh. Không đổi REST/schema; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm Teacher credentials Thymeleaf
+- Dựng danh sách/chỉnh sửa/xóa minh chứng và upload SSR; mọi mutation có CSRF/version/PRG, proof mở qua route owner-checked no-store, không đưa URL storage vào HTML.
+- TeacherCredentialsPageControllerTest + TeacherCredentialServiceTest + SecurityChainIsolationTest PASS **39/39** cho render/proof headers, create/update/versioned delete, validation/conflict, service ownership/storage và role/CSRF. Browser/provider/responsive/a11y/session cookie chưa xác minh. Không đổi REST/schema; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm Teacher identity documents Thymeleaf
+- Dựng trang SSR metadata/upload/delete; giữ private file URL ngoài HTML, chỉ cho xóa tài liệu chưa xác minh và đặt response `no-store`. Upload HTML dùng multipart + CSRF/PRG và không yêu cầu JavaScript.
+- TeacherDocumentsPageControllerTest + TeacherDocumentServiceTest + SecurityChainIsolationTest PASS **32/32** cho private URL/no-store, upload/delete, validation/errors, service storage/ownership và role/CSRF. Browser/provider/responsive/a11y/session cookie chưa xác minh. Không đổi REST/schema; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm Teacher profile Thymeleaf
+- Dựng SSR hồ sơ gia sư và các form lưu nội dung giảng dạy, nơi ở, gửi xét duyệt; địa phương chọn bằng GET để đảm bảo dùng được khi tắt JavaScript. Bổ sung route vào navigation Teacher.
+- TeacherProfilePageControllerTest + SecurityChainIsolationTest PASS **20/20** cho render, validation, update/PRG, residence, submit, profile pending, role và CSRF. Browser responsive/a11y/session cookie chưa xác minh. Không đổi REST/schema; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm Teacher stats Thymeleaf
+- Dựng `/teacher/stats` SSR từ TeacherStatsService với empty/error state, số liệu có nguồn contract và phần trăm theo locale Việt; bổ sung shared workspace nav/logout cho route stats/messages.
+- MockMvc/security regression PASS 20/20 với profile test. Browser/responsive/a11y/session cookie chưa xác minh; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm Teacher messages Thymeleaf
+- Dựng `/teacher/messages` SSR cho list/detail, gửi text/tệp, đánh dấu đã đọc; dùng service membership hiện có và cùng UI no-JS responsive với Student. Header Teacher có logout POST/CSRF; không thêm REST endpoint hay migration.
+- MockMvc/security regression Student/Teacher/chat PASS 25/25 với profile test. Browser/responsive/a11y/session cookie/upload storage chưa xác minh; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm tin nhắn Student Thymeleaf
+- Dựng inbox/chat SSR với form gửi text/tệp, mở hội thoại từ hồ sơ gia sư và đánh dấu đã đọc qua POST+CSRF+PRG. Sửa mobile thread navigation, nhãn unread, tải hội thoại cũ có membership check và precheck membership trước upload.
+- MockMvc/security/service regression PASS 27/27 với profile test. Browser/screenshot, session cookie, responsive/a11y thực tế và upload storage chưa xác minh; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm trang yêu cầu Student Thymeleaf
+- Dựng trang history học thử/hoàn tiền/gia hạn; thêm form refund/extension từ owned package detail, POST+CSRF+PRG và finance idempotency executor. Học thử chỉ liệt kê; không đoán luồng tạo.
+- MockMvc/security/package regression PASS 19/19 với profile test; browser/responsive/a11y, finance staging và query count chưa xác minh. Migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm trang thông báo Thymeleaf cho Student và Teacher
+- Dựng hai SSR route dùng NotificationService trực tiếp; GET filter/pagination, POST+CSRF read/read-all, PRG flash và destination guard để không link tới workspace route chưa có.
+- MockMvc/security regression PASS 11/11 với profile test; browser/responsive/a11y và query count chưa xác minh. Migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm báo cáo buổi học Student Thymeleaf
+- Thêm trang SSR báo cáo với batch read theo Student, phân trang GET, empty/error state, giờ Việt Nam và kiểm tra scheme của liên kết bản ghi; thêm đích này vào workspace nav.
+- `SPRING_PROFILES_ACTIVE=test mvn '-Dtest=StudentSessionReportPageControllerTest,SecurityChainIsolationTest' test` PASS 9/9 sau khi thêm `Clock` mock cho test slice; browser/responsive/a11y chưa xác minh. Migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm Student assignments Thymeleaf
+- Dựng danh sách/chi tiết bài tập SSR với GET filter/pagination; form freeform nộp/lưu nháp multipart POST + CSRF gọi cùng application service và hỗ trợ file qua AttachmentService. Hình thức `SYSTEM_QUIZ` được chặn khỏi form freeform cho tới khi schema/UX được xác minh.
+- `SPRING_PROFILES_ACTIVE=test mvn '-Dtest=StudentAssignmentPageControllerTest,SecurityChainIsolationTest,StudentAssignmentSecurityTest' test` PASS 13/13. Browser, storage provider, responsive/a11y và screenshot chưa xác minh; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Thêm checkout, kết quả và return payment Student Thymeleaf
+- Dựng SSR checkout/result bằng owned invoice facade và return route chỉ chuyển tiếp `invoiceId`; link checkout PayOS được allowlist HTTPS, status refresh dùng GET, trang kết quả không tin query. Giảm CTA tìm gia sư lặp ở dashboard/package detail và đổi nhãn phân bổ buổi học cho rõ.
+- `SPRING_PROFILES_ACTIVE=test mvn '-Dtest=StudentPaymentPageControllerTest,StudentPackagePageControllerTest,StudentDashboardPageControllerTest,SecurityChainIsolationTest' test` PASS 21/21; gồm callback giả status, allowlist URL, ownership và role isolation. Browser/responsive/a11y/session-cookie smoke chưa xác minh; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Bắt đầu Student dashboard Thymeleaf
+- Thêm `/student` SSR và `/student/packages[/{id}]` với summary, filter/pagination GET, empty/error, ownership và workspace header logout POST/CSRF; gọi read services trực tiếp, không gọi REST loopback hay thêm API/schema.
+- MockMvc/dashboard/security regression PASS 15/15 với profile test, gồm ownership 404; browser/screenshot/responsive/a11y và logout browser smoke chưa xác minh. Các trang Student được liên kết còn đang xây dựng. Detector không resolve stylesheet root path nên typography finding chưa đầy đủ. Migration diff trống; không kết nối Supabase.
+
+## 2026-10-28 — Hoàn thiện auth foundation Thymeleaf
+- Thêm OAuth HTML flow tách marker khỏi Next flow: exchange/login server-side, role registration token trong session, role selection có CSRF; callback compatibility route không nhận credential. Dùng chung session establishment để login/password và OAuth cùng đổi session ID, giữ JWT server-side.
+- Auth/security MockMvc regression PASS 31/31 với profile test; Google/email provider và browser/responsive audit chưa chạy. Migration diff trống; không kết nối Supabase.
+
+## 2026-10-28 — Dựng các form Auth Thymeleaf
+- Thêm đăng ký Student/Teacher, xác minh email, gửi lại hướng dẫn, quên mật khẩu và đặt lại mật khẩu bằng POST/CSRF; token email được giữ trong session server sau redirect URL sạch, response recovery không tiết lộ email tồn tại. Bổ sung route spec và cập nhật blocker Auth trong product scope.
+- MockMvc Auth/security regression PASS 19/19 với profile test. Chưa chạy browser/responsive hoặc email provider smoke; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Bắt đầu xác thực Thymeleaf bằng login SSR
+- Thêm trang `/auth/login`, server-side session bridge và POST logout có CSRF; giới hạn redirect theo role, giữ JWT phía server, không render password/token. REST giữ Bearer-only theo ADR 0016; đồng bộ mô tả auth trong API contract.
+- Regression MockMvc auth/security/public routes PASS 11/11 với profile test. Browser/staging smoke và các route auth còn lại chưa thực hiện. Migration diff trống; không kết nối Supabase.
+
+## 2026-10-28 — Dựng trang Cách hoạt động Thymeleaf và sửa cache ranking
+- Thêm `/how-it-works` SSR với ba bước, CTA và no-JS; mở route public trong Spring Security. Cập nhật route spec/progress.
+- Thêm `/become-a-tutor` SSR, dùng chung `public-guide.css`; nội dung điều kiện xét duyệt không hứa số liệu/thu nhập. CTA role Teacher giữ query; mở route public trong Spring Security.
+- Chuyển ranking cache sang record payload thay vì `PageImpl`; thêm serializer round-trip test để tránh warning deserialize và fallback đọc DB.
+- `HowItWorksPageControllerTest`, `BecomeTutorPageControllerTest` và `CachedTeacherRankingPageTest` pass; combined route regression 23/23. Browser JS on/off, keyboard focus, contrast và responsive đã kiểm tra; screenshots đã xem; hai ranking requests xác nhận cache key được ghi/đọc. Migration diff trống; runtime dùng PostgreSQL/Redis local tmpfs.
+
+## 2026-10-28 — Dựng bảng xếp hạng Thymeleaf
+- Thêm SSR `/ranking` với lọc môn, phân trang GET và empty/error/invalid-filter states. Sửa sort native query bằng cách không truyền property sort camelCase vào `PageRequest`; cập nhật route spec/progress.
+- Regression MockMvc 20/20 và browser JS on/off/no-JS filter pass trên PostgreSQL local tmpfs; ảnh desktop/mobile đã chụp và xem. Redis `PageImpl` cache deserialize warning còn cần theo dõi.
+- Một lần restart ngoài ý muốn dùng profile cloud: Flyway chỉ validate schema Supabase V41, không migrate; startup reconciliation job chạy nhưng tác động provider/ghi dữ liệu chưa xác minh. Xem chi tiết trong `docs/STATUS.md`.
+
+## 2026-10-28 — Bắt đầu route Thymeleaf `/teachers`
+- Thêm trang tìm gia sư render phía server với form GET, filter options, kết quả/pagination, empty/error states và CSS/font local; mở public surface cần thiết trong Spring Security. Sửa chuẩn hóa filter chuỗi rỗng để native GET form hoạt động, cập nhật API contract và thêm favicon SVG; ẩn illustration ở mobile để giữ rõ phần mô tả.
+- Targeted Maven tests PASS 9/9. Browser Playwright desktop/mobile JS on/off và no-JS submit PASS; 320–1280px không tràn ngang, console errors 0. Screenshots lưu trong Codex visualizations ngoài repo. Route còn đang làm vì hồ sơ gia sư chưa có handler. Migration diff trống; không kết nối Supabase.
+
+## 2026-10-28 — Dựng hồ sơ gia sư công khai bằng Thymeleaf
+- Thêm `GET /teachers/{id}` với profile, active packages, public availability/reviews, empty/error/not-found states và mobile CSS. Thêm `PublicReviewFacade`/snapshot làm seam từ catalog presentation tới ranking module; cập nhật route spec và progress. Không đổi REST endpoint.
+- `TeacherProfilePageControllerTest` PASS 2/2. Browser desktop/mobile, JS on/off PASS; local seed có 2 gói nhưng chưa có availability/reviews public. Screenshots nằm ngoài repo trong Codex visualizations; migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Chuẩn bị gate trước triển khai Thymeleaf
+- Ghi ADR 0016 ở trạng thái Proposed cho auth/session/CSRF/OAuth; xác minh booking Student chưa có command và làm rõ trial, PayOS return/webhook cùng topology Nginx local/staging.
+- Sửa default PayOS return/cancel URL dùng `APP_FRONTEND_URL` và callback route hiện có; staging provider thật và workflow tạo booking trả phí do Student khởi tạo vẫn chưa được xác minh/chốt. Docs checker chạy riêng; không chạy test ứng dụng. Migration diff trống, không kết nối Supabase.
+
+## 2026-10-28 — Sửa phân nhóm API teacher stats trong spec Thymeleaf
+- Chuyển `GET /api/teacher/stats` từ nhóm Public sang Teacher; mapping được đối chiếu với `TeacherStatsController`. Public reviews và ranking vẫn ở nhóm Public.
+- `scripts/check-docs.ps1` PASS; không chạy test ứng dụng. Migration diff trống; không kết nối Supabase.
+
+## 2026-10-28 — Hoàn thiện bộ đặc tả chuyển toàn bộ FE sang Thymeleaf
+- Mở rộng 9 tài liệu trong `docs/thymeleaf/` cho 70 route sản phẩm, gồm hành vi theo nhóm trang, fallback no-JS, API mapping có nguồn code, bảo mật, nghiệm thu và tiến độ từng route. Nêu rõ auth cần ADR và các luồng Student booking/trial chưa xác minh.
+- Cập nhật `docs/STATUS.md` bằng trạng thái thật: tài liệu hoàn chỉnh để chuẩn bị triển khai, nhưng chưa có route Thymeleaf nào được dựng. Chỉ chạy docs checker; không chạy test ứng dụng, không có migration mới và không kết nối Supabase.
+
+## 2026-10-28 — Bổ sung đặc tả giao diện Thymeleaf
+- Mở rộng đặc tả trang tìm gia sư, tokens và anti-patterns, upload/logout/CSRF/PRG, mapping booking chưa xác minh, tiêu chí query/N+1 và trạng thái tiến độ route `/teachers`.
+- Chỉ cập nhật tài liệu `docs/thymeleaf/` và changelog; `STATUS.md`, `FRONTEND_SPEC.md`, `API_CONTRACT.md` không bị chỉnh sửa trong lượt này.
+
+## 2026-10-28 — Tạo bộ đặc tả frontend Thymeleaf
+- Thêm 9 tài liệu trong `docs/thymeleaf/` về phạm vi, route, thiết kế, tương tác, API mapping, bảo mật, nghiệm thu và route progress. Ghi rõ ADR 0014 cần được xem xét trước khi chuyển auth browser sang server session; ghi endpoint/luồng booking Student chưa xác minh.
+- Không sửa FRONTEND_SPEC.md, API_CONTRACT.md hoặc STATUS.md; không có migration mới, không kết nối Supabase. Kiểm tra tài liệu chạy sau khi tạo.
+
+## 2026-10-28 — Làm mới seed dữ liệu Tutor Match
+- Đồng bộ fixture với schema V41, bổ sung dữ liệu workflow marketplace, học thử, học tập, communication, finance queue, audit/outbox và settlement; giữ nguyên các tài khoản hiện có.
+- Rà soát tĩnh migration V1–V41; chưa chạy trên PostgreSQL vì không có `psql` và Docker API bị từ chối quyền. Không kết nối Supabase.
+
+## 2026-10-28 — Đồng bộ API contract với implementation
+- Đối chiếu tĩnh các endpoint và DTO với controller hiện tại; cập nhật teacher search, auth transport, StudentPackageDetail/BookingDetail, enum refund và ghi chú xem giấy tờ admin qua proxy no-store.
+- Không thay đổi backend hoặc migration; chưa chạy test ứng dụng.
+
 ## 2026-10-28 — Nghiệm thu backend/frontend và chẩn đoán Docker
-- Backend Maven/Testcontainers full suite: 536/536. Frontend `npm run check`: typecheck, ESLint, Jest 122 suites / 329 tests và production build 63 trang pass. `--detectOpenHandles` cũng pass.
-- Proxy giấy tờ admin, bảo vệ WebSocket theo session, retry/reconciliation payment, transition User, RLS grant test và ArchUnit guardrails được kiểm thử trong backend suite.
-- Docker log cho thấy Engine/API stopped trước khi khởi tạo; sau ~56 giây WSL2 Engine báo running. Lỗi đầu nhiều khả năng do daemon chưa sẵn sàng; nguyên nhân ACL cụ thể không xác minh được.
-- Đã dọn ba image Testcontainers mới kéo. Migration diff trống; không kết nối Supabase hay provider thật.
+- Backend Maven/Testcontainers full suite đạt 536/536. Frontend `npm run check` đạt typecheck, ESLint, Jest 122/122 suites (329/329 tests) và production build 63 trang; `--detectOpenHandles` cũng pass.
+- Test viewer tài liệu được đồng bộ bằng React `act()`; hai test SubjectPicker cũ được cập nhật theo luồng nhiều lựa chọn hiện tại. ESLint bỏ qua `.next*/**` để không quét bundles build tạm.
+- Docker log ghi Linux Engine `stopped` lúc UI khởi tạo, pipe được dựng trước daemon và API chỉ `running` sau khoảng 56 giây; khả năng cao lỗi ban đầu do gọi lúc engine chưa sẵn sàng. ACL cụ thể không có trong log. Cả hai endpoint pipe hiện hoạt động.
+- Dọn ba Docker image được test kéo mới sau khi Testcontainers kết thúc. Migration diff trống; không kết nối Supabase hay provider thật.
+
+## 2026-10-28 — Bảo vệ tài liệu và các luồng phiên/thanh toán
+- Upload mới dùng authenticated delivery và admin proxy; thêm runbook cho object cũ. Thêm kiểm tra WebSocket theo session, transition User, retry/reconciliation payment, guardrail ArchUnit và test grant. Backend mục tiêu 60/60 PASS, frontend typecheck PASS; integration Testcontainers bị chặn do Docker và Jest bị chặn `spawn EPERM`. Chưa kiểm tra provider thật hoặc grant Supabase; migration diff trống.
+
+## 2026-10-28 — Sửa lỗi 500 khi tải danh sách booking
+- Bỏ kiểm tra `:from`/`:to` kiểu `IS NULL` trong JPQL PostgreSQL; repository nhận boolean flags để bật/tắt filter tùy chọn cho student và teacher. Backend compile và test-compile PASS; không chạy tests hoặc kiểm tra endpoint với database thật. Không có migration mới, không kết nối Supabase.
+
+## 2026-10-28 — Gỡ favicon Render
+- Xóa favicon Render khỏi frontend để không còn được phục vụ trên tab trình duyệt ở local và sau khi deploy. Trình duyệt có thể giữ favicon cũ trong cache.
+- Chưa chạy test hoặc build; không có migration mới và không kết nối Supabase.
 
 ## 2026-10-26 — Khôi phục CI và dọn nhánh GitHub
 - Sửa cấu hình backend CI, cô lập và giới hạn test Flyway lịch sử, sửa Compose smoke probe; Frontend CI fixture/E2E cũng được ổn định. GitHub CI Frontend main/dev và Backend main/dev đều PASS; backend main run `40274450357`, frontend main run `40274727494`, dev runs `40274887729`/`40274887807`.
@@ -1030,3 +1634,138 @@ efresh_tokens`, `teacher_documents`, `subject_proposals`, `subjects`, `pricing_p
 
 - Dựng lại queue xét duyệt thành danh sách theo trạng thái; chi tiết mở drawer đọc được thông tin, khu vực, video giới thiệu và tài liệu từ snapshot hiện có. Giữ Admin guard, query pagination/sort, approve note và reject reason payload.
 - JSX layout AST page **83.3%**, queue **61.1%**, drawer **72.2%**. Production screenshots before/after 375/768/1280 đã chụp và xem. Playwright **5/5 PASS**, Jest **1 suite / 2 tests**, typecheck qua production build, targeted ESLint PASS. Fixture local. Migration diff trống; không kết nối Supabase.
+# 2026-10-28 — Thymeleaf public landing and subject catalog
+
+- Dựng `/` và `/subjects` bằng Thymeleaf với dữ liệu public thật; tìm kiếm/lọc/phân trang GET, empty/error/validation states, CSS responsive và no-JS behavior. Mở `/subjects` trong public route matcher sau khi browser audit phát hiện `AUTH_TOKEN_MISSING`. Combined focused suite 17/17 pass; browser desktop/mobile JS on/off, no-JS searches and viewport checks pass. Screenshot lưu ở Codex visualizations; hai route vẫn đang làm tới khi các đích liên kết Public/Auth chuyển xong.
+
+## 2026-10-28 — Thymeleaf support and legal pages
+
+- Dựng `/support`, `/terms` và `/privacy` bằng Thymeleaf SSR với public shell; support chỉ liên kết tới các khu vực tài khoản đã có, không tự đặt form hoặc địa chỉ liên hệ. `SupportPageControllerTest` và regression public-route suite PASS 26/26 dưới profile `test`; browser anonymous xác nhận `/support` trả HTTP 200 và có đúng nội dung/link. Route còn `Đang làm` vì đích Student/Auth chưa chuyển và chưa có ma trận screenshot responsive.
+
+## 2026-10-28 — Thymeleaf forbidden route
+
+- Dựng `/forbidden` SSR với safe links về home/search và mở route trong public matcher. `ForbiddenPageControllerTest` chạy qua `SecurityConfig`/JWT filter thật và xác nhận anonymous GET 200. Playwright desktop/mobile screenshots và 320–1440 viewport audit không tràn; template không có script. Sửa CSS font inheritance sau visual review. Public route regression PASS 27/27; migration diff trống, local tmpfs runtime đã dừng.
+
+## 2026-10-28 — Chấp nhận ADR 0016 cho UI Thymeleaf
+
+- Chốt server-side session cookie opaque cho HTML (idle 30 phút, absolute tối đa 7 ngày), CSRF cho form mutation, POST logout + revoke, OAuth exchange phía server; `/api/**` tiếp tục Bearer JWT. Đồng bộ `CONTEXT.md` và auth spec; không đổi API contract hay schema. Production session topology/OAuth smoke vẫn là gate; migration diff trống và không kết nối Supabase.
+
+## 2026-10-28 — Thymeleaf Student profile
+
+- Dựng `/student/profile` SSR với identity facade và form liên hệ phụ huynh, validate form trên server, POST+CSRF+PRG, retry/error/success states, no-JS markup và CSS responsive; không thay đổi API/schema. `StudentProfilePageControllerTest` + `SecurityChainIsolationTest` PASS 13/13. Browser screenshots, responsive/a11y thực tế và session-cookie smoke chưa xác minh; migration diff trống.
+
+## 2026-10-28 — Thymeleaf Student bookings
+
+- Dựng danh sách và chi tiết lịch học SSR, filter/pagination GET, ownership 404 và xác nhận buổi học POST+CSRF+PRG theo read-service capability; meeting link chỉ clickable khi URL HTTP(S) hợp lệ; nối notification booking link. Không thêm endpoint/capability tạo lịch từ Student. Combined MockMvc/security/profile/notification regression PASS 24/24; browser screenshot và responsive/a11y còn chưa xác minh; migration diff trống.
+
+## 2026-10-28 — Thymeleaf Teacher students
+
+- Dựng danh sách học viên và chi tiết gói học SSR qua `TeacherLearnerService`, với ownership theo Teacher principal, 404 khi học viên không có gói thuộc gia sư, GET pagination và retry/empty states. Focused MockMvc/security PASS 28/28; browser screenshot/responsive/a11y/session-cookie chưa xác minh; migration diff trống.
+
+## 2026-10-28 — Thymeleaf Teacher bookings
+
+- Dựng `/teacher/bookings` và detail SSR với status/date filter/pagination, ownership 404, forms report/confirmation, cancel, dispute dùng POST+CSRF+PRG. Tách đúng trial report khỏi xác nhận buổi trả phí; batch read path tránh gọi detail lookups cho từng dòng. Date filter dùng ngày `Asia/Ho_Chi_Minh`, giữ query khi phân trang và có empty state riêng cho bộ lọc không khớp. Kết quả focused regression được cập nhật ở `docs/STATUS.md`; browser screenshot/responsive/a11y/session-cookie chưa xác minh; migration diff trống.
+
+## 2026-10-28 — Teacher bookings filter hardening
+
+- Bổ sung xử lý ngày không hợp lệ/giới hạn, giữ filter khi phân trang và thử lại, định dạng native date input/focus, điều hướng Teacher cuộn ngang trên mobile; phân biệt kết quả rỗng do filter. Regression MockMvc/service/security PASS 43/43; chưa có browser evidence.
+
+## 2026-10-28 — Thymeleaf Teacher trial requests
+
+- Thêm list/pagination SSR và form accept/reject cho yêu cầu học thử; display labels batch-load, mutations dùng POST+CSRF+PRG và version, thời gian nhập theo múi giờ Việt Nam. Focused controller/service/security regression PASS 33/33; browser/responsive/a11y chưa xác minh, migration diff trống.
+- Đối chiếu source và sửa API contract: Teacher trial-request list chỉ nhận pagination, không nhận status filter.
+- Sau critique, tách accept/reject thành hai disclosure riêng, thêm hướng dẫn múi giờ và điều kiện dùng link/địa điểm; lỗi PRG mở đúng form. Regression MockMvc/service/security chạy lại PASS 33/33; `scripts/check-docs.ps1` PASS 49 Markdown files.
+
+## 2026-10-28 — Thymeleaf Teacher assignments
+
+- Dựng list/create/detail/grading SSR cho bài tập Teacher với POST+CSRF+PRG, upload native form, ownership/version/state qua service; list batch-load student/subject/submission, assignment view có version, trang riêng cho chấm bài. Picker học viên phân trang GET. Regression Teacher/Student/service/security PASS 41/41. Chưa xác minh browser screenshot, responsive/a11y, upload provider, session-cookie hoặc runtime SQL count; migration diff trống.
+# 2026-10-29 — Đồng bộ tiến độ Thymeleaf
+- Cập nhật README, API integration và progress để phản ánh các SSR handler đang có và liên kết audit-log hiện hành; giữ Teacher dashboard ưu tiên “Việc cần làm trước”. Kiểm tra docs pass; browser chưa chạy do thiếu app local, Docker container và Playwright CLI.
+
+## 2026-10-29 — Browser kiểm tra Guest gate cho `/teacher/packages`
+- Trên Spring profile `test`, Guest truy cập list, create và detail package đều được chuyển tới `/auth/login` trước khi đọc tài nguyên. Đã chụp/xem trang đăng nhập desktop 1280×800 và mobile 390×844; Tab hiển thị focus-visible trên skip link.
+- `TeacherPackagesPageControllerTest` + `SecurityChainIsolationTest` PASS **47/47**. Chỉ xác nhận nhánh Guest; danh sách và form với Teacher session, JS-off, console, keyboard đầy đủ và screenshot artifact còn thiếu. Route giữ `Đang làm`; nghiệm thu route và cutover vẫn tách riêng.
+- Không dùng login bypass/đổi credential. Runtime profile `test` cùng PostgreSQL/Redis disposable/provider giả; migration diff trống, không kết nối `.env.cloud` hoặc Supabase.
+
+## 2026-10-29 — Browser Guest sweep cho 26 URL Teacher
+- Direct GET trên Spring profile `test` xác nhận 26/26 route Teacher redirect Guest tới SSR `/auth/login`; danh sách URL, phạm vi evidence và giới hạn được ghi trong `docs/STATUS.md`. Screenshot trang login desktop/mobile đã xem; focus-visible kiểm tra bằng Tab trên mobile.
+- Bộ 16 Teacher page-controller suites và `SecurityChainIsolationTest` PASS **141/141**. Kết quả chỉ đóng nhánh Guest; mọi route vẫn cần browser session Teacher và các trạng thái UI khác trước khi acceptance pass. Không đổi code/API/schema; migration diff trống và V42 có sẵn không bị sửa.
+
+## 2026-10-29 — Browser Guest sweep cho 15 URL Student
+- Direct GET trên Spring profile `test` xác nhận 15/15 route Student redirect Guest tới SSR `/auth/login`, gồm callback payment và dynamic detail. Screenshot trang login desktop/mobile đã chụp/xem, Tab kiểm tra focus-visible; không gửi mutation hoặc tạo dữ liệu.
+- Student page-controller, notification và security regressions PASS **89/89**. Chỉ xác nhận Guest gate; chưa nghiệm thu nội dung với Student session, ownership, form/CSRF, JS-off hoặc console. Không đổi code/API/schema; migration diff trống, không dùng `.env.cloud`/Supabase.
+
+## 2026-10-29 — Bổ sung browser audit `/support`
+- Recheck SSR Support trên Spring `test`; chụp/xem desktop 1280×800, mobile 390×844 và 320×740 (phần đầu/cuối). Keyboard sweep đi đủ 15 link, focus-visible rõ và không mắc kẹt; link yêu cầu mở trang login Guest. `SupportPageControllerTest` PASS **1/1**.
+- Route vẫn `Đang làm`: chưa xác minh JS-off, console, service-error browser state hoặc screenshot artifacts ổn định. Không đổi code/API/schema; migration diff trống.
+
+## 2026-10-29 — Thymeleaf route registry
+- Thêm inventory 70 legacy routes kèm expected role/state; đánh dấu /teacher/booking-requests là route bổ sung và /sandbox/components là dev-only. Parity test đối chiếu 71 route sản phẩm với mapping MVC thật; PASS 3/3.
+- Ghi rõ trong docs/STATUS.md rằng registry không thay thế browser acceptance và local cutover chưa sẵn sàng vì Nginx còn proxy Next, chưa có QA override. Không thay đổi Nginx hoặc migration; không dùng Supabase.
+
+## 2026-10-29 — Browser recheck route `/`
+- Trên Spring `test`, browser xác nhận trang chủ SSR, form GET chuyển query Toán sang `/teachers`, desktop/mobile, focus skip link và console không lỗi; ảnh được chụp/xem. JS-off bị browser CDP gate từ chối nên route tiếp tục `Đang làm`.
+
+## 2026-10-29 — Browser recheck route `/auth/login`
+- Xác minh Guest SSR, POST+CSRF markup, labels/links, focus-visible, console và ảnh desktop/mobile trên Spring `test`. Không gửi credentials; chưa có test-only login fixture, chưa xác minh session/logout và JS-off bị CDP gate chặn. Route vẫn `Đang làm`.
+
+## 2026-10-29 — Browser recheck route `/become-a-tutor`
+- Xác nhận Spring SSR onboarding Guest, CTA Teacher giữ `role=TEACHER`, link tiếp tục hồ sơ được bảo vệ, responsive 390px và console sạch. Không tạo tài khoản; JS-off chưa xác minh do browser gate.
+
+## 2026-10-29 — Impeccable critique `/auth/register`
+- Assessment thiết kế + detector/browser độc lập hoàn tất; ghi 5 ưu tiên UX và giới hạn detector CSS vào snapshot `.impeccable/critique/`. Route giữ `Đang làm`; không sửa UI hoặc submit đăng ký.
+
+## 2026-10-29 — Cải thiện `/auth/register` sau critique
+- Template đưa chọn role lên trước, thông báo xác minh email, disclosure phụ huynh chỉ dành cho học viên có ngữ cảnh privacy và summary lỗi. Focus field lỗi đầu tiên qua autofocus HTML native; password không bị echo. CSS dùng token hiện có, role target cao ít nhất 44px và không còn ép viewport tối thiểu 320px. Test `HtmlRegistrationControllerTest` PASS **5/5**, gồm focus password/email trong error response.
+- Browser Spring `test` xác nhận SSR/role/CSRF, 0 script, console sạch, keyboard focus và mở disclosure. Yêu cầu mobile 390px bị browser cấp viewport 325px; không tràn. Ảnh đã chụp/xem nhưng chưa lưu artifact. Route vẫn `Đang làm`: JS-off bị gate CDP chặn và validation recovery chưa được thử trên browser; không submit đăng ký, không tạo user/email.
+- Không đổi API/nghiệp vụ/schema; migration V42 có tracked diff rỗng và file untracked có sẵn không được sửa. Chỉ dùng runtime test, DB/Redis tạm và provider giả.
+
+## 2026-10-29 — Browser audit và harden `/auth/forgot-password`
+- Bỏ kicker trùng tiêu đề; thêm autofocus native cho field email khi lỗi validation/domain. `HtmlAccountAccessControllerTest` PASS **7/7**, gồm lỗi email không gọi service và field nhận focus trong HTML render.
+- Browser Spring `test`: Guest SSR, action POST/CSRF, success state generic qua GET `?sent`, 0 script, keyboard/focus, contrast và console; viewport 320/390/768/1280 không tràn; ảnh desktop/mobile/success đã chụp và xem. Không gửi email.
+- Route giữ `Đang làm`: JS-off bị CDP gate chặn, validation/error chưa kiểm tra trực tiếp trên browser, ảnh chưa có artifact ổn định. Detector `[]` nhưng stylesheet absolute không resolve nên color/token scan chưa đủ; CLI hiện không hỗ trợ lệnh `audit`, đã audit trực tiếp trên rendered page.
+- Không đổi API/schema; chỉ Spring `test`, DB/Redis tạm và provider giả. Migration tracked diff rỗng; V42 untracked có sẵn không sửa.
+
+## 2026-10-29 — Browser recheck `/teacher/students`
+- Teacher learner list/detail được browser-check một phần trên Spring `test`: SSR, Guest redirect, Student 403, links, logout POST+CSRF, viewport desktop/mobile, focus cơ bản, console và screenshot. Browser phát hiện 404 detail dùng JSON envelope; đã đổi thành HTTP 404 với HTML SSR thân thiện, không lộ ownership, và regression `TeacherStudentsPageControllerTest` PASS 7/7.
+- Cập nhật route spec, progress acceptance/cutover và STATUS. JS-off bị CDP permission gate chặn; browser empty/error và full keyboard sweep còn thiếu nên hai route vẫn `Đang làm`. Không đổi API contract/schema; không kết nối Supabase hoặc môi trường production.
+
+## 2026-10-29 — Hoàn tác landing page editorial
+- Trả trang chủ về hero minh họa và cấu trúc trước thử nghiệm; bỏ menu mobile và truy vấn số đếm môn được thêm cho bản editorial. Route vẫn `Đang làm` vì bản khôi phục chưa được nghiệm thu lại; ảnh editorial còn lưu nhưng không còn là bằng chứng cho trang hiện tại.
+
+## 2026-10-29 — Thymeleaf cutover implementation (staging gates pending)
+- Routed Nginx `/` to Spring Boot, removed Next.js from local/tunnel Compose, enabled Redis-backed HTTP sessions, disabled Next-only cache revalidation, and added session-authenticated chat WebSocket clients with HTML form fallback. Kept `frontend/` and its CI workflow for rollback until staging acceptance.
+- Focused regression: 94/94 backend tests pass; JS syntax check passes. Docker runtime, Redis restart/multi-instance, Nginx E2E, staging Google OAuth/PayOS and external Cloudflare routing remain unverified; production cutover was not performed. Migration diff is empty; Supabase was not contacted.
+
+## 2026-10-30 — Báo cáo hướng dẫn xây dựng Tutor Match
+- Tạo báo cáo DOCX tiếng Việt tại `docs/report/BAO_CAO_HUONG_DAN_XAY_DUNG_TUTORMATCH.docx`, định dạng A4, Times New Roman 13, bảng và sơ đồ đen trắng; ảnh giao diện giữ màu gốc.
+- Bổ sung kiến trúc, hướng dẫn cài đặt, hướng dẫn theo 71 route/use case, 145 hình, 7 bảng, danh mục tự động, giải thích luồng mã nguồn và phụ lục 17 prompt AI tái dựng theo commit/docs có ghi mức bằng chứng.
+- Render thành PDF 196 trang và rà contact sheet toàn bộ trang; chưa chạy test ứng dụng. Migration diff rỗng; không kết nối Supabase.
+
+## 2026-10-30 — Làm mới ảnh giao diện báo cáo bằng QA local
+- Chụp 70/71 route trên stack QA cô lập bằng dữ liệu mẫu từ seed; cập nhật báo cáo để chỉ dùng ảnh chụp mới. Không dùng domain, production hoặc Supabase.
+- `/teachers/{id}` không render do template tham chiếu `teacher.packages`, thuộc tính không tồn tại trên `TeacherPublicDetail`; ghi giới hạn này trong báo cáo, không sửa source.
+- Cập nhật mục lục/danh mục Word, render PDF 190 trang và rà contact sheet toàn bộ trang. Chưa chạy kiểm thử nghiệp vụ; migration diff rỗng.
+- Bản hoàn thiện được lưu tại `docs/report/BAO_CAO_HUONG_DAN_XAY_DUNG_TUTORMATCH_CAP_NHAT.docx` vì file báo cáo không có hậu tố đang bị tiến trình khác giữ mở.
+
+## 2026-10-30 — Sửa và chụp bổ sung hồ sơ gia sư công khai
+- Sửa `templates/teachers/profile.html` để booking dock đọc danh sách `packages` từ model thay vì thuộc tính không tồn tại `teacher.packages` trên `TeacherPublicDetail`; thêm assertion giá gói vào controller test.
+- `TeacherProfilePageControllerTest` (catalog và teacher): PASS 12/12. QA browser GET `/teachers/{id}`: HTTP 200, booking dock hiện giá gói mẫu, 0 lỗi trang.
+- Cập nhật DOCX với ảnh route thứ 71, 145 hình tổng cộng; render 191 trang và rà toàn bộ contact sheet. QA local đã dọn; migration diff rỗng, Supabase không kết nối.
+
+## 2026-10-30 — Xóa ghi chú lặp dưới ảnh trong báo cáo
+- Xóa 71 đoạn giải thích QA lặp dưới ảnh giao diện trong DOCX hiện tại; giữ nguyên caption hình, các chỉnh sửa bìa/nội dung của nhóm và ghi chú phạm vi kiểm thử ở phần tổng kết.
+- Cập nhật trường Word, render lại 191 trang và rà contact sheet toàn bộ tài liệu.
+
+## 2026-10-30 — Thêm trợ lý AI Tutor Match dùng Groq
+- Thêm endpoint chat public có grounding bằng hướng dẫn nền tảng/catalog công khai, fallback email admin, giới hạn tần suất và adapter Groq; gắn widget responsive vào public, student và teacher Thymeleaf shells.
+- Assistant cùng kiến trúc API/guardrail tests PASS 25/25; chưa gọi Groq thật và chưa chạy browser visual QA. Không thêm migration, không kết nối Supabase.
+
+## Biên tập báo cáo Tutor Match và bổ sung trợ lý AI — 2026-10-30
+- Biên tập văn phong báo cáo, lược các đoạn quyền/bằng chứng lặp ở 71 route, Việt hóa tiêu đề chức năng và bổ sung phần trợ lý AI cùng prompt PAI-21 tái dựng theo tài liệu/source.
+- Cập nhật mô tả kiến trúc và trạng thái trợ lý theo kho bài viết tri thức đã xuất bản cùng catalog công khai.
+- Migration V43 đang có trong working tree và chưa được xác minh/áp dụng; các thay đổi kho tri thức chưa được kiểm thử lại trong đợt biên tập tài liệu. Không kết nối hoặc thay đổi Supabase.
+
+## 2026-10-30 — Mở rộng trợ lý với hướng dẫn từ Supabase
+- Thêm migration V43 seed 5 bài hướng dẫn public có RLS default-deny; truy xuất gia sư theo môn/cấp học và ánh xạ context sang allowlist trường công khai.
+- Assistant/catalog/widget và guard kiến trúc PASS 31/31. V43 chưa apply: preflight bị chặn ở Flyway info; clean-schema/upgrade test chưa chạy do Docker Engine không hoạt động.

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffdf7">
+  <title>Báo cáo buổi học | Tutor Match</title>
+  <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/public.css">
+  <link rel="stylesheet" href="/css/student-dashboard.css">
+  <link rel="stylesheet" href="/css/student-reports.css">
+</head>
+<body>
+<div th:replace="~{fragments/student-header :: header}"></div>
+<main id="main-content" class="student-dashboard student-reports-page">
+  <div class="student-dashboard__container">
+    <div th:replace="~{fragments/student-workspace-nav :: nav(${activeWorkspaceNav})}"></div>
+    <header class="reports-heading"><h1>Báo cáo buổi học</h1><p>Nhận xét và việc cần làm tiếp do gia sư ghi sau mỗi buổi.</p></header>
+    <section class="reports-state reports-state--error" role="alert" th:if="${reportsUnavailable}">
+      <h2>Chưa tải được báo cáo buổi học</h2><p>Hãy kiểm tra kết nối rồi thử lại.</p><a th:href="@{/student/session-reports(page=${currentPage})}">Thử tải lại</a>
+    </section>
+    <section th:if="${!reportsUnavailable}">
+      <div class="reports-state" th:if="${#lists.isEmpty(reportRows)}">
+        <h2>Chưa có báo cáo buổi học</h2><p>Nhận xét của gia sư sẽ xuất hiện sau khi buổi học được ghi nhận.</p>
+      </div>
+      <ol class="session-report-list" aria-label="Danh sách báo cáo buổi học" th:unless="${#lists.isEmpty(reportRows)}">
+        <li th:each="row : ${reportRows}">
+          <article class="session-report">
+            <header><h2><time th:if="${row.data.startTime != null}" th:datetime="${row.data.startTime}" th:text="${row.dateLabel}">19:00, Thứ Hai 28/10/2026</time><span th:unless="${row.data.startTime != null}" th:text="${row.dateLabel}">Chưa có thời gian buổi học</span></h2></header>
+            <div class="session-report__content">
+              <section><h3>Nội dung buổi học</h3><p th:text="${row.data.content == null or #strings.isEmpty(row.data.content) ? 'Chưa có nội dung được ghi.' : row.data.content}">Nội dung buổi học.</p></section>
+              <section><h3>Nhận xét của gia sư</h3><p th:text="${row.data.feedback == null or #strings.isEmpty(row.data.feedback) ? 'Chưa có nhận xét.' : row.data.feedback}">Nhận xét của gia sư.</p></section>
+              <section th:if="${row.data.followUpNote != null and !#strings.isEmpty(row.data.followUpNote)}"><h3>Việc cần làm tiếp</h3><p th:text="${row.data.followUpNote}">Việc cần làm tiếp.</p></section>
+            </div>
+            <footer class="session-report__actions"><a th:if="${row.recordUrl != null}" th:href="${row.recordUrl}" target="_blank" rel="noopener noreferrer">Xem bản ghi</a></footer>
+          </article>
+        </li>
+      </ol>
+      <nav class="learning-pagination" aria-label="Phân trang báo cáo" th:if="${totalPages > 1}">
+        <a th:if="${hasPrevious}" th:href="@{/student/session-reports(page=${currentPage - 1})}">← Trang trước</a>
+        <span th:text="|Trang ${currentPage + 1} / ${totalPages}|">Trang 1 / 1</span>
+        <a th:if="${hasNext}" th:href="@{/student/session-reports(page=${currentPage + 1})}">Trang sau →</a>
+      </nav>
+    </section>
+  </div>
+</main>
+<footer class="student-footer"><div><a href="/">Tutor Match</a><span>Học đúng người, tiến đúng mục tiêu.</span></div><a href="/support">Trợ giúp</a></footer>
+</body>
+</html>
